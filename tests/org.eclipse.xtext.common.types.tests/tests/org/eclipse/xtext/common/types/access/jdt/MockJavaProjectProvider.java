@@ -25,9 +25,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
@@ -36,8 +34,10 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.xtext.common.types.tests.AbstractActivator;
+import org.eclipse.xtext.junit4.ui.util.IResourcesSetupUtil;
 import org.eclipse.xtext.junit4.ui.util.JavaProjectSetupUtil;
 import org.eclipse.xtext.junit4.ui.util.PluginUtil;
+import org.eclipse.xtext.ui.util.JREContainerProvider;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.common.collect.Lists;
@@ -53,6 +53,7 @@ public class MockJavaProjectProvider implements IJavaProjectProvider {
 
 	private boolean useSources;
 	
+	@Override
 	public IJavaProject getJavaProject(ResourceSet resourceSet) {
 		if (javaProject == null || javaProjectWithSources == null)
 			throw new IllegalStateException("javaProject is null || javaProjectWithSources == null");
@@ -87,7 +88,6 @@ public class MockJavaProjectProvider implements IJavaProjectProvider {
 		IFolder sourceFolder = JavaProjectSetupUtil.addSourceFolder(javaProjectWithSources, "src");
 		
 		List<String> filesToCopy = readResource(path + "/files.list");
-		
 		IFolder srcFolder = sourceFolder.getFolder(new Path(path));
 		createFolderRecursively(srcFolder);
 		for(String fileToCopy: filesToCopy) {
@@ -95,7 +95,8 @@ public class MockJavaProjectProvider implements IJavaProjectProvider {
 			String contentAsString = Strings.concat("\n", content);
 			createFile(fileToCopy.substring(0, fileToCopy.length() - ".txt".length()), srcFolder, contentAsString);
 		}
-		waitForAutoBuild();
+		createFile("ClassWithDefaultPackage.java", sourceFolder, "public class ClassWithDefaultPackage {}");
+		IResourcesSetupUtil.waitForBuild();
 	}
 
 	protected static void createFolderRecursively(IFolder folder) throws CoreException {
@@ -158,17 +159,17 @@ public class MockJavaProjectProvider implements IJavaProjectProvider {
 			project.open(null);
 			project.setDescription(projectDescription, null);
 
-			classpathEntries.add(JavaCore.newContainerEntry(new Path("org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5")));
 			classpathEntries.add(JavaCore.newContainerEntry(new Path("org.eclipse.pde.core.requiredPlugins")));
 
 			javaProject.setRawClasspath(classpathEntries.toArray(new IClasspathEntry[classpathEntries.size()]),
 					null);
+			JavaProjectSetupUtil.addJreClasspathEntry(javaProject);
 			
 			makeJava5Compliant(javaProject);
 
 			javaProject.setOutputLocation(new Path("/" + projectName + "/bin"), null);
 			createManifest(projectName, project);
-//			project.build(IncrementalProjectBuilder.FULL_BUILD, null);
+
 			refreshExternalArchives(javaProject);
 			refresh(javaProject);
 		}
@@ -195,25 +196,8 @@ public class MockJavaProjectProvider implements IJavaProjectProvider {
 	}
 	
 	protected static void refreshExternalArchives(IJavaProject p) throws JavaModelException {
-		waitForAutoBuild(); // ensure that the auto-build job doesn't interfere with external jar refreshing
+		IResourcesSetupUtil.waitForBuild();
 		getJavaModel().refreshExternalArchives(new IJavaElement[] {p}, null);
-	}
-	
-	/**
-	 * Wait for autobuild notification to occur
-	 */
-	public static void waitForAutoBuild() {
-		boolean wasInterrupted = false;
-		do {
-			try {
-				Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
-				wasInterrupted = false;
-			} catch (OperationCanceledException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				wasInterrupted = true;
-			}
-		} while (wasInterrupted);
 	}
 	
 	/**
@@ -225,21 +209,6 @@ public class MockJavaProjectProvider implements IJavaProjectProvider {
 	
 	public static void refresh(final IJavaProject javaProject) throws CoreException {
 		javaProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
-		waitForManualRefresh();
-	}
-	
-	public static void waitForManualRefresh() {
-		boolean wasInterrupted = false;
-		do {
-			try {
-				Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_REFRESH, null);
-				wasInterrupted = false;
-			} catch (OperationCanceledException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				wasInterrupted = true;
-			}
-		} while (wasInterrupted);
 	}
 	
 	private static void createManifest(final String projectName, final IProject project) throws CoreException {
@@ -250,7 +219,7 @@ public class MockJavaProjectProvider implements IJavaProjectProvider {
 		mainContent.append("Bundle-Version: 1.0.0\n");
 		mainContent.append("Bundle-SymbolicName: " + projectName.toLowerCase() + "; singleton:=true\n");
 		mainContent.append("Bundle-ActivationPolicy: lazy\n");
-		mainContent.append("Bundle-RequiredExecutionEnvironment: JavaSE-1.6\n");
+		mainContent.append("Bundle-RequiredExecutionEnvironment: " + JREContainerProvider.PREFERRED_BREE + "\n");
 		mainContent.append("Require-Bundle: com.google.guava\n");
 
 		final IFolder metaInf = project.getFolder("META-INF");

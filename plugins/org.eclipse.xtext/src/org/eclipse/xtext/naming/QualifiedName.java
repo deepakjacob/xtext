@@ -7,35 +7,66 @@
  *******************************************************************************/
 package org.eclipse.xtext.naming;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.emf.common.util.CommonUtil;
+import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl.EObjectInputStream;
+import org.eclipse.emf.ecore.resource.impl.BinaryResourceImpl.EObjectOutputStream;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.common.base.Function;
 
 /**
- * A datatype for dealing with qualified names. 
+ * A datatype for dealing with qualified names.
  * Instances are usually provided by a {@link IQualifiedNameProvider}.
- * 
+ *
  * @author Jan Koehnlein - Initial contribution and API
  * @author Sebastian Zarnekow
  */
 public class QualifiedName implements Comparable<QualifiedName> {
 
 	private final int hash;
-	
+
 	private final String[] segments;
-	
+
 	private QualifiedName lowerCase;
 
-	public static final QualifiedName EMPTY = new QualifiedName();
+	private static final boolean USE_INTERNING = Boolean.getBoolean("xtext.qn.interning");
+
+	public static final QualifiedName EMPTY = new QualifiedName() {
+		@Override
+		public QualifiedName append(QualifiedName relativeQualifiedName) {
+			return relativeQualifiedName;
+		}
+		@Override
+		public QualifiedName append(String segment) {
+			return QualifiedName.create(segment);
+		}
+		@Override
+		boolean hasLowerCase() {
+			return true;
+		}
+		@Override
+		public QualifiedName toLowerCase() {
+			return this;
+		}
+		@Override
+		public QualifiedName toUpperCase() {
+			return this;
+		}
+		@Override
+		public String toString(String delimiter) {
+			return "";
+		}
+	};
 
 	/**
 	 * Low-level factory method. Consider using a {@link IQualifiedNameConverter} instead.
-	 * 
-	 * @param segments the segments of the to-be-created qualified name. 
+	 *
+	 * @param segments the segments of the to-be-created qualified name.
 	 * 	May be <code>null</code>, but may not contain <code>null</code> entries.
 	 * @return a {@link QualifiedName}. Never <code>null</code>.
 	 * @exception IllegalArgumentException
@@ -48,17 +79,90 @@ public class QualifiedName implements Comparable<QualifiedName> {
 		if (segments.length == 1) {
 			return create(segments[0]);
 		}
+		String [] newArray = new String [segments.length];
 		for (int i = 0; i < segments.length; i++) {
-			if (segments[i] == null) {
+			String string = segments[i];
+			if (string == null) {
 				throw new IllegalArgumentException("Segment cannot be null");
 			}
+			newArray[i] = intern(string);
 		}
-		return new QualifiedName(segments.clone());
+		return new QualifiedName(newArray);
+	}
+
+	/**
+	 * Returns string internal instance from string pool, if a system property {@code xtext.qn.interning} is set to {@code true}, or the
+	 * same object otherwise.
+	 * <p>
+	 * Implementation notes:
+	 * <ol>
+	 * <li>Interning {@link String} objects may affect performance, see bug 484215.
+	 * <li>Interning {@link String} objects is not recommended for older JVM's, because of possible perm gen memory explosion, see
+	 * http://java-performance.info/string-intern-in-java-6-7-8/.
+	 * </ol>
+	 */
+	private static String intern(String string) {
+		return USE_INTERNING? CommonUtil.intern(string) : string;
+	}
+
+	/**
+	 * Internal low level factory method.
+	 * @noreference This method is not intended to be referenced by clients.
+	 * @since 2.4
+	 */
+	public static QualifiedName createFromStream(EObjectInputStream eObjectInputStream) throws IOException{
+		int segmentCount = eObjectInputStream.readCompressedInt();
+		if (segmentCount == 0) {
+			return QualifiedName.EMPTY;
+		}
+		// lowercase QN serialize a 'null' value at index 0 and
+		String firstSegment = eObjectInputStream.readSegmentedString();
+		boolean lowerCase = false;
+		if (firstSegment == null) {
+			lowerCase = true;
+			// first was null, read another string which is the actual first segment
+			firstSegment = eObjectInputStream.readSegmentedString();
+			if(firstSegment == null){
+				throw new IllegalStateException("Read unexpected first segment from object stream");
+			}
+		}
+
+		String[] segments = readSegmentArray(eObjectInputStream, segmentCount, firstSegment);
+		if (lowerCase) {
+			return new QualifiedNameLowerCase(segments);
+		} else {
+			return new QualifiedName(segments);
+		}
+	}
+
+	private static String[] readSegmentArray(EObjectInputStream from, int count, String first) throws IOException {
+		String[] segments = new String[count];
+		segments[0] = intern(first);
+		for (int i = 1; i < count; i++) {
+			String segment = from.readSegmentedString();
+			if(segment == null){
+				throw new IllegalStateException("Read unexpected segment (#" + i + ") from object stream");
+			}
+			segments[i] = intern(segment);
+		}
+		return segments;
+	}
+
+	/**
+	 * Internal low level serialization of QualifiedNames.
+	 * @since 2.4
+	 */
+	public void writeToStream(EObjectOutputStream eObjectOutputStream) throws IOException {
+		int segmentCount = getSegmentCount();
+		eObjectOutputStream.writeCompressedInt(segmentCount);
+		for (int i = 0; i < segmentCount; ++i) {
+			eObjectOutputStream.writeSegmentedString(getSegment(i));
+		}
 	}
 
 	/**
 	 * Low-level factory method. Consider using a {@link IQualifiedNameConverter} instead.
-	 * 
+	 *
 	 * @param segments
 	 *            the segments of the to-be-created qualified name. May be <code>null</code>, but may not contain
 	 *            <code>null</code> entries.
@@ -74,18 +178,20 @@ public class QualifiedName implements Comparable<QualifiedName> {
 			String singleSegment = segments.get(0);
 			return QualifiedName.create(singleSegment);
 		}
-		String[] segmentArray = segments.toArray(new String[segments.size()]);
-		for (int i = 0; i < segmentArray.length; i++) {
-			if (segmentArray[i] == null) {
+		String[] segmentArray = new String[segments.size()];
+		for (int i = 0; i < segments.size(); i++) {
+			String string = segments.get(i);
+			if (string == null) {
 				throw new IllegalArgumentException("Segment cannot be null");
 			}
+			segmentArray[i] = intern(string);
 		}
 		return new QualifiedName(segmentArray);
 	}
 
 	/**
 	 * Low-level factory method. Consider using a {@link IQualifiedNameConverter} instead.
-	 * 
+	 *
 	 * @param singleSegment
 	 *            the single segment of the newly created qualified name
 	 * @exception IllegalArgumentException
@@ -96,14 +202,15 @@ public class QualifiedName implements Comparable<QualifiedName> {
 		if (singleSegment == null) {
 			throw new IllegalArgumentException("Segment cannot be null");
 		}
-		return new QualifiedName(singleSegment);
+		return new QualifiedName(intern(singleSegment));
 	}
 
 	/**
-	 * Wraps a name function to return a qualified name. Returns null if the name function returns null. 
+	 * Wraps a name function to return a qualified name. Returns null if the name function returns null.
 	 */
 	public static <F> Function<F, QualifiedName> wrapper(final Function<F, String> nameFunction) {
 		return new Function<F, QualifiedName>() {
+			@Override
 			public QualifiedName apply(F from) {
 				String name = nameFunction.apply(from);
 				if (name == null)
@@ -151,7 +258,7 @@ public class QualifiedName implements Comparable<QualifiedName> {
 		}
 		String[] newSegments = new String[getSegmentCount() + 1];
 		System.arraycopy(segments, 0, newSegments, 0, segments.length);
-		newSegments[segments.length] = segment;
+		newSegments[segments.length] = intern(segment);
 		return new QualifiedName(newSegments);
 	}
 
@@ -168,6 +275,9 @@ public class QualifiedName implements Comparable<QualifiedName> {
 		if (skipCount == getSegmentCount()) {
 			return EMPTY;
 		}
+		if (skipCount == 0) {
+			return this;
+		}
 		if (skipCount > getSegmentCount() || skipCount < 0) {
 			throw new IllegalArgumentException("Cannot skip " + skipCount + " fragments from QualifiedName with "
 					+ getSegmentCount() + " segments");
@@ -180,6 +290,9 @@ public class QualifiedName implements Comparable<QualifiedName> {
 	public QualifiedName skipLast(int skipCount) {
 		if (skipCount == getSegmentCount()) {
 			return EMPTY;
+		}
+		if (skipCount == 0) {
+			return this;
 		}
 		if (skipCount > getSegmentCount() || skipCount < 0) {
 			throw new IllegalArgumentException("Cannot skip " + skipCount + " fragments from QualifiedName with "
@@ -194,22 +307,58 @@ public class QualifiedName implements Comparable<QualifiedName> {
 		if (lowerCase != null)
 			return lowerCase;
 		String[] newSegments = new String[segments.length];
-		for (int i = 0; i < getSegmentCount(); ++i)
-			newSegments[i] = segments[i].toLowerCase();
-		lowerCase = new QualifiedName(newSegments) {
-			@Override
-			public QualifiedName toLowerCase() {
-				return this;
-			}
-		};
+		boolean isLowerCase = true;
+		for (int i = 0; i < getSegmentCount(); ++i) {
+			String segment = segments[i];
+			String lowerCaseSegment = segment.toLowerCase();
+			isLowerCase = isLowerCase && segment == lowerCaseSegment;
+			newSegments[i] = intern(lowerCaseSegment);
+		}
+		if (isLowerCase) {
+			lowerCase = this;
+		} else {
+			lowerCase = new QualifiedNameLowerCase(newSegments);
+		}
 		return lowerCase;
+	}
+
+	private static class QualifiedNameLowerCase extends QualifiedName {
+		public QualifiedNameLowerCase(String[] segments) {
+			super(segments);
+		}
+		@Override
+		public QualifiedName toLowerCase() {
+			return this;
+		}
+
+		@Override
+		boolean hasLowerCase() {
+			return true;
+		}
+
+		/**
+		 * We serialize a segmentCount + 1 and a dummy null value as the first entry.
+		 * This is used to retrieve the information about lowercase QN in {@link QualifiedName#createFromStream(EObjectInputStream)}
+		 */
+		@Override
+		public void writeToStream(EObjectOutputStream eObjectOutputStream) throws IOException {
+			int segmentCount = getSegmentCount();
+			eObjectOutputStream.writeCompressedInt(segmentCount);
+			// indicator for lowercase instance
+			eObjectOutputStream.writeSegmentedString(null);
+			for (int i = 0; i < segmentCount; ++i) {
+				eObjectOutputStream.writeSegmentedString(getSegment(i));
+			}
+		}
 	}
 
 	public QualifiedName toUpperCase() {
 		String[] newSegments = new String[getSegmentCount()];
 		for (int i = 0; i < getSegmentCount(); ++i)
-			newSegments[i] = segments[i].toUpperCase();
-		return new QualifiedName(newSegments);
+			newSegments[i] = intern(segments[i].toUpperCase());
+		QualifiedName result = new QualifiedName(newSegments);
+		result.lowerCase = this.lowerCase;
+		return result;
 	}
 
 	@Override
@@ -230,11 +379,43 @@ public class QualifiedName implements Comparable<QualifiedName> {
 		return false;
 	}
 
-	public boolean equalsIgnoreCase(Object obj) {
-		return obj instanceof QualifiedName && ((QualifiedName) obj).getSegmentCount() == getSegmentCount()
-				&& startsWith((QualifiedName) obj, true);
+	/**
+	 * Returns <code>true</code> if this instance can provide a ready to use
+	 * lowercase representation.
+	 *
+	 * @noreference This method is not intended to be referenced by clients.
+	 */
+	boolean hasLowerCase() {
+		return lowerCase != null;
 	}
 
+	public boolean equalsIgnoreCase(Object obj) {
+		if (obj == this)
+			return true;
+		if (obj instanceof QualifiedName) {
+			// if both instances can provide lowerCase representations
+			// use their equals method
+			QualifiedName other = (QualifiedName) obj;
+			if (hasLowerCase() && other.hasLowerCase()) {
+				return toLowerCase().equals(other.toLowerCase());
+			}
+			// check the length
+			int segmentCount = getSegmentCount();
+			if (segmentCount != other.getSegmentCount()) {
+				return false;
+			}
+			// compare by segment
+			for (int i = 0; i < segmentCount; i++) {
+				if (!getSegment(i).equalsIgnoreCase(other.getSegment(i))) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Override
 	public int compareTo(QualifiedName qualifiedName) {
 		return compareTo(qualifiedName, false);
 	}
@@ -244,12 +425,21 @@ public class QualifiedName implements Comparable<QualifiedName> {
 	}
 
 	protected int compareTo(QualifiedName qualifiedName, boolean ignoreCase) {
-		for (int i = 0; i < Math.min(getSegmentCount(), qualifiedName.getSegmentCount()); ++i) {
-			int result = (ignoreCase) ? getSegment(i).compareToIgnoreCase(qualifiedName.getSegment(i)) : getSegment(i)
-					.compareTo(qualifiedName.getSegment(i));
-			if (result != 0)
-				return result;
+		if (ignoreCase) {
+			for (int i = 0, upTo = Math.min(getSegmentCount(), qualifiedName.getSegmentCount()); i < upTo; ++i) {
+				int result = getSegment(i).compareToIgnoreCase(qualifiedName.getSegment(i));
+				if (result != 0)
+					return result;
+			}
+		} else {
+			for (int i = 0, upTo = Math.min(getSegmentCount(), qualifiedName.getSegmentCount()); i < upTo; ++i) {
+				int result = getSegment(i).compareTo(qualifiedName.getSegment(i));
+				if (result != 0)
+					return result;
+			}
 		}
+		// with Java7 this should probably read
+		// return Integer.compare(getSegmentCount(), qualifiedName.getSegmentCount())
 		return getSegmentCount() - qualifiedName.getSegmentCount();
 	}
 
@@ -264,12 +454,19 @@ public class QualifiedName implements Comparable<QualifiedName> {
 	protected boolean startsWith(QualifiedName prefix, boolean ignoreCase) {
 		if (prefix.getSegmentCount() > getSegmentCount())
 			return false;
-		for (int i = 0; i < prefix.getSegmentCount(); ++i) {
-			if ((ignoreCase && !this.getSegment(i).equalsIgnoreCase(prefix.getSegment(i)))
-					|| (!ignoreCase && !this.getSegment(i).equals(prefix.getSegment(i))))
-				return false;
+		if (ignoreCase) {
+			for (int i = 0; i < prefix.getSegmentCount(); ++i) {
+				if (!this.getSegment(i).equalsIgnoreCase(prefix.getSegment(i)))
+					return false;
+			}
+			return true;
+		} else {
+			for (int i = 0; i < prefix.getSegmentCount(); ++i) {
+				if(!getSegment(i).equals(prefix.getSegment(i)))
+					return false;
+			}
+			return true;
 		}
-		return true;
 	}
 
 	/**
@@ -280,7 +477,7 @@ public class QualifiedName implements Comparable<QualifiedName> {
 	public String toString() {
 		return toString(".");
 	}
-	
+
 	/**
 	 * Returns a String representation of this using {@code delimiter} as namespace delimiter.
 	 * @param delimiter the delimiter to use. <code>null</code> will be represented as the String "<code>null</code>".
@@ -294,9 +491,9 @@ public class QualifiedName implements Comparable<QualifiedName> {
 			case 1: return getFirstSegment();
 			default:
 				StringBuilder builder = new StringBuilder();
-				for (int i = 0; i < segmentCount; i++) {
-					if (i > 0)
-						builder.append(delimiter);
+				builder.append(getFirstSegment());
+				for (int i = 1; i < segmentCount; i++) {
+					builder.append(delimiter);
 					builder.append(segments[i]);
 				}
 				return builder.toString();

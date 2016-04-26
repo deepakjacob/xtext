@@ -10,7 +10,6 @@ package org.eclipse.xtext.xbase.typesystem.util;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
@@ -22,7 +21,6 @@ import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public abstract class TypeParameterByUnboundSubstitutor extends CustomTypeParameterSubstitutor {
 
 	public TypeParameterByUnboundSubstitutor(Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping,
@@ -39,12 +37,16 @@ public abstract class TypeParameterByUnboundSubstitutor extends CustomTypeParame
 	protected LightweightTypeReference getUnmappedSubstitute(ParameterizedTypeReference reference, JvmTypeParameter type, ConstraintVisitingInfo visiting) {
 		List<JvmTypeParameter> declaredTypeParameters = getOwner().getDeclaredTypeParameters();
 		if (declaredTypeParameters.contains(type)) {
-			return reference;
+			return reference.copyInto(getOwner());
 		}
-		UnboundTypeReference result = createUnboundTypeReference(type);
+		LightweightTypeReference result = createUnboundTypeReference(type);
+		if (result == null) {
+			result = new TypeParameterByConstraintSubstitutor(getTypeParameterMapping(), getOwner()).substitute(type);
+		}
 		return result;
 	}
 	
+	/* @Nullable */
 	protected abstract UnboundTypeReference createUnboundTypeReference(JvmTypeParameter type);
 	
 }

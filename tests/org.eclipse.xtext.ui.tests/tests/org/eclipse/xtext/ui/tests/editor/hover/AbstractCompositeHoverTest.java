@@ -38,7 +38,7 @@ public class AbstractCompositeHoverTest extends AbstractEditorTest {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		String modelAsText = "// file content doesn't mater";
+		String modelAsText = "// file content doesn't matter";
 		IFile file = IResourcesSetupUtil.createFile("test/test.testlanguage", modelAsText);
 		editor = openEditor(file);
 		document = editor.getDocument();
@@ -99,6 +99,7 @@ public class AbstractCompositeHoverTest extends AbstractEditorTest {
 				List<ITextHover> hovers = Lists.newArrayList();
 				hovers.add (new ITextHover() {
 					
+					@Override
 					public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
 						// TODO Auto-generated method stub
 						if (offset==0)
@@ -106,6 +107,7 @@ public class AbstractCompositeHoverTest extends AbstractEditorTest {
 						return null;
 					}
 					
+					@Override
 					public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 						return "test";
 					}
@@ -125,6 +127,7 @@ public class AbstractCompositeHoverTest extends AbstractEditorTest {
 	@Test public void testMultipleHovers () {
 		final ITextHover hover1 = new ITextHover() {
 			
+			@Override
 			public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
 				// TODO Auto-generated method stub
 				if (offset==0)
@@ -132,12 +135,14 @@ public class AbstractCompositeHoverTest extends AbstractEditorTest {
 				return null;
 			}
 			
+			@Override
 			public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 				return "hover1";
 			}
 		};
 		final ITextHover hover2 = new ITextHover() {
 			
+			@Override
 			public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
 				// TODO Auto-generated method stub
 				if (offset==1)
@@ -145,6 +150,7 @@ public class AbstractCompositeHoverTest extends AbstractEditorTest {
 				return null;
 			}
 			
+			@Override
 			public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 				return "hover2";
 			}

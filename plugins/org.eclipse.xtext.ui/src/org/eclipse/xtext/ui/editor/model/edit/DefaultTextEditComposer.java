@@ -8,6 +8,7 @@
 package org.eclipse.xtext.ui.editor.model.edit;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -99,6 +100,7 @@ public class DefaultTextEditComposer extends EContentAdapter implements ITextEdi
 		resourceChanged = false;
 	}
 
+	@Override
 	public void beginRecording(Resource newResource) {
 		reset();
 
@@ -121,6 +123,7 @@ public class DefaultTextEditComposer extends EContentAdapter implements ITextEdi
 		recording = true;
 	}
 
+	@Override
 	public TextEdit endRecording() {
 		recording = false;
 		TextEdit textEdit = getTextEdit();
@@ -129,6 +132,7 @@ public class DefaultTextEditComposer extends EContentAdapter implements ITextEdi
 		return textEdit;
 	}
 
+	@Override
 	public TextEdit getTextEdit() {
 		TextEdit result = null;
 
@@ -157,11 +161,16 @@ public class DefaultTextEditComposer extends EContentAdapter implements ITextEdi
 	protected List<TextEdit> getObjectEdits() {
 		final Collection<EObject> modifiedObjects = getModifiedObjects();
 		Collection<EObject> topLevelObjects = EcoreUtil.filterDescendants(modifiedObjects);
-		Iterable<EObject> containedModifiedObjects = Iterables.filter(topLevelObjects, new Predicate<EObject>() {
-			public boolean apply(EObject input) {
-				return input.eResource() == resource;
-			}
-		});
+		Iterable<EObject> containedModifiedObjects = Collections.emptyList();
+		if (!resource.getContents().isEmpty()) {
+			final EObject root = resource.getContents().get(0);
+			containedModifiedObjects = Iterables.filter(topLevelObjects, new Predicate<EObject>() {
+				@Override
+				public boolean apply(EObject input) {
+					return EcoreUtil.isAncestor(root, input);
+				}
+			});
+		}
 		List<TextEdit> edits = Lists.newArrayListWithExpectedSize(Iterables.size(containedModifiedObjects));
 		for (EObject modifiedObject : containedModifiedObjects) {
 			ReplaceRegion replaceRegion = serializer.serializeReplacement(modifiedObject, getSaveOptions());

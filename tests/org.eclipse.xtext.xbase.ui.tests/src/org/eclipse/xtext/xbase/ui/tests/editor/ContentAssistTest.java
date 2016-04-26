@@ -9,19 +9,13 @@ package org.eclipse.xtext.xbase.ui.tests.editor;
 
 import static org.eclipse.xtext.junit4.ui.util.JavaProjectSetupUtil.*;
 
-import java.io.InputStream;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.xtext.common.types.access.IJvmTypeProvider;
-import org.eclipse.xtext.common.types.access.jdt.IJavaProjectProvider;
-import org.eclipse.xtext.common.types.access.jdt.JdtTypeProviderFactory;
-import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.xtext.xbase.junit.ui.AbstractXbaseContentAssistTest;
-import org.eclipse.xtext.xbase.ui.internal.XtypeActivator;
+import org.eclipse.xtext.xbase.ui.internal.XbaseActivator;
 import org.eclipse.xtext.xbase.ui.tests.AbstractXbaseUITestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -31,7 +25,7 @@ import com.google.inject.Injector;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-public class ContentAssistTest extends AbstractXbaseContentAssistTest implements IJavaProjectProvider  {
+public class ContentAssistTest extends AbstractXbaseContentAssistTest {
 
 	protected static final String PROJECT_NAME = "ContentAssistTestProject";
 
@@ -42,6 +36,7 @@ public class ContentAssistTest extends AbstractXbaseContentAssistTest implements
 	@BeforeClass
 	public static void createTestProject() throws Exception {
 		staticProject = AbstractXbaseUITestCase.createPluginProject(PROJECT_NAME);
+		doInitFeatures(JavaCore.create(staticProject));
 	}
 	
 	@AfterClass
@@ -51,7 +46,7 @@ public class ContentAssistTest extends AbstractXbaseContentAssistTest implements
 	
 	@Override
 	protected Injector getInjector() {
-		return XtypeActivator.getInstance().getInjector("org.eclipse.xtext.xbase.Xbase");
+		return XbaseActivator.getInstance().getInjector("org.eclipse.xtext.xbase.Xbase");
 	}
 	
 	@Override
@@ -66,13 +61,7 @@ public class ContentAssistTest extends AbstractXbaseContentAssistTest implements
 		return false;
 	}
 	
-	protected void initializeTypeProvider(XtextResource result) {
-		XtextResourceSet resourceSet = (XtextResourceSet) result.getResourceSet();
-		IJvmTypeProvider.Factory typeProviderFactory = new JdtTypeProviderFactory(this);
-		typeProviderFactory.findOrCreateTypeProvider(resourceSet);
-		resourceSet.setClasspathURIContext(getJavaProject(resourceSet));
-	}
-	
+	@Override
 	public IJavaProject getJavaProject(ResourceSet resourceSet) {
 		IJavaProject javaProject = findJavaProject(PROJECT_NAME);
 		if (javaProject == null || !javaProject.exists()) {
@@ -84,13 +73,6 @@ public class ContentAssistTest extends AbstractXbaseContentAssistTest implements
 			}
 		}
 		return javaProject;
-	}
-	
-	@Override
-	public XtextResource getResourceFor(InputStream stream) {
-		XtextResource result = super.getResourceFor(stream);
-		initializeTypeProvider(result);
-		return result;
 	}
 	
 }

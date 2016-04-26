@@ -15,7 +15,9 @@ import org.eclipse.xtext.XtextStandaloneSetup;
 import org.eclipse.xtext.junit4.AbstractXtextTests;
 import org.eclipse.xtext.parser.antlr.Lexer;
 import org.eclipse.xtext.parser.antlr.internal.InternalXtextLexer;
+import org.eclipse.xtext.resource.OutdatedStateManager;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.ui.editor.model.DocumentTokenSource;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.editor.model.XtextDocument;
@@ -47,6 +49,7 @@ public class XtextDocumentModifyTest extends AbstractXtextTests {
 		
 		final Object expected = resource.getContents().get(0);
 		Object result = document.modify(new IUnitOfWork<Object, XtextResource>() {
+			@Override
 			public Object exec(XtextResource state) throws Exception {
 				assertEquals(resource, state);
 				Grammar grammar = (Grammar) state.getContents().get(0);
@@ -70,6 +73,7 @@ public class XtextDocumentModifyTest extends AbstractXtextTests {
 			+ "Bar: 'bar';";
 		IXtextDocument document = createDocument(grammar);
 		document.modify(new IUnitOfWork<Object, XtextResource>() {
+			@Override
 			public Object exec(XtextResource state) throws Exception {
 				assertEquals(resource, state);
 				Grammar grammar = (Grammar) state.getContents().get(0);
@@ -82,15 +86,69 @@ public class XtextDocumentModifyTest extends AbstractXtextTests {
 		assertEquals(grammar.replace("bars", "foobars"), document.get());
 	}
 	
+	// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=406811
+	@Test public void testSemanticModification() throws Exception {
+		String grammar = "grammar foo.Foo\n" 
+				+ "generate foo \"http://foo.net/foo\"\n"
+				+ "Foo: 'foo';"; 
+		IXtextDocument document = createDocument(grammar);
+		document.modify(new IUnitOfWork.Void<XtextResource>() {
+			@Override
+			public void process(XtextResource state) throws Exception {
+				Grammar grammar = (Grammar) state.getContents().get(0);
+				grammar.setName("foo.Bar");
+			}
+		});
+		assertEquals(grammar.replace("foo.Foo", "foo.Bar"), document.get());
+	}
+	
+	// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=406811
+	@Test public void testTextualModification() throws Exception {
+		final String grammar = "grammar foo.Foo\n" 
+				+ "generate foo \"http://foo.net/foo\"\n"
+				+ "Foo: 'foo';"; 
+		final IXtextDocument document = createDocument(grammar);
+		document.modify(new IUnitOfWork.Void<XtextResource>() {
+			@Override
+			public void process(XtextResource state) throws Exception {
+				document.replace(grammar.indexOf("Foo"), 3, "Bar");
+			}
+		});
+		assertEquals(grammar.replace("foo.Foo", "foo.Bar"), document.get());
+	}
+	
+	// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=406811
+	@Test public void testSemanticAndTextualModification() throws Exception {
+		final String grammar = "grammar foo.Foo\n" 
+				+ "generate foo \"http://foo.net/foo\"\n"
+				+ "Foo: 'foo';"; 
+		final IXtextDocument document = createDocument(grammar);
+		try {
+			document.modify(new IUnitOfWork.Void<XtextResource>() {
+				@Override
+				public void process(XtextResource state) throws Exception {
+					document.replace(grammar.indexOf("Foo"), 3, "Bar");
+					Grammar grammar = (Grammar) state.getContents().get(0);
+					grammar.getRules().get(0).setName("Bar");
+				}
+			});
+			fail("Expected exception");
+		} catch(RuntimeException e) {
+			assertTrue(e.getMessage().contains("Cannot modify document textually and semantically"));
+			assertEquals(grammar, document.get());
+		}
+	}
+	
 	private IXtextDocument createDocument(String model) throws Exception {
 		resource = getResource(new StringInputStream(model));
 		DocumentTokenSource tokenSource = new DocumentTokenSource();
 		tokenSource.setLexer(new Provider<Lexer>(){
+			@Override
 			public Lexer get() {
 				return new InternalXtextLexer();
 			}});
 		
-		final XtextDocument document = new XtextDocument(tokenSource, get(ITextEditComposer.class)) {
+		final XtextDocument document = new XtextDocument(tokenSource, get(ITextEditComposer.class), new OutdatedStateManager(), new OperationCanceledManager()) {
 			@Override
 			public <T> T internalModify(IUnitOfWork<T, XtextResource> work) {
 				try {

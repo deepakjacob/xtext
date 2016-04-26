@@ -13,8 +13,8 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.mwe.core.WorkflowContext;
 import org.eclipse.emf.mwe.core.WorkflowContextDefaultImpl;
 import org.eclipse.emf.mwe.core.WorkflowInterruptedException;
@@ -26,9 +26,8 @@ import org.eclipse.xtext.index.IndexTestLanguageStandaloneSetup;
 import org.eclipse.xtext.index.indexTestLanguage.Entity;
 import org.eclipse.xtext.index.indexTestLanguage.IndexTestLanguagePackage;
 import org.eclipse.xtext.junit4.AbstractXtextTests;
+import org.eclipse.xtext.junit4.logging.LoggingTester;
 import org.junit.Test;
-
-import com.google.common.base.Predicate;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
@@ -36,7 +35,7 @@ import com.google.common.base.Predicate;
 public abstract class AbstractReaderTest extends AbstractXtextTests {
 
 	@Test public void testLoadMatchNone() throws Exception {
-		Reader reader = getReader();
+		final Reader reader = getReader();
 		reader.addPath(pathTo("emptyFolder"));
 		reader.addPath(pathTo("nonemptyFolder"));
 		reader.addRegister(new IndexTestLanguageStandaloneSetup());
@@ -46,12 +45,20 @@ public abstract class AbstractReaderTest extends AbstractXtextTests {
 		reader.addLoad(entry);
 		
 		reader.setUriFilter(new UriFilter() {
+			@Override
 			public boolean matches(URI uri) {
 				return false;
 			}
 		});
-		WorkflowContext ctx = ctx();
-		reader.invoke(ctx, monitor(), issues());
+		final WorkflowContext ctx = ctx();
+		LoggingTester.captureLogging(Level.WARN, SlotEntry.class, new Runnable() {
+
+			@Override
+			public void run() {
+				reader.invoke(ctx, monitor(), issues());
+			}
+			
+		}).assertLogEntry("Could not find any exported element of type 'Type' -> Slot 'model' is empty.");
 		Collection<?> slotContent = (Collection<?>) ctx.get("model");
 		assertNotNull(slotContent);
 		assertTrue(slotContent.isEmpty());
@@ -68,6 +75,7 @@ public abstract class AbstractReaderTest extends AbstractXtextTests {
 		reader.addLoad(entry);
 		
 		reader.setUriFilter(new UriFilter() {
+			@Override
 			public boolean matches(URI uri) {
 				return true;
 			}
@@ -203,18 +211,19 @@ public abstract class AbstractReaderTest extends AbstractXtextTests {
 		return fileURI2.resolve(fileURI).toFileString();
 	}
 	
-	public Object get(Object obj, String path) {
+	public Object get(final Object obj, String path) {
 		String[] split = path.split("\\.");
+		Object retVal = obj;
 		for (String string : split) {
 			try {
-				Field field = findField(obj.getClass(),string);
+				Field field = findField(retVal.getClass(),string);
 				field.setAccessible(true);
-				obj = field.get(obj);
+				retVal = field.get(retVal);
 			} catch (Exception e) {
 				return null;
 			}
 		}
-		return obj;
+		return retVal;
 	}
 
 	protected Field findField(Class<? extends Object> class1, String string) {

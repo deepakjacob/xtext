@@ -12,7 +12,9 @@ import java.util.ArrayList;
 
 @SuppressWarnings("all")
 public class InternalContextFinderTestLanguageLexer extends Lexer {
-    public static final int RULE_ID=4;
+    public static final int RULE_ID=5;
+    public static final int T__26=26;
+    public static final int T__25=25;
     public static final int T__24=24;
     public static final int T__23=23;
     public static final int T__22=22;
@@ -23,7 +25,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
     public static final int RULE_SL_COMMENT=8;
     public static final int RULE_ML_COMMENT=7;
     public static final int T__19=19;
-    public static final int RULE_STRING=6;
+    public static final int RULE_STRING=4;
     public static final int T__16=16;
     public static final int T__15=15;
     public static final int T__18=18;
@@ -32,7 +34,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
     public static final int T__11=11;
     public static final int T__14=14;
     public static final int T__13=13;
-    public static final int RULE_INT=5;
+    public static final int RULE_INT=6;
     public static final int RULE_WS=9;
 
     // delegates
@@ -46,15 +48,15 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalContextFinderTestLanguage.g"; }
 
     // $ANTLR start "T__11"
     public final void mT__11() throws RecognitionException {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:11:7: ( '#0' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:11:9: '#0'
+            // InternalContextFinderTestLanguage.g:11:7: ( '#0' )
+            // InternalContextFinderTestLanguage.g:11:9: '#0'
             {
             match("#0"); 
 
@@ -74,8 +76,8 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:12:7: ( '#1' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:12:9: '#1'
+            // InternalContextFinderTestLanguage.g:12:7: ( '#1' )
+            // InternalContextFinderTestLanguage.g:12:9: '#1'
             {
             match("#1"); 
 
@@ -95,8 +97,8 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:13:7: ( '#2' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:13:9: '#2'
+            // InternalContextFinderTestLanguage.g:13:7: ( '#2' )
+            // InternalContextFinderTestLanguage.g:13:9: '#2'
             {
             match("#2"); 
 
@@ -116,8 +118,8 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__14;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:14:7: ( '#3' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:14:9: '#3'
+            // InternalContextFinderTestLanguage.g:14:7: ( '#3' )
+            // InternalContextFinderTestLanguage.g:14:9: '#3'
             {
             match("#3"); 
 
@@ -137,8 +139,8 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__15;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:15:7: ( '#4' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:15:9: '#4'
+            // InternalContextFinderTestLanguage.g:15:7: ( '#4' )
+            // InternalContextFinderTestLanguage.g:15:9: '#4'
             {
             match("#4"); 
 
@@ -158,8 +160,8 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__16;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:16:7: ( '#5' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:16:9: '#5'
+            // InternalContextFinderTestLanguage.g:16:7: ( '#5' )
+            // InternalContextFinderTestLanguage.g:16:9: '#5'
             {
             match("#5"); 
 
@@ -179,8 +181,8 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__17;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:17:7: ( '#6' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:17:9: '#6'
+            // InternalContextFinderTestLanguage.g:17:7: ( '#6' )
+            // InternalContextFinderTestLanguage.g:17:9: '#6'
             {
             match("#6"); 
 
@@ -200,10 +202,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__18;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:18:7: ( 'model' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:18:9: 'model'
+            // InternalContextFinderTestLanguage.g:18:7: ( '#7' )
+            // InternalContextFinderTestLanguage.g:18:9: '#7'
             {
-            match("model"); 
+            match("#7"); 
 
 
             }
@@ -221,10 +223,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__19;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:19:7: ( 'kw1' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:19:9: 'kw1'
+            // InternalContextFinderTestLanguage.g:19:7: ( '#8' )
+            // InternalContextFinderTestLanguage.g:19:9: '#8'
             {
-            match("kw1"); 
+            match("#8"); 
 
 
             }
@@ -242,10 +244,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__20;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:20:7: ( 'kw2' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:20:9: 'kw2'
+            // InternalContextFinderTestLanguage.g:20:7: ( 'model' )
+            // InternalContextFinderTestLanguage.g:20:9: 'model'
             {
-            match("kw2"); 
+            match("model"); 
 
 
             }
@@ -263,10 +265,11 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__21;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:21:7: ( '.' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:21:9: '.'
+            // InternalContextFinderTestLanguage.g:21:7: ( 'kw1' )
+            // InternalContextFinderTestLanguage.g:21:9: 'kw1'
             {
-            match('.'); 
+            match("kw1"); 
+
 
             }
 
@@ -283,10 +286,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__22;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:22:7: ( 'foo' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:22:9: 'foo'
+            // InternalContextFinderTestLanguage.g:22:7: ( 'kw2' )
+            // InternalContextFinderTestLanguage.g:22:9: 'kw2'
             {
-            match("foo"); 
+            match("kw2"); 
 
 
             }
@@ -304,11 +307,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__23;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:23:7: ( 'lit1' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:23:9: 'lit1'
+            // InternalContextFinderTestLanguage.g:23:7: ( '.' )
+            // InternalContextFinderTestLanguage.g:23:9: '.'
             {
-            match("lit1"); 
-
+            match('.'); 
 
             }
 
@@ -325,10 +327,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = T__24;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:24:7: ( 'lit2' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:24:9: 'lit2'
+            // InternalContextFinderTestLanguage.g:24:7: ( 'foo' )
+            // InternalContextFinderTestLanguage.g:24:9: 'foo'
             {
-            match("lit2"); 
+            match("foo"); 
 
 
             }
@@ -341,15 +343,57 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
     }
     // $ANTLR end "T__24"
 
+    // $ANTLR start "T__25"
+    public final void mT__25() throws RecognitionException {
+        try {
+            int _type = T__25;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalContextFinderTestLanguage.g:25:7: ( 'lit1' )
+            // InternalContextFinderTestLanguage.g:25:9: 'lit1'
+            {
+            match("lit1"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__25"
+
+    // $ANTLR start "T__26"
+    public final void mT__26() throws RecognitionException {
+        try {
+            int _type = T__26;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalContextFinderTestLanguage.g:26:7: ( 'lit2' )
+            // InternalContextFinderTestLanguage.g:26:9: 'lit2'
+            {
+            match("lit2"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__26"
+
     // $ANTLR start "RULE_ID"
     public final void mRULE_ID() throws RecognitionException {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1133:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1133:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalContextFinderTestLanguage.g:1387:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalContextFinderTestLanguage.g:1387:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1133:11: ( '^' )?
+            // InternalContextFinderTestLanguage.g:1387:11: ( '^' )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -358,7 +402,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1133:11: '^'
+                    // InternalContextFinderTestLanguage.g:1387:11: '^'
                     {
                     match('^'); 
 
@@ -376,7 +420,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1133:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalContextFinderTestLanguage.g:1387:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop2:
             do {
                 int alt2=2;
@@ -389,7 +433,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:
+            	    // InternalContextFinderTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -425,10 +469,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1135:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1135:12: ( '0' .. '9' )+
+            // InternalContextFinderTestLanguage.g:1389:10: ( ( '0' .. '9' )+ )
+            // InternalContextFinderTestLanguage.g:1389:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1135:12: ( '0' .. '9' )+
+            // InternalContextFinderTestLanguage.g:1389:12: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -442,7 +486,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1135:13: '0' .. '9'
+            	    // InternalContextFinderTestLanguage.g:1389:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -474,10 +518,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalContextFinderTestLanguage.g:1391:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalContextFinderTestLanguage.g:1391:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalContextFinderTestLanguage.g:1391:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -495,10 +539,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalContextFinderTestLanguage.g:1391:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalContextFinderTestLanguage.g:1391:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop4:
                     do {
                         int alt4=3;
@@ -514,23 +558,15 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalContextFinderTestLanguage.g:1391:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalContextFinderTestLanguage.g:1391:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -555,10 +591,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalContextFinderTestLanguage.g:1391:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalContextFinderTestLanguage.g:1391:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -574,23 +610,15 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalContextFinderTestLanguage.g:1391:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1137:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalContextFinderTestLanguage.g:1391:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -633,12 +661,12 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1139:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1139:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalContextFinderTestLanguage.g:1393:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalContextFinderTestLanguage.g:1393:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1139:24: ( options {greedy=false; } : . )*
+            // InternalContextFinderTestLanguage.g:1393:24: ( options {greedy=false; } : . )*
             loop7:
             do {
                 int alt7=2;
@@ -663,7 +691,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1139:52: .
+            	    // InternalContextFinderTestLanguage.g:1393:52: .
             	    {
             	    matchAny(); 
 
@@ -693,12 +721,12 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1141:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1141:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalContextFinderTestLanguage.g:1395:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalContextFinderTestLanguage.g:1395:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1141:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalContextFinderTestLanguage.g:1395:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop8:
             do {
                 int alt8=2;
@@ -711,7 +739,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1141:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalContextFinderTestLanguage.g:1395:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -731,7 +759,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1141:40: ( ( '\\r' )? '\\n' )?
+            // InternalContextFinderTestLanguage.g:1395:40: ( ( '\\r' )? '\\n' )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -740,9 +768,9 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
             }
             switch (alt10) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1141:41: ( '\\r' )? '\\n'
+                    // InternalContextFinderTestLanguage.g:1395:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1141:41: ( '\\r' )?
+                    // InternalContextFinderTestLanguage.g:1395:41: ( '\\r' )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -751,7 +779,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
                     }
                     switch (alt9) {
                         case 1 :
-                            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1141:41: '\\r'
+                            // InternalContextFinderTestLanguage.g:1395:41: '\\r'
                             {
                             match('\r'); 
 
@@ -783,10 +811,10 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1143:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1143:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalContextFinderTestLanguage.g:1397:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalContextFinderTestLanguage.g:1397:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1143:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalContextFinderTestLanguage.g:1397:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -800,7 +828,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:
+            	    // InternalContextFinderTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -840,8 +868,8 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1145:16: ( . )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1145:18: .
+            // InternalContextFinderTestLanguage.g:1399:16: ( . )
+            // InternalContextFinderTestLanguage.g:1399:18: .
             {
             matchAny(); 
 
@@ -856,152 +884,166 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
-        int alt12=21;
+        // InternalContextFinderTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | T__25 | T__26 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        int alt12=23;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:10: T__11
+                // InternalContextFinderTestLanguage.g:1:10: T__11
                 {
                 mT__11(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:16: T__12
+                // InternalContextFinderTestLanguage.g:1:16: T__12
                 {
                 mT__12(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:22: T__13
+                // InternalContextFinderTestLanguage.g:1:22: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:28: T__14
+                // InternalContextFinderTestLanguage.g:1:28: T__14
                 {
                 mT__14(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:34: T__15
+                // InternalContextFinderTestLanguage.g:1:34: T__15
                 {
                 mT__15(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:40: T__16
+                // InternalContextFinderTestLanguage.g:1:40: T__16
                 {
                 mT__16(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:46: T__17
+                // InternalContextFinderTestLanguage.g:1:46: T__17
                 {
                 mT__17(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:52: T__18
+                // InternalContextFinderTestLanguage.g:1:52: T__18
                 {
                 mT__18(); 
 
                 }
                 break;
             case 9 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:58: T__19
+                // InternalContextFinderTestLanguage.g:1:58: T__19
                 {
                 mT__19(); 
 
                 }
                 break;
             case 10 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:64: T__20
+                // InternalContextFinderTestLanguage.g:1:64: T__20
                 {
                 mT__20(); 
 
                 }
                 break;
             case 11 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:70: T__21
+                // InternalContextFinderTestLanguage.g:1:70: T__21
                 {
                 mT__21(); 
 
                 }
                 break;
             case 12 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:76: T__22
+                // InternalContextFinderTestLanguage.g:1:76: T__22
                 {
                 mT__22(); 
 
                 }
                 break;
             case 13 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:82: T__23
+                // InternalContextFinderTestLanguage.g:1:82: T__23
                 {
                 mT__23(); 
 
                 }
                 break;
             case 14 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:88: T__24
+                // InternalContextFinderTestLanguage.g:1:88: T__24
                 {
                 mT__24(); 
 
                 }
                 break;
             case 15 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:94: RULE_ID
+                // InternalContextFinderTestLanguage.g:1:94: T__25
+                {
+                mT__25(); 
+
+                }
+                break;
+            case 16 :
+                // InternalContextFinderTestLanguage.g:1:100: T__26
+                {
+                mT__26(); 
+
+                }
+                break;
+            case 17 :
+                // InternalContextFinderTestLanguage.g:1:106: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
-            case 16 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:102: RULE_INT
+            case 18 :
+                // InternalContextFinderTestLanguage.g:1:114: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
-            case 17 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:111: RULE_STRING
+            case 19 :
+                // InternalContextFinderTestLanguage.g:1:123: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
-            case 18 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:123: RULE_ML_COMMENT
+            case 20 :
+                // InternalContextFinderTestLanguage.g:1:135: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
-            case 19 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:139: RULE_SL_COMMENT
+            case 21 :
+                // InternalContextFinderTestLanguage.g:1:151: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
-            case 20 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:155: RULE_WS
+            case 22 :
+                // InternalContextFinderTestLanguage.g:1:167: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
-            case 21 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/serializer/parser/antlr/internal/InternalContextFinderTestLanguage.g:1:163: RULE_ANY_OTHER
+            case 23 :
+                // InternalContextFinderTestLanguage.g:1:175: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -1015,73 +1057,65 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
 
     protected DFA12 dfa12 = new DFA12(this);
     static final String DFA12_eotS =
-        "\1\uffff\1\16\2\27\1\uffff\2\27\1\16\2\uffff\3\16\11\uffff\1\27"+
-        "\1\uffff\1\27\1\uffff\2\27\5\uffff\1\27\1\47\1\50\1\51\2\27\3\uffff"+
-        "\1\55\1\56\1\57\3\uffff";
+        "\1\uffff\1\16\2\31\1\uffff\2\31\1\16\2\uffff\3\16\13\uffff\1\31\1\uffff\1\31\1\uffff\2\31\5\uffff\1\31\1\51\1\52\1\53\2\31\3\uffff\1\57\1\60\1\61\3\uffff";
     static final String DFA12_eofS =
-        "\60\uffff";
+        "\62\uffff";
     static final String DFA12_minS =
-        "\1\0\1\60\1\157\1\167\1\uffff\1\157\1\151\1\101\2\uffff\2\0\1\52"+
-        "\11\uffff\1\144\1\uffff\1\61\1\uffff\1\157\1\164\5\uffff\1\145\3"+
-        "\60\1\61\1\154\3\uffff\3\60\3\uffff";
+        "\1\0\1\60\1\157\1\167\1\uffff\1\157\1\151\1\101\2\uffff\2\0\1\52\13\uffff\1\144\1\uffff\1\61\1\uffff\1\157\1\164\5\uffff\1\145\3\60\1\61\1\154\3\uffff\3\60\3\uffff";
     static final String DFA12_maxS =
-        "\1\uffff\1\66\1\157\1\167\1\uffff\1\157\1\151\1\172\2\uffff\2\uffff"+
-        "\1\57\11\uffff\1\144\1\uffff\1\62\1\uffff\1\157\1\164\5\uffff\1"+
-        "\145\3\172\1\62\1\154\3\uffff\3\172\3\uffff";
+        "\1\uffff\1\70\1\157\1\167\1\uffff\1\157\1\151\1\172\2\uffff\2\uffff\1\57\13\uffff\1\144\1\uffff\1\62\1\uffff\1\157\1\164\5\uffff\1\145\3\172\1\62\1\154\3\uffff\3\172\3\uffff";
     static final String DFA12_acceptS =
-        "\4\uffff\1\13\3\uffff\1\17\1\20\3\uffff\1\24\1\25\1\1\1\2\1\3\1"+
-        "\4\1\5\1\6\1\7\1\uffff\1\17\1\uffff\1\13\2\uffff\1\20\1\21\1\22"+
-        "\1\23\1\24\6\uffff\1\11\1\12\1\14\3\uffff\1\15\1\16\1\10";
+        "\4\uffff\1\15\3\uffff\1\21\1\22\3\uffff\1\26\1\27\1\1\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\uffff\1\21\1\uffff\1\15\2\uffff\1\22\1\23\1\24\1\25\1\26\6\uffff\1\13\1\14\1\16\3\uffff\1\17\1\20\1\12";
     static final String DFA12_specialS =
-        "\1\1\11\uffff\1\0\1\2\44\uffff}>";
+        "\1\1\11\uffff\1\0\1\2\46\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\11\16\2\15\2\16\1\15\22\16\1\15\1\16\1\12\1\1\3\16\1\13\6\16"+
-            "\1\4\1\14\12\11\7\16\32\10\3\16\1\7\1\10\1\16\5\10\1\5\4\10"+
-            "\1\3\1\6\1\2\15\10\uff85\16",
-            "\1\17\1\20\1\21\1\22\1\23\1\24\1\25",
-            "\1\26",
+            "\11\16\2\15\2\16\1\15\22\16\1\15\1\16\1\12\1\1\3\16\1\13\6\16\1\4\1\14\12\11\7\16\32\10\3\16\1\7\1\10\1\16\5\10\1\5\4\10\1\3\1\6\1\2\15\10\uff85\16",
+            "\1\17\1\20\1\21\1\22\1\23\1\24\1\25\1\26\1\27",
             "\1\30",
-            "",
             "\1\32",
-            "\1\33",
-            "\32\27\4\uffff\1\27\1\uffff\32\27",
+            "",
+            "\1\34",
+            "\1\35",
+            "\32\31\4\uffff\1\31\1\uffff\32\31",
             "",
             "",
-            "\0\35",
-            "\0\35",
-            "\1\36\4\uffff\1\37",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "\0\37",
+            "\0\37",
+            "\1\40\4\uffff\1\41",
             "",
             "",
             "",
             "",
-            "\1\41",
-            "",
-            "\1\42\1\43",
-            "",
-            "\1\44",
-            "\1\45",
             "",
             "",
             "",
             "",
+            "",
+            "",
+            "",
+            "\1\43",
+            "",
+            "\1\44\1\45",
             "",
             "\1\46",
-            "\12\27\7\uffff\32\27\4\uffff\1\27\1\uffff\32\27",
-            "\12\27\7\uffff\32\27\4\uffff\1\27\1\uffff\32\27",
-            "\12\27\7\uffff\32\27\4\uffff\1\27\1\uffff\32\27",
-            "\1\52\1\53",
-            "\1\54",
+            "\1\47",
             "",
             "",
             "",
-            "\12\27\7\uffff\32\27\4\uffff\1\27\1\uffff\32\27",
-            "\12\27\7\uffff\32\27\4\uffff\1\27\1\uffff\32\27",
-            "\12\27\7\uffff\32\27\4\uffff\1\27\1\uffff\32\27",
+            "",
+            "",
+            "\1\50",
+            "\12\31\7\uffff\32\31\4\uffff\1\31\1\uffff\32\31",
+            "\12\31\7\uffff\32\31\4\uffff\1\31\1\uffff\32\31",
+            "\12\31\7\uffff\32\31\4\uffff\1\31\1\uffff\32\31",
+            "\1\54\1\55",
+            "\1\56",
+            "",
+            "",
+            "",
+            "\12\31\7\uffff\32\31\4\uffff\1\31\1\uffff\32\31",
+            "\12\31\7\uffff\32\31\4\uffff\1\31\1\uffff\32\31",
+            "\12\31\7\uffff\32\31\4\uffff\1\31\1\uffff\32\31",
             "",
             "",
             ""
@@ -1117,7 +1151,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
             this.transition = DFA12_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER );";
+            return "1:1: Tokens : ( T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | T__25 | T__26 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
@@ -1127,7 +1161,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
                         int LA12_10 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA12_10>='\u0000' && LA12_10<='\uFFFF')) ) {s = 29;}
+                        if ( ((LA12_10>='\u0000' && LA12_10<='\uFFFF')) ) {s = 31;}
 
                         else s = 14;
 
@@ -1171,7 +1205,7 @@ public class InternalContextFinderTestLanguageLexer extends Lexer {
                         int LA12_11 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA12_11>='\u0000' && LA12_11<='\uFFFF')) ) {s = 29;}
+                        if ( ((LA12_11>='\u0000' && LA12_11<='\uFFFF')) ) {s = 31;}
 
                         else s = 14;
 

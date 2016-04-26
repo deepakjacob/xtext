@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -35,6 +36,7 @@ import com.google.inject.Inject;
  * @author Jan Koehnlein - Initial contribution and API
  * @author Holger Schill
  */
+@SuppressWarnings("deprecation")
 public class DefaultRenameElementHandler extends AbstractHandler implements IRenameElementHandler {
 
 	@Inject
@@ -60,14 +62,16 @@ public class DefaultRenameElementHandler extends AbstractHandler implements IRen
 	
 	protected static final Logger LOG = Logger.getLogger(DefaultRenameElementHandler.class);
 
+	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		try {
-			syncUtil.totalSync(false);
 			final XtextEditor editor = EditorUtils.getActiveXtextEditor(event);
 			if (editor != null) {
+				syncUtil.totalSync(preferences.isSaveAllBeforeRefactoring(), renameRefactoringController.getActiveLinkedMode() == null);
 				final ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
-				IRenameElementContext renameElementContext = editor.getDocument().readOnly(
+				IRenameElementContext renameElementContext = editor.getDocument().priorityReadOnly(
 						new IUnitOfWork<IRenameElementContext, XtextResource>() {
+							@Override
 							public IRenameElementContext exec(XtextResource resource) throws Exception {
 								EObject selectedElement = eObjectAtOffsetHelper.resolveElementAt(resource,
 										selection.getOffset());
@@ -84,6 +88,12 @@ public class DefaultRenameElementHandler extends AbstractHandler implements IRen
 					startRenameElement(renameElementContext);
 				}
 			}
+		} catch (OperationCanceledException e) {
+			// cancelled by user, ok
+			return null;
+		} catch(InterruptedException e) {
+			// cancelled by user, ok
+			return null;
 		} catch (Exception exc) {
 			LOG.error("Error initializing refactoring", exc);
 			MessageDialog.openError(Display.getCurrent().getActiveShell(), "Error initializing refactoring",
@@ -95,6 +105,7 @@ public class DefaultRenameElementHandler extends AbstractHandler implements IRen
 	/** 
 	 * To maintain binary compatibility only.
 	 */
+	@Override
 	public IRenameElementContext createRenameElementContext(EObject targetElement, final XtextEditor triggeringEditor,
 			final ITextSelection selection, XtextResource triggeringResource) {
 		return renameContextFactory.createRenameElementContext(targetElement, triggeringEditor, selection, triggeringResource);
@@ -130,11 +141,7 @@ public class DefaultRenameElementHandler extends AbstractHandler implements IRen
 	}
 
 	protected void startRenameElement(IRenameElementContext renameElementContext) throws InterruptedException {
-		renameRefactoringController.initialize(renameElementContext);
-		if(preferences.useInlineRefactoring())
-			renameRefactoringController.startRefactoring(RefactoringType.LINKED_EDITING);
-		else 
-			renameRefactoringController.startRefactoring(RefactoringType.REFACTORING_DIALOG);
+		renameRefactoringController.startRefactoring(renameElementContext);
 	}
 
 }

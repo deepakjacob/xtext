@@ -12,13 +12,13 @@ import static org.eclipse.xtext.serializer.sequencer.ITransientValueService.Valu
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.xtext.AbstractMetamodelDeclaration;
 import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.EnumLiteralDeclaration;
 import org.eclipse.xtext.EnumRule;
 import org.eclipse.xtext.GrammarUtil;
+import org.eclipse.xtext.NamedArgument;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.TerminalRule;
@@ -59,7 +59,12 @@ public class XtextTransientValueService2 extends TransientValueService {
 				final TypeRef returnType = rule.getType();
 				if (returnType == null)
 					return YES;
-				if (EcorePackage.eINSTANCE.getEString().equals(rule.getType().getClassifier()))
+				if (rule instanceof TerminalRule) {
+					if (((TerminalRule) rule).isFragment()) {
+						return YES;
+					}
+				}
+				if (GrammarUtil.findEString(GrammarUtil.getGrammar(owner)).equals(rule.getType().getClassifier()))
 					return PREFERABLY;
 				return NO;
 			}
@@ -77,6 +82,13 @@ public class XtextTransientValueService2 extends TransientValueService {
 			if (decl.getEnumLiteral() != null && decl.getLiteral() != null) {
 				if (Strings.equal(decl.getLiteral().getValue(), decl.getEnumLiteral().getName()))
 					return PREFERABLY;
+				return NO;
+			}
+			return YES;
+		} else if (feature == XtextPackage.eINSTANCE.getRuleCall_ExplicitlyCalled()) {
+			return YES;
+		} else if (feature == XtextPackage.eINSTANCE.getNamedArgument_Parameter()) {
+			if (((NamedArgument)owner).isCalledByName()) {
 				return NO;
 			}
 			return YES;

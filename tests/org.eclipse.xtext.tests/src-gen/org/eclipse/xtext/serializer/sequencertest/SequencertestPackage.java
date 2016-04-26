@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.sequencertest;
 
@@ -296,13 +293,76 @@ public interface SequencertestPackage extends EPackage
   int MODEL__X28 = 24;
 
   /**
+   * The feature id for the '<em><b>X29</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MODEL__X29 = 25;
+
+  /**
+   * The feature id for the '<em><b>X30</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MODEL__X30 = 26;
+
+  /**
+   * The feature id for the '<em><b>X31</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MODEL__X31 = 27;
+
+  /**
+   * The feature id for the '<em><b>X32</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MODEL__X32 = 28;
+
+  /**
+   * The feature id for the '<em><b>X33</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MODEL__X33 = 29;
+
+  /**
+   * The feature id for the '<em><b>X34</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MODEL__X34 = 30;
+
+  /**
+   * The feature id for the '<em><b>X35</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int MODEL__X35 = 31;
+
+  /**
    * The number of structural features of the '<em>Model</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int MODEL_FEATURE_COUNT = 25;
+  int MODEL_FEATURE_COUNT = 32;
 
   /**
    * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.SimpleGroupImpl <em>Simple Group</em>}' class.
@@ -1701,6 +1761,320 @@ public interface SequencertestPackage extends EPackage
   int OPTIONAL_DOUBLE_FEATURE_COUNT = 3;
 
   /**
+   * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.NullValueImpl <em>Null Value</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.NullValueImpl
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getNullValue()
+   * @generated
+   */
+  int NULL_VALUE = 38;
+
+  /**
+   * The feature id for the '<em><b>Value</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NULL_VALUE__VALUE = 0;
+
+  /**
+   * The feature id for the '<em><b>Foo</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NULL_VALUE__FOO = 1;
+
+  /**
+   * The number of structural features of the '<em>Null Value</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NULL_VALUE_FEATURE_COUNT = 2;
+
+  /**
+   * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.NullCrossRefImpl <em>Null Cross Ref</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.NullCrossRefImpl
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getNullCrossRef()
+   * @generated
+   */
+  int NULL_CROSS_REF = 39;
+
+  /**
+   * The feature id for the '<em><b>Ref</b></em>' reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NULL_CROSS_REF__REF = 0;
+
+  /**
+   * The feature id for the '<em><b>Foo</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NULL_CROSS_REF__FOO = 1;
+
+  /**
+   * The number of structural features of the '<em>Null Cross Ref</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int NULL_CROSS_REF_FEATURE_COUNT = 2;
+
+  /**
+   * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.FragmentCallerTypeImpl <em>Fragment Caller Type</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.FragmentCallerTypeImpl
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getFragmentCallerType()
+   * @generated
+   */
+  int FRAGMENT_CALLER_TYPE = 40;
+
+  /**
+   * The feature id for the '<em><b>Val1</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int FRAGMENT_CALLER_TYPE__VAL1 = 0;
+
+  /**
+   * The feature id for the '<em><b>Val</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int FRAGMENT_CALLER_TYPE__VAL = 1;
+
+  /**
+   * The feature id for the '<em><b>Frag Val</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int FRAGMENT_CALLER_TYPE__FRAG_VAL = 2;
+
+  /**
+   * The number of structural features of the '<em>Fragment Caller Type</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int FRAGMENT_CALLER_TYPE_FEATURE_COUNT = 3;
+
+  /**
+   * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.ParameterCallerImpl <em>Parameter Caller</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.ParameterCallerImpl
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getParameterCaller()
+   * @generated
+   */
+  int PARAMETER_CALLER = 41;
+
+  /**
+   * The feature id for the '<em><b>P</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARAMETER_CALLER__P = 0;
+
+  /**
+   * The number of structural features of the '<em>Parameter Caller</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARAMETER_CALLER_FEATURE_COUNT = 1;
+
+  /**
+   * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.ParameterizedImpl <em>Parameterized</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.ParameterizedImpl
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getParameterized()
+   * @generated
+   */
+  int PARAMETERIZED = 42;
+
+  /**
+   * The feature id for the '<em><b>V1</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARAMETERIZED__V1 = 0;
+
+  /**
+   * The feature id for the '<em><b>V2</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARAMETERIZED__V2 = 1;
+
+  /**
+   * The feature id for the '<em><b>V3</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARAMETERIZED__V3 = 2;
+
+  /**
+   * The number of structural features of the '<em>Parameterized</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARAMETERIZED_FEATURE_COUNT = 3;
+
+  /**
+   * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.ParameterDelegationImpl <em>Parameter Delegation</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.ParameterDelegationImpl
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getParameterDelegation()
+   * @generated
+   */
+  int PARAMETER_DELEGATION = 43;
+
+  /**
+   * The feature id for the '<em><b>P</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARAMETER_DELEGATION__P = 0;
+
+  /**
+   * The number of structural features of the '<em>Parameter Delegation</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int PARAMETER_DELEGATION_FEATURE_COUNT = 1;
+
+  /**
+   * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.DelegationImpl <em>Delegation</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.DelegationImpl
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getDelegation()
+   * @generated
+   */
+  int DELEGATION = 44;
+
+  /**
+   * The feature id for the '<em><b>P</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DELEGATION__P = 0;
+
+  /**
+   * The feature id for the '<em><b>Np</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DELEGATION__NP = 1;
+
+  /**
+   * The number of structural features of the '<em>Delegation</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DELEGATION_FEATURE_COUNT = 2;
+
+  /**
+   * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.DelegationAImpl <em>Delegation A</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.DelegationAImpl
+   * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getDelegationA()
+   * @generated
+   */
+  int DELEGATION_A = 45;
+
+  /**
+   * The feature id for the '<em><b>P</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DELEGATION_A__P = DELEGATION__P;
+
+  /**
+   * The feature id for the '<em><b>Np</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DELEGATION_A__NP = DELEGATION__NP;
+
+  /**
+   * The feature id for the '<em><b>Left</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DELEGATION_A__LEFT = DELEGATION_FEATURE_COUNT + 0;
+
+  /**
+   * The feature id for the '<em><b>Rc2</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DELEGATION_A__RC2 = DELEGATION_FEATURE_COUNT + 1;
+
+  /**
+   * The number of structural features of the '<em>Delegation A</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int DELEGATION_A_FEATURE_COUNT = DELEGATION_FEATURE_COUNT + 2;
+
+  /**
    * The meta object id for the '{@link org.eclipse.xtext.serializer.sequencertest.DefEnum <em>Def Enum</em>}' enum.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1708,7 +2082,7 @@ public interface SequencertestPackage extends EPackage
    * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getDefEnum()
    * @generated
    */
-  int DEF_ENUM = 38;
+  int DEF_ENUM = 46;
 
 
   /**
@@ -1995,6 +2369,83 @@ public interface SequencertestPackage extends EPackage
    * @generated
    */
   EReference getModel_X28();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.Model#getX29 <em>X29</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>X29</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Model#getX29()
+   * @see #getModel()
+   * @generated
+   */
+  EReference getModel_X29();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.Model#getX30 <em>X30</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>X30</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Model#getX30()
+   * @see #getModel()
+   * @generated
+   */
+  EReference getModel_X30();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.Model#getX31 <em>X31</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>X31</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Model#getX31()
+   * @see #getModel()
+   * @generated
+   */
+  EReference getModel_X31();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.Model#getX32 <em>X32</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>X32</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Model#getX32()
+   * @see #getModel()
+   * @generated
+   */
+  EReference getModel_X32();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.Model#getX33 <em>X33</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>X33</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Model#getX33()
+   * @see #getModel()
+   * @generated
+   */
+  EReference getModel_X33();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.Model#getX34 <em>X34</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>X34</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Model#getX34()
+   * @see #getModel()
+   * @generated
+   */
+  EReference getModel_X34();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.Model#getX35 <em>X35</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>X35</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Model#getX35()
+   * @see #getModel()
+   * @generated
+   */
+  EReference getModel_X35();
 
   /**
    * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.SimpleGroup <em>Simple Group</em>}'.
@@ -3214,6 +3665,262 @@ public interface SequencertestPackage extends EPackage
   EAttribute getOptionalDouble_Double2();
 
   /**
+   * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.NullValue <em>Null Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Null Value</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.NullValue
+   * @generated
+   */
+  EClass getNullValue();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.NullValue#getValue <em>Value</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Value</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.NullValue#getValue()
+   * @see #getNullValue()
+   * @generated
+   */
+  EAttribute getNullValue_Value();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.NullValue#getFoo <em>Foo</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Foo</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.NullValue#getFoo()
+   * @see #getNullValue()
+   * @generated
+   */
+  EAttribute getNullValue_Foo();
+
+  /**
+   * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.NullCrossRef <em>Null Cross Ref</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Null Cross Ref</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.NullCrossRef
+   * @generated
+   */
+  EClass getNullCrossRef();
+
+  /**
+   * Returns the meta object for the reference '{@link org.eclipse.xtext.serializer.sequencertest.NullCrossRef#getRef <em>Ref</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the reference '<em>Ref</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.NullCrossRef#getRef()
+   * @see #getNullCrossRef()
+   * @generated
+   */
+  EReference getNullCrossRef_Ref();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.NullCrossRef#getFoo <em>Foo</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Foo</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.NullCrossRef#getFoo()
+   * @see #getNullCrossRef()
+   * @generated
+   */
+  EAttribute getNullCrossRef_Foo();
+
+  /**
+   * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.FragmentCallerType <em>Fragment Caller Type</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Fragment Caller Type</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.FragmentCallerType
+   * @generated
+   */
+  EClass getFragmentCallerType();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.FragmentCallerType#getVal1 <em>Val1</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Val1</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.FragmentCallerType#getVal1()
+   * @see #getFragmentCallerType()
+   * @generated
+   */
+  EAttribute getFragmentCallerType_Val1();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.FragmentCallerType#getVal <em>Val</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Val</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.FragmentCallerType#getVal()
+   * @see #getFragmentCallerType()
+   * @generated
+   */
+  EAttribute getFragmentCallerType_Val();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.FragmentCallerType#getFragVal <em>Frag Val</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Frag Val</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.FragmentCallerType#getFragVal()
+   * @see #getFragmentCallerType()
+   * @generated
+   */
+  EAttribute getFragmentCallerType_FragVal();
+
+  /**
+   * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.ParameterCaller <em>Parameter Caller</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Parameter Caller</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.ParameterCaller
+   * @generated
+   */
+  EClass getParameterCaller();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.ParameterCaller#getP <em>P</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>P</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.ParameterCaller#getP()
+   * @see #getParameterCaller()
+   * @generated
+   */
+  EReference getParameterCaller_P();
+
+  /**
+   * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.Parameterized <em>Parameterized</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Parameterized</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Parameterized
+   * @generated
+   */
+  EClass getParameterized();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.Parameterized#getV1 <em>V1</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>V1</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Parameterized#getV1()
+   * @see #getParameterized()
+   * @generated
+   */
+  EAttribute getParameterized_V1();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.Parameterized#getV2 <em>V2</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>V2</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Parameterized#getV2()
+   * @see #getParameterized()
+   * @generated
+   */
+  EAttribute getParameterized_V2();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.Parameterized#getV3 <em>V3</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>V3</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Parameterized#getV3()
+   * @see #getParameterized()
+   * @generated
+   */
+  EAttribute getParameterized_V3();
+
+  /**
+   * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.ParameterDelegation <em>Parameter Delegation</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Parameter Delegation</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.ParameterDelegation
+   * @generated
+   */
+  EClass getParameterDelegation();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.ParameterDelegation#getP <em>P</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>P</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.ParameterDelegation#getP()
+   * @see #getParameterDelegation()
+   * @generated
+   */
+  EReference getParameterDelegation_P();
+
+  /**
+   * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.Delegation <em>Delegation</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Delegation</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Delegation
+   * @generated
+   */
+  EClass getDelegation();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.Delegation#getP <em>P</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>P</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Delegation#getP()
+   * @see #getDelegation()
+   * @generated
+   */
+  EAttribute getDelegation_P();
+
+  /**
+   * Returns the meta object for the attribute '{@link org.eclipse.xtext.serializer.sequencertest.Delegation#getNp <em>Np</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the attribute '<em>Np</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.Delegation#getNp()
+   * @see #getDelegation()
+   * @generated
+   */
+  EAttribute getDelegation_Np();
+
+  /**
+   * Returns the meta object for class '{@link org.eclipse.xtext.serializer.sequencertest.DelegationA <em>Delegation A</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>Delegation A</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.DelegationA
+   * @generated
+   */
+  EClass getDelegationA();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.DelegationA#getLeft <em>Left</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Left</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.DelegationA#getLeft()
+   * @see #getDelegationA()
+   * @generated
+   */
+  EReference getDelegationA_Left();
+
+  /**
+   * Returns the meta object for the containment reference '{@link org.eclipse.xtext.serializer.sequencertest.DelegationA#getRc2 <em>Rc2</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for the containment reference '<em>Rc2</em>'.
+   * @see org.eclipse.xtext.serializer.sequencertest.DelegationA#getRc2()
+   * @see #getDelegationA()
+   * @generated
+   */
+  EReference getDelegationA_Rc2();
+
+  /**
    * Returns the meta object for enum '{@link org.eclipse.xtext.serializer.sequencertest.DefEnum <em>Def Enum</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -3455,6 +4162,62 @@ public interface SequencertestPackage extends EPackage
      * @generated
      */
     EReference MODEL__X28 = eINSTANCE.getModel_X28();
+
+    /**
+     * The meta object literal for the '<em><b>X29</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference MODEL__X29 = eINSTANCE.getModel_X29();
+
+    /**
+     * The meta object literal for the '<em><b>X30</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference MODEL__X30 = eINSTANCE.getModel_X30();
+
+    /**
+     * The meta object literal for the '<em><b>X31</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference MODEL__X31 = eINSTANCE.getModel_X31();
+
+    /**
+     * The meta object literal for the '<em><b>X32</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference MODEL__X32 = eINSTANCE.getModel_X32();
+
+    /**
+     * The meta object literal for the '<em><b>X33</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference MODEL__X33 = eINSTANCE.getModel_X33();
+
+    /**
+     * The meta object literal for the '<em><b>X34</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference MODEL__X34 = eINSTANCE.getModel_X34();
+
+    /**
+     * The meta object literal for the '<em><b>X35</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference MODEL__X35 = eINSTANCE.getModel_X35();
 
     /**
      * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.SimpleGroupImpl <em>Simple Group</em>}' class.
@@ -4441,6 +5204,214 @@ public interface SequencertestPackage extends EPackage
      * @generated
      */
     EAttribute OPTIONAL_DOUBLE__DOUBLE2 = eINSTANCE.getOptionalDouble_Double2();
+
+    /**
+     * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.NullValueImpl <em>Null Value</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.NullValueImpl
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getNullValue()
+     * @generated
+     */
+    EClass NULL_VALUE = eINSTANCE.getNullValue();
+
+    /**
+     * The meta object literal for the '<em><b>Value</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute NULL_VALUE__VALUE = eINSTANCE.getNullValue_Value();
+
+    /**
+     * The meta object literal for the '<em><b>Foo</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute NULL_VALUE__FOO = eINSTANCE.getNullValue_Foo();
+
+    /**
+     * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.NullCrossRefImpl <em>Null Cross Ref</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.NullCrossRefImpl
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getNullCrossRef()
+     * @generated
+     */
+    EClass NULL_CROSS_REF = eINSTANCE.getNullCrossRef();
+
+    /**
+     * The meta object literal for the '<em><b>Ref</b></em>' reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference NULL_CROSS_REF__REF = eINSTANCE.getNullCrossRef_Ref();
+
+    /**
+     * The meta object literal for the '<em><b>Foo</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute NULL_CROSS_REF__FOO = eINSTANCE.getNullCrossRef_Foo();
+
+    /**
+     * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.FragmentCallerTypeImpl <em>Fragment Caller Type</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.FragmentCallerTypeImpl
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getFragmentCallerType()
+     * @generated
+     */
+    EClass FRAGMENT_CALLER_TYPE = eINSTANCE.getFragmentCallerType();
+
+    /**
+     * The meta object literal for the '<em><b>Val1</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute FRAGMENT_CALLER_TYPE__VAL1 = eINSTANCE.getFragmentCallerType_Val1();
+
+    /**
+     * The meta object literal for the '<em><b>Val</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute FRAGMENT_CALLER_TYPE__VAL = eINSTANCE.getFragmentCallerType_Val();
+
+    /**
+     * The meta object literal for the '<em><b>Frag Val</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute FRAGMENT_CALLER_TYPE__FRAG_VAL = eINSTANCE.getFragmentCallerType_FragVal();
+
+    /**
+     * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.ParameterCallerImpl <em>Parameter Caller</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.ParameterCallerImpl
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getParameterCaller()
+     * @generated
+     */
+    EClass PARAMETER_CALLER = eINSTANCE.getParameterCaller();
+
+    /**
+     * The meta object literal for the '<em><b>P</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference PARAMETER_CALLER__P = eINSTANCE.getParameterCaller_P();
+
+    /**
+     * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.ParameterizedImpl <em>Parameterized</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.ParameterizedImpl
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getParameterized()
+     * @generated
+     */
+    EClass PARAMETERIZED = eINSTANCE.getParameterized();
+
+    /**
+     * The meta object literal for the '<em><b>V1</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PARAMETERIZED__V1 = eINSTANCE.getParameterized_V1();
+
+    /**
+     * The meta object literal for the '<em><b>V2</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PARAMETERIZED__V2 = eINSTANCE.getParameterized_V2();
+
+    /**
+     * The meta object literal for the '<em><b>V3</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute PARAMETERIZED__V3 = eINSTANCE.getParameterized_V3();
+
+    /**
+     * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.ParameterDelegationImpl <em>Parameter Delegation</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.ParameterDelegationImpl
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getParameterDelegation()
+     * @generated
+     */
+    EClass PARAMETER_DELEGATION = eINSTANCE.getParameterDelegation();
+
+    /**
+     * The meta object literal for the '<em><b>P</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference PARAMETER_DELEGATION__P = eINSTANCE.getParameterDelegation_P();
+
+    /**
+     * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.DelegationImpl <em>Delegation</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.DelegationImpl
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getDelegation()
+     * @generated
+     */
+    EClass DELEGATION = eINSTANCE.getDelegation();
+
+    /**
+     * The meta object literal for the '<em><b>P</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DELEGATION__P = eINSTANCE.getDelegation_P();
+
+    /**
+     * The meta object literal for the '<em><b>Np</b></em>' attribute feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EAttribute DELEGATION__NP = eINSTANCE.getDelegation_Np();
+
+    /**
+     * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.impl.DelegationAImpl <em>Delegation A</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.DelegationAImpl
+     * @see org.eclipse.xtext.serializer.sequencertest.impl.SequencertestPackageImpl#getDelegationA()
+     * @generated
+     */
+    EClass DELEGATION_A = eINSTANCE.getDelegationA();
+
+    /**
+     * The meta object literal for the '<em><b>Left</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference DELEGATION_A__LEFT = eINSTANCE.getDelegationA_Left();
+
+    /**
+     * The meta object literal for the '<em><b>Rc2</b></em>' containment reference feature.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @generated
+     */
+    EReference DELEGATION_A__RC2 = eINSTANCE.getDelegationA_Rc2();
 
     /**
      * The meta object literal for the '{@link org.eclipse.xtext.serializer.sequencertest.DefEnum <em>Def Enum</em>}' enum.

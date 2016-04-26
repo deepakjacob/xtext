@@ -10,37 +10,44 @@ package org.eclipse.xtext.xbase.scoping.batch;
 import java.util.Collections;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.common.types.JvmFeature;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class InstanceFeatureDescriptionWithImplicitReceiver extends InstanceFeatureDescription {
 
-	protected InstanceFeatureDescriptionWithImplicitReceiver(QualifiedName qualifiedName,
-			JvmIdentifiableElement feature, XExpression receiver, LightweightTypeReference receiverType,
-			Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping, int bucketId,
-			boolean visible) {
-		super(qualifiedName, feature, EcoreUtil2.clone(receiver), receiverType, typeParameterMapping, bucketId, visible);
+	private final boolean validStaticState;
+
+	protected InstanceFeatureDescriptionWithImplicitReceiver(
+			QualifiedName qualifiedName,
+			JvmFeature feature,
+			XExpression receiver,
+			LightweightTypeReference receiverType,
+			Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping,
+			int receiverConformanceFlags,
+			int bucketId,
+			boolean visible,
+			boolean validStaticState) {
+		super(qualifiedName, feature, EcoreUtil.copy(receiver), receiverType, typeParameterMapping, receiverConformanceFlags, bucketId, visible);
+		this.validStaticState = validStaticState;
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public XExpression getImplicitReceiver() {
 		return super.getSyntacticReceiver();
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public LightweightTypeReference getImplicitReceiverType() {
 		return super.getSyntacticReceiverType();
 	}
@@ -51,13 +58,18 @@ public class InstanceFeatureDescriptionWithImplicitReceiver extends InstanceFeat
 	}
 	
 	@Override
-	@Nullable
+	public int getImplicitReceiverConformanceFlags() {
+		return super.getSyntacticReceiverConformanceFlags();
+	}
+	
+	@Override
+	/* @Nullable */
 	public XExpression getSyntacticReceiver() {
 		return null;
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public LightweightTypeReference getSyntacticReceiverType() {
 		return null;
 	}
@@ -67,4 +79,13 @@ public class InstanceFeatureDescriptionWithImplicitReceiver extends InstanceFeat
 		return Collections.emptyMap();
 	}
 
+	@Override
+	public int getSyntacticReceiverConformanceFlags() {
+		return ConformanceFlags.NONE;
+	}
+	
+	@Override
+	public boolean isValidStaticState() {
+		return validStaticState;
+	}
 }

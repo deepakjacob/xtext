@@ -12,6 +12,7 @@ import java.util.List;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.inject.ImplementedBy;
+import com.google.inject.Singleton;
 
 /**
  * Converts {@link QualifiedName}s to strings and back.
@@ -28,6 +29,7 @@ public interface IQualifiedNameConverter {
 
 	QualifiedName toQualifiedName(String qualifiedNameAsText);
 
+	@Singleton
 	static class DefaultImpl implements IQualifiedNameConverter {
 
 		/**
@@ -36,6 +38,7 @@ public interface IQualifiedNameConverter {
 		 * @exception IllegalArgumentException
 		 *                when the qualified name is null.
 		 */
+		@Override
 		public String toString(QualifiedName qualifiedName) {
 			if (qualifiedName == null)
 				throw new IllegalArgumentException("Qualified name cannot be null");
@@ -48,6 +51,7 @@ public interface IQualifiedNameConverter {
 		 * @exception IllegalArgumentException
 		 *                if the input is empty or null.
 		 */
+		@Override
 		public QualifiedName toQualifiedName(String qualifiedNameAsString) {
 			if (qualifiedNameAsString == null)
 				throw new IllegalArgumentException("Qualified name cannot be null");

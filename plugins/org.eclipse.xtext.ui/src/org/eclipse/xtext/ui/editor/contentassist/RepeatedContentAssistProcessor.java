@@ -7,6 +7,8 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.editor.contentassist;
 
+import java.util.Arrays;
+
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ICompletionListener;
@@ -16,6 +18,8 @@ import org.eclipse.jface.text.contentassist.IContentAssistantExtension2;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.keys.IBindingService;
+import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 
 import com.google.inject.Inject;
 
@@ -53,7 +57,7 @@ public class RepeatedContentAssistProcessor extends XtextContentAssistProcessor 
 	}
 	
 	@Inject(optional = true)
-//	@Nullable
+	/* @Nullable */
 	private IWorkbench workbench;
 	
 	private IContentAssistantExtension2 currentAssistant;
@@ -68,11 +72,12 @@ public class RepeatedContentAssistProcessor extends XtextContentAssistProcessor 
 		if (proposalProvider == null)
 			return new ICompletionProposal[0];
 		int i = 0;
+		CompletionProposalComputer proposalComputer = createCompletionProposalComputer(viewer, offset);
 		while(i++ < 1000) { // just to prevent endless loop in case #isLastMode has an error
 			proposalProvider.nextMode();
 			if (currentAssistant != null)
 				currentAssistant.setStatusMessage(getStatusMessage());
-			ICompletionProposal[] result = super.computeCompletionProposals(viewer, offset);
+			ICompletionProposal[] result = computeCompletionProposals((IXtextDocument) viewer.getDocument(), proposalComputer);
 			if (result != null && result.length > 0)
 				return result;
 			if (proposalProvider.isLastMode()) {
@@ -80,6 +85,33 @@ public class RepeatedContentAssistProcessor extends XtextContentAssistProcessor 
 			}
 		}
 		throw new IllegalStateException("#isLastMode did not return true for 1000 times");
+	}
+	
+	@Override
+	protected CompletionProposalComputer createCompletionProposalComputer(ITextViewer viewer, int offset) {
+		return new CompletionProposalComputer(this, viewer, offset) {
+			ContentAssistContext[] previouslyComputed;
+			@Override
+			protected ContentAssistContext[] createContentAssistContexts(XtextResource resource) {
+				if (previouslyComputed != null) {
+					return previouslyComputed;
+				}
+				return previouslyComputed = super.createContentAssistContexts(resource);
+			}
+		};
+	}
+	
+	/**
+	 * @since 2.7
+	 */
+	protected ICompletionProposal[] computeCompletionProposals(IXtextDocument document, CompletionProposalComputer proposalComputer) {
+		if (getContentProposalProvider() == null)
+			return null;
+		
+		ICompletionProposal[] result = document.priorityReadOnly(proposalComputer);
+		Arrays.sort(result, getCompletionProposalComparator());
+		result = getCompletionProposalPostProcessor().postProcess(result);
+		return result;
 	}
 	
 	protected String getStatusMessage() {
@@ -92,6 +124,7 @@ public class RepeatedContentAssistProcessor extends XtextContentAssistProcessor 
 		return binding + " to show " + category;
 	}
 
+	@Override
 	public void assistSessionStarted(ContentAssistEvent event) {
 		ModeAware proposalProvider = getModeAwareProposalProvider();
 		if (proposalProvider != null)
@@ -99,6 +132,7 @@ public class RepeatedContentAssistProcessor extends XtextContentAssistProcessor 
 		this.currentAssistant = (IContentAssistantExtension2) event.assistant;
 	}
 
+	@Override
 	public void assistSessionEnded(ContentAssistEvent event) {
 		ModeAware proposalProvider = getModeAwareProposalProvider();
 		if (proposalProvider != null)
@@ -106,12 +140,14 @@ public class RepeatedContentAssistProcessor extends XtextContentAssistProcessor 
 		this.currentAssistant = null;
 	}
 	
+	@Override
 	public void assistSessionRestarted(ContentAssistEvent event) {
 		ModeAware proposalProvider = getModeAwareProposalProvider();
 		if (proposalProvider != null)
 			proposalProvider.reset();
 	}
 
+	@Override
 	public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
 	}
 

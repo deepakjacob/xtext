@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl;
 
@@ -24,12 +21,12 @@ import org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.Referen
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl.ReferenceHolderImpl#getDefaultReference <em>Default Reference</em>}</li>
  *   <li>{@link org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl.ReferenceHolderImpl#getCustomizedReference <em>Customized Reference</em>}</li>
  *   <li>{@link org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl.ReferenceHolderImpl#getSubtypeReference <em>Subtype Reference</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -10,17 +10,18 @@
  *******************************************************************************/
 package org.eclipse.xtext.xtext.ui.wizard.project;
 
-import static com.google.common.collect.Lists.*;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Set;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jdt.core.JavaConventions;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jdt.launching.environments.IExecutionEnvironment;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IMessageProvider;
+import org.eclipse.jface.util.Policy;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -33,10 +34,12 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
+import org.eclipse.xtext.ui.util.JREContainerProvider;
+import org.eclipse.xtext.util.JavaVersion;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 /**
  * The main page of the Xtext project wizard.
@@ -49,9 +52,9 @@ public class WizardNewXtextProjectCreationPage extends WizardNewProjectCreationP
 	private Text languageNameField;
 	private final IStructuredSelection selection;
 	private Text extensionsField;
-	private Combo generatorConfigurationField;
-	private Button createFeaturPeoject;
-	
+	private Combo breeCombo;
+	private Button exeEnvButton;
+
 	/**
 	 * Constructs a new WizardNewXtextProjectCreationPage.
 	 * 
@@ -59,8 +62,8 @@ public class WizardNewXtextProjectCreationPage extends WizardNewProjectCreationP
 	 *            the name of the page
 	 * 
 	 * @param selection
-	 *            The current selection. If the current selection includes workingsets the workingsets field is
-	 *            initialized with the selection.
+	 *            The current selection. If the current selection includes workingsets the workingsets field is initialized with the
+	 *            selection.
 	 */
 	public WizardNewXtextProjectCreationPage(String pageName, IStructuredSelection selection) {
 		super(pageName);
@@ -78,15 +81,84 @@ public class WizardNewXtextProjectCreationPage extends WizardNewProjectCreationP
 		setInitialProjectName("org.xtext.example." + projectsuffix); //$NON-NLS-1$
 		super.createControl(parent);
 		createLanguageSelectionGroup((Composite) getControl());
-		createProjectLayoutGroup((Composite) getControl());
+		creatBreeGroup((Composite) getControl());
 		createWorkingSetGroup((Composite) getControl(), selection, getWorkingSetIdents());
 		setDefaults(projectsuffix);
 		Dialog.applyDialogFont(getControl());
 	}
 
+	protected void creatBreeGroup(Composite parent) {
+
+		Group breeGroup = new Group(parent, SWT.NONE);
+		breeGroup.setFont(parent.getFont());
+		breeGroup.setText(Messages.WizardNewXtextProjectCreationPage_EEGrTitle);
+		breeGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+		breeGroup.setLayout(new GridLayout(1, false));
+
+		Composite composite = new Composite(breeGroup, SWT.NONE);
+		composite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+		composite.setLayout(new GridLayout(3, false));
+
+		Label breeLabel = new Label(composite, SWT.NONE);
+		GridData data = new GridData(GridData.FILL_HORIZONTAL);
+		data.horizontalSpan = 1;
+		breeLabel.setText(Messages.WizardNewXtextProjectCreationPage_EECombo);
+
+		breeCombo = new Combo(composite, SWT.BORDER | SWT.READ_ONLY);
+		data = new GridData(GridData.FILL_HORIZONTAL);
+		data.horizontalSpan = 1;
+		breeCombo.setLayoutData(data);
+		breeCombo.setFont(parent.getFont());
+		fillBreeCombo(breeCombo);
+
+		Listener modifyListener = new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				setPageComplete(validatePage());
+			}
+		};
+		breeCombo.addListener(SWT.Modify, modifyListener);
+		// Create button
+		exeEnvButton = new Button(composite, SWT.PUSH);
+		exeEnvButton.setLayoutData(new GridData());
+		exeEnvButton.setText(Messages.WizardNewXtextProjectCreationPage_EEButton);
+		exeEnvButton.addListener(SWT.Selection, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				PreferencesUtil.createPreferenceDialogOn(getShell(), "org.eclipse.jdt.debug.ui.jreProfiles", //$NON-NLS-1$
+						new String[] { "org.eclipse.jdt.debug.ui.jreProfiles" }, null).open(); //$NON-NLS-1$ 
+				fillBreeCombo(breeCombo);
+			}
+		});
+	}
+
+	@SuppressWarnings("unchecked")
+	protected void fillBreeCombo(Combo comboToFill) {
+		Set<String> brees = Sets.newHashSet(JREContainerProvider.getDefaultBREE());
+		Set<String> availableBrees = Sets.newHashSet();
+		for (IExecutionEnvironment ee : JavaRuntime.getExecutionEnvironmentsManager().getExecutionEnvironments()) {
+			availableBrees.add(ee.getId());
+		}
+		for (JavaVersion supportedVersion : JavaVersion.values()) {
+			if (supportedVersion.isAtLeast(JavaVersion.JAVA6)) {
+				String bree = supportedVersion.getBree();
+				if (availableBrees.contains(bree))
+					brees.add(bree);
+			}
+		}
+		String[] array = brees.toArray(new String[] {});
+		Arrays.sort(array, Policy.getComparator());
+		String selectionMemento = comboToFill.getText();
+		comboToFill.setItems(array);
+		int index = comboToFill.indexOf(selectionMemento);
+		if (index < 0) {
+			comboToFill.select(comboToFill.indexOf(JREContainerProvider.getDefaultBREE()));
+		}
+		comboToFill.select(index);
+	}
+
 	protected String[] getWorkingSetIdents() {
-		return new String[] { 
-				"org.eclipse.jdt.ui.JavaWorkingSetPage", //$NON-NLS-1$
+		return new String[] { "org.eclipse.jdt.ui.JavaWorkingSetPage", //$NON-NLS-1$
 				"org.eclipse.pde.ui.pluginWorkingSet", //$NON-NLS-1$
 				"org.eclipse.ui.resourceWorkingSetPage" //$NON-NLS-1$
 		};
@@ -95,42 +167,17 @@ public class WizardNewXtextProjectCreationPage extends WizardNewProjectCreationP
 	/**
 	 * Sets the defaults for the languageName and extensions.
 	 * 
-	 * @param dslName
+	 * @param projectSuffix
 	 *            the name of the DSL
+	 * @see findNextValidProjectSuffix(String, String)
 	 */
 	protected void setDefaults(String projectSuffix) {
-		languageNameField.setText("org.xtext.example." + projectSuffix+".MyDsl"); //$NON-NLS-1$
+		languageNameField.setText("org.xtext.example." + projectSuffix + ".MyDsl"); //$NON-NLS-1$ //$NON-NLS-2$
 		extensionsField.setText(projectSuffix);
-
-		fillMweSnippet();
+		breeCombo.select(breeCombo.indexOf(JREContainerProvider.getDefaultBREE()));
 		validatePage();
 	}
 
-	protected void fillMweSnippet() {
-		Map<String, WizardContribution> contributions = WizardContribution.getFromRegistry();
-
-		List<WizardContribution> contrib = newArrayList(contributions.values());
-		Collections.sort(contrib);
-		List<String> names = newArrayList(Iterables.transform(contrib, new Function<WizardContribution, String>() {
-			public String apply(WizardContribution input) {
-				return input.getName();
-			}
-		}) );
-		if (generatorConfigurationField != null) {
-			generatorConfigurationField.setItems(names.toArray(new String[names.size()]));
-			generatorConfigurationField.select(indexOfDefault(names));
-		}
-	}
-
-	protected int indexOfDefault(List<String> contributions) {
-		int indexOf = contributions.indexOf(getDefaultConfigName());
-		return indexOf != -1 ? indexOf : 0;
-	}
-
-	protected String getDefaultConfigName() {
-		return "Standard";
-	}
-	
 	/**
 	 * Find the next available (default) DSL name
 	 */
@@ -148,8 +195,7 @@ public class WizardNewXtextProjectCreationPage extends WizardNewProjectCreationP
 	protected boolean validatePage() {
 		if (!super.validatePage())
 			return false;
-		IStatus status = JavaConventions.validatePackageName(getProjectName(), JavaCore.VERSION_1_5,
-				JavaCore.VERSION_1_5);
+		IStatus status = JavaConventions.validatePackageName(getProjectName(), JavaCore.VERSION_1_5, JavaCore.VERSION_1_5);
 		if (!status.isOK()) {
 			setErrorMessage(Messages.WizardNewXtextProjectCreationPage_ErrorMessageProjectName + status.getMessage());
 			return false;
@@ -159,14 +205,18 @@ public class WizardNewXtextProjectCreationPage extends WizardNewProjectCreationP
 		if (languageNameField.getText().length() == 0)
 			return false;
 
-		status = JavaConventions.validateJavaTypeName(languageNameField.getText(), JavaCore.VERSION_1_5,
-				JavaCore.VERSION_1_5);
+		status = JavaConventions.validateJavaTypeName(languageNameField.getText(), JavaCore.VERSION_1_5, JavaCore.VERSION_1_5);
 		if (!status.isOK()) {
 			setErrorMessage(Messages.WizardNewXtextProjectCreationPage_ErrorMessageLanguageName + status.getMessage());
 			return false;
 		}
 		if (extensionsField.getText().length() == 0)
 			return false;
+		if (!Sets.newHashSet(JREContainerProvider.getConfiguredBREEs()).contains(breeCombo.getText())) {
+			setMessage(Messages.WizardNewXtextProjectCreationPage_eeInfo_0 + breeCombo.getText()
+					+ Messages.WizardNewXtextProjectCreationPage_eeInfo_1, IMessageProvider.INFORMATION);
+			return true;
+		}
 		setErrorMessage(null);
 		setMessage(null);
 		return true;
@@ -204,44 +254,13 @@ public class WizardNewXtextProjectCreationPage extends WizardNewProjectCreationP
 		extensionsField.setLayoutData(textData);
 
 		Listener modifyListener = new Listener() {
+			@Override
 			public void handleEvent(Event event) {
 				setPageComplete(validatePage());
 			}
 		};
 		languageNameField.addListener(SWT.Modify, modifyListener);
 		extensionsField.addListener(SWT.Modify, modifyListener);
-	}
-
-	protected void createProjectLayoutGroup(Composite parent) {
-		if (WizardContribution.getFromRegistry().size() > 1) {
-			Group layoutGroup = new Group(parent, SWT.NONE);
-			layoutGroup.setFont(parent.getFont());
-			layoutGroup.setText(Messages.WizardNewXtextProjectCreationPage_LabelLayout);
-			layoutGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-			layoutGroup.setLayout(new GridLayout(1, false));
-	
-			Composite composite = new Composite(layoutGroup, SWT.NONE);
-			composite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
-			composite.setLayout(new GridLayout(2, false));
-
-			Label generatorConfigLabel = new Label(composite, SWT.NONE);
-			generatorConfigLabel.setText(Messages.WizardNewXtextProjectCreationPage_GeneratorConfiguration);
-
-			generatorConfigurationField = new Combo(composite, SWT.READ_ONLY);
-			GridData data = new GridData(GridData.FILL_HORIZONTAL);
-			data.horizontalSpan = 1;
-			generatorConfigurationField.setLayoutData(data);
-			generatorConfigurationField.setFont(parent.getFont());
-
-			createFeaturPeoject = new Button(composite, SWT.CHECK);
-			createFeaturPeoject
-					.setText(Messages.WizardNewXtextProjectCreationPage_CreateFeatureLabel);
-			GridData createFeaturPeojectData = new GridData(SWT.FILL, SWT.CENTER, true, false);
-			createFeaturPeojectData.horizontalSpan = 1;
-			createFeaturPeoject.setLayoutData(createFeaturPeojectData);
-			createFeaturPeoject.setSelection(true);
-
-		}
 	}
 
 	/**
@@ -255,13 +274,9 @@ public class WizardNewXtextProjectCreationPage extends WizardNewProjectCreationP
 		return languageNameField.getText();
 	}
 
-	public String getGeneratorConfig() {
-		if (generatorConfigurationField==null)
-			return WizardContribution.getFromRegistry().values().iterator().next().getName();
-		return generatorConfigurationField.getItems()[generatorConfigurationField.getSelectionIndex()];
-	}
-
-	public boolean isCreateFeatureProject() {
-		return createFeaturPeoject.getSelection();
+	public JavaVersion getJavaVersion() {
+		String selected = breeCombo.getText();
+		JavaVersion version = JavaVersion.fromBree(selected);
+		return version;
 	}
 }

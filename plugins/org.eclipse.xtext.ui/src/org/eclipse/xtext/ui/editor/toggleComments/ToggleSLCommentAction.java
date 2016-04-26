@@ -104,6 +104,7 @@ public class ToggleSLCommentAction extends TextEditorAction {
 			display= shell.getDisplay();
 
 		BusyIndicator.showWhile(display, new Runnable() {
+			@Override
 			public void run() {
 				fOperationTarget.doOperation(operationCode);
 			}
@@ -198,14 +199,18 @@ public class ToggleSLCommentAction extends TextEditorAction {
 
 		try {
 
-			int startLine= document.getLineOfOffset(region.getOffset());
+			final int startLine= document.getLineOfOffset(region.getOffset());
 
 			int offset= document.getLineOffset(startLine);
 			if (offset >= region.getOffset())
 				return startLine;
 
-			offset= document.getLineOffset(startLine + 1);
-			return (offset > region.getOffset() + region.getLength() ? -1 : startLine + 1);
+			final int nextLine= startLine + 1;
+			if (nextLine == document.getNumberOfLines())
+				return -1;
+
+			offset= document.getLineOffset(nextLine);
+			return (offset > region.getOffset() + region.getLength() ? -1 : nextLine);
 
 		} catch (BadLocationException x) {
 			// should not happen

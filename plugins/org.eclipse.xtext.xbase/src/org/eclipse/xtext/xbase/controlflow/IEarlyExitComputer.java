@@ -32,13 +32,18 @@ public interface IEarlyExitComputer {
 		protected boolean exceptionalExit;
 		protected XExpression expression;
 		
-		protected ExitPoint(XExpression expression, boolean exceptionalExit) {
+		public ExitPoint(XExpression expression, boolean exceptionalExit) {
 			this.expression = expression;
 			this.exceptionalExit = exceptionalExit;
 		}
 		
 		public XExpression getExpression() {
 			return expression;
+		}
+		
+		@Override
+		public String toString() {
+			return "exit point: " + expression;
 		}
 	}
 }

@@ -75,6 +75,7 @@ public class ImportScope extends AbstractScope {
 			elements.add(qn);
 		}
 		return concat(aliased, filter(globalElements, new Predicate<IEObjectDescription>() {
+			@Override
 			public boolean apply(IEObjectDescription input) {
 				return !elements.contains(getIgnoreCaseAwareQualifiedName(input));
 			}
@@ -97,6 +98,7 @@ public class ImportScope extends AbstractScope {
 		final Iterable<IEObjectDescription> aliasedElements = getAliasedElements(candidates);
 		// make sure that the element is returned when asked by name.
 		return filter(aliasedElements, new Predicate<IEObjectDescription>() {
+			@Override
 			public boolean apply(IEObjectDescription input) {
 				IEObjectDescription description = getSingleLocalElementByName(input.getName());
 				if (description==null)
@@ -154,8 +156,11 @@ public class ImportScope extends AbstractScope {
 				for (IEObjectDescription resolvedElement : resolvedElements) {
 					if (resolvedQualifiedName == null)
 						resolvedQualifiedName = resolvedName;
-					else if (!resolvedQualifiedName.equals(resolvedName))
-						return emptyList();
+					else if (!resolvedQualifiedName.equals(resolvedName)) {
+						if (result.get(0).getEObjectOrProxy() != resolvedElement.getEObjectOrProxy()) {
+							return emptyList();
+						}
+					}
 					QualifiedName alias = normalizer.deresolve(resolvedElement.getName());
 					if (alias == null)
 						throw new IllegalStateException("Couldn't deresolve " + resolvedElement.getName()

@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.resource.bug385636;
 
@@ -14,10 +11,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.resource.bug385636.DefineVariable#getName <em>Name</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.resource.bug385636.Bug385636Package#getDefineVariable()
  * @model

@@ -92,16 +92,6 @@ public class XAnnotationsAdapterFactory extends AdapterFactoryImpl
 				return createXAnnotationElementValuePairAdapter();
 			}
 			@Override
-			public Adapter caseXAnnotationElementValueBinaryOperation(XAnnotationElementValueBinaryOperation object)
-			{
-				return createXAnnotationElementValueBinaryOperationAdapter();
-			}
-			@Override
-			public Adapter caseXAnnotationValueArray(XAnnotationValueArray object)
-			{
-				return createXAnnotationValueArrayAdapter();
-			}
-			@Override
 			public Adapter caseXExpression(XExpression object)
 			{
 				return createXExpressionAdapter();
@@ -154,36 +144,6 @@ public class XAnnotationsAdapterFactory extends AdapterFactoryImpl
 	 * @generated
 	 */
 	public Adapter createXAnnotationElementValuePairAdapter()
-	{
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationElementValueBinaryOperation <em>XAnnotation Element Value Binary Operation</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationElementValueBinaryOperation
-	 * @generated
-	 */
-	public Adapter createXAnnotationElementValueBinaryOperationAdapter()
-	{
-		return null;
-	}
-
-	/**
-	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationValueArray <em>XAnnotation Value Array</em>}'.
-	 * <!-- begin-user-doc -->
-	 * This default implementation returns null so that we can easily ignore cases;
-	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
-	 * <!-- end-user-doc -->
-	 * @return the new adapter.
-	 * @see org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationValueArray
-	 * @generated
-	 */
-	public Adapter createXAnnotationValueArrayAdapter()
 	{
 		return null;
 	}

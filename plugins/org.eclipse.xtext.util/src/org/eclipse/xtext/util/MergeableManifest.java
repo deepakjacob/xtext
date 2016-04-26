@@ -8,6 +8,8 @@
  *******************************************************************************/
 package org.eclipse.xtext.util;
 
+import static com.google.common.collect.Sets.*;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +26,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 /**
@@ -52,7 +55,10 @@ public class MergeableManifest extends Manifest {
 	/*
 	 * java.util.Manifest throws an exception if line exceeds 512 chars
 	 */
-    static String make512Safe(StringBuffer lines) {
+	/**
+	 * @since 2.9
+	 */
+    public static String make512Safe(StringBuffer lines) {
         if (lines.length() > 512) {
         	StringBuilder result = new StringBuilder(lines.length());
         	String[] splitted = lines.toString().split("\\r\\n");
@@ -62,7 +68,7 @@ public class MergeableManifest extends Manifest {
         			StringBuilder temp = new StringBuilder(string);
         			int length = temp.length();
         			while (idx < length - 2) {
-                        temp.insert(idx, "\r\n ");
+                        temp.insert(idx, LINEBREAK+" ");
                         idx += 512;
                         length += 3;
                     }
@@ -200,7 +206,13 @@ public class MergeableManifest extends Manifest {
 		// TODO manage transitive dependencies
 		// don't require self
 		Set<String> bundlesToMerge;
-		String bundleName = (String) getMainAttributes().get(BUNDLE_NAME);
+		String bundleName = (String) getMainAttributes().get(BUNDLE_SYMBOLIC_NAME);
+		if (bundleName != null) {
+			int idx = bundleName.indexOf(';');
+			if (idx >= 0) {
+				bundleName = bundleName.substring(0, idx);
+			}
+		}
 		if (bundleName != null && bundles.contains(bundleName) || projectName != null && bundles.contains(projectName)) {
 			bundlesToMerge = new LinkedHashSet<String>(bundles);
 			bundlesToMerge.remove(bundleName);
@@ -215,6 +227,44 @@ public class MergeableManifest extends Manifest {
 		getMainAttributes().put(REQUIRE_BUNDLE, result);
 	}
 
+	/**
+	 * @since 2.9
+	 */
+	public String getBREE() {
+		return (String) getMainAttributes().get(BUNDLE_REQUIRED_EXECUTION_ENV);
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public void setBREE(String bree) {
+		String oldValue = getBREE();
+		if(Objects.equal(oldValue, bree)) {
+			return;
+		}
+		getMainAttributes().put(BUNDLE_REQUIRED_EXECUTION_ENV, bree);
+		this.modified = true;
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public String getBundleActivator() {
+		return (String) getMainAttributes().get(BUNDLE_ACTIVATOR);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public void setBundleActivator(String activator) {
+		String oldValue = getBundleActivator();
+		if(Objects.equal(oldValue, activator)) {
+			return;
+		}
+		getMainAttributes().put(BUNDLE_ACTIVATOR, activator);
+		this.modified = true;
+	}
+	
 	public boolean isModified() {
 		return modified;
 	}
@@ -239,7 +289,7 @@ public class MergeableManifest extends Manifest {
 				value = new String(vb, 0, 0, vb.length);
 			}
 			buffer.append(value);
-			buffer.append("\r\n");
+			buffer.append(LINEBREAK);
 			dos.writeBytes(make512Safe(buffer));
 			((OrderAwareAttributes) e.getValue()).myWrite(dos);
 		}
@@ -258,6 +308,18 @@ public class MergeableManifest extends Manifest {
 		String result = mergeIntoCommaSeparatedList(s, packages, modified);
 		this.modified = modified.get();
 		getMainAttributes().put(EXPORT_PACKAGE, result);
+	}
+	
+	/**
+	 * adds the qualified names to the export-package attribute, if not already
+	 * present.
+	 *
+	 * @param packages - packages to add
+	 *
+	 * @since 2.9
+	 */
+	public void addExportedPackages(String... packages) {
+		addExportedPackages(newHashSet(packages));
 	}
 
 	public void addImportedPackages(Set<String> packages) {
@@ -327,7 +389,7 @@ public class MergeableManifest extends Manifest {
 				buff.append(";").append(entry.getValue());
 			}
 			if (iterator.hasNext())
-				buff.append(",\r\n ");
+				buff.append(","+LINEBREAK+" ");
 		}
 		String result = buff.toString();
 		return result;

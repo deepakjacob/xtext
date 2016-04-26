@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: AbstractElementImpl.java,v 1.15 2010/04/06 14:09:58 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -22,11 +18,12 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.impl.AbstractElementImpl#getCardinality <em>Cardinality</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.AbstractElementImpl#isPredicated <em>Predicated</em>}</li>
+ *   <li>{@link org.eclipse.xtext.impl.AbstractElementImpl#isFirstSetPredicated <em>First Set Predicated</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -70,6 +67,28 @@ public class AbstractElementImpl extends MinimalEObjectImpl.Container implements
 	 * @ordered
 	 */
 	protected boolean predicated = PREDICATED_EDEFAULT;
+
+	/**
+	 * The default value of the '{@link #isFirstSetPredicated() <em>First Set Predicated</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * @since 2.6
+	 * <!-- end-user-doc -->
+	 * @see #isFirstSetPredicated()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final boolean FIRST_SET_PREDICATED_EDEFAULT = false;
+
+	/**
+	 * The cached value of the '{@link #isFirstSetPredicated() <em>First Set Predicated</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * @since 2.6
+	 * <!-- end-user-doc -->
+	 * @see #isFirstSetPredicated()
+	 * @generated
+	 * @ordered
+	 */
+	protected boolean firstSetPredicated = FIRST_SET_PREDICATED_EDEFAULT;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -134,6 +153,29 @@ public class AbstractElementImpl extends MinimalEObjectImpl.Container implements
 
 	/**
 	 * <!-- begin-user-doc -->
+	 * @since 2.6
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isFirstSetPredicated() {
+		return firstSetPredicated;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * @since 2.6
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setFirstSetPredicated(boolean newFirstSetPredicated) {
+		boolean oldFirstSetPredicated = firstSetPredicated;
+		firstSetPredicated = newFirstSetPredicated;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, XtextPackage.ABSTRACT_ELEMENT__FIRST_SET_PREDICATED, oldFirstSetPredicated, firstSetPredicated));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
@@ -144,6 +186,8 @@ public class AbstractElementImpl extends MinimalEObjectImpl.Container implements
 				return getCardinality();
 			case XtextPackage.ABSTRACT_ELEMENT__PREDICATED:
 				return isPredicated();
+			case XtextPackage.ABSTRACT_ELEMENT__FIRST_SET_PREDICATED:
+				return isFirstSetPredicated();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -161,6 +205,9 @@ public class AbstractElementImpl extends MinimalEObjectImpl.Container implements
 				return;
 			case XtextPackage.ABSTRACT_ELEMENT__PREDICATED:
 				setPredicated((Boolean)newValue);
+				return;
+			case XtextPackage.ABSTRACT_ELEMENT__FIRST_SET_PREDICATED:
+				setFirstSetPredicated((Boolean)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -180,6 +227,9 @@ public class AbstractElementImpl extends MinimalEObjectImpl.Container implements
 			case XtextPackage.ABSTRACT_ELEMENT__PREDICATED:
 				setPredicated(PREDICATED_EDEFAULT);
 				return;
+			case XtextPackage.ABSTRACT_ELEMENT__FIRST_SET_PREDICATED:
+				setFirstSetPredicated(FIRST_SET_PREDICATED_EDEFAULT);
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -196,6 +246,8 @@ public class AbstractElementImpl extends MinimalEObjectImpl.Container implements
 				return CARDINALITY_EDEFAULT == null ? cardinality != null : !CARDINALITY_EDEFAULT.equals(cardinality);
 			case XtextPackage.ABSTRACT_ELEMENT__PREDICATED:
 				return predicated != PREDICATED_EDEFAULT;
+			case XtextPackage.ABSTRACT_ELEMENT__FIRST_SET_PREDICATED:
+				return firstSetPredicated != FIRST_SET_PREDICATED_EDEFAULT;
 		}
 		return super.eIsSet(featureID);
 	}
@@ -214,6 +266,8 @@ public class AbstractElementImpl extends MinimalEObjectImpl.Container implements
 		result.append(cardinality);
 		result.append(", predicated: ");
 		result.append(predicated);
+		result.append(", firstSetPredicated: ");
+		result.append(firstSetPredicated);
 		result.append(')');
 		return result.toString();
 	}

@@ -8,87 +8,187 @@
  *******************************************************************************/
 package org.eclipse.xtext.generator.parser.antlr;
 
-import org.eclipse.xtext.generator.parser.antlr.splitting.AntlrParserSplitter;
-import org.eclipse.xtext.generator.parser.antlr.splitting.PartialClassExtractor;
+public class AntlrOptions extends org.eclipse.xtext.xtext.generator.parser.antlr.AntlrOptions {
 
-/**
- * @author Sven Efftinge - Initial contribution and API
- */
-public class AntlrOptions {
-	private boolean backtrack = false;
-	private boolean backtrackLexer = false;
-	private boolean memoize = false;
-	private int k = -1;
-	private boolean ignoreCase = false;
-	private boolean classSplitting = false;
-	private int fieldsPerClass = AntlrParserSplitter.FIELDS_PER_CLASS;
-	private int methodsPerClass = PartialClassExtractor.METHODS_PER_CLASS;
-
-	public boolean isBacktrack() {
-		return backtrack;
-	}
-	public void setBacktrack(boolean backtrack) {
-		this.backtrack = backtrack;
-	}
-	public boolean isMemoize() {
-		return memoize;
-	}
-	public void setMemoize(boolean memoize) {
-		this.memoize = memoize;
-	}
-	public int getK() {
-		return k;
-	}
-	public void setK(int k) {
-		this.k = k;
-	}
-	/**
-	 * @since 2.1
-	 */
-	public void setKAsString(String k) {
-		this.k = Integer.parseInt(k);
-	}
-	public void setBacktrackLexer(boolean backtrackLexer) {
-		this.backtrackLexer = backtrackLexer;
-	}
-	public boolean isBacktrackLexer() {
-		return backtrackLexer;
-	}
-	public void setIgnoreCase(boolean ignoreCase) {
-		this.ignoreCase = ignoreCase;
-	}
-	public boolean isIgnoreCase() {
-		return ignoreCase;
-	}
-	public boolean isClassSplitting() {
-		return classSplitting;
-	}
-	public void setClassSplitting(boolean value) {
-		this.classSplitting = value;
-	}
-	/**
-	 * @since 2.1
-	 */
-	public int getFieldsPerClass() {
-		return fieldsPerClass;
-	}
-	/**
-	 * @since 2.1
-	 */
+	@Override
 	public void setFieldsPerClass(String fieldsPerClass) {
-		this.fieldsPerClass = Integer.parseInt(fieldsPerClass);
-	}
-	/**
-	 * @since 2.1
-	 */
-	public int getMethodsPerClass() {
-		return methodsPerClass;
-	}
-	/**
-	 * @since 2.1
-	 */
-	public void setMethodsPerClass(String methodsPerClass) {
-		this.methodsPerClass = Integer.parseInt(methodsPerClass);
+		super.setFieldsPerClass(fieldsPerClass);
 	}
 
+	@Override
+	public void setMethodsPerClass(String methodsPerClass) {
+		super.setMethodsPerClass(methodsPerClass);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public void setCasesPerSpecialStateSwitch(String casesPerSpecialStateSwitch) {
+		super.setCasesPerSpecialStateSwitch(casesPerSpecialStateSwitch);
+	}
+
+	@Override
+	public void setKAsString(String k) {
+		super.setKAsString(k);
+	}
+
+	@Override
+	public boolean isBacktrack() {
+		return super.isBacktrack();
+	}
+
+	@Override
+	public void setBacktrack(boolean backtrack) {
+		super.setBacktrack(backtrack);
+	}
+
+	@Override
+	public boolean isBacktrackLexer() {
+		return super.isBacktrackLexer();
+	}
+
+	@Override
+	public void setBacktrackLexer(boolean backtrackLexer) {
+		super.setBacktrackLexer(backtrackLexer);
+	}
+
+	@Override
+	public boolean isMemoize() {
+		return super.isMemoize();
+	}
+
+	@Override
+	public void setMemoize(boolean memoize) {
+		super.setMemoize(memoize);
+	}
+
+	@Override
+	public int getK() {
+		return super.getK();
+	}
+
+	@Override
+	public void setK(int k) {
+		super.setK(k);
+	}
+
+	@Override
+	public boolean isIgnoreCase() {
+		return super.isIgnoreCase();
+	}
+
+	@Override
+	public void setIgnoreCase(boolean ignoreCase) {
+		super.setIgnoreCase(ignoreCase);
+	}
+
+	@Override
+	public boolean isClassSplitting() {
+		return super.isClassSplitting();
+	}
+
+	@Override
+	public void setClassSplitting(boolean classSplitting) {
+		super.setClassSplitting(classSplitting);
+	}
+
+	@Override
+	public int getFieldsPerClass() {
+		return super.getFieldsPerClass();
+	}
+
+	@Override
+	public int getMethodsPerClass() {
+		return super.getMethodsPerClass();
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public int getCasesPerSpecialStateSwitch() {
+		return super.getCasesPerSpecialStateSwitch();
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public boolean isSkipUnusedRules() {
+		return super.isSkipUnusedRules();
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public void setSkipUnusedRules(boolean skipUnusedRules) {
+		super.setSkipUnusedRules(skipUnusedRules);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public boolean isOptimizeCodeQuality() {
+		return super.isOptimizeCodeQuality();
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public void setOptimizeCodeQuality(boolean optimizeCodeQuality) {
+		super.setOptimizeCodeQuality(optimizeCodeQuality);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public boolean isStripAllComments() {
+		return super.isStripAllComments();
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public void setStripAllComments(boolean stripAllComments) {
+		super.setStripAllComments(stripAllComments);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public String getKeptBitSetsPattern() {
+		return super.getKeptBitSetsPattern();
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public void setKeptBitSetsPattern(String keptBitSetsPattern) {
+		super.setKeptBitSetsPattern(keptBitSetsPattern);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public String getKeptBitSetName() {
+		return super.getKeptBitSetName();
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public void setKeptBitSetName(String keptBitSetName) {
+		super.setKeptBitSetName(keptBitSetName);
+	}
+	
 }

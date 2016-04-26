@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.contextFinderTest.impl;
 
@@ -23,10 +20,10 @@ import org.eclipse.xtext.serializer.contextFinderTest.NestedTypeRecursiveTest;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.contextFinderTest.impl.NestedTypeRecursiveTestImpl#getLeft <em>Left</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

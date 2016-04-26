@@ -427,6 +427,17 @@ public abstract class AbstractCStyleLanguageAutoEditTest extends AbstractAutoEdi
 		pressKey(editor, '\n');
 		assertState("{{foo}\n\t|{bar}\n}", editor);
 	}
+	
+	@Test
+	public void testCurlyBracesBlock_19() throws Exception {
+		XtextEditor editor = openEditor("{{|");
+		pressKey(editor, '\n');
+		assertState("{{\n\t|\n}", editor);
+		pressKey(editor, '\n');
+		assertState("{{\n\t\n\t|\n\t}\n}", editor);
+		pressKey(editor, '\n');
+		assertState("{{\n\t\n\t\n\t|\n\t}\n}", editor);
+	}
 
 	@Test public void testCurlyBracesWithSelection_1() throws Exception {
 		XtextEditor editor = openEditor("{|foo}");
@@ -601,6 +612,28 @@ public abstract class AbstractCStyleLanguageAutoEditTest extends AbstractAutoEdi
 		pressKey(editor, '\n');
 		assertState("  /*\n\n| *\n */", editor);
 	}
+
+	@Test public void testBug453205_01() throws Exception {
+		XtextEditor editor = openEditor("/*|\n" + 
+				"* comment\n" + 
+				"*/");
+		pressKey(editor, '\n');
+		assertState("/*\n" + 
+				" * |\n" + 
+				"* comment\n" + 
+				"*/", editor);
+	}
+	
+	@Test public void testBug453205_02() throws Exception {
+		XtextEditor editor = openEditor("/**********|\n" + 
+				" * \"Fancy\"\n" + 
+				"**********/");
+		pressKey(editor, '\n');
+		assertState("/**********\n" + 
+				" * |\n" + 
+				" * \"Fancy\"\n" + 
+				"**********/", editor);
+	}
 	
 	@Test public void testBug341093_01() throws Exception {
 		XtextEditor editor = openEditor(
@@ -651,6 +684,36 @@ public abstract class AbstractCStyleLanguageAutoEditTest extends AbstractAutoEdi
 		XtextEditor editor = openEditor("// /|");
 		pressKey(editor, '*');
 		assertState("// /*|", editor);
+	}
+	
+	@Test public void testBug335634_03() throws Exception {
+		XtextEditor editor = openEditor(" // /|");
+		pressKey(editor, '*');
+		assertState(" // /*|", editor);
+	}
+	
+	@Test public void testBug335634_04() throws Exception {
+		XtextEditor editor = openEditor(" // /|\n");
+		pressKey(editor, '*');
+		assertState(" // /*|\n", editor);
+	}
+	
+	@Test public void testBug335634_05() throws Exception {
+		XtextEditor editor = openEditor("// /|");
+		pressKey(editor, '{');
+		assertState("// /{|", editor);
+	}
+	
+	@Test public void testBug335634_06() throws Exception {
+		XtextEditor editor = openEditor(" // /|");
+		pressKey(editor, '{');
+		assertState(" // /{|", editor);
+	}
+	
+	@Test public void testBug335634_07() throws Exception {
+		XtextEditor editor = openEditor(" // /\n|");
+		pressKey(editor, '{');
+		assertState(" // /\n{|}", editor);
 	}
 	
 	@Test public void testSingleLineComment_01() throws Exception {

@@ -1,16 +1,22 @@
+/**
+ * Copyright (c) 2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.eclipse.xtext.xbase.compiler;
 
+import com.google.common.base.Objects;
 import com.google.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.generator.trace.LocationData;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
 import org.eclipse.xtext.resource.ILocationInFileProviderExtension;
-import org.eclipse.xtext.resource.ILocationInFileProviderExtension.RegionDescription;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 import org.eclipse.xtext.xbase.compiler.output.ITreeAppendable;
 import org.eclipse.xtext.xbase.compiler.output.TreeAppendable;
-import org.eclipse.xtext.xbase.lib.ObjectExtensions;
 
 @SuppressWarnings("all")
 public class TreeAppendableUtil {
@@ -18,34 +24,30 @@ public class TreeAppendableUtil {
   private ILocationInFileProvider locationProvider;
   
   public ITreeAppendable traceSignificant(final ITreeAppendable appendable, final EObject source) {
-    ITreeAppendable _traceSignificant = this.traceSignificant(appendable, source, false);
-    return _traceSignificant;
+    return this.traceSignificant(appendable, source, false);
   }
   
   public ITreeAppendable traceSignificant(final ITreeAppendable appendable, final EObject source, final boolean useForDebugging) {
     ITreeAppendable _xifexpression = null;
     if ((appendable instanceof TreeAppendable)) {
-      TreeAppendable _trace = ((TreeAppendable) appendable).trace(source, RegionDescription.SIGNIFICANT, useForDebugging);
-      _xifexpression = _trace;
+      _xifexpression = ((TreeAppendable)appendable).trace(source, ILocationInFileProviderExtension.RegionDescription.SIGNIFICANT, useForDebugging);
     } else {
       ITreeAppendable _xblockexpression = null;
       {
         ITextRegion _significantTextRegion = this.locationProvider.getSignificantTextRegion(source);
         final ITextRegionWithLineInformation it = ((ITextRegionWithLineInformation) _significantTextRegion);
         ITreeAppendable _xifexpression_1 = null;
-        boolean _notEquals = ObjectExtensions.operator_notEquals(it, null);
-        if (_notEquals) {
+        if (((it != null) && (it != ITextRegion.EMPTY_REGION))) {
           int _offset = it.getOffset();
           int _length = it.getLength();
           int _lineNumber = it.getLineNumber();
           int _endLineNumber = it.getEndLineNumber();
-          LocationData _locationData = new LocationData(_offset, _length, _lineNumber, _endLineNumber, null, null);
-          ITreeAppendable _trace_1 = appendable.trace(_locationData, useForDebugging);
-          _xifexpression_1 = _trace_1;
+          LocationData _locationData = new LocationData(_offset, _length, _lineNumber, _endLineNumber, null);
+          _xifexpression_1 = appendable.trace(_locationData, useForDebugging);
         } else {
           _xifexpression_1 = appendable;
         }
-        _xblockexpression = (_xifexpression_1);
+        _xblockexpression = _xifexpression_1;
       }
       _xifexpression = _xblockexpression;
     }
@@ -55,41 +57,33 @@ public class TreeAppendableUtil {
   public ITreeAppendable traceWithComments(final ITreeAppendable appendable, final EObject source) {
     ITreeAppendable _xifexpression = null;
     if ((appendable instanceof TreeAppendable)) {
-      TreeAppendable _trace = ((TreeAppendable) appendable).trace(source, RegionDescription.INCLUDING_COMMENTS, false);
-      _xifexpression = _trace;
+      _xifexpression = ((TreeAppendable)appendable).trace(source, ILocationInFileProviderExtension.RegionDescription.INCLUDING_COMMENTS, false);
     } else {
       ITreeAppendable _xblockexpression = null;
       {
         ITextRegion _switchResult = null;
         final ILocationInFileProvider locationProvider = this.locationProvider;
         boolean _matched = false;
-        if (!_matched) {
-          if (locationProvider instanceof ILocationInFileProviderExtension) {
-            final ILocationInFileProviderExtension _iLocationInFileProviderExtension = (ILocationInFileProviderExtension)locationProvider;
-            _matched=true;
-            ITextRegion _textRegion = ((ILocationInFileProviderExtension)_iLocationInFileProviderExtension).getTextRegion(source, RegionDescription.INCLUDING_COMMENTS);
-            _switchResult = _textRegion;
-          }
+        if (locationProvider instanceof ILocationInFileProviderExtension) {
+          _matched=true;
+          _switchResult = ((ILocationInFileProviderExtension)this.locationProvider).getTextRegion(source, ILocationInFileProviderExtension.RegionDescription.INCLUDING_COMMENTS);
         }
         if (!_matched) {
-          ITextRegion _fullTextRegion = this.locationProvider.getFullTextRegion(source);
-          _switchResult = _fullTextRegion;
+          _switchResult = this.locationProvider.getFullTextRegion(source);
         }
         final ITextRegionWithLineInformation it = ((ITextRegionWithLineInformation) _switchResult);
         ITreeAppendable _xifexpression_1 = null;
-        boolean _notEquals = ObjectExtensions.operator_notEquals(it, null);
-        if (_notEquals) {
+        if (((!Objects.equal(it, null)) && (it != ITextRegion.EMPTY_REGION))) {
           int _offset = it.getOffset();
           int _length = it.getLength();
           int _lineNumber = it.getLineNumber();
           int _endLineNumber = it.getEndLineNumber();
-          LocationData _locationData = new LocationData(_offset, _length, _lineNumber, _endLineNumber, null, null);
-          ITreeAppendable _trace_1 = appendable.trace(_locationData);
-          _xifexpression_1 = _trace_1;
+          LocationData _locationData = new LocationData(_offset, _length, _lineNumber, _endLineNumber, null);
+          _xifexpression_1 = appendable.trace(_locationData);
         } else {
           _xifexpression_1 = appendable;
         }
-        _xblockexpression = (_xifexpression_1);
+        _xblockexpression = _xifexpression_1;
       }
       _xifexpression = _xblockexpression;
     }

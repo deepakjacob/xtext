@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.sequencertest.impl;
 
@@ -16,8 +13,6 @@ import org.eclipse.xtext.serializer.sequencertest.UnorderedAlternativeValDelegat
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Unordered Alternative Val Delegate</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

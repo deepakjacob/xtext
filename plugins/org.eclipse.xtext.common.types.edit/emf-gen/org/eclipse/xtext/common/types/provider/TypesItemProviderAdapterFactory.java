@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.provider;
 
@@ -11,7 +13,6 @@ import java.util.Collection;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.Notifier;
-
 import org.eclipse.emf.edit.provider.ChangeNotifier;
 import org.eclipse.emf.edit.provider.ComposeableAdapterFactory;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
@@ -23,7 +24,6 @@ import org.eclipse.emf.edit.provider.IItemPropertySource;
 import org.eclipse.emf.edit.provider.INotifyChangedListener;
 import org.eclipse.emf.edit.provider.IStructuredItemContentProvider;
 import org.eclipse.emf.edit.provider.ITreeItemContentProvider;
-
 import org.eclipse.xtext.common.types.util.TypesAdapterFactory;
 
 /**
@@ -34,7 +34,6 @@ import org.eclipse.xtext.common.types.util.TypesAdapterFactory;
  * <!-- begin-user-doc -->
  * <!-- end-user-doc -->
  * @generated
- * @noextend This class is not intended to be subclassed by clients.
  */
 public class TypesItemProviderAdapterFactory extends TypesAdapterFactory implements ComposeableAdapterFactory, IChangeNotifier, IDisposable
 {
@@ -882,7 +881,6 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
-	 * @since 2.1
 	 */
 	protected JvmDelegateTypeReferenceItemProvider jvmDelegateTypeReferenceItemProvider;
 
@@ -891,7 +889,6 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
-	 * @since 2.1
 	 */
 	@Override
 	public Adapter createJvmDelegateTypeReferenceAdapter()
@@ -909,7 +906,6 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
-	 * @since 2.1
 	 */
 	protected JvmSynonymTypeReferenceItemProvider jvmSynonymTypeReferenceItemProvider;
 
@@ -918,7 +914,6 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
-	 * @since 2.1
 	 */
 	@Override
 	public Adapter createJvmSynonymTypeReferenceAdapter()
@@ -936,7 +931,6 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
-	 * @since 2.1
 	 */
 	protected JvmUnknownTypeReferenceItemProvider jvmUnknownTypeReferenceItemProvider;
 
@@ -945,7 +939,6 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
-	 * @since 2.1
 	 */
 	@Override
 	public Adapter createJvmUnknownTypeReferenceAdapter()
@@ -963,7 +956,6 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
-	 * @since 2.1
 	 */
 	protected JvmCustomAnnotationValueItemProvider jvmCustomAnnotationValueItemProvider;
 
@@ -972,7 +964,6 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
-	 * @since 2.1
 	 */
 	@Override
 	public Adapter createJvmCustomAnnotationValueAdapter()
@@ -983,6 +974,33 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 		}
 
 		return jvmCustomAnnotationValueItemProvider;
+	}
+
+	/**
+	 * This keeps track of the one adapter used for all {@link org.eclipse.xtext.common.types.JvmInnerTypeReference} instances.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @since 2.7
+	 */
+	protected JvmInnerTypeReferenceItemProvider jvmInnerTypeReferenceItemProvider;
+
+	/**
+	 * This creates an adapter for a {@link org.eclipse.xtext.common.types.JvmInnerTypeReference}.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @since 2.7
+	 */
+	@Override
+	public Adapter createJvmInnerTypeReferenceAdapter()
+	{
+		if (jvmInnerTypeReferenceItemProvider == null)
+		{
+			jvmInnerTypeReferenceItemProvider = new JvmInnerTypeReferenceItemProvider(this);
+		}
+
+		return jvmInnerTypeReferenceItemProvider;
 	}
 
 	/**
@@ -1132,6 +1150,7 @@ public class TypesItemProviderAdapterFactory extends TypesAdapterFactory impleme
 		if (jvmSynonymTypeReferenceItemProvider != null) jvmSynonymTypeReferenceItemProvider.dispose();
 		if (jvmUnknownTypeReferenceItemProvider != null) jvmUnknownTypeReferenceItemProvider.dispose();
 		if (jvmCustomAnnotationValueItemProvider != null) jvmCustomAnnotationValueItemProvider.dispose();
+		if (jvmInnerTypeReferenceItemProvider != null) jvmInnerTypeReferenceItemProvider.dispose();
 	}
 
 }

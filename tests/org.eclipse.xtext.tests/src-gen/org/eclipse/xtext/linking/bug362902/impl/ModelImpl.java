@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.linking.bug362902.impl;
 
@@ -31,11 +28,11 @@ import org.eclipse.xtext.linking.bug362902.Model;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.linking.bug362902.impl.ModelImpl#getGreetings <em>Greetings</em>}</li>
  *   <li>{@link org.eclipse.xtext.linking.bug362902.impl.ModelImpl#getFavourite <em>Favourite</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

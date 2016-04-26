@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 
 import org.antlr.runtime.BitSet;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.DFA;
 import org.antlr.runtime.FailedPredicateException;
 import org.antlr.runtime.IntStream;
 import org.antlr.runtime.MismatchedTokenException;
@@ -85,14 +86,17 @@ public abstract class AbstractInternalAntlrParser extends Parser {
 			this.recognitionException = recognitionException;
 		}
 		
+		@Override
 		public String getDefaultMessage() {
 			return superGetErrorMessage(getRecognitionException(), getTokenNames());
 		}
 
+		@Override
 		public RecognitionException getRecognitionException() {
 			return recognitionException;
 		}
 
+		@Override
 		public String[] getTokenNames() {
 			return readableTokenNames;
 		}
@@ -106,14 +110,17 @@ public abstract class AbstractInternalAntlrParser extends Parser {
 			this.message = message;
 		}
 		
+		@Override
 		public String getDefaultMessage() {
 			return message;
 		}
 
+		@Override
 		public RecognitionException getRecognitionException() {
 			return null;
 		}
 
+		@Override
 		public String[] getTokenNames() {
 			return readableTokenNames;
 		}
@@ -136,6 +143,7 @@ public abstract class AbstractInternalAntlrParser extends Parser {
 			return (FailedPredicateException) super.getRecognitionException();
 		}
 		
+		@Override
 		public List<AbstractElement> getMissingMandatoryElements() {
 			List<AbstractElement> result = missingMandatoryElements;
 			if (result == null) {
@@ -179,10 +187,12 @@ public abstract class AbstractInternalAntlrParser extends Parser {
 			this.valueConverterException = valueConverterException;
 		}
 
+		@Override
 		public String getDefaultMessage() {
 			return getValueConverterExceptionMessage(getValueConverterException());
 		}
 
+		@Override
 		public ValueConverterException getValueConverterException() {
 			return valueConverterException;
 		}
@@ -230,6 +240,13 @@ public abstract class AbstractInternalAntlrParser extends Parser {
 
 	public TokenStream getInput() {
 		return input;
+	}
+
+	/**
+	 * @since 2.10
+	 */
+	protected ICompositeNode getCurrentNode() {
+		return currentNode;
 	}
 
 	protected abstract IGrammarAccess getGrammarAccess();
@@ -567,7 +584,7 @@ public abstract class AbstractInternalAntlrParser extends Parser {
 
 	private String normalizeEntryRuleName(String entryRuleName) {
 		String antlrEntryRuleName;
-		if (!entryRuleName.startsWith("entryRule")) {
+		if (!entryRuleName.startsWith("entryRule") && !entryRuleName.startsWith("entryNorm")) {
 			if (!entryRuleName.startsWith("rule")) {
 				antlrEntryRuleName = "entryRule" + entryRuleName;
 			} else {
@@ -683,15 +700,16 @@ public abstract class AbstractInternalAntlrParser extends Parser {
 	}
 	
 	protected void newLeafNode(Token token, EObject grammarElement) {
-		if (token != null && token.getTokenIndex() > lastConsumedIndex) {
-			int indexOfTokenBefore = lastConsumedIndex;
-			if (indexOfTokenBefore + 1 < token.getTokenIndex()) {
-				for (int x = indexOfTokenBefore + 1; x < token.getTokenIndex(); x++) {
-					Token hidden = input.get(x);
-					createLeafNode(hidden, null);
-				}
+		if (token == null)
+			return;
+
+		final int tokenIndex = token.getTokenIndex();
+		if (tokenIndex > lastConsumedIndex) {
+			for (int x = lastConsumedIndex + 1; x < tokenIndex; x++) {
+				Token hidden = input.get(x);
+				createLeafNode(hidden, null);
 			}
-			lastConsumedIndex = token.getTokenIndex();
+			lastConsumedIndex = tokenIndex;
 			lastConsumedNode = createLeafNode(token, grammarElement);
 		}
 	}
@@ -710,5 +728,17 @@ public abstract class AbstractInternalAntlrParser extends Parser {
 	
 	public IAstFactory getSemanticModelBuilder() {
 		return semanticModelBuilder;
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	protected static short[][] unpackEncodedStringArray(String[] arr) {
+		int numStates = arr.length;
+		short[][] result = new short[numStates][];
+		for (int i = 0; i < numStates; i++) {
+			result[i] = DFA.unpackEncodedString(arr[i]);
+		}
+		return result;
 	}
 }

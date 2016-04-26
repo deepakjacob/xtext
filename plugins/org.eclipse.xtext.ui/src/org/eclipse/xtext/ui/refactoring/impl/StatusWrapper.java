@@ -62,7 +62,7 @@ public class StatusWrapper {
 		IRegion region = null;
 		if (textRegion != null)
 			region = new Region(textRegion.getOffset(), textRegion.getLength());
-		IFile file = projectUtil.findFileStorage(EcoreUtil2.getNormalizedURI(eObject), false);
+		IFile file = projectUtil.findFileStorage(EcoreUtil2.getPlatformResourceOrNormalizedURI(eObject), false);
 		if(file == null)
 			return null;
 		return new FileStatusContext(file, region);
@@ -108,6 +108,7 @@ public class StatusWrapper {
 
 	protected String format(String message, Object... elements) {
 		Object[] strings = toArray(transform(newArrayList(elements), new Function<Object, String>() {
+			@Override
 			public String apply(Object from) {
 				return toString.invoke(from);
 			}

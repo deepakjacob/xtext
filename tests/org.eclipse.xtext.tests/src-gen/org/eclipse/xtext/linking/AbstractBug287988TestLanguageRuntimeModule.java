@@ -6,7 +6,6 @@ package org.eclipse.xtext.linking;
 import java.util.Properties;
 
 import org.eclipse.xtext.Constants;
-import org.eclipse.xtext.service.DefaultRuntimeModule;
 
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
@@ -14,8 +13,8 @@ import com.google.inject.name.Names;
 /**
  * Manual modifications go to {org.eclipse.xtext.linking.Bug287988TestLanguageRuntimeModule}
  */
- @SuppressWarnings("all")
-public abstract class AbstractBug287988TestLanguageRuntimeModule extends DefaultRuntimeModule {
+@SuppressWarnings("all")
+public abstract class AbstractBug287988TestLanguageRuntimeModule extends org.eclipse.xtext.service.DefaultRuntimeModule {
 
 	protected Properties properties = null;
 
@@ -77,11 +76,6 @@ public abstract class AbstractBug287988TestLanguageRuntimeModule extends Default
 	// contributed by org.eclipse.xtext.generator.grammarAccess.GrammarAccessFragment
 	public Class<? extends org.eclipse.xtext.IGrammarAccess> bindIGrammarAccess() {
 		return org.eclipse.xtext.linking.services.Bug287988TestLanguageGrammarAccess.class;
-	}
-
-	// contributed by org.eclipse.xtext.generator.parseTreeConstructor.ParseTreeConstructorFragment
-	public Class<? extends org.eclipse.xtext.parsetree.reconstr.IParseTreeConstructor> bindIParseTreeConstructor() {
-		return org.eclipse.xtext.linking.parseTreeConstruction.Bug287988TestLanguageParsetreeConstructor.class;
 	}
 
 	// contributed by org.eclipse.xtext.generator.serializer.SerializerFragment

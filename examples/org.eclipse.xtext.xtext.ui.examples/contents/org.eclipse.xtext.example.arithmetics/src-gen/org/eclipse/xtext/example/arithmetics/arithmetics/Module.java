@@ -1,7 +1,11 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * ******************************************************************************
+ * Copyright (c) 2015 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *  ******************************************************************************
  */
 package org.eclipse.xtext.example.arithmetics.arithmetics;
 
@@ -16,12 +20,12 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.example.arithmetics.arithmetics.Module#getName <em>Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.example.arithmetics.arithmetics.Module#getImports <em>Imports</em>}</li>
  *   <li>{@link org.eclipse.xtext.example.arithmetics.arithmetics.Module#getStatements <em>Statements</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.example.arithmetics.arithmetics.ArithmeticsPackage#getModule()
  * @model

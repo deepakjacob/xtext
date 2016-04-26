@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.provider;
 
@@ -11,19 +13,11 @@ import java.util.List;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EStructuralFeature;
-
 import org.eclipse.emf.edit.provider.ComposeableAdapterFactory;
-import org.eclipse.emf.edit.provider.IEditingDomainItemProvider;
-import org.eclipse.emf.edit.provider.IItemLabelProvider;
 import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
-import org.eclipse.emf.edit.provider.IItemPropertySource;
-import org.eclipse.emf.edit.provider.IStructuredItemContentProvider;
-import org.eclipse.emf.edit.provider.ITreeItemContentProvider;
 import org.eclipse.emf.edit.provider.ItemPropertyDescriptor;
 import org.eclipse.emf.edit.provider.ViewerNotification;
-
 import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.common.types.TypesFactory;
 import org.eclipse.xtext.common.types.TypesPackage;
@@ -34,14 +28,7 @@ import org.eclipse.xtext.common.types.TypesPackage;
  * <!-- end-user-doc -->
  * @generated
  */
-public class JvmOperationItemProvider
-	extends JvmExecutableItemProvider
-	implements
-		IEditingDomainItemProvider,
-		IStructuredItemContentProvider,
-		ITreeItemContentProvider,
-		IItemLabelProvider,
-		IItemPropertySource
+public class JvmOperationItemProvider extends JvmExecutableItemProvider
 {
 	/**
 	 * This constructs an instance from a factory and a notifier.
@@ -70,6 +57,10 @@ public class JvmOperationItemProvider
 			addStaticPropertyDescriptor(object);
 			addFinalPropertyDescriptor(object);
 			addAbstractPropertyDescriptor(object);
+			addSynchronizedPropertyDescriptor(object);
+			addDefaultPropertyDescriptor(object);
+			addNativePropertyDescriptor(object);
+			addStrictFloatingPointPropertyDescriptor(object);
 		}
 		return itemPropertyDescriptors;
 	}
@@ -144,6 +135,102 @@ public class JvmOperationItemProvider
 	}
 
 	/**
+	 * This adds a property descriptor for the Synchronized feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @since 2.4
+	 */
+	protected void addSynchronizedPropertyDescriptor(Object object)
+	{
+		itemPropertyDescriptors.add
+			(createItemPropertyDescriptor
+				(((ComposeableAdapterFactory)adapterFactory).getRootAdapterFactory(),
+				 getResourceLocator(),
+				 getString("_UI_JvmOperation_synchronized_feature"),
+				 getString("_UI_PropertyDescriptor_description", "_UI_JvmOperation_synchronized_feature", "_UI_JvmOperation_type"),
+				 TypesPackage.Literals.JVM_OPERATION__SYNCHRONIZED,
+				 true,
+				 false,
+				 false,
+				 ItemPropertyDescriptor.BOOLEAN_VALUE_IMAGE,
+				 null,
+				 null));
+	}
+
+	/**
+	 * This adds a property descriptor for the Default feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @since 2.4
+	 * @generated
+	 */
+	protected void addDefaultPropertyDescriptor(Object object)
+	{
+		itemPropertyDescriptors.add
+			(createItemPropertyDescriptor
+				(((ComposeableAdapterFactory)adapterFactory).getRootAdapterFactory(),
+				 getResourceLocator(),
+				 getString("_UI_JvmOperation_default_feature"),
+				 getString("_UI_PropertyDescriptor_description", "_UI_JvmOperation_default_feature", "_UI_JvmOperation_type"),
+				 TypesPackage.Literals.JVM_OPERATION__DEFAULT,
+				 true,
+				 false,
+				 false,
+				 ItemPropertyDescriptor.BOOLEAN_VALUE_IMAGE,
+				 null,
+				 null));
+	}
+
+	/**
+	 * This adds a property descriptor for the Native feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @since 2.4
+	 */
+	protected void addNativePropertyDescriptor(Object object)
+	{
+		itemPropertyDescriptors.add
+			(createItemPropertyDescriptor
+				(((ComposeableAdapterFactory)adapterFactory).getRootAdapterFactory(),
+				 getResourceLocator(),
+				 getString("_UI_JvmOperation_native_feature"),
+				 getString("_UI_PropertyDescriptor_description", "_UI_JvmOperation_native_feature", "_UI_JvmOperation_type"),
+				 TypesPackage.Literals.JVM_OPERATION__NATIVE,
+				 true,
+				 false,
+				 false,
+				 ItemPropertyDescriptor.BOOLEAN_VALUE_IMAGE,
+				 null,
+				 null));
+	}
+
+	/**
+	 * This adds a property descriptor for the Strict Floating Point feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @since 2.4
+	 */
+	protected void addStrictFloatingPointPropertyDescriptor(Object object)
+	{
+		itemPropertyDescriptors.add
+			(createItemPropertyDescriptor
+				(((ComposeableAdapterFactory)adapterFactory).getRootAdapterFactory(),
+				 getResourceLocator(),
+				 getString("_UI_JvmOperation_strictFloatingPoint_feature"),
+				 getString("_UI_PropertyDescriptor_description", "_UI_JvmOperation_strictFloatingPoint_feature", "_UI_JvmOperation_type"),
+				 TypesPackage.Literals.JVM_OPERATION__STRICT_FLOATING_POINT,
+				 true,
+				 false,
+				 false,
+				 ItemPropertyDescriptor.BOOLEAN_VALUE_IMAGE,
+				 null,
+				 null));
+	}
+
+	/**
 	 * This specifies how to implement {@link #getChildren} and is used to deduce an appropriate feature for an
 	 * {@link org.eclipse.emf.edit.command.AddCommand}, {@link org.eclipse.emf.edit.command.RemoveCommand} or
 	 * {@link org.eclipse.emf.edit.command.MoveCommand} in {@link #createCommand}.
@@ -203,6 +290,7 @@ public class JvmOperationItemProvider
 			getString("_UI_JvmOperation_type") :
 			getString("_UI_JvmOperation_type") + " " + label;
 	}
+	
 
 	/**
 	 * This handles model notifications by calling {@link #updateChildren} to update any cached
@@ -221,6 +309,10 @@ public class JvmOperationItemProvider
 			case TypesPackage.JVM_OPERATION__STATIC:
 			case TypesPackage.JVM_OPERATION__FINAL:
 			case TypesPackage.JVM_OPERATION__ABSTRACT:
+			case TypesPackage.JVM_OPERATION__SYNCHRONIZED:
+			case TypesPackage.JVM_OPERATION__DEFAULT:
+			case TypesPackage.JVM_OPERATION__NATIVE:
+			case TypesPackage.JVM_OPERATION__STRICT_FLOATING_POINT:
 				fireNotifyChanged(new ViewerNotification(notification, notification.getNotifier(), false, true));
 				return;
 			case TypesPackage.JVM_OPERATION__RETURN_TYPE:
@@ -282,6 +374,11 @@ public class JvmOperationItemProvider
 			(createChildParameter
 				(TypesPackage.Literals.JVM_OPERATION__RETURN_TYPE,
 				 TypesFactory.eINSTANCE.createJvmUnknownTypeReference()));
+
+		newChildDescriptors.add
+			(createChildParameter
+				(TypesPackage.Literals.JVM_OPERATION__RETURN_TYPE,
+				 TypesFactory.eINSTANCE.createJvmInnerTypeReference()));
 
 		newChildDescriptors.add
 			(createChildParameter

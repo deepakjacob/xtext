@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.provider;
 
@@ -11,11 +13,8 @@ import java.util.List;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.common.util.ResourceLocator;
-
 import org.eclipse.emf.ecore.EStructuralFeature;
-
 import org.eclipse.emf.edit.provider.ComposeableAdapterFactory;
 import org.eclipse.emf.edit.provider.IEditingDomainItemProvider;
 import org.eclipse.emf.edit.provider.IItemLabelProvider;
@@ -25,7 +24,6 @@ import org.eclipse.emf.edit.provider.IStructuredItemContentProvider;
 import org.eclipse.emf.edit.provider.ITreeItemContentProvider;
 import org.eclipse.emf.edit.provider.ItemProviderAdapter;
 import org.eclipse.emf.edit.provider.ViewerNotification;
-
 import org.eclipse.xtext.common.types.JvmAnnotationReference;
 import org.eclipse.xtext.common.types.TypesFactory;
 import org.eclipse.xtext.common.types.TypesPackage;
@@ -36,7 +34,7 @@ import org.eclipse.xtext.common.types.TypesPackage;
  * <!-- end-user-doc -->
  * @generated
  */
-public class JvmAnnotationReferenceItemProvider
+public class JvmAnnotationReferenceItemProvider 
 	extends ItemProviderAdapter
 	implements
 		IEditingDomainItemProvider,
@@ -111,7 +109,7 @@ public class JvmAnnotationReferenceItemProvider
 		if (childrenFeatures == null)
 		{
 			super.getChildrenFeatures(object);
-			childrenFeatures.add(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES);
+			childrenFeatures.add(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES);
 		}
 		return childrenFeatures;
 	}
@@ -153,6 +151,7 @@ public class JvmAnnotationReferenceItemProvider
 	{
 		return getString("_UI_JvmAnnotationReference_type");
 	}
+	
 
 	/**
 	 * This handles model notifications by calling {@link #updateChildren} to update any cached
@@ -168,7 +167,7 @@ public class JvmAnnotationReferenceItemProvider
 
 		switch (notification.getFeatureID(JvmAnnotationReference.class))
 		{
-			case TypesPackage.JVM_ANNOTATION_REFERENCE__VALUES:
+			case TypesPackage.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES:
 				fireNotifyChanged(new ViewerNotification(notification, notification.getNotifier(), true, false));
 				return;
 		}
@@ -189,67 +188,67 @@ public class JvmAnnotationReferenceItemProvider
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmIntAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmBooleanAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmByteAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmShortAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmLongAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmDoubleAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmFloatAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmCharAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmStringAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmTypeAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmAnnotationAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmEnumAnnotationValue()));
 
 		newChildDescriptors.add
 			(createChildParameter
-				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__VALUES,
+				(TypesPackage.Literals.JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES,
 				 TypesFactory.eINSTANCE.createJvmCustomAnnotationValue()));
 	}
 

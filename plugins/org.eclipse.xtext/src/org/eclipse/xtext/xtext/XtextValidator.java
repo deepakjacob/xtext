@@ -7,6 +7,8 @@
  *******************************************************************************/
 package org.eclipse.xtext.xtext;
 
+import static org.eclipse.xtext.xtext.XtextConfigurableIssueCodes.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,7 +19,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.emf.codegen.util.CodeGenUtil;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
@@ -51,6 +52,8 @@ import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.Group;
 import org.eclipse.xtext.Keyword;
+import org.eclipse.xtext.NamedArgument;
+import org.eclipse.xtext.Parameter;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.ReferencedMetamodel;
 import org.eclipse.xtext.RuleCall;
@@ -60,6 +63,7 @@ import org.eclipse.xtext.UnorderedGroup;
 import org.eclipse.xtext.XtextPackage;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.conversion.ValueConverterException;
+import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
@@ -72,10 +76,10 @@ import org.eclipse.xtext.util.Strings;
 import org.eclipse.xtext.util.Triple;
 import org.eclipse.xtext.util.Tuples;
 import org.eclipse.xtext.util.XtextSwitch;
+import org.eclipse.xtext.util.internal.CodeGenUtil2;
 import org.eclipse.xtext.validation.AbstractDeclarativeValidator;
 import org.eclipse.xtext.validation.AbstractValidationMessageAcceptor;
 import org.eclipse.xtext.validation.Check;
-import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.eclipse.xtext.xtext.ecoreInference.SourceAdapter;
 
@@ -94,16 +98,6 @@ import com.google.inject.Inject;
  */
 public class XtextValidator extends AbstractDeclarativeValidator {
 
-	public static final String INVALID_METAMODEL_NAME = "org.eclipse.xtext.grammar.InvalidMetaModelName";
-	public static final String INVALID_ACTION_USAGE = "org.eclipse.xtext.grammar.InvalidActionUsage";
-	public static final String EMPTY_ENUM_LITERAL= "org.eclipse.xtext.grammar.EmptyEnumLiteral";
-	public static final String INVALID_HIDDEN_TOKEN = "org.eclipse.xtext.grammar.InvalidHiddenToken";
-	public static final String INVALID_HIDDEN_TOKEN_FRAGMENT = "org.eclipse.xtext.grammar.InvalidHiddenTokenFragment";
-	public static final String INVALID_PACKAGE_REFERENCE_INHERITED = "org.eclipse.xtext.grammar.InvalidPackageReference.inherited";
-	public static final String INVALID_PACKAGE_REFERENCE_EXTERNAL = "org.eclipse.xtext.grammar.InvalidPackageReference.external";
-	public static final String INVALID_PACKAGE_REFERENCE_NOT_ON_CLASSPATH = "org.eclipse.xtext.grammar.InvalidPackageReference.notOnClasspath";
-	public static final String INVALID_TERMINALRULE_NAME = "org.eclipse.xtext.grammar.InvalidTerminalRuleName";
-
 	@Inject
 	private IValueConverterService valueConverter;
 	
@@ -116,8 +110,74 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	protected List<EPackage> getEPackages() {
 		return Collections.<EPackage>singletonList(XtextPackage.eINSTANCE);
 	}
+	
+	@Check
+	public void checkOrderOfArguments(RuleCall call) {
+		AbstractRule rule = call.getRule();
+		if (rule instanceof ParserRule) {
+			Set<Parameter> usedParameters = Sets.newHashSet();
+			boolean hasError = false;
+			boolean hasPositionalArgument = false;
+			boolean hasNamedArgument = false;
+			for(NamedArgument argument: call.getArguments()) {
+				Parameter parameter = argument.getParameter();
+				if (parameter == null || parameter.eIsProxy()) {
+					hasError = true;
+				} else if (!usedParameters.add(parameter)) {
+					hasError = true;
+					error("Duplicate value for parameter " + parameter.getName(),
+							argument, XtextPackage.Literals.NAMED_ARGUMENT__PARAMETER);
+				}
+				if (!argument.isCalledByName()) {
+					hasPositionalArgument = true;
+				} else {
+					hasNamedArgument = true;
+				}
+			}
+			if (hasError) {
+				return;
+			}
+			List<Parameter> parameters = ((ParserRule) rule).getParameters();
+			if (!hasPositionalArgument) {
+				if (usedParameters.size() != parameters.size()) {
+					StringBuilder missing = new StringBuilder();
+					int count = 0;
+					for(Parameter parameter: parameters) {
+						if (!usedParameters.contains(parameter)) {
+							if (count > 0) {
+								missing.append(", ");
+							}
+							missing.append(parameter.getName());
+							count++;
+						}
+					}
+					if (count == 1) {
+						error("Missing argument for parameter " + missing,
+								call, XtextPackage.Literals.RULE_CALL__RULE);
+					} else {
+						error(count + " missing arguments for the following parameters: " + missing,
+								call, XtextPackage.Literals.RULE_CALL__RULE); 
+					}
+				}
+			} else {
+				if (usedParameters.size() != parameters.size()) {
+					error(String.format("Expected %d arguments but got %d", parameters.size(), usedParameters.size()),
+							call, XtextPackage.Literals.RULE_CALL__RULE);
+				} else if (hasNamedArgument) {
+					for(int i = 0, max = usedParameters.size(); i < max; i++) {
+						NamedArgument argument = call.getArguments().get(i);
+						Parameter param = parameters.get(i);
+						if (argument.isCalledByName() && argument.getParameter() != param) {
+							error("Out of sequence named argument. Expected value for " + param.getName(),
+									argument, XtextPackage.Literals.NAMED_ARGUMENT__PARAMETER);
+						}
+					}
+				}
+			}
+		}
+	}
 
-	@Check(CheckType.FAST)
+	@Check
 	public void checkGrammarUsesMaxOneOther(Grammar grammar) {
 		if (grammar.getUsedGrammars().size() > 1) {
 			for(int i = 1; i < grammar.getUsedGrammars().size(); i++) {
@@ -129,7 +189,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 		}
 	}
 	
-	@Check(CheckType.FAST)
+	@Check
 	public void checkGrammarRecursiveReference(Grammar grammar) {
 		Set<Grammar> visitedGrammars = Sets.newHashSet(grammar);
 		for (int i = 0; i < grammar.getUsedGrammars().size(); i++) {
@@ -155,7 +215,11 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	
 	@Check
 	public void checkGrammarName(Grammar g) {
-		String[] split = g.getName().split("\\.");
+		String name = g.getName();
+		if (name == null) {
+			return;
+		}
+		String[] split = name.split("\\.");
 		if (split.length == 1)
 			error("You must use a namespace.", XtextPackage.Literals.GRAMMAR__NAME);
 		for (int i = 0; i < split.length - 1; i++) {
@@ -211,10 +275,9 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	public void checkGeneratedMetamodel(GeneratedMetamodel metamodel) {
 		if (metamodel.getName() != null && metamodel.getName().length() != 0)
 			if (Character.isUpperCase(metamodel.getName().charAt(0)))
-				warning(
-						"Metamodel names should start with a lower case letter.",
+				addIssue("Metamodel names should start with a lower case letter.",
+						metamodel,
 						XtextPackage.Literals.GENERATED_METAMODEL__NAME,
-						ValidationMessageAcceptor.INSIGNIFICANT_INDEX,
 						INVALID_METAMODEL_NAME,
 						metamodel.getName());
 	}
@@ -273,11 +336,11 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 				if ("Class".equals(accessorName) || "Name".equals(accessorName))
 					accessorName += "_";
 				accessorNameToElement.put("get" + accessorName, classifier);
-				String classifierConstantName = CodeGenUtil.format(classifier.getName(), '_', null, true, true).toUpperCase();
+				String classifierConstantName = CodeGenUtil2.format(classifier.getName(), '_', null, true, true).toUpperCase();
 				constantNameToElement.put(classifierConstantName, classifier);
 				if (classifier instanceof EClass) {
 					for(EStructuralFeature feature: ((EClass) classifier).getEAllStructuralFeatures()) {
-						String featureConstantPart = CodeGenUtil.format(feature.getName(), '_', null, false, false).toUpperCase();
+						String featureConstantPart = CodeGenUtil2.format(feature.getName(), '_', null, false, false).toUpperCase();
 						String featureConstantName = classifierConstantName + "__" + featureConstantPart;
 						constantNameToElement.put(featureConstantName, feature);
 						String featureAccessorName = "get" + classifier.getName() + "_" + Strings.toFirstUpper(feature.getName());
@@ -415,8 +478,8 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 			EPackage generatedPackage = generatedMetamodel.getEPackage();
 			if (generatedPackage != null && nsURI.equals((generatedPackage.getNsURI()))) {
 				if (!text.equals(nsURI)) {
-					error(
-							"Metamodels that have been generated by a super grammar must be referenced by nsURI: " + nsURI, 
+					addIssue("Metamodels that have been generated by a super grammar must be referenced by nsURI: " + nsURI,
+							metamodel,
 							XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE,
 							INVALID_PACKAGE_REFERENCE_INHERITED,
 							nsURI);
@@ -433,8 +496,8 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 		if (referencedPackage.eIsProxy() || isRuntime(metamodelReference))
 			return;
 		if (isRegisteredPackage(referencedPackage)) {
-			warning(
-					"The imported package is not on the classpath of this project which may lead to follow up errors.", 
+			addIssue("The imported package is not on the classpath of this project which may lead to follow-up errors.",
+					metamodelReference,
 					XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE,
 					INVALID_PACKAGE_REFERENCE_NOT_ON_CLASSPATH,
 					importURI);
@@ -447,14 +510,14 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 					QualifiedName.create(referencedPackage.getNsURI()), 
 					false);
 			if (!Iterables.isEmpty(packagesInIndex)) {
-				warning(
-						"Packages should be imported by their namespace URI.", 
+				addIssue("Packages should be imported by their namespace URI.",
+						metamodelReference,
 						XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE,
 						INVALID_PACKAGE_REFERENCE_EXTERNAL,
 						referencedPackage.getNsURI());
 			} else if (!ClasspathUriUtil.isClasspathUri(URI.createURI(importURI))) {
-				warning(
-						"The imported package is not on the classpath of this project which may lead to follow up errors.", 
+				addIssue("The imported package is not on the classpath of this project which may lead to follow-up errors.",
+						metamodelReference,
 						XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE,
 						INVALID_PACKAGE_REFERENCE_NOT_ON_CLASSPATH,
 						importURI);
@@ -478,20 +541,20 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 					Iterable<IEObjectDescription> packagesInIndex = descriptions.getExportedObjects(EcorePackage.Literals.EPACKAGE, QualifiedName.create(importURI), false);
 					if (!Iterables.isEmpty(packagesInIndex)) {
 						if (setting.getEObject().eResource().getURI().isPlatformResource())
-							warning(
-									"The imported package refers to elements the package registry instead of using the instances from the workspace", 
+							addIssue("The imported package refers to elements in the package registry instead of using the instances from the workspace",
+									metamodelReference,
 									XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE,
 									INVALID_PACKAGE_REFERENCE_EXTERNAL,
 									referencedPackage.getNsURI());
 						else
-							warning(
-									"The imported package refers to elements the package registry instead of using the instances from the workspace", 
+							addIssue("The imported package refers to elements in the package registry instead of using the instances from the workspace", 
+									metamodelReference,
 									XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE,
 									INVALID_PACKAGE_REFERENCE_EXTERNAL);
 						return;
 					} else {
-						warning(
-								"The imported package refers to elements that are not on the classpath of this project. The package '" + transitive.getNsURI() + "' was loaded from the registry.", 
+						addIssue("The imported package refers to elements that are not on the classpath of this project. The package '" + transitive.getNsURI() + "' was loaded from the registry.",
+								metamodelReference,
 								XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE,
 								INVALID_PACKAGE_REFERENCE_NOT_ON_CLASSPATH,
 								referencedPackage.getNsURI());
@@ -555,6 +618,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 		Grammar grammar = GrammarUtil.getGrammar(declaration);
 		Iterable<String> nsUris = Iterables.transform(grammar.getMetamodelDeclarations(),
 				new Function<AbstractMetamodelDeclaration, String>() {
+					@Override
 					public String apply(AbstractMetamodelDeclaration param) {
 						if (param.getEPackage() != null)
 							return param.getEPackage().getNsURI();
@@ -562,6 +626,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 					}
 				});
 		int count = Iterables.size(Iterables.filter(nsUris, new Predicate<String>() {
+			@Override
 			public boolean apply(String param) {
 				return declaration.getEPackage().getNsURI().equals(param);
 			}
@@ -628,6 +693,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 					if (!superGrammar)
 						message = message + " This grammar contains another rule '" + name + "'.";
 					error(message, XtextPackage.Literals.ABSTRACT_RULE__NAME);
+					return;
 				}
 			}
 			else {
@@ -645,7 +711,11 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 					builder.append("'").append(name).append("'");
 				}
 				error(message + " The conflicting rules are " + builder + ".", XtextPackage.Literals.ABSTRACT_RULE__NAME);
+				return;
 			}
+		}
+		if (SuperCallScope.SUPER.equals(rule.getName())) {
+			addIssue("Discouraged rule name 'super'", rule, XtextPackage.Literals.ABSTRACT_RULE__NAME, DISCOURAGED_RULE_NAME);
 		}
 	}
 
@@ -686,7 +756,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	@Check
 	public void checkUnassignedRuleCallAllowed(final RuleCall call) {
 		if (call.getRule() != null && !call.getRule().eIsProxy() && GrammarUtil.containingAssignment(call) == null) {
-			AbstractRule container = EcoreUtil2.getContainerOfType(call, AbstractRule.class);
+			AbstractRule container = GrammarUtil.containingRule(call);
 			if (call.getRule() instanceof ParserRule) {
 				if (container instanceof TerminalRule) {
 					getMessageAcceptor().acceptError(
@@ -695,9 +765,12 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 							XtextPackage.Literals.RULE_CALL__RULE,
 							ValidationMessageAcceptor.INSIGNIFICANT_INDEX,
 							null);
+				} else {
+					ParserRule parserRule = (ParserRule) call.getRule();
+					if (!GrammarUtil.isDatatypeRule(parserRule) && !parserRule.isFragment()) {
+						checkCurrentMustBeUnassigned(call);
+					}
 				}
-				else if (!GrammarUtil.isDatatypeRule((ParserRule) call.getRule()))
-					checkCurrentMustBeUnassigned(call);
 			}
 			if (call.getRule() instanceof EnumRule) {
 				if (container instanceof TerminalRule) {
@@ -716,7 +789,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	public void checkTerminalFragmentCalledFromTerminalRule(final RuleCall call) {
 		if (call.getRule() != null && !call.getRule().eIsProxy()) {
 			if (call.getRule() instanceof TerminalRule && ((TerminalRule) call.getRule()).isFragment()) {
-				AbstractRule container = EcoreUtil2.getContainerOfType(call, AbstractRule.class);
+				AbstractRule container = GrammarUtil.containingRule(call);
 				if (!(container instanceof TerminalRule)) {
 					getMessageAcceptor().acceptError(
 							"Only terminal rules may use terminal fragments.", 
@@ -730,12 +803,11 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	}
 
 	private void checkCurrentMustBeUnassigned(final AbstractElement element) {
-		ParserRule rule = GrammarUtil.containingParserRule(element);
+		final ParserRule rule = GrammarUtil.containingParserRule(element);
 		if (GrammarUtil.isDatatypeRule(rule))
 			return;
-		
 		XtextSwitch<Boolean> visitor = new XtextSwitch<Boolean>() {
-			private boolean isNull = true;
+			private boolean isNull = !rule.isFragment();
 
 			@Override
 			public Boolean caseAbstractElement(AbstractElement object) {
@@ -783,7 +855,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 			public Boolean caseAction(Action object) {
 				if (object == element) {
 					if (!(isNull && !isMany(object))) {
-						error("An unassigned action is not allowed, when the 'current' was already created.", null);
+						error("An unassigned action is not allowed, when the 'current' was already created.", object, null);
 						checkDone();
 					}
 				}
@@ -794,8 +866,13 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 			@Override
 			public Boolean caseRuleCall(RuleCall object) {
 				if (object == element) {
+					AbstractRule calledRule = object.getRule();
+					if (calledRule instanceof ParserRule && ((ParserRule) calledRule).isFragment()) {
+						isNull = false;
+						return isNull;
+					}
 					if (!(isNull && !isMany(object))) {
-						error("An unassigned rule call is not allowed, when the 'current' was already created.", null);
+						error("An unassigned rule call is not allowed, when the 'current' was already created.", object, null);
 						checkDone();
 					}
 				}
@@ -828,6 +905,10 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	public void checkAssignedActionAfterAssignment(final Action action) {
 		if (action.getFeature() != null) {
 			ParserRule rule = GrammarUtil.containingParserRule(action);
+			if (rule.isFragment() && !rule.isWildcard()) {
+				error("An action is not allowed in fragments.", action, null);
+				return;
+			}
 			XtextSwitch<Boolean> visitor = new XtextSwitch<Boolean>() {
 				private boolean assignedActionAllowed = false;
 
@@ -882,7 +963,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 				public Boolean caseAction(Action object) {
 					if (object == action) {
 						if (!assignedActionAllowed) {
-							error("An action is not allowed, when the current may still be unassigned.", null);
+							error("An action is not allowed in fragments and when the current may still be unassigned.", null);
 							checkDone();
 						}
 					}
@@ -901,7 +982,7 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 
 				@Override
 				public Boolean caseParserRule(ParserRule object) {
-					assignedActionAllowed = !GrammarUtil.isDatatypeRule(object);
+					assignedActionAllowed = !GrammarUtil.isDatatypeRule(object) && !object.isFragment();
 					return assignedActionAllowed;
 				}
 
@@ -947,9 +1028,11 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 			}
 			if (otherDecl.getEnumLiteral() == decl.getEnumLiteral()) {
 				if (!decl.getEnumLiteral().getLiteral().equals(decl.getLiteral().getValue()))
-					warning("Enum literal '" + decl.getEnumLiteral().getName()
+					addIssue("Enum literal '" + decl.getEnumLiteral().getName()
 							+ "' has already been defined with literal '" + decl.getEnumLiteral().getLiteral() + "'.",
-							XtextPackage.Literals.ENUM_LITERAL_DECLARATION__ENUM_LITERAL);
+							decl,
+							XtextPackage.Literals.ENUM_LITERAL_DECLARATION__ENUM_LITERAL,
+							DUPLICATE_ENUM_LITERAL);
 				return;
 			}
 		}
@@ -958,10 +1041,9 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	@Check
 	public void checkEnumLiteralIsValid(EnumLiteralDeclaration decl) {
 		if ("".equals(decl.getLiteral().getValue()))
-			error(
-					"Enum literal must not be an empty string.", 
+			addIssue("Enum literal must not be an empty string.",
+					decl,
 					XtextPackage.Literals.ENUM_LITERAL_DECLARATION__LITERAL,
-					ValidationMessageAcceptor.INSIGNIFICANT_INDEX,
 					EMPTY_ENUM_LITERAL,
 					decl.getEnumLiteral().getName());
 	}
@@ -985,6 +1067,28 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	}
 	
 	@Check
+	public void checkKeywordNotEmpty(final Keyword keyword) {
+		if (keyword.getValue().length()==0 && !(keyword.eContainer() instanceof EnumLiteralDeclaration)) {
+			addIssue("A keyword cannot be empty.", 
+					keyword, 
+					null,
+					EMPTY_KEYWORD);
+		}
+	}
+	
+	@Check
+	public void checkKeywordNoSpaces(final Keyword keyword) {
+		if (keyword.getValue() != null && !(keyword.eContainer() instanceof EnumLiteralDeclaration)) {
+			if (keyword.getValue().contains(" ") || keyword.getValue().contains("\t")) {
+				addIssue("A keyword should non contain spaces.", 
+						keyword, 
+						null,
+						SPACES_IN_KEYWORD);
+			}
+		}
+	}
+	
+	@Check
 	public void checkKeywordHidesTerminalRule(final Keyword keyword) {
 		if (keywordHidesTerminalInspector == null)
 			keywordHidesTerminalInspector = new KeywordInspector(this);
@@ -1000,11 +1104,9 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	@Check
 	public void checkActionInUnorderedGroup(final Action action) {
 		if (EcoreUtil2.getContainerOfType(action, UnorderedGroup.class) != null)
-			error(
-					"Actions may not be used in unordered groups.", 
+			addIssue("Actions may not be used in unordered groups.", 
 					action, 
 					null,
-					ValidationMessageAcceptor.INSIGNIFICANT_INDEX,
 					INVALID_ACTION_USAGE);
 	}
 	
@@ -1070,16 +1172,14 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 			AbstractRule hiddenToken = hiddenTokens.get(i);
 			if (hiddenToken instanceof TerminalRule) {
 				if (((TerminalRule) hiddenToken).isFragment())
-					error(
-							"Cannot use terminal fragments as hidden tokens.", 
+					addIssue("Cannot use terminal fragments as hidden tokens.", 
 							owner, 
 							reference,
 							i,
 							INVALID_HIDDEN_TOKEN_FRAGMENT, 
 							String.valueOf(i));
 			} else {
-				error(
-						"Only terminal rules may be used as hidden tokens.", 
+				addIssue("Only terminal rules may be used as hidden tokens.", 
 						owner, 
 						reference,
 						i,
@@ -1098,7 +1198,29 @@ public class XtextValidator extends AbstractDeclarativeValidator {
 	@Check
 	public void checkTerminalRuleNamingConventions(TerminalRule terminalRule){
 		if(!terminalRule.getName().equals(terminalRule.getName().toUpperCase()))
-			warning("TerminalRule must be written in uppercase.", terminalRule, XtextPackage.eINSTANCE.getAbstractRule_Name(),INVALID_TERMINALRULE_NAME, terminalRule.getName());
+			addIssue("TerminalRule must be written in uppercase.", terminalRule, XtextPackage.eINSTANCE.getAbstractRule_Name(),
+					INVALID_TERMINALRULE_NAME, terminalRule.getName());
+	}
+	
+	@Check
+	public void checkOppositeReferenceUsed(Assignment assignment) {
+		Severity severity = getIssueSeverities(getContext(), getCurrentObject()).getSeverity(BIDIRECTIONAL_REFERENCE);
+		if (severity == null || severity == Severity.IGNORE) {
+			// Don't perform any check if the result is ignored
+			return;
+		}
+		EClassifier classifier = GrammarUtil.findCurrentType(assignment);
+		if (classifier instanceof EClass) {
+			EStructuralFeature feature = ((EClass) classifier).getEStructuralFeature(assignment.getFeature());
+			if (feature instanceof EReference) {
+				EReference reference = (EReference) feature;
+				if (reference.getEOpposite() != null && !(reference.isContainment() || reference.isContainer())) {
+					addIssue("The feature '" + assignment.getFeature() + "' is a bidirectional reference."
+							+ " This may cause problems in the linking process.",
+							assignment, XtextPackage.eINSTANCE.getAssignment_Feature(), BIDIRECTIONAL_REFERENCE);
+				}
+			}
+		}
 	}
 
 }

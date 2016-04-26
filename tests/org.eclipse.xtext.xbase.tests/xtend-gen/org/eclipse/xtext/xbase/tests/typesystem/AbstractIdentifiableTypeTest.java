@@ -7,7 +7,9 @@
  */
 package org.eclipse.xtext.xbase.tests.typesystem;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -21,14 +23,11 @@ import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.xbase.XClosure;
 import org.eclipse.xtext.xbase.XExpression;
-import org.eclipse.xtext.xbase.XSwitchExpression;
 import org.eclipse.xtext.xbase.XVariableDeclaration;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
-import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
-import org.eclipse.xtext.xbase.lib.ObjectExtensions;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -56,102 +55,82 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
     AbstractIdentifiableTypeTest.seenExpressions = null;
   }
   
-  protected List<JvmIdentifiableElement> findIdentifiables(final CharSequence expression) {
-    try {
-      final XExpression xExpression = this.expression(expression, false);
-      TreeIterator<EObject> _eAll = EcoreUtil2.eAll(xExpression);
-      final Function1<EObject,EObject> _function = new Function1<EObject,EObject>() {
-          public EObject apply(final EObject it) {
-            EObject _switchResult = null;
-            boolean _matched = false;
-            if (!_matched) {
-              if (it instanceof XClosure) {
-                final XClosure _xClosure = (XClosure)it;
-                _matched=true;
-                JvmFormalParameter _implicitParameter = _xClosure.getImplicitParameter();
-                _switchResult = _implicitParameter;
-              }
-            }
-            if (!_matched) {
-              _switchResult = it;
-            }
-            return _switchResult;
+  protected List<JvmIdentifiableElement> findIdentifiables(final XExpression expression) {
+    TreeIterator<EObject> _eAll = EcoreUtil2.eAll(expression);
+    final Function1<EObject, List<? extends EObject>> _function = new Function1<EObject, List<? extends EObject>>() {
+      @Override
+      public List<? extends EObject> apply(final EObject it) {
+        List<? extends EObject> _switchResult = null;
+        boolean _matched = false;
+        if (it instanceof XClosure) {
+          _matched=true;
+          _switchResult = ((XClosure)it).getImplicitFormalParameters();
+        }
+        if (!_matched) {
+          _switchResult = Collections.<EObject>unmodifiableList(CollectionLiterals.<EObject>newArrayList(it));
+        }
+        return _switchResult;
+      }
+    };
+    Iterator<List<? extends EObject>> _map = IteratorExtensions.<EObject, List<? extends EObject>>map(_eAll, _function);
+    Iterable<List<? extends EObject>> _iterable = IteratorExtensions.<List<? extends EObject>>toIterable(_map);
+    Iterable<EObject> _flatten = Iterables.<EObject>concat(_iterable);
+    Set<EObject> _set = IterableExtensions.<EObject>toSet(_flatten);
+    final Function1<EObject, Boolean> _function_1 = new Function1<EObject, Boolean>() {
+      @Override
+      public Boolean apply(final EObject it) {
+        boolean _and = false;
+        boolean _notEquals = (!Objects.equal(it, null));
+        if (!_notEquals) {
+          _and = false;
+        } else {
+          boolean _switchResult = false;
+          boolean _matched = false;
+          if (it instanceof XVariableDeclaration) {
+            _matched=true;
+            _switchResult = true;
           }
-        };
-      Iterator<EObject> _map = IteratorExtensions.<EObject, EObject>map(_eAll, _function);
-      Set<EObject> _set = IteratorExtensions.<EObject>toSet(_map);
-      final Function1<EObject,Boolean> _function_1 = new Function1<EObject,Boolean>() {
-          public Boolean apply(final EObject it) {
-            boolean _and = false;
-            boolean _notEquals = ObjectExtensions.operator_notEquals(it, null);
-            if (!_notEquals) {
-              _and = false;
-            } else {
-              boolean _switchResult = false;
-              boolean _matched = false;
-              if (!_matched) {
-                if (it instanceof XVariableDeclaration) {
-                  final XVariableDeclaration _xVariableDeclaration = (XVariableDeclaration)it;
-                  _matched=true;
-                  _switchResult = true;
-                }
-              }
-              if (!_matched) {
-                if (it instanceof JvmFormalParameter) {
-                  final JvmFormalParameter _jvmFormalParameter = (JvmFormalParameter)it;
-                  _matched=true;
-                  _switchResult = true;
-                }
-              }
-              if (!_matched) {
-                if (it instanceof XSwitchExpression) {
-                  final XSwitchExpression _xSwitchExpression = (XSwitchExpression)it;
-                  String _localVarName = _xSwitchExpression.getLocalVarName();
-                  boolean _notEquals_1 = ObjectExtensions.operator_notEquals(_localVarName, null);
-                  if (_notEquals_1) {
-                    _matched=true;
-                    _switchResult = true;
-                  }
-                }
-              }
-              if (!_matched) {
-                _switchResult = false;
-              }
-              _and = (_notEquals && _switchResult);
+          if (!_matched) {
+            if (it instanceof JvmFormalParameter) {
+              _matched=true;
+              _switchResult = true;
             }
-            return Boolean.valueOf(_and);
           }
-        };
-      Iterable<EObject> _filter = IterableExtensions.<EObject>filter(_set, _function_1);
-      Iterable<JvmIdentifiableElement> _filter_1 = Iterables.<JvmIdentifiableElement>filter(_filter, JvmIdentifiableElement.class);
-      final List<JvmIdentifiableElement> identifiables = IterableExtensions.<JvmIdentifiableElement>toList(_filter_1);
-      final Function1<JvmIdentifiableElement,Integer> _function_2 = new Function1<JvmIdentifiableElement,Integer>() {
-          public Integer apply(final JvmIdentifiableElement it) {
-            int _xblockexpression = (int) 0;
-            {
-              final ICompositeNode node = NodeModelUtils.findActualNodeFor(it);
-              int _xifexpression = (int) 0;
-              boolean _notEquals = ObjectExtensions.operator_notEquals(node, null);
-              if (_notEquals) {
-                int _offset = node.getOffset();
-                _xifexpression = _offset;
-              } else {
-                EObject _eContainer = it.eContainer();
-                ICompositeNode _findActualNodeFor = NodeModelUtils.findActualNodeFor(_eContainer);
-                int _offset_1 = _findActualNodeFor.getOffset();
-                _xifexpression = _offset_1;
-              }
-              _xblockexpression = (_xifexpression);
-            }
-            return Integer.valueOf(_xblockexpression);
+          if (!_matched) {
+            _switchResult = false;
           }
-        };
-      return IterableExtensions.<JvmIdentifiableElement, Integer>sortBy(identifiables, _function_2);
-    } catch (Exception _e) {
-      throw Exceptions.sneakyThrow(_e);
-    }
+          _and = _switchResult;
+        }
+        return Boolean.valueOf(_and);
+      }
+    };
+    Iterable<EObject> _filter = IterableExtensions.<EObject>filter(_set, _function_1);
+    Iterable<JvmIdentifiableElement> _filter_1 = Iterables.<JvmIdentifiableElement>filter(_filter, JvmIdentifiableElement.class);
+    final List<JvmIdentifiableElement> identifiables = IterableExtensions.<JvmIdentifiableElement>toList(_filter_1);
+    final Function1<JvmIdentifiableElement, Integer> _function_2 = new Function1<JvmIdentifiableElement, Integer>() {
+      @Override
+      public Integer apply(final JvmIdentifiableElement it) {
+        int _xblockexpression = (int) 0;
+        {
+          final ICompositeNode node = NodeModelUtils.findActualNodeFor(it);
+          int _xifexpression = (int) 0;
+          boolean _notEquals = (!Objects.equal(node, null));
+          if (_notEquals) {
+            _xifexpression = node.getOffset();
+          } else {
+            EObject _eContainer = it.eContainer();
+            ICompositeNode _findActualNodeFor = NodeModelUtils.findActualNodeFor(_eContainer);
+            _xifexpression = _findActualNodeFor.getOffset();
+          }
+          _xblockexpression = _xifexpression;
+        }
+        return Integer.valueOf(_xblockexpression);
+      }
+    };
+    return IterableExtensions.<JvmIdentifiableElement, Integer>sortBy(identifiables, _function_2);
   }
   
+  @Override
   protected XExpression expression(final CharSequence expression, final boolean resolve) throws Exception {
     XExpression _xblockexpression = null;
     {
@@ -159,13 +138,21 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
       boolean _add = AbstractIdentifiableTypeTest.seenExpressions.add(string);
       boolean _not = (!_add);
       if (_not) {
-        String _plus = ("Duplicate expression under test: " + expression);
-        Assert.fail(_plus);
+        Assert.fail(("Duplicate expression under test: " + expression));
       }
-      XExpression _expression = super.expression(expression, resolve);
-      _xblockexpression = (_expression);
+      _xblockexpression = super.expression(expression, resolve);
     }
     return _xblockexpression;
+  }
+  
+  @Test
+  public void testIfExpression_01() throws Exception {
+    this.resolvesIdentifiablesTo("{ val x = if (true) while(false) (\'foo\'+\'bar\').length }", "null");
+  }
+  
+  @Test
+  public void testIfExpression_02() throws Exception {
+    this.resolvesIdentifiablesTo("{ val Object x = if (true) while(false) (\'foo\'+\'bar\').length }", "Object");
   }
   
   @Test
@@ -218,7 +205,7 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
     this.resolvesIdentifiablesTo("(1..2).map[ new java.math.BigInteger(toString) ].reduce[ i1, i2| i1 + i2 ]", "Integer", "BigInteger", "BigInteger");
   }
   
-  @Ignore(value = "i1 and i2 should become T -> Object thus + maps to String + Object")
+  @Ignore("i1 and i2 should become T -> Object thus + maps to String + Object")
   @Test
   public void testOverloadedOperators_11() throws Exception {
     this.resolvesIdentifiablesTo("(1..2).map[ new java.math.BigInteger(toString) ].reduce[ i1, i2 | i1.toString + i2 ]", "Integer", "Object", "Object");
@@ -229,7 +216,7 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
     this.resolvesIdentifiablesTo("{\n\t\t\tval i = 1bi\n\t\t\tval s = \'\'\n\t\t\ts + i\n\t\t}", "BigInteger", "String");
   }
   
-  @Ignore(value = "i1 and i2 should become T -> Object thus + maps to Object + String")
+  @Ignore("i1 and i2 should become T -> Object thus + maps to Object + String")
   @Test
   public void testOverloadedOperators_13() throws Exception {
     this.resolvesIdentifiablesTo("(1..2).map[ new java.math.BigInteger(toString) ].reduce[ i1, i2| i1 + String::valueOf(i2) ]", "Integer", "Object", "Object");
@@ -286,12 +273,22 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
   
   @Test
   public void testForExpression_03() throws Exception {
-    this.resolvesIdentifiablesTo("for(String x : null as String[][]) x.size", "String");
+    this.resolvesIdentifiablesTo("for(String x : null as String[][]) x.length", "String");
   }
   
   @Test
   public void testForExpression_04() throws Exception {
     this.resolvesIdentifiablesTo("for(x : null as String[][]) x.size", "String[]");
+  }
+  
+  @Test
+  public void testForExpression_05() throws Exception {
+    this.resolvesIdentifiablesTo("for(x : null as java.util.Set) x.toString", "Object");
+  }
+  
+  @Test
+  public void testForExpression_06() throws Exception {
+    this.resolvesIdentifiablesTo("for(x : null as Iterable<String>?:emptyList) x.toString", "String");
   }
   
   @Test
@@ -336,24 +333,18 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
   
   @Test
   public void testClosure_03() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  list.map(e|e)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesIdentifiablesTo(_plus_2, "List<? super String>", "Object");
+    this.resolvesIdentifiablesTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  list.map(e|e)\n") + 
+      "}"), "List<? super String>", "Object");
   }
   
   @Test
   public void testClosure_04() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  list.map(e|false)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesIdentifiablesTo(_plus_2, "List<? super String>", "Object");
+    this.resolvesIdentifiablesTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  list.map(e|false)\n") + 
+      "}"), "List<? super String>", "Object");
   }
   
   @Test
@@ -386,7 +377,7 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
     this.resolvesIdentifiablesTo("{ \n\t\t\tval mapper = [ x | x ]\n\t\t\tnewArrayList(1).map(mapper).findFirst [ true ]\n\t\t}", "(Integer)=>Integer", "Integer", "Integer");
   }
   
-  @Ignore(value = "TODO deferred closure body typing")
+  @Ignore("TODO deferred closure body typing")
   @Test
   public void testClosure_14() throws Exception {
     this.resolvesIdentifiablesTo("{ \n\t\t\tval mapper = [ x | x.charAt(0) ]\n\t\t\tnewArrayList(\'\').map(mapper)\n\t\t}", "(String)=>char", "String");
@@ -399,7 +390,7 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
   
   @Test
   public void testClosure_16() throws Exception {
-    this.resolvesIdentifiablesTo("{ \n\t\t\tval fun = [ x | x ]\n\t\t\tval java.util.List<String> list = newArrayList(fun.apply(null))\n\t\t\tfun\n\t\t}", "(String)=>String", "String", "List<String>");
+    this.resolvesIdentifiablesTo("{ \n\t\t\tval fun = [ x | x ]\n\t\t\tval java.util.List<String> list = newArrayList(fun.apply(null))\n\t\t\tfun\n\t\t}", "(String[])=>String[]", "String[]", "List<String>");
   }
   
   @Test
@@ -434,13 +425,10 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
   
   @Test
   public void testClosure_31() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  $$ListExtensions::map(list) [e|e]\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesIdentifiablesTo(_plus_2, "List<? super String>", "Object");
+    this.resolvesIdentifiablesTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  $$ListExtensions::map(list) [e|e]\n") + 
+      "}"), "List<? super String>", "Object");
   }
   
   @Test
@@ -645,13 +633,10 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
   
   @Test
   public void testFeatureCall_24_a() throws Exception {
-    String _plus = ("newArrayList(\'\').map(s|" + 
-      "$$ObjectExtensions::operator_equals(");
-    String _plus_1 = (_plus + 
-      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)");
-    String _plus_2 = (_plus_1 + 
-      ").map(b| $$BooleanExtensions::operator_not(b) )");
-    this.resolvesIdentifiablesTo(_plus_2, "String", "Boolean");
+    this.resolvesIdentifiablesTo(((("newArrayList(\'\').map(s|" + 
+      "$$ObjectExtensions::operator_equals(") + 
+      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)") + 
+      ").map(b| $$BooleanExtensions::operator_not(b) )"), "String", "Boolean");
   }
   
   @Test
@@ -734,7 +719,7 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
     this.resolvesIdentifiablesTo("<String>newArrayList.map(e|newArrayList(e)).flatten", "String");
   }
   
-  @Ignore(value = "TODO this should work")
+  @Ignore("TODO this should work")
   @Test
   public void testBug_391758() throws Exception {
     this.resolvesIdentifiablesTo("{\n\t\t\tval iterable = newArrayList\n\t\t\titerable.fold(newArrayList) [ list , elem | null as java.util.List<String> ]\n\t\t}", "ArrayList<Object>", "List<String>", "Object");
@@ -812,7 +797,7 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
   
   @Test
   public void testDeferredTypeArgumentResolution_135() throws Exception {
-    this.resolvesIdentifiablesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.<String, Object>map[s| s]\n\t\t\tlist\n\t\t}", "ArrayList<String>", "Object");
+    this.resolvesIdentifiablesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.<String, Object>map[s| s]\n\t\t\tlist\n\t\t}", "ArrayList<String>", "String");
   }
   
   @Test
@@ -827,6 +812,6 @@ public abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase
   
   @Test
   public void testDeferredTypeArgumentResolution_138() throws Exception {
-    this.resolvesIdentifiablesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.<String, CharSequence>map[s| s]\n\t\t\tlist\n\t\t}", "ArrayList<String>", "CharSequence");
+    this.resolvesIdentifiablesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.<String, CharSequence>map[s| s]\n\t\t\tlist\n\t\t}", "ArrayList<String>", "String");
   }
 }

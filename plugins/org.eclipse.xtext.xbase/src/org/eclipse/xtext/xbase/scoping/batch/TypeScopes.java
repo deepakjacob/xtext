@@ -7,11 +7,22 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.scoping.batch;
 
+import java.util.List;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
+import org.eclipse.xtext.common.types.JvmDeclaredType;
+import org.eclipse.xtext.common.types.JvmInnerTypeReference;
+import org.eclipse.xtext.common.types.JvmParameterizedTypeReference;
+import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.TypesPackage;
+import org.eclipse.xtext.resource.EObjectDescription;
+import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
+import org.eclipse.xtext.scoping.impl.SimpleScope;
 import org.eclipse.xtext.xbase.typesystem.IResolvedTypes;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -22,60 +33,32 @@ public class TypeScopes extends DelegatingScopes {
 		return TypesPackage.Literals.JVM_TYPE.isSuperTypeOf(reference.getEReferenceType());
 	}
 
-	public IScope createTypeScope(EObject context, EReference reference,
-			IFeatureScopeSession session, IResolvedTypes resolvedTypes) {
-		return doCreateTypeScope(context, reference, session);
-	}
-	
-	protected IScope doCreateTypeScope(final EObject context, EReference reference, final IFeatureScopeSession session) {
+	/**
+	 * @param resolvedTypes the currently known resolved types
+	 */
+	public IScope createTypeScope(EObject context, EReference reference, IFeatureScopeSession session, IResolvedTypes resolvedTypes) {
 		final IScope delegateScope = getDelegate().getScope(context, reference);
-		// TODO visibility
-		return delegateScope;
-//		return new IScope() {
-//
-//			public Iterable<IEObjectDescription> getAllElements() {
-//				Iterable<IEObjectDescription> original = delegateScope.getAllElements();
-//				return createFeatureDescriptions(original);
-//			}
-//
-//			protected Iterable<IEObjectDescription> createFeatureDescriptions(Iterable<IEObjectDescription> original) {
-//				Iterable<IEObjectDescription> result = transform(original,
-//						new Function<IEObjectDescription, IEObjectDescription>() {
-//							public IEObjectDescription apply(IEObjectDescription from) {
-//								JvmConstructor constructor = (JvmConstructor) from.getEObjectOrProxy();
-//								if (constructor.eIsProxy()) {
-//									EObject resolved = EcoreUtil.resolve(constructor, context);
-//									if (resolved instanceof JvmConstructor)
-//										constructor = (JvmConstructor) resolved;
-//								}
-//								boolean visible = session.isVisible(constructor);
-//								BucketedEObjectDescription result = new BucketedEObjectDescription(from.getName(), constructor, CONSTRUCTOR_BUCKET, visible);
-//								return result;
-//							}
-//						});
-//				return result;
-//			}
-//
-//			public Iterable<IEObjectDescription> getElements(EObject object) {
-//				Iterable<IEObjectDescription> original = delegateScope.getElements(object);
-//				return createFeatureDescriptions(original);
-//			}
-//
-//			public Iterable<IEObjectDescription> getElements(QualifiedName name) {
-//				Iterable<IEObjectDescription> original = delegateScope.getElements(name);
-//				return createFeatureDescriptions(original);
-//			}
-//
-//			public IEObjectDescription getSingleElement(EObject object) {
-//				Iterable<IEObjectDescription> elements = getElements(object);
-//				return (isEmpty(elements)) ? null : elements.iterator().next();
-//			}
-//
-//			public IEObjectDescription getSingleElement(QualifiedName name) {
-//				throw new UnsupportedOperationException();
-//			}
-//
-//		};
+		return new NestedTypesScope(delegateScope, session);
+	}
+
+	public IScope createTypeScope(EObject context, EReference reference) {
+		if (context.eClass() == TypesPackage.Literals.JVM_INNER_TYPE_REFERENCE) {
+			JvmInnerTypeReference casted = (JvmInnerTypeReference) context;
+			JvmParameterizedTypeReference outerType = casted.getOuter();
+			JvmType outerRawType = outerType.getType();
+			if (outerRawType instanceof JvmDeclaredType) {
+				Iterable<JvmDeclaredType> nestedTypes = ((JvmDeclaredType) outerRawType).getAllNestedTypes();
+				List<IEObjectDescription> descriptions = Lists.newArrayList();
+				for(JvmDeclaredType nestedType: nestedTypes) {
+					descriptions.add(EObjectDescription.create(nestedType.getSimpleName(), nestedType));
+				}
+				return new SimpleScope(descriptions);
+			}
+			return IScope.NULLSCOPE;
+		} else {
+			final IScope delegateScope = getDelegate().getScope(context, reference);
+			return delegateScope;
+		}
 	}
 	
 }

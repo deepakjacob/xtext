@@ -7,32 +7,29 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.scoping.batch.IFeatureScopeSession;
-import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class ExpressionTypeComputationStateWithExpectation extends TypeComputationStateWithExpectation {
 	
 	protected ExpressionTypeComputationStateWithExpectation(ResolvedTypes resolvedTypes,
-			IFeatureScopeSession featureScopeSession, DefaultReentrantTypeResolver reentrantTypeResolver,
-			AbstractTypeComputationState parent, @Nullable LightweightTypeReference expectation) {
-		super(resolvedTypes, featureScopeSession, reentrantTypeResolver, parent, expectation);
+			IFeatureScopeSession featureScopeSession,
+			AbstractTypeComputationState parent, 
+			/* @Nullable */ LightweightTypeReference expectation) {
+		super(resolvedTypes, featureScopeSession, parent, expectation);
 	}
 
 	@Override
 	protected LightweightTypeReference acceptType(XExpression alreadyHandled, ResolvedTypes types,
 			AbstractTypeExpectation expectation, LightweightTypeReference type, boolean returnType,
-			ConformanceHint... hints) {
+			int flags) {
 		if (returnType) {
-			getParent().acceptType(alreadyHandled, types, expectation, type, returnType, hints);
+			getParent().acceptType(alreadyHandled, types, expectation, type, returnType, flags);
 		}
-		return super.acceptType(alreadyHandled, types, expectation, type, returnType, hints);
+		return super.acceptType(alreadyHandled, types, expectation, type, returnType, flags);
 	}
 }

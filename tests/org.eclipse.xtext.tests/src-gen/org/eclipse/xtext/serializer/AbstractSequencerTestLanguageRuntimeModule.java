@@ -6,7 +6,6 @@ package org.eclipse.xtext.serializer;
 import java.util.Properties;
 
 import org.eclipse.xtext.Constants;
-import org.eclipse.xtext.service.DefaultRuntimeModule;
 
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
@@ -14,8 +13,8 @@ import com.google.inject.name.Names;
 /**
  * Manual modifications go to {org.eclipse.xtext.serializer.SequencerTestLanguageRuntimeModule}
  */
- @SuppressWarnings("all")
-public abstract class AbstractSequencerTestLanguageRuntimeModule extends DefaultRuntimeModule {
+@SuppressWarnings("all")
+public abstract class AbstractSequencerTestLanguageRuntimeModule extends org.eclipse.xtext.service.DefaultRuntimeModule {
 
 	protected Properties properties = null;
 
@@ -82,11 +81,6 @@ public abstract class AbstractSequencerTestLanguageRuntimeModule extends Default
 	// contributed by org.eclipse.xtext.generator.grammarAccess.GrammarAccessFragment
 	public Class<? extends org.eclipse.xtext.IGrammarAccess> bindIGrammarAccess() {
 		return org.eclipse.xtext.serializer.services.SequencerTestLanguageGrammarAccess.class;
-	}
-
-	// contributed by org.eclipse.xtext.generator.parseTreeConstructor.ParseTreeConstructorFragment
-	public Class<? extends org.eclipse.xtext.parsetree.reconstr.IParseTreeConstructor> bindIParseTreeConstructor() {
-		return org.eclipse.xtext.serializer.parseTreeConstruction.SequencerTestLanguageParsetreeConstructor.class;
 	}
 
 	// contributed by org.eclipse.xtext.generator.serializer.SerializerFragment

@@ -15,9 +15,42 @@ import org.eclipse.xtext.naming.QualifiedName;
  */
 public class ConstructorDescription extends BucketedEObjectDescription {
 
-	public ConstructorDescription(QualifiedName qualifiedName, JvmConstructor constructor, int bucketId,
-			boolean visible) {
-		super(qualifiedName, constructor, bucketId, visible);
-	}
+	private final boolean anonymous;
 
+	public ConstructorDescription(
+			QualifiedName qualifiedName, 
+			JvmConstructor constructor,
+			int bucketId,
+			boolean visible) {
+		this(qualifiedName, constructor, bucketId, visible, false);
+	}
+	
+	public ConstructorDescription(
+			QualifiedName qualifiedName, 
+			JvmConstructor constructor,
+			int bucketId,
+			boolean visible,
+			boolean anonymous) {
+		super(qualifiedName, constructor, bucketId, visible);
+		this.
+		anonymous = anonymous;
+	}
+	
+	/**
+	 * Constructors of non-member types are considered to be static.
+	 */
+	@Override
+	public boolean isStatic() {
+		return true;
+	}
+	
+	@Override
+	public boolean isExtension() {
+		return false;
+	}
+	
+	@Override
+	public boolean isAnonymousClassConstructorCall() {
+		return anonymous;
+	}
 }

@@ -33,12 +33,12 @@ import org.eclipse.xtext.xbase.XbasePackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XTryCatchFinallyExpressionImpl#getExpression <em>Expression</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XTryCatchFinallyExpressionImpl#getFinallyExpression <em>Finally Expression</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XTryCatchFinallyExpressionImpl#getCatchClauses <em>Catch Clauses</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

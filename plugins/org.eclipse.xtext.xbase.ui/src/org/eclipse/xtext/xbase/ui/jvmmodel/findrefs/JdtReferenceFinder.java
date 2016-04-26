@@ -31,10 +31,11 @@ import org.eclipse.ui.progress.IProgressService;
 import com.google.inject.Inject;
 
 /**
- * Mostly copied and adapted from {@link FindReferencesAction}.
+ * Mostly copied and adapted from {@link org.eclipse.jdt.ui.actions.FindReferencesAction}.
  * 
  * @author Jan Koehnlein - Initial contribution and API
  */
+@SuppressWarnings("restriction")
 public class JdtReferenceFinder {
 
 	@Inject(optional = true)

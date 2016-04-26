@@ -36,13 +36,13 @@ import org.eclipse.xtext.xtype.XtypePackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xtype.impl.XFunctionTypeRefImpl#getParamTypes <em>Param Types</em>}</li>
  *   <li>{@link org.eclipse.xtext.xtype.impl.XFunctionTypeRefImpl#getReturnType <em>Return Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.xtype.impl.XFunctionTypeRefImpl#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.xtype.impl.XFunctionTypeRefImpl#isInstanceContext <em>Instance Context</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

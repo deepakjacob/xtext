@@ -8,6 +8,11 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.editor.templates;
 
+import static org.eclipse.xtext.ui.editor.XtextSourceViewerConfiguration.*;
+
+import org.apache.log4j.Logger;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateContext;
@@ -30,7 +35,9 @@ import com.google.inject.Inject;
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public abstract class AbstractTemplateProposalProvider implements ITemplateProposalProvider {
-
+	
+	private static final Logger log = Logger.getLogger(AbstractTemplateProposalProvider.class);
+	
 	private IScopeProvider scopeProvider;
 	
 	@Inject
@@ -41,7 +48,10 @@ public abstract class AbstractTemplateProposalProvider implements ITemplatePropo
 		this.scopeProvider = scopeProvider;
 	}
 
-	private IScopeProvider getScopeProvider() {
+	/**
+	 * @since 2.7
+	 */
+	protected IScopeProvider getScopeProvider() {
 		return scopeProvider;
 	}
 	
@@ -59,6 +69,7 @@ public abstract class AbstractTemplateProposalProvider implements ITemplatePropo
 		}
 	}
 	
+	@Override
 	public void createTemplates(ContentAssistContext context, ITemplateAcceptor acceptor) {
 		if (!acceptor.canAcceptMoreTemplates())
 			return;
@@ -107,8 +118,19 @@ public abstract class AbstractTemplateProposalProvider implements ITemplatePropo
 	protected boolean validate(Template template, TemplateContext context) {
 		try {
 			context.getContextType().validate(template.getPattern());
-		} catch(TemplateException e) {
+		} catch (TemplateException e) {
 			return false;
+		}
+		if (context instanceof XtextTemplateContext) {
+			try {
+				//pre-fill context state and check. 
+				((XtextTemplateContext) context).evaluateForDisplay(template);
+				return context.canEvaluate(template);
+			} catch (BadLocationException e) {
+				return false;
+			} catch (TemplateException e) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -127,8 +149,27 @@ public abstract class AbstractTemplateProposalProvider implements ITemplatePropo
 	
 	protected TemplateContext doCreateTemplateContext(TemplateContextType contextType, ContentAssistContext context) {
 		return new XtextTemplateContext(contextType, context.getDocument(),
-				new Position(context.getReplaceRegion().getOffset(), context.getReplaceRegion().getLength()),
+				createPosition(context),
 				context, getScopeProvider());
+	}
+	
+	/**
+	 * Positions created for template contexts have to be added to the document so they are updated when the document
+	 * is modified.
+	 * 
+	 * @since 2.8
+	 */
+	protected Position createPosition(ContentAssistContext context) {
+		Position position = new Position(context.getReplaceRegion().getOffset(), context.getReplaceRegion().getLength());
+		IDocument document = context.getDocument();
+		if (document.containsPositionCategory(XTEXT_TEMPLATE_POS_CATEGORY)) {
+			try {
+				document.addPosition(XTEXT_TEMPLATE_POS_CATEGORY, position);
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}
+		}
+		return position;
 	}
 
 	protected abstract TemplateContextType[] getContextTypes(ContentAssistContext context);

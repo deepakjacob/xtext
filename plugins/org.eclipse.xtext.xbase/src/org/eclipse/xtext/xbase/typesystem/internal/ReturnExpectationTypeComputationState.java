@@ -9,25 +9,21 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.scoping.batch.IFeatureScopeSession;
-import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class ReturnExpectationTypeComputationState extends AbstractStackedTypeComputationState {
 
 	protected ReturnExpectationTypeComputationState(
 			ResolvedTypes resolvedTypes,
 			IFeatureScopeSession featureScopeSession,
-			DefaultReentrantTypeResolver reentrantTypeResolver,
 			AbstractTypeComputationState parent) {
-		super(resolvedTypes, featureScopeSession, reentrantTypeResolver, parent);
+		super(resolvedTypes, featureScopeSession, parent);
 	}
 
 	@Override
@@ -37,18 +33,18 @@ public class ReturnExpectationTypeComputationState extends AbstractStackedTypeCo
 
 	@Override
 	protected LightweightTypeReference acceptType(ResolvedTypes types, AbstractTypeExpectation expectation,
-			LightweightTypeReference type, boolean returnType, ConformanceHint... hints) {
+			LightweightTypeReference type, boolean returnType, int flags) {
 		if (returnType)
-			return getParent().acceptType(types, expectation, type, returnType, hints);
+			return getParent().acceptType(types, expectation, type, returnType, flags);
 		return type;
 	}
 	
 	@Override
 	protected LightweightTypeReference acceptType(XExpression alreadyHandled, ResolvedTypes types,
 			AbstractTypeExpectation expectation, LightweightTypeReference type, boolean returnType,
-			ConformanceHint... hints) {
+			int flags) {
 		if (returnType)
-			return getParent().acceptType(alreadyHandled, types, expectation, type, returnType, hints);
+			return getParent().acceptType(alreadyHandled, types, expectation, type, returnType, flags);
 		return type;
 	}
 }

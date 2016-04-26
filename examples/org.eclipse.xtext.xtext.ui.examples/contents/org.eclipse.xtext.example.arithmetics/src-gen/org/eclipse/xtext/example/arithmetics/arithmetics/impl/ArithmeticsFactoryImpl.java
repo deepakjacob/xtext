@@ -1,7 +1,11 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * ******************************************************************************
+ * Copyright (c) 2015 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *  ******************************************************************************
  */
 package org.eclipse.xtext.example.arithmetics.arithmetics.impl;
 
@@ -33,7 +37,7 @@ public class ArithmeticsFactoryImpl extends EFactoryImpl implements ArithmeticsF
   {
     try
     {
-      ArithmeticsFactory theArithmeticsFactory = (ArithmeticsFactory)EPackage.Registry.INSTANCE.getEFactory("http://www.eclipse.org/Xtext/example/Arithmetics"); 
+      ArithmeticsFactory theArithmeticsFactory = (ArithmeticsFactory)EPackage.Registry.INSTANCE.getEFactory(ArithmeticsPackage.eNS_URI);
       if (theArithmeticsFactory != null)
       {
         return theArithmeticsFactory;

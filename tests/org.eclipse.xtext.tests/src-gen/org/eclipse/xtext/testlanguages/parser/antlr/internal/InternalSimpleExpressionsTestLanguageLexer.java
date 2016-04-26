@@ -38,15 +38,15 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalSimpleExpressionsTestLanguage.g"; }
 
     // $ANTLR start "T__11"
     public final void mT__11() throws RecognitionException {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:11:7: ( '+' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:11:9: '+'
+            // InternalSimpleExpressionsTestLanguage.g:11:7: ( '+' )
+            // InternalSimpleExpressionsTestLanguage.g:11:9: '+'
             {
             match('+'); 
 
@@ -65,8 +65,8 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:12:7: ( '-' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:12:9: '-'
+            // InternalSimpleExpressionsTestLanguage.g:12:7: ( '-' )
+            // InternalSimpleExpressionsTestLanguage.g:12:9: '-'
             {
             match('-'); 
 
@@ -85,8 +85,8 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:13:7: ( '*' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:13:9: '*'
+            // InternalSimpleExpressionsTestLanguage.g:13:7: ( '*' )
+            // InternalSimpleExpressionsTestLanguage.g:13:9: '*'
             {
             match('*'); 
 
@@ -105,8 +105,8 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = T__14;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:14:7: ( '/' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:14:9: '/'
+            // InternalSimpleExpressionsTestLanguage.g:14:7: ( '/' )
+            // InternalSimpleExpressionsTestLanguage.g:14:9: '/'
             {
             match('/'); 
 
@@ -125,8 +125,8 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = T__15;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:15:7: ( '(' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:15:9: '('
+            // InternalSimpleExpressionsTestLanguage.g:15:7: ( '(' )
+            // InternalSimpleExpressionsTestLanguage.g:15:9: '('
             {
             match('('); 
 
@@ -145,8 +145,8 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = T__16;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:16:7: ( ')' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:16:9: ')'
+            // InternalSimpleExpressionsTestLanguage.g:16:7: ( ')' )
+            // InternalSimpleExpressionsTestLanguage.g:16:9: ')'
             {
             match(')'); 
 
@@ -165,10 +165,10 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:405:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:405:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalSimpleExpressionsTestLanguage.g:405:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalSimpleExpressionsTestLanguage.g:405:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:405:11: ( '^' )?
+            // InternalSimpleExpressionsTestLanguage.g:405:11: ( '^' )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -177,7 +177,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:405:11: '^'
+                    // InternalSimpleExpressionsTestLanguage.g:405:11: '^'
                     {
                     match('^'); 
 
@@ -195,7 +195,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:405:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalSimpleExpressionsTestLanguage.g:405:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop2:
             do {
                 int alt2=2;
@@ -208,7 +208,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:
+            	    // InternalSimpleExpressionsTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -244,10 +244,10 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:407:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:407:12: ( '0' .. '9' )+
+            // InternalSimpleExpressionsTestLanguage.g:407:10: ( ( '0' .. '9' )+ )
+            // InternalSimpleExpressionsTestLanguage.g:407:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:407:12: ( '0' .. '9' )+
+            // InternalSimpleExpressionsTestLanguage.g:407:12: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -261,7 +261,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:407:13: '0' .. '9'
+            	    // InternalSimpleExpressionsTestLanguage.g:407:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -293,10 +293,10 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalSimpleExpressionsTestLanguage.g:409:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalSimpleExpressionsTestLanguage.g:409:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalSimpleExpressionsTestLanguage.g:409:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -314,10 +314,10 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalSimpleExpressionsTestLanguage.g:409:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalSimpleExpressionsTestLanguage.g:409:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop4:
                     do {
                         int alt4=3;
@@ -333,23 +333,15 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalSimpleExpressionsTestLanguage.g:409:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalSimpleExpressionsTestLanguage.g:409:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -374,10 +366,10 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalSimpleExpressionsTestLanguage.g:409:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalSimpleExpressionsTestLanguage.g:409:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -393,23 +385,15 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalSimpleExpressionsTestLanguage.g:409:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:409:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalSimpleExpressionsTestLanguage.g:409:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -452,12 +436,12 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:411:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:411:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalSimpleExpressionsTestLanguage.g:411:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalSimpleExpressionsTestLanguage.g:411:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:411:24: ( options {greedy=false; } : . )*
+            // InternalSimpleExpressionsTestLanguage.g:411:24: ( options {greedy=false; } : . )*
             loop7:
             do {
                 int alt7=2;
@@ -482,7 +466,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:411:52: .
+            	    // InternalSimpleExpressionsTestLanguage.g:411:52: .
             	    {
             	    matchAny(); 
 
@@ -512,12 +496,12 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:413:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:413:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalSimpleExpressionsTestLanguage.g:413:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalSimpleExpressionsTestLanguage.g:413:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:413:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalSimpleExpressionsTestLanguage.g:413:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop8:
             do {
                 int alt8=2;
@@ -530,7 +514,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:413:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalSimpleExpressionsTestLanguage.g:413:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -550,7 +534,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:413:40: ( ( '\\r' )? '\\n' )?
+            // InternalSimpleExpressionsTestLanguage.g:413:40: ( ( '\\r' )? '\\n' )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -559,9 +543,9 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
             }
             switch (alt10) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:413:41: ( '\\r' )? '\\n'
+                    // InternalSimpleExpressionsTestLanguage.g:413:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:413:41: ( '\\r' )?
+                    // InternalSimpleExpressionsTestLanguage.g:413:41: ( '\\r' )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -570,7 +554,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
                     }
                     switch (alt9) {
                         case 1 :
-                            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:413:41: '\\r'
+                            // InternalSimpleExpressionsTestLanguage.g:413:41: '\\r'
                             {
                             match('\r'); 
 
@@ -602,10 +586,10 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:415:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:415:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalSimpleExpressionsTestLanguage.g:415:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalSimpleExpressionsTestLanguage.g:415:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:415:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalSimpleExpressionsTestLanguage.g:415:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -619,7 +603,7 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:
+            	    // InternalSimpleExpressionsTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -659,8 +643,8 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:417:16: ( . )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:417:18: .
+            // InternalSimpleExpressionsTestLanguage.g:417:16: ( . )
+            // InternalSimpleExpressionsTestLanguage.g:417:18: .
             {
             matchAny(); 
 
@@ -675,96 +659,96 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalSimpleExpressionsTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt12=13;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:10: T__11
+                // InternalSimpleExpressionsTestLanguage.g:1:10: T__11
                 {
                 mT__11(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:16: T__12
+                // InternalSimpleExpressionsTestLanguage.g:1:16: T__12
                 {
                 mT__12(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:22: T__13
+                // InternalSimpleExpressionsTestLanguage.g:1:22: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:28: T__14
+                // InternalSimpleExpressionsTestLanguage.g:1:28: T__14
                 {
                 mT__14(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:34: T__15
+                // InternalSimpleExpressionsTestLanguage.g:1:34: T__15
                 {
                 mT__15(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:40: T__16
+                // InternalSimpleExpressionsTestLanguage.g:1:40: T__16
                 {
                 mT__16(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:46: RULE_ID
+                // InternalSimpleExpressionsTestLanguage.g:1:46: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:54: RULE_INT
+                // InternalSimpleExpressionsTestLanguage.g:1:54: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 9 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:63: RULE_STRING
+                // InternalSimpleExpressionsTestLanguage.g:1:63: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 10 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:75: RULE_ML_COMMENT
+                // InternalSimpleExpressionsTestLanguage.g:1:75: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 11 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:91: RULE_SL_COMMENT
+                // InternalSimpleExpressionsTestLanguage.g:1:91: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 12 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:107: RULE_WS
+                // InternalSimpleExpressionsTestLanguage.g:1:107: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 13 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/testlanguages/parser/antlr/internal/InternalSimpleExpressionsTestLanguage.g:1:115: RULE_ANY_OTHER
+                // InternalSimpleExpressionsTestLanguage.g:1:115: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -786,14 +770,11 @@ public class InternalSimpleExpressionsTestLanguageLexer extends Lexer {
     static final String DFA12_maxS =
         "\1\uffff\3\uffff\1\57\2\uffff\1\172\2\uffff\2\uffff\16\uffff";
     static final String DFA12_acceptS =
-        "\1\uffff\1\1\1\2\1\3\1\uffff\1\5\1\6\1\uffff\1\7\1\10\2\uffff\1"+
-        "\14\1\15\1\1\1\2\1\3\1\12\1\13\1\4\1\5\1\6\1\7\1\10\1\11\1\14";
+        "\1\uffff\1\1\1\2\1\3\1\uffff\1\5\1\6\1\uffff\1\7\1\10\2\uffff\1\14\1\15\1\1\1\2\1\3\1\12\1\13\1\4\1\5\1\6\1\7\1\10\1\11\1\14";
     static final String DFA12_specialS =
         "\1\0\11\uffff\1\2\1\1\16\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\11\15\2\14\2\15\1\14\22\15\1\14\1\15\1\12\4\15\1\13\1\5\1\6"+
-            "\1\3\1\1\1\15\1\2\1\15\1\4\12\11\7\15\32\10\3\15\1\7\1\10\1"+
-            "\15\32\10\uff85\15",
+            "\11\15\2\14\2\15\1\14\22\15\1\14\1\15\1\12\4\15\1\13\1\5\1\6\1\3\1\1\1\15\1\2\1\15\1\4\12\11\7\15\32\10\3\15\1\7\1\10\1\15\32\10\uff85\15",
             "",
             "",
             "",

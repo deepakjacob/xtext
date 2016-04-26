@@ -32,17 +32,17 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalLiveContainerBuilderIntegerationTestLanguage.g"; }
 
     // $ANTLR start "RULE_ID"
     public final void mRULE_ID() throws RecognitionException {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:105:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:105:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:105:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:105:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:105:11: ( '^' )?
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:105:11: ( '^' )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -51,7 +51,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:105:11: '^'
+                    // InternalLiveContainerBuilderIntegerationTestLanguage.g:105:11: '^'
                     {
                     match('^'); 
 
@@ -69,7 +69,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:105:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:105:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop2:
             do {
                 int alt2=2;
@@ -82,7 +82,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:
+            	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -118,10 +118,10 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:107:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:107:12: ( '0' .. '9' )+
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:107:10: ( ( '0' .. '9' )+ )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:107:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:107:12: ( '0' .. '9' )+
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:107:12: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -135,7 +135,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:107:13: '0' .. '9'
+            	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:107:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -167,10 +167,10 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -188,10 +188,10 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop4:
                     do {
                         int alt4=3;
@@ -207,23 +207,15 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
 
                         switch (alt4) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -248,10 +240,10 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -267,23 +259,15 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:109:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:109:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -326,12 +310,12 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:111:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:111:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:111:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:111:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:111:24: ( options {greedy=false; } : . )*
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:111:24: ( options {greedy=false; } : . )*
             loop7:
             do {
                 int alt7=2;
@@ -356,7 +340,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:111:52: .
+            	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:111:52: .
             	    {
             	    matchAny(); 
 
@@ -386,12 +370,12 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:113:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:113:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:113:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:113:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:113:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:113:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop8:
             do {
                 int alt8=2;
@@ -404,7 +388,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:113:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:113:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -424,7 +408,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:113:40: ( ( '\\r' )? '\\n' )?
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:113:40: ( ( '\\r' )? '\\n' )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -433,9 +417,9 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
             }
             switch (alt10) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:113:41: ( '\\r' )? '\\n'
+                    // InternalLiveContainerBuilderIntegerationTestLanguage.g:113:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:113:41: ( '\\r' )?
+                    // InternalLiveContainerBuilderIntegerationTestLanguage.g:113:41: ( '\\r' )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -444,7 +428,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
                     }
                     switch (alt9) {
                         case 1 :
-                            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:113:41: '\\r'
+                            // InternalLiveContainerBuilderIntegerationTestLanguage.g:113:41: '\\r'
                             {
                             match('\r'); 
 
@@ -476,10 +460,10 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:115:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:115:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:115:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:115:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:115:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:115:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -493,7 +477,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
 
                 switch (alt11) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:
+            	    // InternalLiveContainerBuilderIntegerationTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -533,8 +517,8 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:117:16: ( . )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:117:18: .
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:117:16: ( . )
+            // InternalLiveContainerBuilderIntegerationTestLanguage.g:117:18: .
             {
             matchAny(); 
 
@@ -549,54 +533,54 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:1:8: ( RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalLiveContainerBuilderIntegerationTestLanguage.g:1:8: ( RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt12=7;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:1:10: RULE_ID
+                // InternalLiveContainerBuilderIntegerationTestLanguage.g:1:10: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:1:18: RULE_INT
+                // InternalLiveContainerBuilderIntegerationTestLanguage.g:1:18: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:1:27: RULE_STRING
+                // InternalLiveContainerBuilderIntegerationTestLanguage.g:1:27: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:1:39: RULE_ML_COMMENT
+                // InternalLiveContainerBuilderIntegerationTestLanguage.g:1:39: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:1:55: RULE_SL_COMMENT
+                // InternalLiveContainerBuilderIntegerationTestLanguage.g:1:55: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:1:71: RULE_WS
+                // InternalLiveContainerBuilderIntegerationTestLanguage.g:1:71: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/resource/parser/antlr/internal/InternalLiveContainerBuilderIntegerationTestLanguage.g:1:79: RULE_ANY_OTHER
+                // InternalLiveContainerBuilderIntegerationTestLanguage.g:1:79: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -622,8 +606,7 @@ public class InternalLiveContainerBuilderIntegerationTestLanguageLexer extends L
     static final String DFA12_specialS =
         "\1\1\3\uffff\1\2\1\0\11\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\11\10\2\7\2\10\1\7\22\10\1\7\1\10\1\4\4\10\1\5\7\10\1\6\12"+
-            "\3\7\10\32\2\3\10\1\1\1\2\1\10\32\2\uff85\10",
+            "\11\10\2\7\2\10\1\7\22\10\1\7\1\10\1\4\4\10\1\5\7\10\1\6\12\3\7\10\32\2\3\10\1\1\1\2\1\10\32\2\uff85\10",
             "\32\11\4\uffff\1\11\1\uffff\32\11",
             "",
             "",

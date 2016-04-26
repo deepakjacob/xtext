@@ -15,20 +15,25 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.xtext.findReferences.IReferenceFinder;
 import org.eclipse.xtext.resource.IReferenceDescription;
+import org.eclipse.xtext.resource.IResourceDescriptions;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.IResourceServiceProvider.Registry;
-import org.eclipse.xtext.ui.editor.findrefs.IReferenceFinder;
-import org.eclipse.xtext.ui.editor.findrefs.SimpleLocalResourceAccess;
+import org.eclipse.xtext.resource.impl.DefaultReferenceDescription;
+import org.eclipse.xtext.ui.editor.findrefs.ResourceAccess;
+import org.eclipse.xtext.ui.editor.findrefs.TargetURIConverter;
 import org.eclipse.xtext.ui.refactoring.ElementRenameArguments;
 import org.eclipse.xtext.ui.refactoring.IRefactoringUpdateAcceptor;
 import org.eclipse.xtext.ui.refactoring.IReferenceUpdater;
-import org.eclipse.xtext.util.IAcceptor;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * Finds all references to renamed elements and dispatches to the {@link IReferenceUpdater} of the referring languages
@@ -43,37 +48,48 @@ public class ReferenceUpdaterDispatcher {
 
 	@Inject
 	private IResourceServiceProvider.Registry resourceServiceProviderRegistry;
-
-	public void createReferenceUpdates(ElementRenameArguments elementRenameArguments, ResourceSet resourceSet,
-			IRefactoringUpdateAcceptor updateAcceptor, IProgressMonitor monitor) {
+	
+	@Inject
+	private TargetURIConverter targetURIConverter;
+	
+	@Inject
+	private Provider<ResourceAccess> resourceAccessProvider;
+	
+	@Inject
+	private IResourceDescriptions indexData;
+	
+	public void createReferenceUpdates(
+			ElementRenameArguments elementRenameArguments,
+			ResourceSet resourceSet,
+			IRefactoringUpdateAcceptor updateAcceptor,
+			IProgressMonitor monitor) {
 		SubMonitor progress = SubMonitor.convert(monitor, "Updating references", 100);
+		ResourceAccess resourceAccess = resourceAccessProvider.get();
+		resourceAccess.registerResourceSet(resourceSet);
+		
 		ReferenceDescriptionAcceptor referenceDescriptionAcceptor = createFindReferenceAcceptor(updateAcceptor);
-		referenceFinder.findAllReferences(elementRenameArguments.getRenamedElementURIs(), 
-				new SimpleLocalResourceAccess(resourceSet),
-				referenceDescriptionAcceptor, progress.newChild(2));
+		referenceFinder.findAllReferences(
+				targetURIConverter.fromIterable(elementRenameArguments.getRenamedElementURIs()),
+				resourceAccess,
+				indexData,
+				referenceDescriptionAcceptor,
+				progress.newChild(2));
 		Multimap<IReferenceUpdater, IReferenceDescription> updater2descriptions = referenceDescriptionAcceptor
 				.getReferenceUpdater2ReferenceDescriptions();
 		SubMonitor updaterProgress = progress.newChild(98).setWorkRemaining(updater2descriptions.keySet().size());
 		for (IReferenceUpdater referenceUpdater : updater2descriptions.keySet()) {
-			createReferenceUpdates(referenceUpdater, elementRenameArguments,
-					updater2descriptions.get(referenceUpdater), updateAcceptor, updaterProgress);
+			if (updaterProgress.isCanceled())
+				return;
+			referenceUpdater.createReferenceUpdates(elementRenameArguments, updater2descriptions.get(referenceUpdater), updateAcceptor,
+					updaterProgress.newChild(1));
 		}
-	}
-
-	protected void createReferenceUpdates(IReferenceUpdater referenceUpdater,
-			ElementRenameArguments elementRenameArguments, Iterable<IReferenceDescription> referenceDescriptions,
-			IRefactoringUpdateAcceptor updateAcceptor, SubMonitor updaterProgress) {
-		if (updaterProgress.isCanceled())
-			return;
-		referenceUpdater.createReferenceUpdates(elementRenameArguments, referenceDescriptions, updateAcceptor,
-				updaterProgress.newChild(1));
 	}
 
 	protected ReferenceDescriptionAcceptor createFindReferenceAcceptor(IRefactoringUpdateAcceptor updateAcceptor) {
 		return new ReferenceDescriptionAcceptor(resourceServiceProviderRegistry, updateAcceptor.getRefactoringStatus());
 	}
 
-	public static class ReferenceDescriptionAcceptor implements IAcceptor<IReferenceDescription> {
+	public static class ReferenceDescriptionAcceptor implements IReferenceFinder.Acceptor {
 
 		private Map<IResourceServiceProvider, IReferenceUpdater> provider2updater = newHashMap();
 		private Multimap<IReferenceUpdater, IReferenceDescription> updater2refs = HashMultimap.create();
@@ -87,6 +103,7 @@ public class ReferenceUpdaterDispatcher {
 			this.status = status;
 		}
 
+		@Override
 		public void accept(IReferenceDescription referenceDescription) {
 			if (referenceDescription.getSourceEObjectUri() == null
 					|| referenceDescription.getTargetEObjectUri() == null
@@ -100,6 +117,12 @@ public class ReferenceUpdaterDispatcher {
 				else
 					updater2refs.put(referenceUpdater, referenceDescription);
 			}
+		}
+		
+		@Override
+		public void accept(EObject source, URI sourceURI, EReference eReference, int index, EObject targetOrProxy,
+				URI targetURI) {
+			accept(new DefaultReferenceDescription(sourceURI, targetURI, eReference, index, null));
 		}
 
 		protected void handleNoReferenceUpdater(URI sourceResourceURI, StatusWrapper status) {
@@ -115,8 +138,11 @@ public class ReferenceUpdaterDispatcher {
 		}
 
 		protected IReferenceUpdater getReferenceUpdater(URI sourceResourceURI) {
+			//TODO Why do we cache the IReferenceUpdater here?
 			IResourceServiceProvider resourceServiceProvider = resourceServiceProviderRegistry
 					.getResourceServiceProvider(sourceResourceURI);
+			if (resourceServiceProvider == null)
+				return null;
 			IReferenceUpdater referenceUpdater = provider2updater.get(resourceServiceProvider);
 			if (referenceUpdater == null) {
 				referenceUpdater = resourceServiceProvider.get(OptionalReferenceUpdaterProxy.class).get();

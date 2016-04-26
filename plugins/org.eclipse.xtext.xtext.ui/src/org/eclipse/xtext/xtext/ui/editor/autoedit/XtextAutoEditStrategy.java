@@ -31,6 +31,7 @@ public class XtextAutoEditStrategy extends DefaultAutoEditStrategyProvider {
 	protected void configure(IEditStrategyAcceptor acceptor) {
 		super.configure(acceptor);
 		acceptor.accept(singleLineTerminals.newInstance(":", ";", new StrategyPredicate() {
+			@Override
 			public boolean isInsertClosingBracket(IDocument doc, final int offset) throws BadLocationException {
 				String currentRuleUptoOffset = getCurrentRuleUptoOffset(offset, doc);
 				Matcher matcher = singleColonPattern.matcher(currentRuleUptoOffset);
@@ -47,7 +48,7 @@ public class XtextAutoEditStrategy extends DefaultAutoEditStrategyProvider {
 	}
 
 	protected MultiLineTerminalsEditStrategy createColonSemicolonStrategy() {
-		MultiLineTerminalsEditStrategy configure = multiLineTerminals.newInstance(":", null, ";");
+		MultiLineTerminalsEditStrategy configure = multiLineTerminals.newInstance(":", null, ";", false);
 		// the following is a cheap but working hack, which replaces any double colons '::' by whitespace '  ' temporarily.
 		configure.setDocumentUtil(new DocumentUtil() {
 			@Override

@@ -8,284 +8,293 @@
  *******************************************************************************/
 package org.eclipse.xtext.xtext.ui.wizard.project;
 
-import static java.util.Collections.*;
+import static com.google.common.collect.Sets.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.net.URL;
+import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.eclipse.xtext.ui.XtextProjectHelper;
-import org.eclipse.xtext.ui.util.FeatureProjectFactory;
 import org.eclipse.xtext.ui.util.IProjectFactoryContributor;
+import org.eclipse.xtext.ui.util.JREContainerProvider;
+import org.eclipse.xtext.ui.util.JavaProjectFactory;
 import org.eclipse.xtext.ui.util.PluginProjectFactory;
 import org.eclipse.xtext.ui.util.ProjectFactory;
-import org.eclipse.xtext.ui.wizard.AbstractProjectCreator;
+import org.eclipse.xtext.ui.wizard.IProjectCreator;
+import org.eclipse.xtext.ui.wizard.IProjectInfo;
+import org.eclipse.xtext.xtext.wizard.AbstractFile;
+import org.eclipse.xtext.xtext.wizard.BinaryFile;
+import org.eclipse.xtext.xtext.wizard.ParentProjectDescriptor;
+import org.eclipse.xtext.xtext.wizard.ProjectDescriptor;
+import org.eclipse.xtext.xtext.wizard.TextFile;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-/**
- * XtextProjectCreator handles the actual creation of the new Xtext project.
- * 
- * @author Michael Clay - Initial contribution and API
- * @author Sebastian Zarnekow
- */
-public class XtextProjectCreator extends AbstractProjectCreator {
-
-	protected static final String[] DSL_PROJECT_NATURES = new String[] { JavaCore.NATURE_ID,
-			"org.eclipse.pde.PluginNature", //$NON-NLS-1$
-			XtextProjectHelper.NATURE_ID //$NON-NLS-1$
-	};
-
-	protected static final String[] DSL_UI_PROJECT_NATURES = new String[] { JavaCore.NATURE_ID,
-			"org.eclipse.pde.PluginNature",//$NON-NLS-1$
-			XtextProjectHelper.NATURE_ID
-	};
-
-	protected static final String[] BUILDERS = new String[] { JavaCore.BUILDER_ID, "org.eclipse.pde.ManifestBuilder", //$NON-NLS-1$
-			"org.eclipse.pde.SchemaBuilder", //$NON-NLS-1$
-			XtextProjectHelper.BUILDER_ID };
-
-	protected static final String[] GENERATOR_PROJECT_NATURES = DSL_UI_PROJECT_NATURES;
-	protected static final String[] TEST_PROJECT_NATURES = DSL_UI_PROJECT_NATURES;
-
-	protected static final String SRC_GEN_ROOT = "src-gen"; //$NON-NLS-1$
-	protected static final String SRC_ROOT = "src"; //$NON-NLS-1$
-	protected static final String XTEND_GEN_ROOT = "xtend-gen"; //$NON-NLS-1$
-	protected static final List<String> SRC_FOLDER_LIST = ImmutableList.of(SRC_ROOT, SRC_GEN_ROOT);
-
+public class XtextProjectCreator extends WorkspaceModifyOperation implements IProjectCreator {
+	private static final Logger LOG = Logger.getLogger(XtextProjectCreator.class);
+	
 	@Inject
-	private Provider<PluginProjectFactory> projectFactoryProvider;
+	private Provider<PluginProjectFactory> pluginProjectProvider;
 	@Inject
-	private Provider<FeatureProjectFactory> featureProjFactoryProvider;
+	private Provider<JavaProjectFactory> javaProjectProvider;
+	@Inject
+	private Provider<ProjectFactory> plainProjectProvider;
 
-	protected XtextProjectInfo getXtextProjectInfo() {
-		return (XtextProjectInfo) getProjectInfo();
-	}
+	private XtextProjectInfo projectInfo;
+	Map<ProjectDescriptor, IProject> createdProjects = Maps.newHashMap();
+	private IFile result;
 
 	@Override
-	protected void execute(final IProgressMonitor monitor) throws CoreException, InvocationTargetException,
-			InterruptedException {
+	protected void execute(final IProgressMonitor monitor) throws CoreException, InvocationTargetException, InterruptedException {
 		SubMonitor subMonitor = SubMonitor.convert(monitor, getCreateModelProjectMessage(), getMonitorTicks());
-
-		IProject project = createDslProject(subMonitor.newChild(1));
-		createDslUiProject(subMonitor.newChild(1));
-
-		if (getXtextProjectInfo().isCreateTestProject()) {
-			createTestProject(subMonitor.newChild(1));
-		}
-		if (getXtextProjectInfo().isCreateFeatureProject()) {
-			createFeatureProject(subMonitor.newChild(1));
+		for (ProjectDescriptor descriptor : projectInfo.getEnabledProjects()) {
+			IProject project = createProject(descriptor, SubMonitor.convert(subMonitor, 1));
+			createdProjects.put(descriptor, project);
 		}
 
-		IFile dslGrammarFile = project.getFile(getModelFolderName() + "/" + getXtextProjectInfo().getGrammarFilePath());
+		IProject runtimeProject = createdProjects.get(projectInfo.getRuntimeProject());
+		IFile dslGrammarFile = runtimeProject.getFile(getPath(projectInfo.getRuntimeProject().getGrammarFile()));
 		BasicNewResourceWizard.selectAndReveal(dslGrammarFile, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-		setResult(dslGrammarFile);
+		result = dslGrammarFile;
 	}
 
-	protected int getMonitorTicks() {
-		int ticks = 2;
-		ticks = getXtextProjectInfo().isCreateTestProject() ? ticks + 1 : ticks;
-		if (getXtextProjectInfo().isCreateFeatureProject()) {
-			ticks++;
+	private IProject createProject(ProjectDescriptor descriptor, SubMonitor monitor) {
+		if (isPluginProject(descriptor)) {
+			return createPluginProject(descriptor, monitor);
+		} else if (isFeatureProject(descriptor)) {
+			return createFeatureProject(descriptor, monitor);
+		} else if (isJavaProject(descriptor)) {
+			return createJavaProject(descriptor, monitor);
+		} else {
+			return createPlainProject(descriptor, monitor);
 		}
-		return ticks;
 	}
 
-	@Override
-	protected PluginProjectFactory createProjectFactory() {
-		return projectFactoryProvider.get();
-	}
-
-	protected FeatureProjectFactory createFeatureFactory() {
-		return featureProjFactoryProvider.get();
-	}
-
-	@Override
-	protected String getCreateModelProjectMessage() {
-		return Messages.XtextProjectCreator_CreatingProjectsMessage2 + getXtextProjectInfo().getProjectName();
-	}
-
-	protected IProject createDslUiProject(final IProgressMonitor monitor) throws CoreException {
-		PluginProjectFactory factory = createProjectFactory();
-		configureDslUiProjectFactory(factory);
+	private IProject createPluginProject(ProjectDescriptor descriptor, SubMonitor monitor) {
+		PluginProjectFactory factory = pluginProjectProvider.get();
+		configureJavaProject(descriptor, factory);
+		factory.addProjectNatures("org.eclipse.pde.PluginNature");
+		factory.addBuilderIds("org.eclipse.pde.ManifestBuilder", "org.eclipse.pde.SchemaBuilder");
+		factory.addDevelopmentTimeBundles(Lists.newArrayList(descriptor.getDevelopmentBundles()));
+		factory.addImportedPackages(Lists.newArrayList(descriptor.getImportedPackages()));
+		factory.addRequiredBundles(Lists.newArrayList(descriptor.getRequiredBundles()));
+		factory.setBreeToUse(descriptor.getBree());
 		return factory.createProject(monitor, null);
 	}
 
-	protected void configureDslUiProjectFactory(PluginProjectFactory factory) {
-		configureProjectFactory(factory);
-		List<String> requiredBundles = getDslUiProjectRequiredBundles();
-		factory.setProjectName(getXtextProjectInfo().getUiProjectName());
-		factory.addProjectNatures(getDslUiProjectNatures());
-		factory.addRequiredBundles(requiredBundles);
-		factory.setLocation(getXtextProjectInfo().getUiProjectLocation());
-	}
-
-	protected List<String> getDslUiProjectRequiredBundles() {
-		List<String> requiredBundles = Lists.newArrayList(getXtextProjectInfo().getProjectName()
-				+ ";visibility:=reexport", //$NON-NLS-1$
-				"org.eclipse.xtext.ui", //$NON-NLS-1$
-				"org.eclipse.ui.editors;bundle-version=\"3.5.0\"", //$NON-NLS-1$
-				"org.eclipse.ui.ide;bundle-version=\"3.5.0\""); //$NON-NLS-1$
-		return requiredBundles;
-	}
-
-	protected String[] getDslUiProjectNatures() {
-		return DSL_UI_PROJECT_NATURES;
-	}
-
-	protected IProject createDslProject(final IProgressMonitor monitor) throws CoreException {
-		PluginProjectFactory factory = createProjectFactory();
-		configureDslProjectFactory(factory);
+	private IProject createJavaProject(ProjectDescriptor descriptor, SubMonitor monitor) {
+		JavaProjectFactory factory = javaProjectProvider.get();
+		configureJavaProject(descriptor, factory);
 		return factory.createProject(monitor, null);
 	}
 
-	protected void configureDslProjectFactory(PluginProjectFactory factory) {
-		configureProjectFactory(factory);
-		factory.addFolders(singletonList(XTEND_GEN_ROOT));
-		List<String> requiredBundles = getDslProjectRequiredBundles();
-		factory.setProjectName(getXtextProjectInfo().getProjectName());
-		factory.addProjectNatures(getDslProjectNatures());
-		factory.addRequiredBundles(requiredBundles);
-		factory.setLocation(getXtextProjectInfo().getDslProjectLocation());
-		factory.addContributor(createDslProjectContributor());
+	private void configureJavaProject(ProjectDescriptor descriptor, JavaProjectFactory factory) {
+		configurePlainProject(descriptor, factory);
+		factory.addProjectNatures(XtextProjectHelper.NATURE_ID);
+		factory.addBuilderIds(XtextProjectHelper.BUILDER_ID);
+		factory.addProjectNatures(JavaCore.NATURE_ID);
+		factory.addBuilderIds(JavaCore.BUILDER_ID);
+		factory.addFolders(Lists.newArrayList(descriptor.getSourceFolders()));
+		factory.setJreContainerEntry(JREContainerProvider.getJREContainerEntry(descriptor.getBree()));
+		if (needsM2eIntegration(descriptor)) {
+			factory.setDefaultOutput("target/classes");
+			if (!descriptor.isEclipsePluginProject()) {
+				factory.addClasspathEntries(JavaCore.newContainerEntry(new Path("org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER")));
+			}
+		}
+		if (needsBuildshipIntegration(descriptor) && !descriptor.isEclipsePluginProject()) {
+			factory.addClasspathEntries(JavaCore.newContainerEntry(new Path("org.eclipse.buildship.core.gradleclasspathcontainer")));
+		}
 	}
 
-	/*
-	 * WARNING!!! Before changing here something, look at the commit history and read following bug reports.
-	 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=339004
-	 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=370411
-	 */
-	protected List<String> getDslProjectRequiredBundles() {
-		List<String> requiredBundles = Lists.newArrayList("org.eclipse.xtext;visibility:=reexport", //$NON-NLS-1$
-				"org.eclipse.xtext.xbase;resolution:=optional;visibility:=reexport", //$NON-NLS-1$
-				"org.eclipse.xtext.generator;resolution:=optional", //$NON-NLS-1$
-				"org.apache.commons.logging;bundle-version=\"1.0.4\";resolution:=optional", //$NON-NLS-1$
-				"org.eclipse.emf.codegen.ecore;resolution:=optional", //$NON-NLS-1$
-				"org.eclipse.emf.mwe.utils;resolution:=optional", //$NON-NLS-1$
-				"org.eclipse.emf.mwe2.launch;resolution:=optional"); //$NON-NLS-1$
-
-		String[] bundles = getXtextProjectInfo().getWizardContribution().getRequiredBundles();
-		for (String bundleId : bundles) {
-			requiredBundles.add(bundleId.trim() + ";resolution:=optional"); //$NON-NLS-1$
-		}
-		for (String bundleId : getAdditionalRequiredBundles()) {
-			requiredBundles.add(bundleId.trim());
-		}
-		return requiredBundles;
+	private IProject createFeatureProject(ProjectDescriptor descriptor, SubMonitor monitor) {
+		ProjectFactory factory = plainProjectProvider.get();
+		configurePlainProject(descriptor, factory);
+		factory.addProjectNatures("org.eclipse.pde.FeatureNature");
+		factory.addBuilderIds("org.eclipse.pde.FeatureBuilder");
+		return factory.createProject(monitor, null);
 	}
 
-	protected String[] getDslProjectNatures() {
-		return DSL_PROJECT_NATURES;
+	private IProject createPlainProject(ProjectDescriptor descriptor, SubMonitor monitor) {
+		ProjectFactory factory = plainProjectProvider.get();
+		configurePlainProject(descriptor, factory);
+		return factory.createProject(monitor, null);
+	}
+
+	private void configurePlainProject(ProjectDescriptor descriptor, ProjectFactory factory) {
+		factory.setProjectName(descriptor.getName());
+		factory.setLocation(new Path(descriptor.getLocation()));
+		factory.setProjectDefaultCharset(projectInfo.getEncoding().toString());
+		factory.addWorkingSets(Lists.newArrayList(projectInfo.getWorkingSets()));
+		factory.addContributor(new DescriptorBasedContributor(descriptor));
+		if (needsM2eIntegration(descriptor)) {
+			factory.addProjectNatures("org.eclipse.m2e.core.maven2Nature");
+			factory.addBuilderIds("org.eclipse.m2e.core.maven2Builder");
+		}
+		if (needsBuildshipIntegration(descriptor)) {
+			factory.addProjectNatures("org.eclipse.buildship.core.gradleprojectnature");
+			factory.addBuilderIds("org.eclipse.buildship.core.gradleprojectbuilder");
+			factory.addContributor(new GradleContributor(descriptor));
+		}
+	}
+
+	private class DescriptorBasedContributor implements IProjectFactoryContributor {
+		private ProjectDescriptor descriptor;
+
+		public DescriptorBasedContributor(ProjectDescriptor descriptor) {
+			this.descriptor = descriptor;
+		}
+
+		@Override
+		public void contributeFiles(IProject project, IFileCreator fileWriter) {
+			for (AbstractFile file : descriptor.getFiles()) {
+				if (!isFiltered(file)) {
+					String path = getPath(file);
+					IFile created = null;
+					if (file instanceof TextFile) {
+						created = fileWriter.writeToFile(((TextFile) file).getContent(), path);
+					} else if (file instanceof BinaryFile) {
+						created = createBinaryFile(fileWriter, path, ((BinaryFile) file).getContent());
+					}
+
+					if (created != null && file.isExecutable()) {
+						addExecutableFlag(created);
+					}
+				}
+			}
+		}
+
+		private void addExecutableFlag(IFile file) {
+			ResourceAttributes attributes = file.getResourceAttributes();
+			if (attributes != null) {
+				attributes.setExecutable(true);
+				try {
+					file.setResourceAttributes(attributes);
+				} catch (CoreException e) {
+					LOG.warn("Failed to set executable flag for " + file.getFullPath().toOSString(), e);
+				}
+			}
+		}
+
+		private IFile createBinaryFile(IFileCreator fileWriter, String path, URL url) {
+			IFile created = fileWriter.writeToFile("", path);
+			InputStream stream = null;
+			try {
+				stream = url.openStream();
+				created.setContents(stream, IResource.FORCE, new NullProgressMonitor());
+			} catch (Exception e) {
+				LOG.error("Failed to create binary file " + created.getFullPath().toOSString(), e);
+			} finally {
+				if (stream != null) {
+					try {
+						stream.close();
+					} catch (IOException e) {
+						LOG.warn("Failed to close stream for " + created.getFullPath().toOSString(), e);
+					}
+				}
+			}
+			return created;
+		}
+
+		private boolean isFiltered(AbstractFile file) {
+			if (isPluginProject(descriptor)) {
+				return newHashSet("plugin.xml", "MANIFEST.MF").contains(file.getRelativePath());
+			}
+			return false;
+		}
+	}
+
+	private static class GradleContributor implements IProjectFactoryContributor {
+
+		private ProjectDescriptor descriptor;
+
+		public GradleContributor(ProjectDescriptor descriptor) {
+			this.descriptor = descriptor;
+		}
+
+		@Override
+		public void contributeFiles(IProject project, IFileCreator fileWriter) {
+			fileWriter.writeToFile(
+				"{\n" +
+				"	\"1.0\": {\n" +
+				"		\"project_path\": \""+ getLogicalPath() + "\",\n" +
+				"		\"project_dir\": \""+ descriptor.getLocation() + "\",\n" +
+				"		\"connection_project_dir\": \""+ descriptor.getConfig().getParentProject().getLocation() + "\",\n" +
+				"		\"connection_gradle_distribution\": \"GRADLE_DISTRIBUTION(WRAPPER)\"\n" +
+				"	}\n" +
+				"}\n",
+			".settings/gradle.prefs");
+		}
+
+
+		private String getLogicalPath() {
+			if (descriptor instanceof ParentProjectDescriptor) {
+				return ":";
+			} else {
+				return ":" + descriptor.getName();
+			}
+		}
+	}
+
+	private boolean isPluginProject(ProjectDescriptor descriptor) {
+		return descriptor.isEclipsePluginProject();
+	}
+
+	private boolean isFeatureProject(ProjectDescriptor descriptor) {
+		return descriptor.isEclipseFeatureProject();
+	}
+
+	private boolean isJavaProject(ProjectDescriptor descriptor) {
+		return !descriptor.getSourceFolders().isEmpty();
+	}
+
+	private boolean needsM2eIntegration(ProjectDescriptor descriptor) {
+		return descriptor.isPartOfMavenBuild() && descriptor.getConfig().needsMavenBuild();
+	}
+
+	private boolean needsBuildshipIntegration(ProjectDescriptor descriptor) {
+		return descriptor.isPartOfGradleBuild() && descriptor.getConfig().needsGradleBuild();
+	}
+
+	private int getMonitorTicks() {
+		return projectInfo.getEnabledProjects().size();
+	}
+
+	private String getCreateModelProjectMessage() {
+		return Messages.XtextProjectCreator_CreatingProjectsMessage2 + projectInfo.getProjectName();
 	}
 
 	@Override
-	protected PluginProjectFactory configureProjectFactory(ProjectFactory factory) {
-		PluginProjectFactory result = (PluginProjectFactory) factory;
-		result.addWorkingSets(Arrays.asList(getXtextProjectInfo().getWorkingSets()));
-		result.addBuilderIds(getBuilderIDs());
-		result.addImportedPackages(getImportedPackages());
-		result.addFolders(getAllFolders());
+	public void setProjectInfo(IProjectInfo projectInfo) {
+		this.projectInfo = (XtextProjectInfo) projectInfo;
+	}
+
+	@Override
+	public IFile getResult() {
 		return result;
 	}
 
-	protected String[] getBuilderIDs() {
-		return BUILDERS;
+	private String getPath(AbstractFile file) {
+		return file.getProject().sourceFolder(file.getOutlet()) + "/" + file.getRelativePath();
 	}
 
-	protected String[] getTestProjectNatures() {
-		return TEST_PROJECT_NATURES;
-	}
-
-	protected IProject createTestProject(final IProgressMonitor monitor) throws CoreException {
-		PluginProjectFactory factory = createProjectFactory();
-		configureTestProjectFactory(factory);
-		factory.addContributor(createTestProjectContributor());
-		return factory.createProject(monitor, null);
-	}
-
-	private TestProjectContributor createTestProjectContributor() {
-		return new TestProjectContributor(getXtextProjectInfo());
-	}
-
-	protected IProject createFeatureProject(SubMonitor monitor) throws CoreException {
-		FeatureProjectFactory factory = createFeatureFactory();
-		configureFeatureProjectFactory(factory);
-		return factory.createProject(monitor, null);
-	}
-
-	protected void configureFeatureProjectFactory(FeatureProjectFactory factory) {
-		factory.setProjectName(getXtextProjectInfo().getFeatureProjectName());
-		factory.setLocation(getXtextProjectInfo().getFeatureProjectLocation());
-		factory.setFeatureLabel(String.format(Messages.XtextProjectCreator_FeatureLabel, getXtextProjectInfo()
-				.getLanguageNameAbbreviation()));
-		factory.addProjectNatures("org.eclipse.pde.FeatureNature");
-		factory.addBuilderIds("org.eclipse.pde.FeatureBuilder");
-		factory.addBundle(getXtextProjectInfo().getProjectName());
-		factory.addBundle(getXtextProjectInfo().getUiProjectName());
-		factory.addWorkingSets(Arrays.asList(getXtextProjectInfo().getWorkingSets()));
-	}
-
-	protected void configureTestProjectFactory(PluginProjectFactory factory) {
-		configureProjectFactory(factory);
-		List<String> requiredBundles = getTestProjectRequiredBundles();
-		factory.setProjectName(getXtextProjectInfo().getTestProjectName());
-		factory.addProjectNatures(getTestProjectNatures());
-		factory.addRequiredBundles(requiredBundles);
-		factory.addImportedPackages(getTestProjectImportedPackages());
-		factory.setLocation(getXtextProjectInfo().getTestProjectLocation());
-	}
-
-	protected List<String> getTestProjectImportedPackages() {
-		return Lists
-				.newArrayList("org.junit;version=\"4.5.0\"", "org.junit.runner;version=\"4.5.0\"",
-						"org.junit.runner.manipulation;version=\"4.5.0\"",
-						"org.junit.runner.notification;version=\"4.5.0\"", "org.junit.runners;version=\"4.5.0\"",
-						"org.junit.runners.model;version=\"4.5.0\"", "org.hamcrest.core");
-	}
-
-	protected List<String> getTestProjectRequiredBundles() {
-		List<String> requiredBundles = Lists.newArrayList(getXtextProjectInfo().getProjectName(), getXtextProjectInfo()
-				.getUiProjectName(), "org.eclipse.core.runtime", //$NON-NLS-1$
-				"org.eclipse.xtext.junit4", //$NON-NLS-1$
-				"org.eclipse.ui.workbench;resolution:=optional" //$NON-NLS-1$
-		); //$NON-NLS-1$
-		return requiredBundles;
-	}
-
-	protected List<String> getImportedPackages() {
-		return Lists.newArrayList("org.apache.log4j");
-	}
-
-	protected Collection<String> getAdditionalRequiredBundles() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	protected String getModelFolderName() {
-		return SRC_ROOT;
-	}
-
-	@Override
-	protected List<String> getAllFolders() {
-		return SRC_FOLDER_LIST;
-	}
-
-	protected IProjectFactoryContributor createDslProjectContributor() {
-		DslProjectContributor dslProjectContributor = new DslProjectContributor(getXtextProjectInfo());
-		dslProjectContributor.setSourceRoot(SRC_ROOT);
-		return dslProjectContributor;
-	}
 }

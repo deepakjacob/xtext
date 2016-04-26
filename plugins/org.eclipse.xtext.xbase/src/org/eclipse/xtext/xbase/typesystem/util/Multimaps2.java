@@ -19,6 +19,9 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 /**
+ * Provides static creating a {@link #newLinkedHashListMultimap() LinkedHashListMultimap}.
+ * 
+ * @see Multimaps
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public class Multimaps2 {
@@ -28,6 +31,7 @@ public class Multimaps2 {
 	 */
 	public static <K, V> ListMultimap<K, V> newLinkedHashListMultimap() {
 		return Multimaps.newListMultimap(Maps.<K, Collection<V>> newLinkedHashMap(), new Supplier<List<V>>() {
+			@Override
 			public List<V> get() {
 				return Lists.newArrayList();
 			}
@@ -47,6 +51,7 @@ public class Multimaps2 {
 	 */
 	public static <K, V> ListMultimap<K, V> newLinkedHashListMultimap(int expectedKeys, final int expectedValuesPerKey) {
 		return Multimaps.newListMultimap(new LinkedHashMap<K, Collection<V>>(expectedKeys), new Supplier<List<V>>() {
+			@Override
 			public List<V> get() {
 				return Lists.newArrayListWithCapacity(expectedValuesPerKey);
 			}

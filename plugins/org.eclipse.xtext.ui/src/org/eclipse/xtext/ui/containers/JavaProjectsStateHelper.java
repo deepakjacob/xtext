@@ -17,8 +17,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jdt.core.IJarEntryResource;
@@ -28,7 +26,6 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaRuntime;
-import org.eclipse.xtext.ui.XtextProjectHelper;
 import org.eclipse.xtext.ui.resource.IStorage2UriMapperJdtExtensions;
 import org.eclipse.xtext.util.Pair;
 
@@ -40,12 +37,23 @@ import com.google.inject.Singleton;
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 @Singleton
-public class JavaProjectsStateHelper extends AbstractStorage2UriMapperClient {
+public class JavaProjectsStateHelper extends AbstractProjectsStateHelper {
 
 	private final static Logger log = Logger.getLogger(JavaProjectsStateHelper.class);
 	
 	@Inject
-	private IWorkspace workspace;
+	private IStorage2UriMapperJdtExtensions uriMapperExtensions;
+	
+	/**
+	 * Public for testing purpose
+	 * 
+	 * @since 2.5
+	 * @nooverride This method is not intended to be re-implemented or extended by clients.
+	 * @noreference This method is not intended to be referenced by clients.
+	 */
+	public void setUriMapperExtensions(IStorage2UriMapperJdtExtensions uriMapperExtensions) {
+		this.uriMapperExtensions = uriMapperExtensions;
+	}
 	
 	public String initHandle(URI uri) {
 		IPackageFragmentRoot root = getPackageFragmentRoot(uri);
@@ -75,7 +83,7 @@ public class JavaProjectsStateHelper extends AbstractStorage2UriMapperClient {
 			if (!isAccessibleXtextProject(javaProject.getProject())) {
 				return Collections.emptyList();
 			}
-			Map<URI, IStorage> entries = ((IStorage2UriMapperJdtExtensions)super.getMapper()).getAllEntries(root);
+			Map<URI, IStorage> entries = uriMapperExtensions.getAllEntries(root);
 			return entries.keySet();
 		}
 		return Collections.emptyList();
@@ -83,11 +91,19 @@ public class JavaProjectsStateHelper extends AbstractStorage2UriMapperClient {
 	
 	protected List<String> getPackageFragmentRootHandles(IJavaProject project) {
 		List<String> result = Lists.newArrayList();
+		List<String> binaryAndNonLocalFragments = Lists.newArrayList();
 		try {
 			IPackageFragmentRoot[] roots = project.getAllPackageFragmentRoots();
+			result = Lists.newArrayListWithCapacity(roots.length);
 			for (IPackageFragmentRoot root : roots) {
 				if (root != null && !JavaRuntime.newDefaultJREContainerPath().isPrefixOf(root.getRawClasspathEntry().getPath())) {
-					result.add(root.getHandleIdentifier());
+					if (root.getKind() == IPackageFragmentRoot.K_SOURCE && project.equals(root.getJavaProject())) {
+						// treat local sources with higher priority
+						// see Java behavior in SameClassNamesTest
+						result.add(root.getHandleIdentifier());	
+					} else {
+						binaryAndNonLocalFragments.add(root.getHandleIdentifier());
+					}
 				}
 			}
 		} catch (JavaModelException e) {
@@ -95,6 +111,7 @@ public class JavaProjectsStateHelper extends AbstractStorage2UriMapperClient {
 				log.error("Cannot find rootHandles in project " + project.getProject().getName(), e);
 			}
 		}
+		result.addAll(binaryAndNonLocalFragments);
 		return result;
 	}
 	
@@ -141,10 +158,32 @@ public class JavaProjectsStateHelper extends AbstractStorage2UriMapperClient {
 			if (storage instanceof IJarEntryResource) {
 				IPackageFragmentRoot fragmentRoot = ((IJarEntryResource) storage).getPackageFragmentRoot();
 				if (fragmentRoot != null) {
-					IJavaProject javaProject = fragmentRoot.getJavaProject();
-					if (isAccessibleXtextProject(javaProject.getProject()))
-						return fragmentRoot;
-					if (result != null)
+					// IPackageFragmentRoot has some unexpected caching - it may return a different project
+					// thus we use the one that was used to record the IPackageFragmentRoot
+					IProject actualProject = storage2Project.getSecond();
+					IJavaProject javaProject = JavaCore.create(actualProject);
+					if (!javaProject.exists()) {
+						javaProject = fragmentRoot.getJavaProject();
+					}
+					if (isAccessibleXtextProject(javaProject.getProject())) {
+						// if both projects are the same - fine
+						if (javaProject.equals(fragmentRoot.getJavaProject()))
+							return fragmentRoot;
+						// otherwise re-obtain the fragment root from the real project
+						if (fragmentRoot.isExternal()) {
+							IPackageFragmentRoot actualRoot = javaProject.getPackageFragmentRoot(fragmentRoot.getPath().toString());
+							if (actualProject.exists()) {
+								return actualRoot;
+							}
+						} else {
+							IPackageFragmentRoot actualRoot = javaProject.getPackageFragmentRoot(fragmentRoot.getResource());
+							if (actualRoot.exists()) {
+								return actualRoot;
+							}
+						}
+						result = fragmentRoot;
+					}
+					if (result == null)
 						result = fragmentRoot;
 				}
 			}
@@ -152,15 +191,4 @@ public class JavaProjectsStateHelper extends AbstractStorage2UriMapperClient {
 		return result;
 	}
 	
-	protected boolean isAccessibleXtextProject(IProject p) {
-		return p != null && XtextProjectHelper.hasNature(p);
-	}
-	
-	protected IWorkspaceRoot getWorkspaceRoot() {
-		return workspace.getRoot();
-	}
-	
-	public void setWorkspace(IWorkspace workspace) {
-		this.workspace = workspace;
-	}
 }

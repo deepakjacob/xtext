@@ -15,15 +15,21 @@ import org.eclipse.xtext.common.types.JvmTypeReference;
  * A representation of the model object '<em><b>XVariable Declaration</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <!-- begin-model-doc -->
+ * @since 2.7
+ * @noextend This interface is not intended to be extended by clients.
+ * @noimplement This interface is not intended to be implemented by clients.
+ * <!-- end-model-doc -->
+ *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.XVariableDeclaration#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.XVariableDeclaration#getName <em>Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.XVariableDeclaration#getRight <em>Right</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.XVariableDeclaration#isWriteable <em>Writeable</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.xbase.XbasePackage#getXVariableDeclaration()
  * @model

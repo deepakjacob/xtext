@@ -10,6 +10,7 @@ import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.TypeRef;
 import org.eclipse.xtext.generator.Naming;
 import org.eclipse.xtext.generator.grammarAccess.GrammarAccessUtil;
+import org.eclipse.xtext.xtext.RuleNames;
 
 /**
  * This API can be used by other templates to generate code
@@ -22,7 +23,7 @@ public class GrammarAccess {
   private Naming naming;
   
   /**
-   * Returns the invokation of the element accessor method as full qualified Java statement.
+   * Returns the invocation of the element accessor method as full qualified Java statement.
    * Example: return FowlerDslTestLanguageGrammarAccess.INSTANCE.prStatemachine().ele1AssignmentStates()
    * @param ele the element
    * @return The java statement
@@ -32,13 +33,12 @@ public class GrammarAccess {
     String _gaSimpleName = this.gaSimpleName(_grammar);
     String _plus = (_gaSimpleName + ".INSTANCE.");
     String _gaRuleElementAccessor = this.gaRuleElementAccessor(ele);
-    String _plus_1 = (_plus + _gaRuleElementAccessor);
-    return _plus_1;
+    return (_plus + _gaRuleElementAccessor);
   }
   
   /**
-   * Converts an arbitary string to a valid Java identifier
-   * The string is being split up along the the caracters that are not valid as java
+   * Converts an arbitary string to a valid Java identifier.
+   * The string is split up along the the characters that are not valid as Java
    * identifier. The first character of each segments is made upper case which
    * leads to a camel-case style.
    * @param text the string
@@ -46,8 +46,7 @@ public class GrammarAccess {
    * @return the java identifier
    */
   public String toJavaIdentifier(final String text, final boolean uppercaseFirst) {
-    String _javaIdentifier = GrammarAccessUtil.toJavaIdentifier(text, Boolean.valueOf(uppercaseFirst));
-    return _javaIdentifier;
+    return GrammarAccessUtil.toJavaIdentifier(text, Boolean.valueOf(uppercaseFirst));
   }
   
   /**
@@ -57,9 +56,9 @@ public class GrammarAccess {
    * @return the identifier
    */
   public String gaRuleIdentifyer(final AbstractRule rule) {
-    String _name = rule.getName();
-    String _javaIdentifier = this.toJavaIdentifier(_name, true);
-    return _javaIdentifier;
+    RuleNames _ruleNames = RuleNames.getRuleNames(rule);
+    final String plainName = _ruleNames.getUniqueRuleName(rule);
+    return this.toJavaIdentifier(plainName, true);
   }
   
   /**
@@ -70,18 +69,16 @@ public class GrammarAccess {
    * @return the element's identifier
    */
   public String gaElementIdentifyer(final AbstractElement element) {
-    String _uniqueElementName = GrammarAccessUtil.getUniqueElementName(element);
-    return _uniqueElementName;
+    return GrammarAccessUtil.getUniqueElementName(element);
   }
   
   /**
    * Returns the full qulified Java class name of a GrammarAccess implementation for a grammar.
-   * @param grammar
+   * @param grammar the grammar
    * @return the GrammarAccess' full qualified Java class name
    */
   public String gaFQName(final Grammar grammar) {
-    String _grammarAccessFQName = GrammarAccessUtil.getGrammarAccessFQName(grammar, this.naming);
-    return _grammarAccessFQName;
+    return GrammarAccessUtil.getGrammarAccessFQName(grammar, this.naming);
   }
   
   /**
@@ -92,8 +89,7 @@ public class GrammarAccess {
    */
   public String gaSimpleName(final Grammar grammar) {
     String _gaFQName = this.gaFQName(grammar);
-    String _simpleName = this.naming.toSimpleName(_gaFQName);
-    return _simpleName;
+    return this.naming.toSimpleName(_gaFQName);
   }
   
   /**
@@ -104,8 +100,7 @@ public class GrammarAccess {
   public String gaRuleAccessMethodName(final AbstractRule rule) {
     String _gaRuleIdentifyer = this.gaRuleIdentifyer(rule);
     String _plus = ("get" + _gaRuleIdentifyer);
-    String _plus_1 = (_plus + "Rule");
-    return _plus_1;
+    return (_plus + "Rule");
   }
   
   /**
@@ -116,8 +111,7 @@ public class GrammarAccess {
   public String gaRuleElementsMethodName(final AbstractRule rule) {
     String _gaRuleIdentifyer = this.gaRuleIdentifyer(rule);
     String _plus = ("get" + _gaRuleIdentifyer);
-    String _plus_1 = (_plus + "Access");
-    return _plus_1;
+    return (_plus + "Access");
   }
   
   /**
@@ -127,46 +121,42 @@ public class GrammarAccess {
    */
   public String gaElementAccessMethodeName(final AbstractElement element) {
     String _gaElementIdentifyer = this.gaElementIdentifyer(element);
-    String _plus = ("get" + _gaElementIdentifyer);
-    return _plus;
+    return ("get" + _gaElementIdentifyer);
   }
   
   /**
    * Returns the simple class name of a rule's facade. A GrammarAccess implementation has
    * a facade for each parser rule, which contains the methods for accessing the rule's elements.
-   * @param rule
+   * @param rule ruleName
    * @return the simple class name
    */
   public String gaRuleAccesorClassName(final AbstractRule rule) {
     String _gaRuleIdentifyer = this.gaRuleIdentifyer(rule);
-    String _plus = (_gaRuleIdentifyer + "Elements");
-    return _plus;
+    return (_gaRuleIdentifyer + "Elements");
   }
   
   /**
-   * Returns the invokation of the rule accessor method as Java statement.
+   * Returns the invocation of the rule accessor method as Java statement.
    * @param rule the rule
    * @return The java statement
    */
   public String gaRuleAccessor(final AbstractRule rule) {
     String _gaRuleAccessMethodName = this.gaRuleAccessMethodName(rule);
-    String _plus = (_gaRuleAccessMethodName + "()");
-    return _plus;
+    return (_gaRuleAccessMethodName + "()");
   }
   
   /**
-   * Returns the invokation of the rule's content accessor method as Java statement.
+   * Returns the invocation of the rule's content accessor method as Java statement.
    * @param rule the rule
    * @return The java statement
    */
   public String gaElementsAccessor(final AbstractRule rule) {
     String _gaRuleElementsMethodName = this.gaRuleElementsMethodName(rule);
-    String _plus = (_gaRuleElementsMethodName + "()");
-    return _plus;
+    return (_gaRuleElementsMethodName + "()");
   }
   
   /**
-   * Returns the invokation of the element accessor method as Java statement.
+   * Returns the invocation of the element accessor method as Java statement.
    * The called method is implemented by the rule's facade.
    * Example: ele1AssignmentStates()
    * @param ele the element
@@ -174,12 +164,11 @@ public class GrammarAccess {
    */
   public String gaElementAccessor(final AbstractElement ele) {
     String _gaElementAccessMethodeName = this.gaElementAccessMethodeName(ele);
-    String _plus = (_gaElementAccessMethodeName + "()");
-    return _plus;
+    return (_gaElementAccessMethodeName + "()");
   }
   
   /**
-   * Returns the invokation of the element accessor method for a GrammarAccess
+   * Returns the invocation of the element accessor method for a GrammarAccess
    * as Java statement.
    * Example: prStatemachine().ele1AssignmentStates()
    * @param ele the element
@@ -190,12 +179,11 @@ public class GrammarAccess {
     String _gaElementsAccessor = this.gaElementsAccessor(_containingRule);
     String _plus = (_gaElementsAccessor + ".");
     String _gaElementAccessor = this.gaElementAccessor(ele);
-    String _plus_1 = (_plus + _gaElementAccessor);
-    return _plus_1;
+    return (_plus + _gaElementAccessor);
   }
   
   /**
-   * Returns the invokation of an element or rule accessor, including the .getType() call.
+   * Returns the invocation of an element or rule accessor, including the .getType() call.
    * Example1: getFooRule().getType()
    * Example2: getBarRule().getFooAction().getType()
    */
@@ -204,22 +192,16 @@ public class GrammarAccess {
     EObject _eContainer = ele.eContainer();
     final EObject cnt = _eContainer;
     boolean _matched = false;
-    if (!_matched) {
-      if (cnt instanceof AbstractElement) {
-        final AbstractElement _abstractElement = (AbstractElement)cnt;
-        _matched=true;
-        String _gaRuleElementAccessor = this.gaRuleElementAccessor(_abstractElement);
-        String _plus = (_gaRuleElementAccessor + ".getType()");
-        _switchResult = _plus;
-      }
+    if (cnt instanceof AbstractElement) {
+      _matched=true;
+      String _gaRuleElementAccessor = this.gaRuleElementAccessor(((AbstractElement)cnt));
+      _switchResult = (_gaRuleElementAccessor + ".getType()");
     }
     if (!_matched) {
       if (cnt instanceof AbstractRule) {
-        final AbstractRule _abstractRule = (AbstractRule)cnt;
         _matched=true;
-        String _gaRuleAccessor = this.gaRuleAccessor(_abstractRule);
-        String _plus = (_gaRuleAccessor + ".getType()");
-        _switchResult = _plus;
+        String _gaRuleAccessor = this.gaRuleAccessor(((AbstractRule)cnt));
+        _switchResult = (_gaRuleAccessor + ".getType()");
       }
     }
     if (!_matched) {
@@ -227,48 +209,39 @@ public class GrammarAccess {
       EClass _eClass = _eContainer_1.eClass();
       String _name = _eClass.getName();
       String _plus = ("<error: unknown type " + _name);
-      String _plus_1 = (_plus + ">");
-      _switchResult = _plus_1;
+      _switchResult = (_plus + ">");
     }
     return _switchResult;
   }
   
   /**
-   * Returns the invokation of an element or rule accessor.
+   * Returns the invocation of an element or rule accessor.
    * Example1: getFooRule()
    * Example2: getBarRule().getFooAction()
    */
   public String gaAccessor(final EObject ele) {
     String _switchResult = null;
     boolean _matched = false;
-    if (!_matched) {
-      if (ele instanceof AbstractElement) {
-        final AbstractElement _abstractElement = (AbstractElement)ele;
-        _matched=true;
-        String _gaRuleElementAccessor = this.gaRuleElementAccessor(_abstractElement);
-        _switchResult = _gaRuleElementAccessor;
-      }
+    if (ele instanceof AbstractElement) {
+      _matched=true;
+      _switchResult = this.gaRuleElementAccessor(((AbstractElement)ele));
     }
     if (!_matched) {
       if (ele instanceof AbstractRule) {
-        final AbstractRule _abstractRule = (AbstractRule)ele;
         _matched=true;
-        String _gaRuleAccessor = this.gaRuleAccessor(_abstractRule);
-        _switchResult = _gaRuleAccessor;
+        _switchResult = this.gaRuleAccessor(((AbstractRule)ele));
       }
     }
     if (!_matched) {
       EClass _eClass = ele.eClass();
       String _name = _eClass.getName();
       String _plus = ("<error: unknown type " + _name);
-      String _plus_1 = (_plus + ">");
-      _switchResult = _plus_1;
+      _switchResult = (_plus + ">");
     }
     return _switchResult;
   }
   
   public String grammarFragmentToStr(final EObject ele, final String prefix) {
-    String _serialize = GrammarAccessUtil.serialize(ele, prefix);
-    return _serialize;
+    return GrammarAccessUtil.serialize(ele, prefix);
   }
 }

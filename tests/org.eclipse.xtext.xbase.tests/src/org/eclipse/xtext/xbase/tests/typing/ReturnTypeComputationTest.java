@@ -14,11 +14,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
-import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
-import org.eclipse.xtext.xbase.typing.ITypeProvider;
+import org.eclipse.xtext.xbase.typesystem.IBatchTypeResolver;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -29,26 +30,30 @@ import com.google.inject.Inject;
  */
 public class ReturnTypeComputationTest extends AbstractXbaseTestCase {
 	@Inject
-	private ITypeProvider typeProvider;
+	private IBatchTypeResolver typeResolver;
 	
 	@Test public void testReturnType_00() throws Exception {
 		assertReturnType("java.lang.String", "return 'foo'");
 	}
 	
-	@Test public void testReturnType_01() throws Exception {
-		assertReturnType("void", "'foo'");
+	@Test
+	public void testReturnType_01() throws Exception {
+		assertReturnType("java.lang.String", "'foo'");
 	}
 	
 	@Test public void testReturnType_02() throws Exception {
 		assertReturnType("null", "return null");
 	}
 	
-	@Test public void testReturnType_03() throws Exception {
-		assertReturnType("void", "[| return e]");
+	@Test
+	public void testReturnType_03() throws Exception {
+		// unresolved feature 'e' is intentional
+		assertReturnType("()=>Object", "[| return e]");
 	}
 	
-	@Test public void testReturnType_04() throws Exception {
-		assertReturnType("void", "{ [| return '']}");
+	@Test
+	public void testReturnType_04() throws Exception {
+		assertReturnType("()=>java.lang.String", "{ [| return '']}");
 	}
 	
 	@Test public void testReturnType_05() throws Exception {
@@ -151,9 +156,10 @@ public class ReturnTypeComputationTest extends AbstractXbaseTestCase {
 	
 	protected void assertThrownTypes(String expression, String...thrownTypes) throws Exception {
 		final XExpression expr = expression(expression);
-		final Iterable<JvmTypeReference> thrown = typeProvider.getThrownExceptionTypes(expr);
-		ArrayList<String> actual = newArrayList(transform(thrown, new Function<JvmTypeReference, String>() {
-			public String apply(JvmTypeReference from) {
+		List<LightweightTypeReference> exceptions = typeResolver.resolveTypes(expr).getThrownExceptions(expr);
+		ArrayList<String> actual = newArrayList(transform(exceptions, new Function<LightweightTypeReference, String>() {
+			@Override
+			public String apply(LightweightTypeReference from) {
 				return from.getIdentifier();
 			}
 		}));
@@ -165,13 +171,15 @@ public class ReturnTypeComputationTest extends AbstractXbaseTestCase {
 		
 	public void assertReturnTypeWithImplictReturnExpression(String expected, String expression) throws Exception {
 		final XExpression expr = expression(expression);
-		final JvmTypeReference returnType = typeProvider.getCommonReturnType(expr, true);
-		assertEquals(expected,returnType.getIdentifier());
+		final LightweightTypeReference returnType = typeResolver.resolveTypes(expr).getReturnType(expr);
+		assertNotNull(returnType);
+		assertEquals(expected, returnType.getIdentifier());
 	}
 	
 	public void assertReturnType(String expected, String expression) throws Exception {
 		final XExpression expr = expression(expression);
-		final JvmTypeReference returnType = typeProvider.getCommonReturnType(expr, false);
-		assertEquals(expected,returnType.getIdentifier());
+		final LightweightTypeReference returnType = typeResolver.resolveTypes(expr).getReturnType(expr);
+		assertNotNull(returnType);
+		assertEquals(expected, returnType.getIdentifier());
 	}
 }

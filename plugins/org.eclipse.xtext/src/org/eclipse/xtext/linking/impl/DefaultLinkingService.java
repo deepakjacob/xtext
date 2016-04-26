@@ -23,8 +23,6 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.AbstractGlobalScopeDelegatingScopeProvider;
 import org.eclipse.xtext.scoping.impl.IDelegatingScopeProvider;
-import org.eclipse.xtext.util.internal.StopWatches;
-import org.eclipse.xtext.util.internal.StopWatches.StoppedTask;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -106,6 +104,7 @@ public class DefaultLinkingService extends AbstractLinkingService {
 	 * @return the first element returned from the injected {@link IScopeProvider} which matches the text of the passed
 	 *         {@link INode node}
 	 */
+	@Override
 	public List<EObject> getLinkedObjects(EObject context, EReference ref, INode node)
 			throws IllegalNodeException {
 		final EClass requiredType = ref.getEReferenceType();
@@ -117,20 +116,14 @@ public class DefaultLinkingService extends AbstractLinkingService {
 			if (logger.isDebugEnabled()) {
 				logger.debug("before getLinkedObjects: node: '" + crossRefString + "'");
 			}
-			StoppedTask task = StopWatches.forTask("Crosslink resolution");
-			try {
-				task.start();
-				final IScope scope = getScope(context, ref);
-				QualifiedName qualifiedLinkName =  qualifiedNameConverter.toQualifiedName(crossRefString);
-				IEObjectDescription eObjectDescription = scope.getSingleElement(qualifiedLinkName);
-				if (logger.isDebugEnabled()) {
-					logger.debug("after getLinkedObjects: node: '" + crossRefString + "' result: " + eObjectDescription);
-				}
-				if (eObjectDescription != null) 
-					return Collections.singletonList(eObjectDescription.getEObjectOrProxy());
-			} finally {
-				task.stop();
+			final IScope scope = getScope(context, ref);
+			QualifiedName qualifiedLinkName =  qualifiedNameConverter.toQualifiedName(crossRefString);
+			IEObjectDescription eObjectDescription = scope.getSingleElement(qualifiedLinkName);
+			if (logger.isDebugEnabled()) {
+				logger.debug("after getLinkedObjects: node: '" + crossRefString + "' result: " + eObjectDescription);
 			}
+			if (eObjectDescription != null) 
+				return Collections.singletonList(eObjectDescription.getEObjectOrProxy());
 		}
 		return Collections.emptyList();
 	}

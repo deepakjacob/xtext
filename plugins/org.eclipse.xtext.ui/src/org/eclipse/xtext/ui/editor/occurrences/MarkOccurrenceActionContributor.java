@@ -28,7 +28,7 @@ import com.google.inject.Singleton;
 @Singleton
 public class MarkOccurrenceActionContributor extends AbstractToggleActionContributor implements IActionContributor {
 
-	public static final String EDITOR_MARK_OCCURRENCES = "markOccurrences"; //$NON-NLS-1$
+	public static final String EDITOR_MARK_OCCURRENCES = "ui.editor.markOccurrences"; //$NON-NLS-1$
 
 	@Inject
 	private Provider<OccurrenceMarker> occurrenceMarkerProvider;
@@ -41,6 +41,7 @@ public class MarkOccurrenceActionContributor extends AbstractToggleActionContrib
 		return action;
 	}
 	
+	@Override
 	public void contributeActions(XtextEditor editor) {
 		OccurrenceMarker occurrenceMarker = editor2marker.get(editor);
 		if(occurrenceMarker == null) {
@@ -55,6 +56,7 @@ public class MarkOccurrenceActionContributor extends AbstractToggleActionContrib
 		}
 	}
 
+	@Override
 	public void editorDisposed(XtextEditor editor) {
 		OccurrenceMarker occurrenceMarker = editor2marker.get(editor);
 		if(occurrenceMarker != null) {

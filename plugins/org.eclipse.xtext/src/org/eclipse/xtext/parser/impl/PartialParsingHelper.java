@@ -68,6 +68,7 @@ public class PartialParsingHelper implements IPartialParsingHelper {
 	@Inject(optional=true)
 	private TokenRegionProvider tokenRegionProvider;
 
+	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public IParseResult reparse(IParser parser, IParseResult previousParseResult, ReplaceRegion changedRegion) {
 		if (parser == null)
@@ -151,11 +152,17 @@ public class PartialParsingHelper implements IPartialParsingHelper {
 			EStructuralFeature feature = oldSemanticElement.eContainingFeature();
 			if (feature == null)
 				return fullyReparse(parser, previousParseResult, replaceRegion);
+			oldSemanticParentElement = oldSemanticElement.eContainer();
 			if (feature.isMany()) {
 				List featureValueList = (List) oldSemanticParentElement.eGet(feature);
 				int index = featureValueList.indexOf(oldSemanticElement);
 				unloadSemanticObject(oldSemanticElement);
-				featureValueList.set(index, newParseResult.getRootASTElement());
+				EObject newSemanticObject = newParseResult.getRootASTElement();
+				if (newSemanticObject != null) {
+					featureValueList.set(index, newParseResult.getRootASTElement());
+				} else {
+					featureValueList.remove(index);
+				}
 			} else {
 				unloadSemanticObject(oldSemanticElement);
 				oldSemanticParentElement.eSet(feature, newParseResult.getRootASTElement());
@@ -274,9 +281,13 @@ public class PartialParsingHelper implements IPartialParsingHelper {
 			return true;
 		if (candidate.getGrammarElement() instanceof RuleCall) {
 			AbstractRule rule = ((RuleCall) candidate.getGrammarElement()).getRule();
-			if (!(rule instanceof ParserRule) || GrammarUtil.isDatatypeRule((ParserRule) rule))
+			if (!(rule instanceof ParserRule))
 				return true;
-			else if (isInvalidDueToPredicates((AbstractElement) candidate.getGrammarElement()))
+			ParserRule casted = (ParserRule) rule;
+			if (GrammarUtil.isDatatypeRule(casted) || casted.isFragment() || !casted.getParameters().isEmpty()) {
+				return true;
+			}
+			if (isInvalidDueToPredicates((AbstractElement) candidate.getGrammarElement()))
 				return true;
 		}
 		if (candidate.getGrammarElement() instanceof Action) {

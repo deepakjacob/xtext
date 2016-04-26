@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010 itemis AG (http://www.itemis.eu) and others.
+ * Copyright (c) 2015 itemis AG (http://www.itemis.eu) and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,293 +7,208 @@
  *******************************************************************************/
 package org.eclipse.xtext.serializer.analysis;
 
+import static org.eclipse.xtext.serializer.analysis.IGrammarConstraintProvider.ConstraintElementType.*;
+import static org.eclipse.xtext.serializer.analysis.ISemanticSequencerNfaProvider.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.AbstractElement;
 import org.eclipse.xtext.Action;
-import org.eclipse.xtext.Alternatives;
 import org.eclipse.xtext.Assignment;
-import org.eclipse.xtext.CompoundElement;
-import org.eclipse.xtext.CrossReference;
-import org.eclipse.xtext.EnumRule;
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
-import org.eclipse.xtext.Group;
-import org.eclipse.xtext.Keyword;
+import org.eclipse.xtext.Parameter;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
-import org.eclipse.xtext.TerminalRule;
-import org.eclipse.xtext.UnorderedGroup;
 import org.eclipse.xtext.grammaranalysis.impl.GrammarElementTitleSwitch;
-import org.eclipse.xtext.serializer.analysis.ActionFilterNFAProvider.ActionFilterState;
-import org.eclipse.xtext.serializer.analysis.ActionFilterNFAProvider.ActionFilterTransition;
-import org.eclipse.xtext.util.EmfFormatter;
+import org.eclipse.xtext.serializer.ISerializationContext;
+import org.eclipse.xtext.serializer.analysis.ISemanticSequencerNfaProvider.ISemState;
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
+import org.eclipse.xtext.util.formallang.Nfa;
+import org.eclipse.xtext.util.formallang.NfaToProduction;
+import org.eclipse.xtext.util.formallang.NfaUtil;
+import org.eclipse.xtext.util.formallang.Pda;
+import org.eclipse.xtext.util.formallang.ProductionFactory;
 import org.eclipse.xtext.util.formallang.ProductionFormatter;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 /**
  * @author Moritz Eysholdt - Initial contribution and API
  */
-@Singleton
 public class GrammarConstraintProvider implements IGrammarConstraintProvider {
 
-	protected abstract static class AbstractConstraintContext implements IConstraintContext {
+	protected static class Constraint implements IGrammarConstraintProvider.IConstraint {
 
-		protected List<IConstraint> constraints = Lists.newArrayList();
+		private IConstraintElement body = UNINITIALIZED;
 
-		protected String name;
+		private final List<ISerializationContext> contexts = Lists.newArrayList();
 
-		private AbstractConstraintContext(String name) {
+		private IFeatureInfo[] features = null;
+
+		private final Grammar grammar;
+
+		private String identity;
+
+		private String name;
+
+		private final Nfa<ISemState> nfa;
+
+		private final EClass type;
+
+		public Constraint(Grammar grammar, EClass type, Nfa<ISemState> nfa) {
 			super();
-			this.name = name;
-		}
-
-		protected void addConstraint(Constraint constraint) {
-			constraints.add(constraint);
-		}
-
-		public List<IConstraint> getConstraints() {
-			return constraints;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		protected void initConstraints() {
-			Collections.sort(constraints, new Comparator<IConstraint>() {
-				public int compare(IConstraint o1, IConstraint o2) {
-					return o1.getName().compareTo(o2.getName());
-				}
-			});
-			for (IConstraint ele : constraints)
-				((Constraint) ele).initLists();
-		}
-
-		@Override
-		public String toString() {
-			Iterable<String> constraintNames = Iterables.transform(constraints, new Function<IConstraint, String>() {
-				public String apply(IConstraint from) {
-					return from.getName();
-				}
-			});
-			return getName() + ": " + Joiner.on(" | ").join(constraintNames) + ";";
-		}
-	}
-
-	protected static class ActionConstraint extends Constraint {
-
-		protected Action actionContext;
-
-		public ActionConstraint(Action context, EClass type, ConstraintElement body, GrammarConstraintProvider provider) {
-			super(type, body, provider);
-			this.actionContext = context;
-		}
-
-		@Override
-		protected EObject getMostSpecificContext() {
-			return body == null ? actionContext : body.getContext();
-		}
-
-	}
-
-	protected static class AssignedActionConstraintContext extends AbstractConstraintContext {
-
-		protected Action action;
-
-		public AssignedActionConstraintContext(Action action, String name) {
-			super(name);
-			this.action = action;
-		}
-
-		public EClass getCommonType() {
-			return (EClass) action.getType().getClassifier();
-		}
-
-		public EObject getContext() {
-			return action;
-		}
-
-	}
-
-	protected static abstract class Constraint implements IConstraint {
-
-		protected IConstraintElement[] assignments;
-
-		protected ConstraintElement body;
-
-		protected GrammarConstraintProvider provider;
-
-		protected IConstraintElement[] elements;
-
-		protected IFeatureInfo[] features;
-
-		protected String name;
-
-		protected EObject specificContext;
-
-		protected EClass type;
-
-		public Constraint(EClass type, ConstraintElement body, GrammarConstraintProvider provider) {
-			super();
+			this.grammar = grammar;
 			this.type = type;
-			this.body = body;
-			if (this.body != null)
-				this.body.setContainingConstraint(this);
+			this.nfa = nfa;
 		}
 
-		protected void collectElements(ConstraintElement ele, List<IConstraintElement> elements,
-				List<IConstraintElement> assignments, List<IConstraintElement>[] assignmentsByFeature) {
-			ele.setElementId(elements.size());
-			elements.add(ele);
-			switch (ele.getType()) {
-				case ASSIGNED_ACTION_CALL:
-				case ASSIGNED_CROSSREF_DATATYPE_RULE_CALL:
-				case ASSIGNED_CROSSREF_ENUM_RULE_CALL:
-				case ASSIGNED_CROSSREF_TERMINAL_RULE_CALL:
-				case ASSIGNED_CROSSREF_KEYWORD:
-				case ASSIGNED_DATATYPE_RULE_CALL:
-				case ASSIGNED_ENUM_RULE_CALL:
-				case ASSIGNED_KEYWORD:
-				case ASSIGNED_PARSER_RULE_CALL:
-				case ASSIGNED_TERMINAL_RULE_CALL:
-					EClass type = ele.getContainingConstraint().getType();
-					EStructuralFeature feature = type.getEStructuralFeature(ele.getFeatureName());
-					if (feature == null)
-						throw new RuntimeException("Feature " + ele.getFeatureName() + " not found in "
-								+ type.getName());
-					int featureID = type.getFeatureID(feature);
-					List<IConstraintElement> assignmentByFeature = assignmentsByFeature[featureID];
-					if (assignmentByFeature == null)
-						assignmentsByFeature[featureID] = assignmentByFeature = Lists.newArrayList();
-					ele.setFeatureAssignmentId(assignmentByFeature.size());
-					assignmentByFeature.add(ele);
-					ele.setAssignmentId(assignments.size());
-					assignments.add(ele);
+		protected void collectBounds(ISemState state, int[] current, Set<ISemState> visited, int[] min, int[] max) {
+			int featureID = state.getFeatureID();
+			int previousValue = -1;
+			boolean newVisit = false;
+			if (featureID >= 0) {
+				if (current[featureID] == IGrammarConstraintProvider.MAX)
 					return;
-				case ALTERNATIVE:
-				case GROUP:
-					for (IConstraintElement e : ele.getChildren())
-						collectElements((ConstraintElement) e, elements, assignments, assignmentsByFeature);
-					return;
+				previousValue = current[featureID];
+				newVisit = visited.add(state);
+				if (newVisit)
+					current[featureID]++;
+				else
+					current[featureID] = IGrammarConstraintProvider.MAX;
+			} else if (state.getFollowers().isEmpty()) {
+				for (int i = 0; i < current.length; i++) {
+					max[i] = Math.max(current[i], max[i]);
+					min[i] = Math.min(current[i], min[i]);
+				}
+				return;
 			}
+			for (ISemState follower : state.getFollowers()) {
+				collectBounds(follower, current, visited, min, max);
+			}
+			if (previousValue >= 0)
+				current[featureID] = previousValue;
+			if (newVisit)
+				visited.remove(state);
 		}
 
+		@Override
 		public int compareTo(IConstraint o) {
 			return getName().compareTo(o.getName());
 		}
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof Constraint))
+			if (obj == null || obj.getClass() != getClass())
 				return false;
-			Constraint c = (Constraint) obj;
-			if (type != null && c.type != null) {
-				if (!type.getName().equals(c.type.getName()))
-					return false;
-				if (!type.getEPackage().getNsURI().equals(c.type.getEPackage().getNsURI()))
-					return false;
-			} else if (type != null || c.type != null)
-				return false;
-			return (body == null && c.body == null) || (body != null && body.equals(c.body));
+			if (this == obj)
+				return true;
+			return getIdentity().equals(((Constraint) obj).getIdentity());
 		}
 
-		public IConstraintElement[] getAssignments() {
-			return assignments;
-		}
-
+		@Override
 		public IConstraintElement getBody() {
+			if (body == UNINITIALIZED) {
+				ConstraintElementFactory factory = new ConstraintElementFactory(this);
+				NfaToProduction n2p = new NfaToProduction().excludeStartAndStop();
+				GrammarElementDeclarationOrder order = GrammarElementDeclarationOrder.get(grammar);
+				IConstraintElement element = n2p.nfaToGrammar(nfa, GET_ASSIGNED_GRAMMAR_ELEMENT, order, factory);
+				if (element.getType() == GROUP && element.getChildren().isEmpty())
+					body = null;
+				else
+					body = element;
+			}
 			return body;
 		}
 
-		protected Object getCacheKey() {
-			return Tuples.create(body.getContext(), type);
+		@Override
+		public List<ISerializationContext> getContexts() {
+			return contexts;
 		}
 
-		public IConstraintElement[] getElements() {
-			return elements;
-		}
-
+		@Override
 		public IFeatureInfo[] getFeatures() {
+			if (features == null) {
+				if (type == null) {
+					features = new IFeatureInfo[0];
+				} else {
+					int count = type.getFeatureCount();
+					features = new IFeatureInfo[count];
+					int[] current = new int[count];
+					int[] min = new int[count];
+					int[] max = new int[count];
+					Arrays.fill(current, 0);
+					Arrays.fill(min, IGrammarConstraintProvider.MAX);
+					Arrays.fill(max, -1);
+					collectBounds(nfa.getStart(), current, Sets.<ISemState> newHashSet(), min, max);
+					for (int i = 0; i < count; i++) {
+						EStructuralFeature feature = type.getEStructuralFeature(i);
+						features[i] = new FeatureInfo(this, feature, max[i], min[i]);
+					}
+				}
+			}
 			return features;
+
 		}
 
-		protected abstract EObject getMostSpecificContext();
-
-		public Iterable<IFeatureInfo> getMultiAssignementFeatures() {
-			List<IFeatureInfo> result = Lists.newArrayList();
-			for (IFeatureInfo info : features)
-				if (info != null && info.getAssignments().length > 1)
-					result.add(info);
-			return result;
+		protected String getIdentity() {
+			if (identity == null) {
+				String nfaString = new NfaUtil().identityString(nfa, new Function<ISemState, String>() {
+					@Override
+					public String apply(ISemState input) {
+						AbstractElement element = input.getAssignedGrammarElement();
+						return element == null ? null : EcoreUtil.getURI(element).toString();
+					}
+				});
+				String typeString = type == null ? "null" : type.getName() + "@" + type.getEPackage().getNsURI();
+				identity = typeString + "\n" + nfaString;
+			}
+			return identity;
 		}
 
+		@Override
 		public String getName() {
 			return name + "_" + (type == null ? "null" : type.getName());
 		}
 
+		@Override
+		public Nfa<ISemState> getNfa() {
+			return nfa;
+		}
+
+		@Override
 		public String getSimpleName() {
 			return name;
 		}
 
-		public Iterable<IFeatureInfo> getSingleAssignementFeatures() {
-			List<IFeatureInfo> result = Lists.newArrayList();
-			for (IFeatureInfo info : features)
-				if (info != null && info.getAssignments().length == 1)
-					result.add(info);
-			return result;
-		}
-
+		@Override
 		public EClass getType() {
 			return type;
 		}
 
 		@Override
 		public int hashCode() {
-			int result = body == null ? 0 : body.hashCode();
-			if (type != null) {
-				result += 7 * type.getName().hashCode();
-				result += 13 * type.getEPackage().getNsURI().hashCode();
-			}
-			return result;
-		}
-
-		protected void initLists() {
-			List<IConstraintElement> ele = Lists.newArrayList();
-			List<IConstraintElement> ass = Lists.newArrayList();
-			@SuppressWarnings("unchecked")
-			List<IConstraintElement>[] feat = new List[getType() == null ? 0 : getType().getFeatureCount()];
-			if (body != null)
-				collectElements(body, ele, ass, feat);
-			elements = ele.toArray(new IConstraintElement[ele.size()]);
-			assignments = ass.toArray(new IConstraintElement[ass.size()]);
-			features = new IFeatureInfo[feat.length];
-			for (int i = 0; i < feat.length; i++)
-				if (feat[i] != null) {
-					EStructuralFeature feature = getType().getEStructuralFeature(i);
-					IConstraintElement[] fass = feat[i].toArray(new IConstraintElement[feat[i].size()]);
-					features[i] = new FeatureInfo(this, feature, fass);
-				}
+			return getIdentity().hashCode();
 		}
 
 		protected void setName(String name) {
@@ -309,980 +224,281 @@ public class GrammarConstraintProvider implements IGrammarConstraintProvider {
 
 	}
 
-	protected static class ConstraintElement implements IConstraintElement {
+	protected static class ConstraintElement implements IGrammarConstraintProvider.IConstraintElement {
 
-		protected int assignmentId = -1;
+		private final Collection<IConstraintElement> children;
+		private final IConstraint constraint;
 
-		//		protected Boolean cardinalityOneForFeature;
+		private final AbstractElement element;
 
-		protected List<IConstraintElement> children;
+		private final boolean many;
 
-		protected List<IConstraintElement> containedAssignments = null;
+		private final boolean optional;
+		private IConstraintElement parent;
+		private final ConstraintElementType type;
 
-		//		protected IConstraintElement excludingAlternative = UNINTITIALIZED;
-
-		protected ConstraintElement container;
-
-		protected IConstraint containingConstraint;
-
-		protected EObject context;
-
-		protected List<Pair<IConstraintElement, RelationalDependencyType>> dependingAssignments;
-
-		protected AbstractElement element;
-
-		protected URI elementURI;
-
-		protected int elementId = -1;
-
-		protected int featureAssignmentId = -1;
-
-		protected IFeatureInfo featureInfo;
-
-		protected boolean many;
-
-		protected boolean optional;
-
-		protected ConstraintElementType type;
-
-		protected boolean typeMatch = false;
-
-		protected ConstraintElement() {
-		}
-
-		protected ConstraintElement(EObject context, ConstraintElementType type) {
-			this(context, type, null, false, false);
-		}
-
-		protected ConstraintElement(EObject context, ConstraintElementType type, AbstractElement element) {
-			this(context, type, element, type != ConstraintElementType.ASSIGNED_ACTION_CALL
-					&& GrammarUtil.isMultipleCardinality(element), type != ConstraintElementType.ASSIGNED_ACTION_CALL
-					&& GrammarUtil.isOptionalCardinality(element));
-		}
-
-		protected ConstraintElement(EObject context, ConstraintElementType type, AbstractElement element, boolean many,
+		public ConstraintElement(IConstraint constraint, ConstraintElementType type, AbstractElement element, boolean many,
 				boolean optional) {
 			super();
-			this.context = context;
+			this.constraint = constraint;
 			this.type = type;
 			this.element = element;
+			this.children = null;
 			this.many = many;
 			this.optional = optional;
-			if (type == ConstraintElementType.ALTERNATIVE || type == ConstraintElementType.GROUP)
-				children = Lists.newArrayList();
 		}
 
-		protected void addAllChilden(ConstraintElement childrenOwner) {
-			for (IConstraintElement c : childrenOwner.children)
-				addChild((ConstraintElement) c);
-			childrenOwner.getChildren().clear();
-			if (childrenOwner.isTypeMatch())
-				typeMatch();
-		}
-
-		protected void addChild(ConstraintElement child) {
-			child.container = this;
-			if (child == INVALID || child == TYPEMATCH)
-				throw new RuntimeException("This is not a valid child: '" + child + "'");
-			this.children.add(child);
-			if (child.isTypeMatch())
-				typeMatch();
-		}
-
-		protected void collectDependingAssignmentsByContainer(IConstraintElement child,
-				List<Pair<IConstraintElement, RelationalDependencyType>> result, boolean childMany,
-				boolean childOptional) {
-			IConstraintElement container = child.getContainer();
-			if (container == null)
-				return;
-			boolean cntOptional = container.isOptionalRecursive(null);
-			boolean cntMany = container.isManyRecursive(null);
-			switch (container.getType()) {
-				case ALTERNATIVE:
-					if (!container.isManyRecursive(null))
-						for (IConstraintElement choice : container.getChildren())
-							if (choice != child)
-								for (IConstraintElement ass : choice.getContainedAssignments())
-									result.add(Tuples.create(ass, RelationalDependencyType.EXCLUDE_IF_SET));
-					break;
-				case GROUP:
-					if (!cntOptional && !cntMany)
-						return;
-					for (IConstraintElement choice : container.getChildren())
-						if (choice != child)
-							for (IConstraintElement ass : choice.getContainedAssignments()) {
-								boolean assMany = ass.isManyRecursive(container);
-								boolean assOptional = ass.isOptionalRecursive(container);
-								boolean exclude_if_unset = !assOptional;
-								boolean mandatory_if_set = !childOptional;
-								boolean same = false, same_or_less = false, same_or_more = false;
-								if (cntMany) {
-									if (!assMany && !assOptional && !childMany && !childOptional)
-										same = true;
-									else if ((childOptional && !childMany && !assOptional)
-											|| (!assOptional && !childMany && !assOptional && assMany))
-										same_or_less = true;
-									else if ((!childOptional && !childMany && assOptional && !assMany)
-											|| (!childOptional && childMany && !assOptional && !assMany)
-											|| (!childOptional && childMany && assOptional && !assMany))
-										same_or_more = true;
-								}
-								if (exclude_if_unset && !same_or_less && !same)
-									result.add(Tuples.create(ass, RelationalDependencyType.EXCLUDE_IF_UNSET));
-								if (mandatory_if_set && !same_or_more && !same)
-									result.add(Tuples.create(ass, RelationalDependencyType.MANDATORY_IF_SET));
-								if (same)
-									result.add(Tuples.create(ass, RelationalDependencyType.SAME));
-								if (same_or_less)
-									result.add(Tuples.create(ass, RelationalDependencyType.SAME_OR_LESS));
-								if (same_or_more)
-									result.add(Tuples.create(ass, RelationalDependencyType.SAME_OR_MORE));
-							}
-					break;
-				default:
-			}
-			childMany = childMany || container.isMany();
-			childOptional = childOptional || container.isOptional()
-					|| container.getType() == ConstraintElementType.ALTERNATIVE;
-			collectDependingAssignmentsByContainer(container, result, childMany, childOptional);
-		}
-
-		protected boolean containsChild(IConstraintElement child) {
-			if (children == null)
-				return false;
-			for (IConstraintElement c : children)
-				if (c.equals(child))
-					return true;
-			return false;
-		}
-
-		protected String context2Name(EObject context) {
-			return ((Constraint) getContainingConstraint()).provider.context2Name.apply(context);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof ConstraintElement))
-				return false;
-			ConstraintElement ce = (ConstraintElement) obj;
-			if (getElementURI().equals(ce.getElementURI())) {
-				if (children == null && ce.children == null)
-					return true;
-				if (children == null || ce.children == null)
-					return false;
-				else if (getType() == ConstraintElementType.ALTERNATIVE && children.size() == ce.children.size()) {
-					for (IConstraintElement child : children)
-						if (!ce.containsChild(child))
-							return false;
-					return true;
-				} else
-					return children.equals(ce.children);
-			}
-			return false;
-		}
-
-		protected IConstraintElement findCommonContainer(List<IConstraintElement> elements) {
-			if (elements.size() == 0)
-				return null;
-			if (elements.size() == 1)
-				return elements.get(0);
-			IConstraintElement result = elements.get(0);
-			for (int i = 1; i < elements.size(); i++) {
-				boolean found = false;
-				while (!found && result != null) {
-					IConstraintElement cand = elements.get(i);
-					while (!found && cand != null)
-						if (cand == result)
-							found = true;
-						else
-							cand = cand.getContainer();
-					if (!found)
-						result = result.getContainer();
-				}
-			}
-			return result;
-		}
-
-		public Action getAction() {
-			return element instanceof Action ? (Action) element : null;
-		}
-
-		public int getAssignmentID() {
-			return this.assignmentId;
-		}
-
-		protected String getAssignmentOperator() {
-			if (element instanceof Action)
-				return ((Action) element).getOperator();
-			Assignment ass = GrammarUtil.containingAssignment(element);
-			if (ass != null)
-				return ass.getOperator();
-			return null;
-		}
-
-		public EObject getCallContext() {
-			switch (type) {
-				case ASSIGNED_ACTION_CALL:
-					return getAction();
-				case ASSIGNED_PARSER_RULE_CALL:
-					return getRuleCall().getRule();
-				default:
-					return null;
-			}
-		}
-
-		public String getCardinality() {
-			return isMany() ? (isOptional() ? "*" : "+") : (isOptional() ? "?" : "");
-		}
-
-		public List<IConstraintElement> getChildren() {
-			return children;
-		}
-
-		public List<IConstraintElement> getContainedAssignments() {
-			if (containedAssignments == null) {
-				containedAssignments = Lists.newArrayList();
-				if (assignmentId >= 0)
-					containedAssignments.add(this);
-				if (getChildren() != null)
-					for (IConstraintElement child : getChildren())
-						containedAssignments.addAll(child.getContainedAssignments());
-			}
-			return containedAssignments;
-		}
-
-		public IConstraintElement getContainer() {
-			return container;
-		}
-
-		public IConstraint getContainingConstraint() {
-			if (containingConstraint == null)
-				containingConstraint = getContainer().getContainingConstraint();
-			return containingConstraint;
-		}
-
-		protected EObject getContext() {
-			return context;
-		}
-
-		public CrossReference getCrossReference() {
-			if (element == null)
-				return null;
-			return GrammarUtil.containingCrossReference(element);
-		}
-
-		public EClass getCrossReferenceType() {
-			if (element == null)
-				return null;
-			CrossReference cr = GrammarUtil.containingCrossReference(element);
-			if (cr == null)
-				return null;
-			return (EClass) cr.getType().getClassifier();
-		}
-
-		public List<Pair<IConstraintElement, RelationalDependencyType>> getDependingAssignment() {
-			if (assignmentId < 0)
-				return null;
-			if (dependingAssignments == null) {
-				dependingAssignments = Lists.newArrayList();
-				collectDependingAssignmentsByContainer(this, dependingAssignments, isMany(), isOptional());
-			}
-			return dependingAssignments;
-		}
-
-		public int getElementID() {
-			return elementId;
-		}
-
-		public EStructuralFeature getFeature() {
-			return getFeatureInfo().getFeature();
-		}
-
-		public int getFeatureAssignmentID() {
-			return featureAssignmentId;
-		}
-
-		public IFeatureInfo getFeatureInfo() {
-			return featureInfo;
-		}
-
-		protected String getFeatureName() {
-			if (element instanceof Action)
-				return ((Action) element).getFeature();
-			Assignment ass = GrammarUtil.containingAssignment(element);
-			if (ass != null)
-				return ass.getFeature();
-			return null;
-		}
-
-		//		protected void insertChild(ConstraintElement child) {
-		//			child.container = this;
-		//			this.children.add(0, child);
-		//		}
-
-		public AbstractElement getGrammarElement() {
-			return element;
-		}
-
-		public Keyword getKeyword() {
-			return element instanceof Keyword ? (Keyword) element : null;
-		}
-
-		public RuleCall getRuleCall() {
-			return element instanceof RuleCall ? (RuleCall) element : null;
-		}
-
-		public ConstraintElementType getType() {
-			return type;
-		}
-
-		protected URI getElementURI() {
-			if (elementURI == null)
-				elementURI = element == null ? URI.createURI("null") : EcoreUtil.getURI(element);
-			return elementURI;
-		}
-
-		@Override
-		public int hashCode() {
-			return getElementURI().hashCode();
-			//			int result = element != null ? element.hashCode() : 0;
-			//			//			if (children != null)
-			//			//				result += 7 * children.hashCode();
-			//			return result;
-		}
-
-		public boolean isCardinalityOneAmongAssignments(List<IConstraintElement> assignments) {
-			if (assignments.size() < 2)
-				return false;
-			IConstraintElement commonContainer = findCommonContainer(assignments);
-			return commonContainer.getType() != ConstraintElementType.ALTERNATIVE
-					&& !isOptionalRecursive(commonContainer) && !isManyRecursive(commonContainer);
-		}
-
-		public boolean isMany() {
-			return many;
-		}
-
-		public boolean isManyRecursive(IConstraintElement root) {
-			return isMany() || (container != null && container != root && container.isManyRecursive(root));
-		}
-
-		public boolean isOptional() {
-			return optional && !typeMatch;
-		}
-
-		public boolean isOptionalRecursive(IConstraintElement root) {
-			if (isOptional())
-				return true;
-			if (getContainer() != root) {
-				if (getContainer().getType() == ConstraintElementType.ALTERNATIVE)
-					return true;
-				if (getContainer().isOptionalRecursive(root))
-					return true;
-			}
-			return false;
-		}
-
-		public boolean isRoot() {
-			return container == null;
-		}
-
-		protected boolean isTypeMatch() {
-			return this.typeMatch;
-		}
-
-		protected void setAssignmentId(int id) {
-			this.assignmentId = id;
-		}
-
-		protected void setContainingConstraint(IConstraint containingConstraint) {
-			this.containingConstraint = containingConstraint;
-		}
-
-		protected void setElementId(int id) {
-			this.elementId = id;
-		}
-
-		protected void setFeatureAssignmentId(int id) {
-			this.featureAssignmentId = id;
-		}
-
-		protected void setFeatureInfo(IFeatureInfo featureInfo) {
-			this.featureInfo = featureInfo;
-		}
-
-		//
-		//		public IConstraintElement getExcludingAlternative() {
-		//			if (excludingAlternative == UNINTITIALIZED) {
-		//				IConstraintElement ele = getContainer();
-		//				while (ele != null) {
-		//					if (ele.getType() == ConstraintElementType.ALTERNATIVE) {
-		//						if (ele.isManyRecursive(null))
-		//							return excludingAlternative = null;
-		//						else
-		//							return excludingAlternative = ele;
-		//
-		//					} else
-		//						ele = ele.getContainer();
-		//				}
-		//				return excludingAlternative = null;
-		//			}
-		//			return excludingAlternative;
-		//		}
-
-		protected void setMany(boolean many) {
-			this.many = many;
-		}
-
-		protected void setOptional(boolean optional) {
-			this.optional = optional;
-		}
-
-		@Override
-		public String toString() {
-			if (this == INVALID)
-				return "INVALID";
-			if (this == TYPEMATCH)
-				return "TYPEMATCH";
-			if (type == null)
-				return "error(type is null)";
-			GrammarElementTitleSwitch t2s = new GrammarElementTitleSwitch().hideCardinality().showActionsAsRuleCalls()
-					.showAssignments();
-			ProductionFormatter<IConstraintElement, AbstractElement> formatter = new ProductionFormatter<IConstraintElement, AbstractElement>();
-			formatter.setTokenToString(t2s);
-			return formatter.format(new ConstraintElementProduction(getContainingConstraint()), this, true);
-		}
-
-		protected void typeMatch() {
-			this.typeMatch = true;
-		}
-	}
-
-	protected static class FeatureInfo implements IFeatureInfo {
-
-		protected IConstraintElement[] assignments;
-
-		protected IConstraint constraint;
-
-		protected Boolean contentValidationNeeded;
-
-		protected List<Pair<IFeatureInfo, RelationalDependencyType>> dependingFeatures;
-
-		protected EStructuralFeature feature;
-
-		public FeatureInfo(IConstraint constraint, EStructuralFeature feature, IConstraintElement[] assignments) {
+		public ConstraintElement(IConstraint constraint, ConstraintElementType type, Collection<IConstraintElement> children, boolean many,
+				boolean optional) {
 			super();
 			this.constraint = constraint;
-			this.feature = feature;
-			this.assignments = assignments;
-			for (IConstraintElement ass : assignments)
-				((ConstraintElement) ass).setFeatureInfo(this);
+			this.type = type;
+			this.element = null;
+			this.children = children;
+			this.many = many;
+			this.optional = optional;
+			for (IConstraintElement child : children)
+				((ConstraintElement) child).parent = this;
 		}
 
-		public int getAssignmentCount() {
-			return assignments.length;
+		@Override
+		public Collection<IConstraintElement> getChildren() {
+			return children == null ? Collections.<IConstraintElement> emptyList() : children;
 		}
 
-		public IConstraintElement[] getAssignments() {
-			return assignments;
+		@Override
+		public IConstraintElement getContainer() {
+			return parent;
 		}
 
+		@Override
 		public IConstraint getContainingConstraint() {
 			return constraint;
 		}
 
-		public List<Pair<IFeatureInfo, RelationalDependencyType>> getDependingFeatures() {
-			if (dependingFeatures == null) {
-				dependingFeatures = Lists.newArrayList();
-				for (Pair<IConstraintElement, RelationalDependencyType> p : getRelationalAssignemntConstraintIntersection())
-					dependingFeatures.add(Tuples.create(p.getFirst().getFeatureInfo(), p.getSecond()));
-			}
-			return dependingFeatures;
+		public String getFeatureName() {
+			if (element instanceof Action)
+				return ((Action) element).getFeature();
+			Assignment assignment = GrammarUtil.containingAssignment(element);
+			if (assignment != null)
+				return assignment.getFeature();
+			return null;
 		}
 
-		public EStructuralFeature getFeature() {
-			return feature;
+		@Override
+		public AbstractElement getGrammarElement() {
+			return element;
 		}
 
-		public int getLowerBound() {
-			int result = 0;
-			for (IConstraintElement ass : getAssignments())
-				if (!ass.isOptionalRecursive(null))
-					result++;
-			return result; // TODO: consider assignments excluding each other
+		@Override
+		public ConstraintElementType getType() {
+			return type;
 		}
 
-		protected List<Pair<IConstraintElement, RelationalDependencyType>> getRelationalAssignemntConstraintIntersection() {
-			List<Pair<IConstraintElement, RelationalDependencyType>> r = getAssignments()[0].getDependingAssignment();
-			if (getAssignmentCount() == 1)
-				return r;
-			r = Lists.newArrayList(r);
-			for (int i = 1; i < getAssignments().length; i++)
-				for (int j = r.size() - 1; j >= 0; j--)
-					if (getAssignments()[i] == r.get(j).getFirst()
-							|| !getAssignments()[i].getDependingAssignment().contains(r.get(j)))
-						r.remove(j);
-			return r;
+		@Override
+		public boolean isMany() {
+			return many;
 		}
 
-		public int getUpperBound() {
-			for (IConstraintElement ass : getAssignments())
-				if (ass.isManyRecursive(null))
-					return -1;
-			return getAssignmentCount(); // TODO: consider assignments excluding each other
-		}
-
-		public boolean isContentValidationNeeded() {
-			if (contentValidationNeeded != null)
-				return contentValidationNeeded;
-			contentValidationNeeded = false;
-			if (assignments.length >= 2) {
-				IConstraintElement first = assignments[0];
-				if (first.getType() == ConstraintElementType.ASSIGNED_ACTION_CALL)
-					contentValidationNeeded = true;
-				else
-					for (int i = 1; i < assignments.length; i++) {
-						IConstraintElement a = assignments[i];
-						if (a.getType() == ConstraintElementType.ASSIGNED_ACTION_CALL
-								|| first.getCrossReferenceType() != a.getCrossReferenceType()
-								|| !EcoreUtil.equals(first.getGrammarElement(), a.getGrammarElement())) {
-							contentValidationNeeded = true;
-							break;
-						}
-					}
-			}
-			return contentValidationNeeded;
+		@Override
+		public boolean isOptional() {
+			return optional;
 		}
 
 		@Override
 		public String toString() {
-			StringBuilder b = new StringBuilder();
-			b.append(feature.getName());
-			b.append("[");
-			b.append(getLowerBound());
-			b.append(", ");
-			b.append(getUpperBound() == -1 ? "*" : getUpperBound());
-			b.append("]");
-			for (Pair<IFeatureInfo, RelationalDependencyType> rel : getDependingFeatures()) {
-				b.append("\n    ");
-				b.append(rel.getSecond());
-				b.append(" ");
-				b.append(rel.getFirst().getFeature().getName());
-			}
-			return b.toString();
-		}
-
-		public List<EObject> getCalledContexts() {
-			List<EObject> result = Lists.newArrayList();
-			for (IConstraintElement ass : getAssignments()) {
-				EObject ctx = ass.getCallContext();
-				if (ctx != null)
-					result.add(ctx);
-			}
-			return result;
+			GrammarElementTitleSwitch t2s = new GrammarElementTitleSwitch().hideCardinality().showActionsAsRuleCalls().showAssignments();
+			ProductionFormatter<IConstraintElement, AbstractElement> formatter = new ProductionFormatter<IConstraintElement, AbstractElement>();
+			formatter.setTokenToString(t2s);
+			return formatter.format(new ConstraintElementProduction(getContainingConstraint()), this, true);
 		}
 	}
 
-	protected static class ParserRuleConstraintContext extends AbstractConstraintContext {
+	protected static class ConstraintElementFactory implements ProductionFactory<IConstraintElement, AbstractElement> {
 
-		protected ParserRule rule;
+		private final IConstraint constraint;
 
-		public ParserRuleConstraintContext(ParserRule rule, String name) {
-			super(name);
-			this.rule = rule;
-		}
-
-		public EClass getCommonType() {
-			return (EClass) rule.getType().getClassifier();
-		}
-
-		public EObject getContext() {
-			return rule;
-		}
-
-	}
-
-	protected static class RuleConstraint extends Constraint {
-
-		protected ParserRule context;
-
-		public RuleConstraint(ParserRule context, EClass type, ConstraintElement body,
-				GrammarConstraintProvider provider) {
-			super(type, body, provider);
-			this.context = context;
+		public ConstraintElementFactory(IConstraint constraint) {
+			super();
+			this.constraint = constraint;
 		}
 
 		@Override
-		protected EObject getMostSpecificContext() {
-			return body == null ? context : body.getContext();
+		public IConstraintElement createForAlternativeChildren(boolean m, boolean o, Iterable<IConstraintElement> c) {
+
+			return new ConstraintElement(constraint, ALTERNATIVE, ImmutableSet.copyOf(c), m, o);
+		}
+
+		@Override
+		public IConstraintElement createForSequentialChildren(boolean m, boolean o, Iterable<IConstraintElement> c) {
+			return new ConstraintElement(constraint, GROUP, ImmutableList.copyOf(c), m, o);
+		}
+
+		@Override
+		public IConstraintElement createForToken(boolean many, boolean optional, AbstractElement token) {
+			ConstraintElementType type = token == null ? null : getConstraintElementType(token);
+			return new ConstraintElement(constraint, type, token, many, optional);
+		}
+
+		@Override
+		public IConstraintElement createForUnordertedChildren(boolean m, boolean o, Iterable<IConstraintElement> c) {
+			return new ConstraintElement(constraint, UNORDERED_GROUP, ImmutableSet.copyOf(c), m, o);
+		}
+	}
+
+	protected static class FeatureInfo implements IFeatureInfo {
+		private List<IConstraintElement> assignments = null;
+		private final Constraint constraint;
+		private final EStructuralFeature feature;
+		private final int lowerBound;
+		private final int upperBound;
+
+		public FeatureInfo(Constraint constraint, EStructuralFeature feature, int upperBound, int lowerBound) {
+			super();
+			this.constraint = constraint;
+			this.feature = feature;
+			this.upperBound = upperBound;
+			this.lowerBound = lowerBound;
+		}
+
+		@Override
+		public List<IConstraintElement> getAssignments() {
+			if (assignments == null) {
+				IConstraintElement body = constraint.getBody();
+				if (body == null) {
+					assignments = Collections.emptyList();
+				} else {
+					assignments = Lists.newArrayList();
+					LinkedList<IConstraintElement> stack = new LinkedList<IConstraintElement>();
+					stack.push(body);
+					while (!stack.isEmpty()) {
+						IConstraintElement element = stack.pop();
+						String name = ((ConstraintElement) element).getFeatureName();
+						if (feature.getName().equals(name))
+							assignments.add(element);
+						stack.addAll(element.getChildren());
+					}
+				}
+			}
+			return assignments;
+		}
+
+		@Override
+		public IConstraint getContainingConstraint() {
+			return constraint;
+		}
+
+		@Override
+		public EStructuralFeature getFeature() {
+			return feature;
+		}
+
+		@Override
+		public int getLowerBound() {
+			return lowerBound;
+		}
+
+		@Override
+		public int getUpperBound() {
+			return upperBound;
 		}
 
 	}
 
-	protected final static ConstraintElement INVALID = new ConstraintElement();
+	private final static IConstraintElement UNINITIALIZED = new ConstraintElement(null, null, (AbstractElement) null, false, false);
 
-	protected final static ConstraintElement TYPEMATCH = new ConstraintElement() {
-		@Override
-		protected boolean isTypeMatch() {
-			return true;
-		}
-	};
-
-	protected final static ConstraintElement UNINTITIALIZED = new ConstraintElement();
-
-	protected Map<Grammar, List<IConstraintContext>> cache = Maps.newHashMap();
+	private Map<Grammar, Map<ISerializationContext, IConstraint>> cache = Maps.newHashMap();
 
 	@Inject
 	protected Context2NameFunction context2Name;
 
 	@Inject
-	protected IContextProvider contextProvider;
+	private ISemanticSequencerNfaProvider nfaProvider;
 
 	@Inject
-	protected ActionFilterNFAProvider nfaProvider;
+	private IContextTypePDAProvider typeProvider;
 
-	protected ConstraintElement createConstraintElement(EObject context, AbstractElement ele, EClass requiredType,
-			Set<Object> visited) {
-		boolean isOptional = GrammarUtil.isOptionalCardinality(ele);
-		if (ele instanceof Action) {
-			if (requiredType == null)
-				return INVALID;
-			Action action = (Action) ele;
-			if (action.getFeature() == null) {
-				if (action.getType().getClassifier() == requiredType)
-					return TYPEMATCH;
-				else
-					return isOptional ? null : INVALID;
-			} else
-				new ConstraintElement(context, getConstraintElementType(ele), ele);
-		} else if (ele instanceof RuleCall) {
-			RuleCall rc = (RuleCall) ele;
-			if (GrammarUtil.isUnassignedEObjectRuleCall(rc)) {
-				if (!visited.add(rc))
-					return null;
-				ConstraintElement result = createConstraintElement((ParserRule) rc.getRule(), requiredType, visited);
-				if (result != null && result != INVALID) {
-					if (rc.getRule().getType().getClassifier() == requiredType)
-						result.typeMatch();
-					if (result.isTypeMatch())
-						return result;
-				}
-				return isOptional ? null : INVALID;
-			} else if (GrammarUtil.containingAssignment(ele) != null)
-				return new ConstraintElement(context, getConstraintElementType(ele), ele);
-			else
-				return null;
-		} else if (ele instanceof Keyword) {
-			if (GrammarUtil.containingAssignment(ele) != null)
-				return new ConstraintElement(context, getConstraintElementType(ele), ele);
-			return null;
-		} else if (ele instanceof Assignment) {
-			if (requiredType == null)
-				return INVALID;
-			Assignment ass = (Assignment) ele;
-			ConstraintElement result = createConstraintElement(context, ass.getTerminal(), requiredType, visited);
-			if (result != null && result != INVALID) {
-				result.setMany(result.isMany() || GrammarUtil.isMultipleCardinality(ele));
-				result.setOptional(result.isOptional() || GrammarUtil.isOptionalCardinality(ele));
-			}
-			return result;
-		} else if (ele instanceof CrossReference) {
-			CrossReference cr = (CrossReference) ele;
-			ConstraintElement result = createConstraintElement(context, cr.getTerminal(), requiredType, visited);
-			if (result != null && result != INVALID) {
-				result.setMany(result.isMany() || GrammarUtil.isMultipleCardinality(ele));
-				result.setOptional(result.isOptional() || GrammarUtil.isOptionalCardinality(ele));
-			}
-			return result;
-		} else if (ele instanceof Alternatives) {
-			Alternatives alt = (Alternatives) ele;
-			List<ConstraintElement> children = Lists.newArrayList();
-			List<ConstraintElement> typeMatchChildren = Lists.newArrayList();
-			boolean allInvalid = true;
-			boolean nullExists = false;
-			boolean typeMatch = false;
-			for (AbstractElement ae : alt.getElements()) {
-				ConstraintElement ce = createConstraintElement(context, ae, requiredType, visited);
-				if (ce != INVALID) {
-					allInvalid = false;
-					if (ce != TYPEMATCH) {
-						if (ce != null) {
-							if (ce.isTypeMatch())
-								typeMatchChildren.add(ce);
-							else
-								children.add(ce);
-						} else
-							nullExists = true;
-					} else
-						typeMatch = true;
-				}
-			}
-			if (allInvalid)
-				return isOptional ? null : INVALID;
-			if (typeMatch || !typeMatchChildren.isEmpty()) {
-				children = typeMatchChildren;
-				nullExists = typeMatch;
-			}
-			if (children.isEmpty())
-				return typeMatch ? TYPEMATCH : null;
-			else if (children.size() == 1) {
-				ConstraintElement result = children.get(0);
-				result.setMany(result.isMany() || GrammarUtil.isMultipleCardinality(ele));
-				result.setOptional(result.isOptional() || nullExists || GrammarUtil.isOptionalCardinality(ele));
-				return result;
-			} else {
-				ConstraintElement result = new ConstraintElement(context, getConstraintElementType(ele), ele);
-				result.setOptional(result.isOptional() || nullExists);
-				for (ConstraintElement child : children)
-					if (child.getType() == ConstraintElementType.ALTERNATIVE && !child.isOptional() && !child.isMany())
-						result.addAllChilden(child);
-					else
-						result.addChild(child);
-				return result;
-			}
-		} else if (ele instanceof Group || ele instanceof UnorderedGroup) {
-			CompoundElement group = (CompoundElement) ele;
-			List<ConstraintElement> children = Lists.newArrayList();
-			boolean typeMatch = false;
-			for (AbstractElement ae : group.getElements()) {
-				ConstraintElement ce = createConstraintElement(context, ae, requiredType, visited);
-				if (ce == INVALID && !ce.isOptional())
-					return isOptional ? null : INVALID;
-				if (ce != INVALID && ce != null && ce != TYPEMATCH)
-					children.add(ce);
-				else if (ce == TYPEMATCH)
-					typeMatch = true;
-			}
-			if (children.isEmpty())
-				return typeMatch ? TYPEMATCH : null;
-			else if (children.size() == 1 && (!children.get(0).isOptional() || !typeMatch)) {
-				ConstraintElement result = children.get(0);
-				result.setMany(result.isMany() || GrammarUtil.isMultipleCardinality(ele));
-				result.setOptional(result.isOptional() || GrammarUtil.isOptionalCardinality(ele));
-				if (typeMatch)
-					result.typeMatch();
-				return result;
-			} else {
-				ConstraintElement result = new ConstraintElement(context, getConstraintElementType(ele), ele);
-				for (ConstraintElement child : children)
-					if (child.getType() == ConstraintElementType.GROUP && !child.isOptional() && !child.isMany())
-						result.addAllChilden(child);
-					else
-						result.addChild(child);
-				if (typeMatch)
-					result.typeMatch();
-				return result;
-			}
+	@Inject
+	private NfaUtil nfaUtil;
+
+	protected Multimap<Parameter, Boolean> collectAllParameterValues(IConstraint constraint) {
+		Set<Parameter> all = Sets.newLinkedHashSet();
+		List<ISerializationContext> contexts = constraint.getContexts();
+		for (ISerializationContext context : contexts) {
+			all.addAll(((SerializationContext) context).getDeclaredParameters());
 		}
-		return null;
+		Multimap<Parameter, Boolean> values = LinkedHashMultimap.create();
+		for (ISerializationContext ctx : contexts) {
+			Set<Parameter> params = ctx.getEnabledBooleanParameters();
+			for (Parameter param : all)
+				values.put(param, params != null && params.contains(param));
+		}
+		return values;
 	}
 
-	protected ConstraintElement createConstraintElement(EObject context, ActionFilterState state, EClass requiredType,
-			boolean allowLocal, Set<Object> visited) {
-		if (allowLocal && GrammarUtil.isAssignedAction(state.getGrammarElement())) {
-			if (((Action) state.getGrammarElement()).getType().getClassifier() == requiredType) {
-				ConstraintElement result = new ConstraintElement(context, ConstraintElementType.ASSIGNED_ACTION_CALL,
-						state.getGrammarElement());
-				result.typeMatch();
-				return result;
-			} else
-				return INVALID;
-		}
-		if (!visited.add(state))
-			return INVALID;
-		List<ConstraintElement> followers = Lists.newArrayList();
-		boolean allInvalid = true, containsOne = false, typematch = false;
-		for (ActionFilterTransition t : state.getAllOutgoing())
-			if (!t.isRuleCall() /* && t.getTarget() != state */) {
-				containsOne = true;
-				ConstraintElement f = createConstraintElement(context, t.getTarget(), requiredType, true, visited);
-				if (f == TYPEMATCH) {
-					allInvalid = false;
-					typematch = true;
-				} else if (f != INVALID) {
-					allInvalid = false;
-					if (f != null)
-						followers.add(f);
-				}
+	protected String findBestConstraintName(Grammar grammar, Map<ISerializationContext, Pda<ISerState, RuleCall>> typePDAs,
+			IConstraint constraint) {
+		Set<ParserRule> relevantRules = Sets.newLinkedHashSet();
+		Set<Action> relevantActions = Sets.newLinkedHashSet();
+		Set<ParserRule> contextRules = Sets.newLinkedHashSet();
+		for (ISerializationContext ctx : constraint.getContexts()) {
+			ParserRule rule = ctx.getParserRule();
+			if (rule != null) {
+				contextRules.add(rule);
 			}
-		if (containsOne && allInvalid)
-			return INVALID;
-		ConstraintElement local = allowLocal ? createConstraintElement(context, state.getGrammarElement(),
-				requiredType, visited) : null;
-		if (typematch && local != null)
-			local.typeMatch();
-		if (allowLocal && state.isEndState() && !GrammarUtil.isUnassignedEObjectRuleCall(state.getGrammarElement())) {
-			if (GrammarUtil.containingRule(state.getGrammarElement()).getType().getClassifier() != requiredType
-					&& (local == null || !local.isTypeMatch()))
-				return INVALID;
 		}
-		if (local == INVALID && !GrammarUtil.isOptionalCardinality(state.getGrammarElement()))
-			return INVALID;
-		if (followers.isEmpty())
-			return local == INVALID || local == null ? (typematch ? TYPEMATCH : null) : local;
-		if (local != INVALID && local != null)
-			for (int i = 0; i < followers.size(); i++) {
-				ConstraintElement follower = followers.get(i);
-				if (follower.getType() == ConstraintElementType.GROUP && !follower.isMany() && !follower.isOptional())
-					follower.addChild(local);
-				else {
-					ConstraintElement group = new ConstraintElement(context, ConstraintElementType.GROUP);
-					group.addChild(follower);
-					group.addChild(local);
-					followers.set(i, group);
-				}
+		// 1. find relevant rules based on assignments 
+		for (ISemState s : nfaUtil.collect(constraint.getNfa())) {
+			AbstractElement element = s.getAssignedGrammarElement();
+			if (element != null)
+				relevantRules.add(GrammarUtil.containingParserRule(element));
+		}
+		// 2. find relevant rules based on unassigned actions
+		for (ISerializationContext ctx : constraint.getContexts()) {
+			for (ISerState s : nfaUtil.collect(typePDAs.get(ctx))) {
+				AbstractElement element = s.getGrammarElement();
+				if (element instanceof Action && ((Action) element).getFeature() == null)
+					relevantRules.add(GrammarUtil.containingParserRule(element));
 			}
-		followers = filterDuplicates(followers);
-		if (followers.size() == 1)
-			return followers.get(0);
-		ConstraintElement alt = null;
-		for (ConstraintElement f : followers)
-			if (f.getType() == ConstraintElementType.ALTERNATIVE && !f.isMany() && !f.isOptional()) {
-				alt = f;
-				break;
-			}
-		if (alt != null)
-			followers.remove(alt);
-		else
-			alt = new ConstraintElement(context, ConstraintElementType.ALTERNATIVE);
-		for (ConstraintElement f : followers)
-			alt.addChild(f);
-		return alt;
-	}
-
-	protected ConstraintElement createConstraintElement(ParserRule rule, EClass requiredType, Set<Object> visited) {
-		if (!visited.add(rule))
-			return INVALID;
-		if (GrammarUtil.containsAssignedAction(rule)) {
-			ActionFilterState start = nfaProvider.getNFA(rule.getAlternatives());
-			return createConstraintElement(rule, start, requiredType, false, visited);
-		} else {
-			return createConstraintElement(rule, rule.getAlternatives(), requiredType, visited);
 		}
-	}
-
-	protected void filterDuplicateConstraintsAndSetNames(Grammar grammar, List<IConstraintContext> contexts) {
-		Map<IConstraint, List<IConstraint>> equalConstraints = Maps.newHashMap();
-		for (IConstraintContext context : contexts)
-			for (IConstraint constraint : context.getConstraints()) {
-				List<IConstraint> same = equalConstraints.get(constraint);
-				if (same == null)
-					equalConstraints.put(constraint, same = Lists.newArrayList());
-				same.add(constraint);
-			}
-		Map<IConstraint, IConstraint> allConstraints = Maps.newIdentityHashMap();
-		for (Collection<IConstraint> equal : equalConstraints.values()) {
-			//			Collection<IConstraint> equal = filterConstraintsFromSubGrammars(grammar, allEqual);
-			IConstraint representative = findRepresentativeConstraint(equal);
-			((Constraint) representative).setName(findBestConstraintName(equal));
-			for (IConstraint constraint : equal)
-				allConstraints.put(constraint, representative);
-		}
-		for (IConstraintContext context : contexts) {
-			for (int i = 0; i < context.getConstraints().size(); i++) {
-				IConstraint replacement = allConstraints.get(context.getConstraints().get(i));
-				context.getConstraints().set(i, replacement);
-			}
-			((AbstractConstraintContext) context).initConstraints();
-		}
-	}
-
-	protected List<ConstraintElement> filterDuplicates(List<ConstraintElement> list) {
-		List<ConstraintElement> result = Lists.newArrayList();
-		for (ConstraintElement ce : list) {
-			boolean found = false;
-			for (ConstraintElement r : result)
-				if (ce.equals(r)) {
-					found = true;
-					break;
-				}
-			if (!found)
-				result.add(ce);
-		}
-		return result;
-	}
-
-	protected Map<Grammar, Integer> getInheritanceDistance(Grammar grammar) {
-		Map<Grammar, Integer> result = Maps.newHashMap();
-		Grammar current = grammar;
-		int distance = 0;
-		while (current != null) {
-			result.put(current, distance);
-			current = current.getUsedGrammars().isEmpty() ? null : current.getUsedGrammars().get(0);
-			distance++;
-		}
-		return result;
-	}
-
-	//	protected Collection<IConstraint> filterConstraintsFromSubGrammars(Grammar grammar,
-	//			Collection<IConstraint> constraints) {
-	//		if (constraints.size() <= 1)
-	//			return constraints;
-	//		Map<Grammar, Integer> inheritanceDistance = getInheritanceDistance(grammar);
-	//		int maxDistance = 0;
-	//		for (IConstraint c : constraints)
-	//			maxDistance = Math.max(maxDistance, inheritanceDistance.get(c.getDeclaringGrammar()));
-	//		Collection<IConstraint> filteredConstraints = Lists.newArrayList();
-	//		for (IConstraint c : constraints) {
-	//			if (inheritanceDistance.get(c.getDeclaringGrammar()) == maxDistance)
-	//				filteredConstraints.add(c);
-	//		}
-	//		return filteredConstraints;
-	//	}
-
-	protected void collectElements(IConstraintElement ele, List<AbstractElement> result) {
-		if (ele.getGrammarElement() != null)
-			result.add(ele.getGrammarElement());
-		if (ele.getChildren() != null)
-			for (IConstraintElement e : ele.getChildren())
-				collectElements(e, result);
-	}
-
-	protected String findBestConstraintName(Collection<IConstraint> equalConstraints) {
-		Set<ParserRule> relevantRules = Sets.newHashSet();
-		Set<Action> relevantActions = Sets.newHashSet();
-		Set<ParserRule> contextRules = Sets.newHashSet();
-		for (IConstraint c : equalConstraints)
-			if (((Constraint) c).getMostSpecificContext() instanceof ParserRule)
-				contextRules.add((ParserRule) ((Constraint) c).getMostSpecificContext());
-		List<AbstractElement> ele = Lists.newArrayList();
-		IConstraint first = equalConstraints.iterator().next();
-		if (first.getBody() != null)
-			collectElements(first.getBody(), ele);
-		for (AbstractElement e : ele)
-			relevantRules.add(GrammarUtil.containingParserRule(e));
-		for (IConstraint c : equalConstraints)
-			if (((Constraint) c).getMostSpecificContext() instanceof Action) {
-				Action action = (Action) ((Constraint) c).getMostSpecificContext();
-				ParserRule rule = GrammarUtil.containingParserRule(action);
-				if (!contextRules.contains(rule)) {
-					relevantActions.add(action);
-					relevantRules.add(rule);
-				}
-			}
 		if (relevantRules.isEmpty()) {
-			EClass type = first.getType();
-			if (type != null) {
-				for (ParserRule context : contextRules)
-					for (Action a : GrammarUtil.containedActions(context))
-						if (a.getType().getClassifier() == type) {
-							relevantRules.add(context);
-						}
-				if (relevantRules.isEmpty())
-					for (ParserRule context : contextRules)
-						if (context.getType().getClassifier() == type) {
-							relevantRules.add(context);
-						}
+			Set<ParserRule> allRules = Sets.newLinkedHashSet(contextRules);
+			for (ISerializationContext ctx : constraint.getContexts()) {
+				Action action = ctx.getAssignedAction();
+				if (action != null)
+					allRules.add(GrammarUtil.containingParserRule(action));
 			}
-			if (relevantRules.isEmpty())
-				relevantRules.addAll(contextRules);
+			// 3. use all rules, because the constraint returns null.
+			relevantRules.addAll(allRules);
+		}
+		for (ISerializationContext ctx : constraint.getContexts()) {
+			Action action = ctx.getAssignedAction();
+			if (action != null) {
+				ParserRule rule = GrammarUtil.containingParserRule(action);
+				if (!contextRules.contains(rule) && relevantRules.contains(rule)) {
+					relevantActions.add(action);
+				}
+			}
 		}
 		List<String> actions = Lists.newArrayList();
 		List<String> rules = Lists.newArrayList();
+		Multimap<Parameter, Boolean> parameterValues = collectAllParameterValues(constraint);
 		for (Action a : relevantActions)
 			actions.add(context2Name.getUniqueActionName(a));
-		for (ParserRule a : relevantRules)
-			rules.add(context2Name.getContextName(a));
+		for (ParserRule rule : relevantRules) {
+			StringBuilder segments = new StringBuilder();
+			for (Parameter param : rule.getParameters()) {
+				Collection<Boolean> values = parameterValues.get(param);
+				if (values.size() == 1) {
+					segments.append(param.getName() + "$" + values.iterator().next() + "$");
+				}
+			}
+			if (segments.length() == 0) {
+				rules.add(rule.getName());
+			} else {
+				rules.add(rule.getName() + "$" + segments);
+			}
+		}
 		Collections.sort(rules);
 		String result = Joiner.on("_").join(rules);
 		if (!actions.isEmpty()) {
@@ -1292,115 +508,33 @@ public class GrammarConstraintProvider implements IGrammarConstraintProvider {
 		return result;
 	}
 
-	protected IConstraint findRepresentativeConstraint(Collection<IConstraint> equalConstraints) {
-		for (IConstraint c : equalConstraints)
-			if (((Constraint) c).getMostSpecificContext() instanceof ParserRule)
-				return c;
-		return equalConstraints.iterator().next();
-	}
-
-	protected ConstraintElementType getConstraintElementType(AbstractElement ele) {
-		if (ele instanceof Action) {
-			if (((Action) ele).getFeature() != null)
-				return ConstraintElementType.ASSIGNED_ACTION_CALL;
-		} else if (ele instanceof Alternatives) {
-			return ConstraintElementType.ALTERNATIVE;
-		} else if (ele instanceof Group || ele instanceof UnorderedGroup) {
-			return ConstraintElementType.GROUP;
-		} else if (GrammarUtil.containingCrossReference(ele) != null) {
-			if (ele instanceof RuleCall) {
-				RuleCall rc = (RuleCall) ele;
-				if (rc.getRule() instanceof ParserRule)
-					return ConstraintElementType.ASSIGNED_CROSSREF_DATATYPE_RULE_CALL;
-				if (rc.getRule() instanceof TerminalRule)
-					return ConstraintElementType.ASSIGNED_CROSSREF_TERMINAL_RULE_CALL;
-				if (rc.getRule() instanceof EnumRule)
-					return ConstraintElementType.ASSIGNED_CROSSREF_ENUM_RULE_CALL;
-			} else if (ele instanceof Keyword)
-				return ConstraintElementType.ASSIGNED_CROSSREF_KEYWORD;
-		} else if (GrammarUtil.containingAssignment(ele) != null) {
-			if (ele instanceof RuleCall) {
-				RuleCall rc = (RuleCall) ele;
-				if (rc.getRule() instanceof ParserRule) {
-					if (rc.getRule().getType().getClassifier() instanceof EClass)
-						return ConstraintElementType.ASSIGNED_PARSER_RULE_CALL;
-					return ConstraintElementType.ASSIGNED_DATATYPE_RULE_CALL;
-				}
-				if (rc.getRule() instanceof TerminalRule)
-					return ConstraintElementType.ASSIGNED_TERMINAL_RULE_CALL;
-				if (rc.getRule() instanceof EnumRule)
-					return ConstraintElementType.ASSIGNED_ENUM_RULE_CALL;
-
-			} else if (ele instanceof Keyword) {
-				return ConstraintElementType.ASSIGNED_KEYWORD;
+	@Override
+	public Map<ISerializationContext, IConstraint> getConstraints(Grammar grammar) {
+		Map<ISerializationContext, IConstraint> result = cache.get(grammar);
+		if (result != null)
+			return result;
+		result = Maps.newLinkedHashMap();
+		cache.put(grammar, result);
+		GrammarElementDeclarationOrder.get(grammar);
+		Map<ISerializationContext, Nfa<ISemState>> nfas = nfaProvider.getSemanticSequencerNFAs(grammar);
+		ArrayList<ISerializationContext> contexts = Lists.newArrayList(nfas.keySet());
+		Collections.sort(contexts);
+		Map<Pair<EClass, Nfa<ISemState>>, Constraint> constraints = Maps.newLinkedHashMap();
+		for (ISerializationContext context : contexts) {
+			Nfa<ISemState> nfa = nfas.get(context);
+			EClass type = context.getType();
+			Pair<EClass, Nfa<ISemState>> key = Tuples.create(type, nfa);
+			Constraint constraint = constraints.get(key);
+			if (constraint == null) {
+				constraint = new Constraint(grammar, type, nfa);
+				constraints.put(key, constraint);
 			}
+			constraint.contexts.add(context);
+			result.put(context, constraint);
 		}
-		throw new RuntimeException("Unknown Grammar Element: " + EmfFormatter.objPath(ele));
-	}
-
-	protected IConstraintContext getConstraints(Action context) {
-		AssignedActionConstraintContext result = new AssignedActionConstraintContext(context,
-				context2Name.getContextName(context));
-		ActionFilterState start = nfaProvider.getNFA(context);
-		Set<EClass> types = contextProvider.getTypesForContext(context);
-		for (EClass type : types) {
-			if (type == null) {
-				Constraint constraint = new ActionConstraint(context, null, null, this);
-				result.addConstraint(constraint);
-			} else {
-				ConstraintElement ce = createConstraintElement(context, start, type, false, Sets.newHashSet());
-				if (ce == TYPEMATCH) {
-					Constraint constraint = new ActionConstraint(context, type, null, this);
-					result.addConstraint(constraint);
-				} else if (ce != null && ce != INVALID) {
-					Constraint constraint = new ActionConstraint(context, type, ce, this);
-					result.addConstraint(constraint);
-				} else
-					System.err.println("constraint is " + ce + " for context " + context2Name.getContextName(context)
-							+ " and type " + type.getName());
-			}
-		}
-		return result;
-	}
-
-	public List<IConstraintContext> getConstraints(Grammar context) {
-		List<IConstraintContext> result = cache.get(context);
-		if (result == null) {
-			result = Lists.newArrayList();
-			for (ParserRule parserRule : GrammarUtil.allParserRules(context))
-				if (parserRule.getType().getClassifier() instanceof EClass) {
-					result.add(getConstraints(parserRule));
-					for (Action action : GrammarUtil.containedActions(parserRule))
-						if (action.getFeature() != null)
-							result.add(getConstraints(action));
-				}
-			filterDuplicateConstraintsAndSetNames(context, result);
-			cache.put(context, result);
-		}
-		return result;
-	}
-
-	protected IConstraintContext getConstraints(ParserRule context) {
-		ParserRuleConstraintContext result = new ParserRuleConstraintContext(context,
-				context2Name.getContextName(context));
-		Set<EClass> types = contextProvider.getTypesForContext(context);
-		for (EClass type : types) {
-			if (type == null) {
-				Constraint constraint = new RuleConstraint(context, null, null, this);
-				result.addConstraint(constraint);
-			} else {
-				ConstraintElement ce = createConstraintElement(context, type, Sets.newHashSet());
-				if (ce == TYPEMATCH) {
-					Constraint constraint = new RuleConstraint(context, type, null, this);
-					result.addConstraint(constraint);
-				} else if (ce != null && ce != INVALID) {
-					Constraint constraint = new RuleConstraint(context, type, ce, this);
-					result.addConstraint(constraint);
-				} else
-					System.err.println("constraint is " + ce + " for context " + context2Name.getContextName(context)
-							+ " and type " + type.getName());
-			}
-		}
+		Map<ISerializationContext, Pda<ISerState, RuleCall>> typePDAs = typeProvider.getContextTypePDAs(grammar);
+		for (Constraint constraint : constraints.values())
+			constraint.setName(findBestConstraintName(grammar, typePDAs, constraint));
 		return result;
 	}
 

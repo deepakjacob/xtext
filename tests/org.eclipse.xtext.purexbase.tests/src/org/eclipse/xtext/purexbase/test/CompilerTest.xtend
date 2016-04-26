@@ -9,14 +9,18 @@ package org.eclipse.xtext.purexbase.test
 
 import com.google.inject.Inject
 import org.eclipse.xtext.junit4.InjectWith
+import org.eclipse.xtext.junit4.TemporaryFolder
 import org.eclipse.xtext.junit4.XtextRunner
 import org.eclipse.xtext.xbase.compiler.CompilationTestHelper
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(typeof(XtextRunner))
-@InjectWith(typeof(RuntimeInjectorProvider)) 
+@RunWith(XtextRunner)
+@InjectWith(RuntimeInjectorProvider) 
 class CompilerTest {
+	
+	@Rule @Inject public TemporaryFolder temporaryFolder
 	
 	@Inject extension CompilationTestHelper
 	
@@ -62,9 +66,10 @@ class CompilerTest {
 			import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 			import org.eclipse.xtext.xbase.lib.Pair;
 			
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public BigDecimal myMethod() throws Throwable {
-			    BigDecimal _specialblockexpression = null;
+			    BigDecimal _xblockexpression = null;
 			    {
 			      /* null */
 			      /* "Hello World" */
@@ -75,14 +80,14 @@ class CompilerTest {
 			      /* String.class */
 			      /* CollectionLiterals.<Integer>newArrayList(Integer.valueOf(3), Integer.valueOf(5), Integer.valueOf(7)); */
 			      /* CollectionLiterals.<String>newHashSet("foo", "bar", "baz"); */
-			      Pair<Integer,String> _mappedTo = Pair.<Integer, String>of(Integer.valueOf(1), "one");
-			      Pair<Integer,String> _mappedTo_1 = Pair.<Integer, String>of(Integer.valueOf(2), "two");
-			      Pair<Integer,String> _mappedTo_2 = Pair.<Integer, String>of(Integer.valueOf(3), "three");
+			      Pair<Integer, String> _mappedTo = Pair.<Integer, String>of(Integer.valueOf(1), "one");
+			      Pair<Integer, String> _mappedTo_1 = Pair.<Integer, String>of(Integer.valueOf(2), "two");
+			      Pair<Integer, String> _mappedTo_2 = Pair.<Integer, String>of(Integer.valueOf(3), "three");
 			      /* CollectionLiterals.<Integer, String>newHashMap(_mappedTo, _mappedTo_1, _mappedTo_2); */
 			      /* new BigInteger("beefbeefbeefbeefbeef", 16) */
-			      _specialblockexpression = (new BigDecimal("0.123456789123456789123456789123456789e4242"));
+			      _xblockexpression = new BigDecimal("0.123456789123456789123456789123456789e4242");
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -91,7 +96,7 @@ class CompilerTest {
 	@Test
 	def void featureCalls() {
 		'''
-			import org.eclipse.xtext.purexbase.test.data.*
+			import org.eclipse.xtext.purexbase.test.data.Person
 			/*
 			 * Xbase comes with sugared accessor syntax for getter and setter 
 			 * methods
@@ -115,10 +120,10 @@ class CompilerTest {
 			import java.util.Collections;
 			import org.eclipse.xtext.purexbase.test.data.Person;
 			
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public void myMethod() throws Throwable {
-			    Person _person = new Person();
-			    final Person person = _person;
+			    final Person person = new Person();
 			    person.setForename("Jimi");
 			    person.setName("Hendrix");
 			    String _forename = person.getForename();
@@ -176,23 +181,23 @@ class CompilerTest {
 			}
 			// foo (String)
 		'''.assertCompilesTo('''
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public String myMethod() throws Throwable {
-			    String _specialblockexpression = null;
+			    String _xblockexpression = null;
 			    {
 			      final String x = "A final value";
 			      String y = "A non-final variable";
 			      y = "can be modified";
 			      final String s = "my String";
-			      String _xblockexpression = null;
+			      String _xblockexpression_1 = null;
 			      {
 			        final String s1 = "foo";
-			        String _plus = (s + s1);
-			        _xblockexpression = (_plus);
+			        _xblockexpression_1 = (s + s1);
 			      }
-			      _specialblockexpression = (_xblockexpression);
+			      _xblockexpression = _xblockexpression_1;
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -216,15 +221,15 @@ class CompilerTest {
 			(s as String).length
 			// 3 (int)
 		'''.assertCompilesTo('''
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public int myMethod() throws Throwable {
-			    int _specialblockexpression = (int) 0;
+			    int _xblockexpression = (int) 0;
 			    {
 			      final CharSequence s = "foo";
-			      int _length = ((String) s).length();
-			      _specialblockexpression = (_length);
+			      _xblockexpression = ((String) s).length();
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -271,38 +276,35 @@ class CompilerTest {
 			import org.eclipse.xtext.xbase.lib.Functions.Function1;
 			import org.eclipse.xtext.xbase.lib.ListExtensions;
 			
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public String myMethod() throws Throwable {
-			    String _specialblockexpression = null;
+			    String _xblockexpression = null;
 			    {
 			      final String x = "Hello ";
-			      final Function1<String,String> _function = new Function1<String,String>() {
-			          public String apply(final String e) {
-			            String _plus = (x + e);
-			            return _plus;
-			          }
-			        };
-			      final Function1<String,String> f = _function;
+			      final Function1<String, String> _function = new Function1<String, String>() {
+			        public String apply(final String e) {
+			          return (x + e);
+			        }
+			      };
+			      final Function1<String, String> f = _function;
 			      f.apply("World!");
 			      final ArrayList<String> list = CollectionLiterals.<String>newArrayList("a", "b", "c");
-			      final Function1<String,String> _function_1 = new Function1<String,String>() {
-			          public String apply(final String e) {
-			            String _upperCase = e.toUpperCase();
-			            return _upperCase;
-			          }
-			        };
+			      final Function1<String, String> _function_1 = new Function1<String, String>() {
+			        public String apply(final String e) {
+			          return e.toUpperCase();
+			        }
+			      };
 			      /* ListExtensions.<String, String>map(list, _function_1); */
-			      final Function1<String,String> _function_2 = new Function1<String,String>() {
-			          public String apply(final String e) {
-			            String _upperCase = e.toUpperCase();
-			            return _upperCase;
-			          }
-			        };
-			      final Function1<? super String,? extends String> f2 = _function_2;
-			      String _apply = f2.apply("simsalabim");
-			      _specialblockexpression = (_apply);
+			      final Function1<String, String> _function_2 = new Function1<String, String>() {
+			        public String apply(final String e) {
+			          return e.toUpperCase();
+			        }
+			      };
+			      final Function1<? super String, ? extends String> f2 = _function_2;
+			      _xblockexpression = f2.apply("simsalabim");
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -342,9 +344,10 @@ class CompilerTest {
 				"Xbase doesn't need the ternary operator"
 			}
 		'''.assertCompilesTo('''
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public String myMethod() throws Throwable {
-			    String _specialblockexpression = null;
+			    String _xblockexpression = null;
 			    {
 			      int _length = "foo".length();
 			      boolean _greaterThan = (_length > 3);
@@ -370,9 +373,9 @@ class CompilerTest {
 			      if (_xifexpression_1) {
 			        _xifexpression = "Xbase doesn\'t need the ternary operator";
 			      }
-			      _specialblockexpression = (_xifexpression);
+			      _xblockexpression = _xifexpression;
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -381,7 +384,7 @@ class CompilerTest {
 	@Test
 	def void operators() {
 		'''
-			import org.eclipse.xtext.purexbase.test.data.*
+			import org.eclipse.xtext.purexbase.test.data.Amount
 			/*
 			 * Although the operators in Xbase are syntactically predefined, the 
 			 * semantics are given by a simple operator overloading mechanism.
@@ -396,19 +399,17 @@ class CompilerTest {
 		'''.assertCompilesTo('''
 			import org.eclipse.xtext.purexbase.test.data.Amount;
 			
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public Amount myMethod() throws Throwable {
-			    Amount _specialblockexpression = null;
+			    Amount _xblockexpression = null;
 			    {
-			      Amount _amount = new Amount("12.80");
-			      final Amount a = _amount;
-			      Amount _amount_1 = new Amount("0.20");
-			      final Amount b = _amount_1;
+			      final Amount a = new Amount("12.80");
+			      final Amount b = new Amount("0.20");
 			      Amount _multiply = b.operator_multiply(3);
-			      Amount _plus = a.operator_plus(_multiply);
-			      _specialblockexpression = (_plus);
+			      _xblockexpression = a.operator_plus(_multiply);
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -445,13 +446,13 @@ class CompilerTest {
 			import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 			import org.eclipse.xtext.xbase.lib.ListExtensions;
 			
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public ArrayList<String> myMethod() throws Throwable {
-			    ArrayList<String> _specialblockexpression = null;
+			    ArrayList<String> _xblockexpression = null;
 			    {
 			      final ArrayList<String> list = CollectionLiterals.<String>newArrayList("foo", "bar", "baz");
-			      ArrayList<String> _arrayList = new ArrayList<String>();
-			      final ArrayList<String> result = _arrayList;
+			      final ArrayList<String> result = new ArrayList<String>();
 			      List<String> _reverse = ListExtensions.<String>reverse(list);
 			      for (final String x : _reverse) {
 			        String _upperCase = x.toUpperCase();
@@ -459,24 +460,17 @@ class CompilerTest {
 			      }
 			      /* result; */
 			      int i = 0;
-			      int _size = list.size();
-			      boolean _lessThan = (i < _size);
-			      boolean _while = _lessThan;
-			      while (_while) {
+			      while ((i < list.size())) {
 			        {
 			          String _get = list.get(i);
 			          String _plus = ("whiled-" + _get);
 			          result.add(_plus);
-			          int _plus_1 = (i + 1);
-			          i = _plus_1;
+			          i = (i + 1);
 			        }
-			        int _size_1 = list.size();
-			        boolean _lessThan_1 = (i < _size_1);
-			        _while = _lessThan_1;
 			      }
-			      _specialblockexpression = (result);
+			      _xblockexpression = result;
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -510,25 +504,25 @@ class CompilerTest {
 		'''.assertCompilesTo('''
 			import org.eclipse.xtext.xbase.lib.Exceptions;
 			
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public Object myMethod() throws Throwable {
-			    Object _specialblockexpression = null;
+			    Object _xblockexpression = null;
 			    {
 			      try {
 			        ((Object) null).toString();
 			      } catch (final Throwable _t) {
 			        if (_t instanceof NullPointerException) {
 			          final NullPointerException e = (NullPointerException)_t;
-			          RuntimeException _runtimeException = new RuntimeException(e);
-			          throw _runtimeException;
+			          throw new RuntimeException(e);
 			        } else {
 			          throw Exceptions.sneakyThrow(_t);
 			        }
 			      } finally {
 			      }
-			      _specialblockexpression = (null);
+			      _xblockexpression = null;
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -537,7 +531,8 @@ class CompilerTest {
 	@Test
 	def void switchExpression() {
 		'''
-			import org.eclipse.xtext.purexbase.test.data.*
+			import org.eclipse.xtext.purexbase.test.data.Circle
+			import org.eclipse.xtext.purexbase.test.data.Rectangle
 			/*
 			 * The switch expression is different and much more powerful than the
 			 * switch statement in Java.
@@ -584,22 +579,20 @@ class CompilerTest {
 			import org.eclipse.xtext.xbase.lib.IterableExtensions;
 			import org.eclipse.xtext.xbase.lib.ListExtensions;
 			
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public List<String> myMethod() throws Throwable {
-			    List<String> _specialblockexpression = null;
+			    List<String> _xblockexpression = null;
 			    {
 			      final ArrayList<String> list = CollectionLiterals.<String>newArrayList("foo", "bar", "baz");
 			      String _head = IterableExtensions.<String>head(list);
-			      final String _switchValue = _head;
 			      boolean _matched = false;
-			      if (!_matched) {
-			        if (Objects.equal(_switchValue,"foo")) {
-			          _matched=true;
-			          /* "it\'s foo" */
-			        }
+			      if (Objects.equal(_head, "foo")) {
+			        _matched=true;
+			        /* "it\'s foo" */
 			      }
 			      if (!_matched) {
-			        if (Objects.equal(_switchValue,"bar")) {
+			        if (Objects.equal(_head, "bar")) {
 			          _matched=true;
 			          /* "a bar" */
 			        }
@@ -611,46 +604,34 @@ class CompilerTest {
 			      Circle _circle = new Circle(4);
 			      Rectangle _rectangle_1 = new Rectangle(6, 8);
 			      final ArrayList<Shape> list2 = CollectionLiterals.<Shape>newArrayList(_rectangle, _circle, _rectangle_1);
-			      final Function1<Shape,String> _function = new Function1<Shape,String>() {
-			          public String apply(final Shape shape) {
-			            String _switchResult = null;
-			            boolean _matched = false;
-			            if (!_matched) {
-			              if (shape instanceof Circle) {
-			                final Circle _circle = (Circle)shape;
-			                _matched=true;
-			                String _plus = ("a circle : diameter=" + Integer.valueOf(_circle.diameter));
-			                _switchResult = _plus;
-			              }
-			            }
-			            if (!_matched) {
-			              if (shape instanceof Rectangle) {
-			                final Rectangle _rectangle = (Rectangle)shape;
-			                boolean _equals = (_rectangle.height == _rectangle.width);
-			                if (_equals) {
-			                  _matched=true;
-			                  String _plus = ("a square : size=" + Integer.valueOf(_rectangle.width));
-			                  _switchResult = _plus;
-			                }
-			              }
-			            }
-			            if (!_matched) {
-			              if (shape instanceof Rectangle) {
-			                final Rectangle _rectangle = (Rectangle)shape;
-			                _matched=true;
-			                String _plus = ("a rectangle : width=" + Integer.valueOf(_rectangle.width));
-			                String _plus_1 = (_plus + ", height=");
-			                String _plus_2 = (_plus_1 + Integer.valueOf(_rectangle.height));
-			                _switchResult = _plus_2;
-			              }
-			            }
-			            return _switchResult;
+			      final Function1<Shape, String> _function = new Function1<Shape, String>() {
+			        public String apply(final Shape shape) {
+			          String _switchResult = null;
+			          boolean _matched = false;
+			          if (shape instanceof Circle) {
+			            _matched=true;
+			            _switchResult = ("a circle : diameter=" + Integer.valueOf(((Circle)shape).diameter));
 			          }
-			        };
-			      List<String> _map = ListExtensions.<Shape, String>map(list2, _function);
-			      _specialblockexpression = (_map);
+			          if (!_matched) {
+			            if (shape instanceof Rectangle) {
+			              if ((((Rectangle)shape).height == ((Rectangle)shape).width)) {
+			                _matched=true;
+			                _switchResult = ("a square : size=" + Integer.valueOf(((Rectangle)shape).width));
+			              }
+			            }
+			          }
+			          if (!_matched) {
+			            if (shape instanceof Rectangle) {
+			              _matched=true;
+			              _switchResult = ((("a rectangle : width=" + Integer.valueOf(((Rectangle)shape).width)) + ", height=") + Integer.valueOf(((Rectangle)shape).height));
+			            }
+			          }
+			          return _switchResult;
+			        }
+			      };
+			      _xblockexpression = ListExtensions.<Shape, String>map(list2, _function);
 			    }
-			    return _specialblockexpression;
+			    return _xblockexpression;
 			  }
 			}
 		''')
@@ -707,6 +688,7 @@ class CompilerTest {
 			import java.util.List;
 			import org.eclipse.xtext.xbase.lib.Conversions;
 			
+			@SuppressWarnings("all")
 			public class MyFile {
 			  public void myMethod() throws Throwable {
 			    "string".length();
@@ -715,17 +697,16 @@ class CompilerTest {
 			    int _length = "string".length();
 			    Integer.valueOf(_length).toString();
 			    "string".toCharArray();
-			    final List<Character> l = ((List<Character>)Conversions.doWrapArray("string".toCharArray()));
+			    final List<Character> l = (List<Character>)Conversions.doWrapArray("string".toCharArray());
 			    char[] _charArray = "string".toCharArray();
-			    ((List<Character>)Conversions.doWrapArray(_charArray)).get(3);
+			    /* _charArray[3]; */
 			    final Comparator<String> _function = new Comparator<String>() {
-			        public int compare(final String a, final String b) {
-			          int _length = a.length();
-			          int _length_1 = b.length();
-			          int _compareTo = Integer.valueOf(_length).compareTo(Integer.valueOf(_length_1));
-			          return _compareTo;
-			        }
-			      };
+			      public int compare(final String a, final String b) {
+			        int _length = a.length();
+			        int _length_1 = b.length();
+			        return Integer.valueOf(_length).compareTo(Integer.valueOf(_length_1));
+			      }
+			    };
 			    final Comparator<String> comparator = _function;
 			  }
 			}

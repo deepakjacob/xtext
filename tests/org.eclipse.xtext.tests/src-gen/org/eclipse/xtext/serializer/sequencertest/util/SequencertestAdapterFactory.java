@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.sequencertest.util;
 
@@ -16,8 +13,11 @@ import org.eclipse.xtext.serializer.sequencertest.AltList1;
 import org.eclipse.xtext.serializer.sequencertest.AltList2;
 import org.eclipse.xtext.serializer.sequencertest.AlternativeMultiplicities;
 import org.eclipse.xtext.serializer.sequencertest.Complex1;
+import org.eclipse.xtext.serializer.sequencertest.Delegation;
+import org.eclipse.xtext.serializer.sequencertest.DelegationA;
 import org.eclipse.xtext.serializer.sequencertest.DependentAlternative1;
 import org.eclipse.xtext.serializer.sequencertest.DependentAlternative2;
+import org.eclipse.xtext.serializer.sequencertest.FragmentCallerType;
 import org.eclipse.xtext.serializer.sequencertest.GroupMultiplicities;
 import org.eclipse.xtext.serializer.sequencertest.List1;
 import org.eclipse.xtext.serializer.sequencertest.List2;
@@ -25,8 +25,13 @@ import org.eclipse.xtext.serializer.sequencertest.Model;
 import org.eclipse.xtext.serializer.sequencertest.MultiKeywords;
 import org.eclipse.xtext.serializer.sequencertest.MultiKeywordsOrID;
 import org.eclipse.xtext.serializer.sequencertest.MultiTerminals;
+import org.eclipse.xtext.serializer.sequencertest.NullCrossRef;
+import org.eclipse.xtext.serializer.sequencertest.NullValue;
 import org.eclipse.xtext.serializer.sequencertest.Optional;
 import org.eclipse.xtext.serializer.sequencertest.OptionalDouble;
+import org.eclipse.xtext.serializer.sequencertest.ParameterCaller;
+import org.eclipse.xtext.serializer.sequencertest.ParameterDelegation;
+import org.eclipse.xtext.serializer.sequencertest.Parameterized;
 import org.eclipse.xtext.serializer.sequencertest.SequencertestPackage;
 import org.eclipse.xtext.serializer.sequencertest.SimpleAlternative;
 import org.eclipse.xtext.serializer.sequencertest.SimpleGroup;
@@ -303,6 +308,46 @@ public class SequencertestAdapterFactory extends AdapterFactoryImpl
       public Adapter caseOptionalDouble(OptionalDouble object)
       {
         return createOptionalDoubleAdapter();
+      }
+      @Override
+      public Adapter caseNullValue(NullValue object)
+      {
+        return createNullValueAdapter();
+      }
+      @Override
+      public Adapter caseNullCrossRef(NullCrossRef object)
+      {
+        return createNullCrossRefAdapter();
+      }
+      @Override
+      public Adapter caseFragmentCallerType(FragmentCallerType object)
+      {
+        return createFragmentCallerTypeAdapter();
+      }
+      @Override
+      public Adapter caseParameterCaller(ParameterCaller object)
+      {
+        return createParameterCallerAdapter();
+      }
+      @Override
+      public Adapter caseParameterized(Parameterized object)
+      {
+        return createParameterizedAdapter();
+      }
+      @Override
+      public Adapter caseParameterDelegation(ParameterDelegation object)
+      {
+        return createParameterDelegationAdapter();
+      }
+      @Override
+      public Adapter caseDelegation(Delegation object)
+      {
+        return createDelegationAdapter();
+      }
+      @Override
+      public Adapter caseDelegationA(DelegationA object)
+      {
+        return createDelegationAAdapter();
       }
       @Override
       public Adapter defaultCase(EObject object)
@@ -892,6 +937,126 @@ public class SequencertestAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createOptionalDoubleAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.sequencertest.NullValue <em>Null Value</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.sequencertest.NullValue
+   * @generated
+   */
+  public Adapter createNullValueAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.sequencertest.NullCrossRef <em>Null Cross Ref</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.sequencertest.NullCrossRef
+   * @generated
+   */
+  public Adapter createNullCrossRefAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.sequencertest.FragmentCallerType <em>Fragment Caller Type</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.sequencertest.FragmentCallerType
+   * @generated
+   */
+  public Adapter createFragmentCallerTypeAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.sequencertest.ParameterCaller <em>Parameter Caller</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.sequencertest.ParameterCaller
+   * @generated
+   */
+  public Adapter createParameterCallerAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.sequencertest.Parameterized <em>Parameterized</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.sequencertest.Parameterized
+   * @generated
+   */
+  public Adapter createParameterizedAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.sequencertest.ParameterDelegation <em>Parameter Delegation</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.sequencertest.ParameterDelegation
+   * @generated
+   */
+  public Adapter createParameterDelegationAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.sequencertest.Delegation <em>Delegation</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.sequencertest.Delegation
+   * @generated
+   */
+  public Adapter createDelegationAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.sequencertest.DelegationA <em>Delegation A</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.sequencertest.DelegationA
+   * @generated
+   */
+  public Adapter createDelegationAAdapter()
   {
     return null;
   }

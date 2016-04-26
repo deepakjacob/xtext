@@ -12,17 +12,6 @@
             label="Syntax">
       </keyword>
    </extension>
-  <extension point="org.eclipse.ui.handlers">
-      <handler
-            class="org.eclipse.xtext.ui.editor.handler.ContentAssistHandler"
-            commandId="org.eclipse.ui.edit.text.contentAssist.proposals">
-         <activeWhen>
-            <reference
-                  definitionId="isActiveEditorAnInstanceOfXtextEditor">
-            </reference>
-         </activeWhen>
-      </handler>
-   </extension>
    <extension point="org.eclipse.core.expressions.definitions">
       <definition
             id="isActiveEditorAnInstanceOfXtextEditor">
@@ -33,44 +22,59 @@
             </adapt>
          </with>
       </definition>
+      <definition
+            id="isXtextEditorActive">
+         <with
+               variable="activeEditor">
+            <adapt
+                  type="org.eclipse.xtext.ui.editor.XtextEditor">
+            </adapt>
+         </with>
+      </definition>
    </extension>
    
    <extension point="org.eclipse.ui.menus">
         <menuContribution
-            locationURI="popup:#TextEditorContext?after=group.edit">
-         <command commandId="org.eclipse.ui.edit.text.contentAssist.proposals"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <reference
-                     definitionId="isActiveEditorAnInstanceOfXtextEditor">
-               </reference>
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:#TextEditorContext?after=group.edit">
-         <command commandId="org.eclipse.xtext.ui.ToggleCommentAction"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <reference
-                     definitionId="isActiveEditorAnInstanceOfXtextEditor">
-               </reference>
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:#TextEditorContext?after=group.edit">
-         <command commandId="org.eclipse.xtext.ui.FormatAction"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <reference
-                     definitionId="isActiveEditorAnInstanceOfXtextEditor">
-               </reference>
-            </visibleWhen>
-         </command>
+            locationURI="popup:#TextEditorContext?after=QuickAssist">
+         <menu
+               id="xtext.ui.SourceMenu"
+               label="Source"
+               mnemonic="&amp;Source">
+            <command
+                  commandId="org.eclipse.xtext.ui.ToggleCommentAction"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="isActiveEditorAnInstanceOfXtextEditor">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="org.eclipse.xtext.ui.FormatAction"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="isActiveEditorAnInstanceOfXtextEditor">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="org.eclipse.ui.edit.text.contentAssist.proposals"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <reference
+                        definitionId="isActiveEditorAnInstanceOfXtextEditor">
+                  </reference>
+               </visibleWhen>
+            </command>
+            <separator
+                  name="xtext.ui.ImportsSeparator"
+                  visible="true">
+            </separator>
+         </menu>
       </menuContribution>
    </extension>
    <extension
@@ -105,18 +109,21 @@
       <!-- find references -->
 	  <command 
 			id="org.eclipse.xtext.ui.editor.FindReferences"
+            categoryId="org.eclipse.ui.category.navigate"
 			name="%FindReferencesCommand_name"
 			description="%FindReferencesCommand_description">
 	  </command>
 	  <!-- hyperlinking -->
 	  <command
 			id="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration"
+            categoryId="org.eclipse.ui.category.navigate"
 			name="%OpenDeclarationCommand_name"
 			description="%OpenDeclarationCommand_description">
       </command>
       <!-- refactoring -->
       <command
             id="org.eclipse.xtext.ui.refactoring.RenameElement"
+            categoryId="org.eclipse.xtext.ui.category.refactoring"
             name="%RenameElementCommand_name"
             description="%RenameElementCommand_description">
       </command>
@@ -145,11 +152,22 @@
             categoryId="org.eclipse.xtext.ui.category.XtextEditor"
             id="org.eclipse.xtext.ui.editor.select.last">
       </command>
+      <command
+            categoryId="org.eclipse.xtext.ui.category.XtextEditor"
+            description="%OpenGeneratedFile_description"
+            id="org.eclipse.xtext.ui.OpenGeneratedFileCommand"
+            name="%OpenGeneratedFile_name">
+      </command>
       <!-- categories -->
       <category
             description="%XtextCommandCategory_description"
             id="org.eclipse.xtext.ui.category.XtextEditor"
             name="%XtextCommandCategory_name">
+      </category>
+      <category
+            name="%category.refactoring.name"
+            description="%category.refactoring.description"
+            id="org.eclipse.xtext.ui.category.refactoring">
       </category>
    </extension>
    <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -253,6 +271,8 @@
       <attribute name="CODE_KEY"/>
       <!-- see org.eclipse.xtext.validation.Issue.DATA_KEY -->
       <attribute name="DATA_KEY"/>
+      <!-- see org.eclipse.xtext.validation.Issue.COLUMN_KEY -->
+      <attribute name="COLUMN_KEY"/>
       <!-- see org.eclipse.xtext.validation.Issue.URI_KEY -->
       <attribute name="URI_KEY"/>
       <!-- see org.eclipse.xtext.ui.editor.validation.MarkerCreator.FIXABLE_KEY -->
@@ -280,6 +300,20 @@
       <persistent value="true"/>
    </extension>
    <extension
+         id="org.eclipse.xtext.ui.marker"
+         name="Xtext Marker"
+         point="org.eclipse.core.resources.markers">
+      <persistent value="true"/>
+   </extension>
+   <extension
+         id="org.eclipse.xtext.ui.task"
+         name="Xtext Task"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.xtext.ui.marker"/>
+      <super type="org.eclipse.core.resources.taskmarker"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
       point="org.eclipse.ui.editors.annotationTypes">
       <type
       	name="org.eclipse.xtext.ui.editor.error"
@@ -298,7 +332,7 @@
       	markerType="org.eclipse.emf.ecore.diagnostic"
       	markerSeverity="0"
         super="org.eclipse.ui.workbench.texteditor.info">
-      </type>a
+      </type>
    </extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
@@ -344,8 +378,10 @@
 	<extension
 		point="org.eclipse.ui.menus">
 		<menuContribution locationURI="popup:#TextEditorContext?after=group.open">
-			<command commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration"
-				style="push">
+			<command
+         commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration"
+         id="xtext.ui.openDeclaration"
+         style="push">
 				<visibleWhen 
 					checkEnabled="false">
  					<reference 
@@ -1123,5 +1159,18 @@
 			schemeId="org.eclipse.ui.emacsAcceleratorConfiguration"
 	        sequence="CTRL+L"/>
    </extension>
-	
+ <extension
+       point="org.eclipse.emf.ecore.extension_parser">
+    <parser
+          class="org.eclipse.xtext.resource.impl.BinaryGrammarResourceFactoryImpl"
+          type="xtextbin">
+    </parser>
+ </extension>
+	<extension point="org.eclipse.e4.ui.css.swt.theme">	
+      <stylesheet uri="css/e4-dark_xtext_syntaxhighlighting.css">	
+         <themeid	
+               refid="org.eclipse.e4.ui.css.theme.e4_dark">	
+         </themeid>	
+	  </stylesheet>	
+   </extension>
 </plugin>

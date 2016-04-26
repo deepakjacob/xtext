@@ -8,6 +8,7 @@
 package org.eclipse.xtext.ui.tests.editor.outline;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
@@ -38,6 +39,7 @@ public class OutlineNodeComparerTest extends AbstractXtextTests {
 		super.setUp();
 		final Injector injector = Activator.getInstance().getInjector("org.eclipse.xtext.ui.tests.editor.outline.OutlineTestLanguage");
 		with(new ISetup() {
+			@Override
 			public Injector createInjectorAndDoEMFRegistration() {
 				return injector;
 			}
@@ -51,7 +53,7 @@ public class OutlineNodeComparerTest extends AbstractXtextTests {
 
 	@Test public void testNull() {
 		assertTrue(comparer.equals(null, null));
-		EObjectNode node = new EObjectNode(eObject, null, null, "parent", false);
+		EObjectNode node = new EObjectNode(eObject, null, (ImageDescriptor) null, "parent", false);
 		assertFalse(comparer.equals(null, node));
 		assertFalse(comparer.equals(node, null));
 	}

@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types;
 
@@ -306,13 +308,23 @@ public interface TypesPackage extends EPackage
 	int JVM_MEMBER__IDENTIFIER = JVM_ANNOTATION_TARGET_FEATURE_COUNT + 3;
 
 	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.7
+	 */
+	int JVM_MEMBER__DEPRECATED = JVM_ANNOTATION_TARGET_FEATURE_COUNT + 4;
+
+	/**
 	 * The number of structural features of the '<em>Jvm Member</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int JVM_MEMBER_FEATURE_COUNT = JVM_ANNOTATION_TARGET_FEATURE_COUNT + 4;
+	int JVM_MEMBER_FEATURE_COUNT = JVM_ANNOTATION_TARGET_FEATURE_COUNT + 5;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.xtext.common.types.impl.JvmDeclaredTypeImpl <em>Jvm Declared Type</em>}' class.
@@ -368,6 +380,16 @@ public interface TypesPackage extends EPackage
 	 * @ordered
 	 */
 	int JVM_DECLARED_TYPE__IDENTIFIER = JVM_MEMBER__IDENTIFIER;
+
+	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.7
+	 */
+	int JVM_DECLARED_TYPE__DEPRECATED = JVM_MEMBER__DEPRECATED;
 
 	/**
 	 * The feature id for the '<em><b>Array Type</b></em>' containment reference.
@@ -719,6 +741,15 @@ public interface TypesPackage extends EPackage
 	int JVM_ANNOTATION_TYPE__IDENTIFIER = JVM_DECLARED_TYPE__IDENTIFIER;
 
 	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_ANNOTATION_TYPE__DEPRECATED = JVM_DECLARED_TYPE__DEPRECATED;
+
+	/**
 	 * The feature id for the '<em><b>Array Type</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -844,6 +875,15 @@ public interface TypesPackage extends EPackage
 	 * @ordered
 	 */
 	int JVM_ENUMERATION_TYPE__IDENTIFIER = JVM_DECLARED_TYPE__IDENTIFIER;
+
+	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_ENUMERATION_TYPE__DEPRECATED = JVM_DECLARED_TYPE__DEPRECATED;
 
 	/**
 	 * The feature id for the '<em><b>Array Type</b></em>' containment reference.
@@ -982,13 +1022,32 @@ public interface TypesPackage extends EPackage
 	int JVM_FEATURE__IDENTIFIER = JVM_MEMBER__IDENTIFIER;
 
 	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_FEATURE__DEPRECATED = JVM_MEMBER__DEPRECATED;
+
+	/**
+	 * The feature id for the '<em><b>Local Classes</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.6
+	 */
+	int JVM_FEATURE__LOCAL_CLASSES = JVM_MEMBER_FEATURE_COUNT + 0;
+
+	/**
 	 * The number of structural features of the '<em>Jvm Feature</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int JVM_FEATURE_FEATURE_COUNT = JVM_MEMBER_FEATURE_COUNT + 0;
+	int JVM_FEATURE_FEATURE_COUNT = JVM_MEMBER_FEATURE_COUNT + 1;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.xtext.common.types.impl.JvmFieldImpl <em>Jvm Field</em>}' class.
@@ -1046,6 +1105,25 @@ public interface TypesPackage extends EPackage
 	int JVM_FIELD__IDENTIFIER = JVM_FEATURE__IDENTIFIER;
 
 	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_FIELD__DEPRECATED = JVM_FEATURE__DEPRECATED;
+
+	/**
+	 * The feature id for the '<em><b>Local Classes</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.6
+	 */
+	int JVM_FIELD__LOCAL_CLASSES = JVM_FEATURE__LOCAL_CLASSES;
+
+	/**
 	 * The feature id for the '<em><b>Static</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1073,13 +1151,53 @@ public interface TypesPackage extends EPackage
 	int JVM_FIELD__TYPE = JVM_FEATURE_FEATURE_COUNT + 2;
 
 	/**
+	 * The feature id for the '<em><b>Volatile</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.4
+	 */
+	int JVM_FIELD__VOLATILE = JVM_FEATURE_FEATURE_COUNT + 3;
+
+	/**
+	 * The feature id for the '<em><b>Transient</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.4
+	 */
+	int JVM_FIELD__TRANSIENT = JVM_FEATURE_FEATURE_COUNT + 4;
+
+	/**
+	 * The feature id for the '<em><b>Constant</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.5
+	 */
+	int JVM_FIELD__CONSTANT = JVM_FEATURE_FEATURE_COUNT + 5;
+
+	/**
+	 * The feature id for the '<em><b>Constant Value</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.5
+	 */
+	int JVM_FIELD__CONSTANT_VALUE = JVM_FEATURE_FEATURE_COUNT + 6;
+
+	/**
 	 * The number of structural features of the '<em>Jvm Field</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int JVM_FIELD_FEATURE_COUNT = JVM_FEATURE_FEATURE_COUNT + 3;
+	int JVM_FIELD_FEATURE_COUNT = JVM_FEATURE_FEATURE_COUNT + 7;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.xtext.common.types.impl.JvmEnumerationLiteralImpl <em>Jvm Enumeration Literal</em>}' class.
@@ -1137,6 +1255,25 @@ public interface TypesPackage extends EPackage
 	int JVM_ENUMERATION_LITERAL__IDENTIFIER = JVM_FIELD__IDENTIFIER;
 
 	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_ENUMERATION_LITERAL__DEPRECATED = JVM_FIELD__DEPRECATED;
+
+	/**
+	 * The feature id for the '<em><b>Local Classes</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.6
+	 */
+	int JVM_ENUMERATION_LITERAL__LOCAL_CLASSES = JVM_FIELD__LOCAL_CLASSES;
+
+	/**
 	 * The feature id for the '<em><b>Static</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1162,6 +1299,45 @@ public interface TypesPackage extends EPackage
 	 * @ordered
 	 */
 	int JVM_ENUMERATION_LITERAL__TYPE = JVM_FIELD__TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Volatile</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.4
+	 */
+	int JVM_ENUMERATION_LITERAL__VOLATILE = JVM_FIELD__VOLATILE;
+
+	/**
+	 * The feature id for the '<em><b>Transient</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_ENUMERATION_LITERAL__TRANSIENT = JVM_FIELD__TRANSIENT;
+
+	/**
+	 * The feature id for the '<em><b>Constant</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.5
+	 */
+	int JVM_ENUMERATION_LITERAL__CONSTANT = JVM_FIELD__CONSTANT;
+
+	/**
+	 * The feature id for the '<em><b>Constant Value</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.5
+	 */
+	int JVM_ENUMERATION_LITERAL__CONSTANT_VALUE = JVM_FIELD__CONSTANT_VALUE;
 
 	/**
 	 * The number of structural features of the '<em>Jvm Enumeration Literal</em>' class.
@@ -1226,6 +1402,15 @@ public interface TypesPackage extends EPackage
 	 * @ordered
 	 */
 	int JVM_GENERIC_TYPE__IDENTIFIER = JVM_DECLARED_TYPE__IDENTIFIER;
+
+	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_GENERIC_TYPE__DEPRECATED = JVM_DECLARED_TYPE__DEPRECATED;
 
 	/**
 	 * The feature id for the '<em><b>Array Type</b></em>' containment reference.
@@ -1309,13 +1494,33 @@ public interface TypesPackage extends EPackage
 	int JVM_GENERIC_TYPE__INTERFACE = JVM_DECLARED_TYPE_FEATURE_COUNT + 1;
 
 	/**
+	 * The feature id for the '<em><b>Strict Floating Point</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.4
+	 */
+	int JVM_GENERIC_TYPE__STRICT_FLOATING_POINT = JVM_DECLARED_TYPE_FEATURE_COUNT + 2;
+
+	/**
+	 * The feature id for the '<em><b>Anonymous</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.6
+	 */
+	int JVM_GENERIC_TYPE__ANONYMOUS = JVM_DECLARED_TYPE_FEATURE_COUNT + 3;
+
+	/**
 	 * The number of structural features of the '<em>Jvm Generic Type</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int JVM_GENERIC_TYPE_FEATURE_COUNT = JVM_DECLARED_TYPE_FEATURE_COUNT + 2;
+	int JVM_GENERIC_TYPE_FEATURE_COUNT = JVM_DECLARED_TYPE_FEATURE_COUNT + 4;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.xtext.common.types.impl.JvmTypeReferenceImpl <em>Jvm Type Reference</em>}' class.
@@ -1598,6 +1803,25 @@ public interface TypesPackage extends EPackage
 	int JVM_EXECUTABLE__IDENTIFIER = JVM_FEATURE__IDENTIFIER;
 
 	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_EXECUTABLE__DEPRECATED = JVM_FEATURE__DEPRECATED;
+
+	/**
+	 * The feature id for the '<em><b>Local Classes</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.6
+	 */
+	int JVM_EXECUTABLE__LOCAL_CLASSES = JVM_FEATURE__LOCAL_CLASSES;
+
+	/**
 	 * The feature id for the '<em><b>Type Parameters</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1696,6 +1920,25 @@ public interface TypesPackage extends EPackage
 	 * @ordered
 	 */
 	int JVM_CONSTRUCTOR__IDENTIFIER = JVM_EXECUTABLE__IDENTIFIER;
+
+	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_CONSTRUCTOR__DEPRECATED = JVM_EXECUTABLE__DEPRECATED;
+
+	/**
+	 * The feature id for the '<em><b>Local Classes</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.6
+	 */
+	int JVM_CONSTRUCTOR__LOCAL_CLASSES = JVM_EXECUTABLE__LOCAL_CLASSES;
 
 	/**
 	 * The feature id for the '<em><b>Type Parameters</b></em>' containment reference list.
@@ -1798,6 +2041,25 @@ public interface TypesPackage extends EPackage
 	int JVM_OPERATION__IDENTIFIER = JVM_EXECUTABLE__IDENTIFIER;
 
 	/**
+	 * The feature id for the '<em><b>Deprecated</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int JVM_OPERATION__DEPRECATED = JVM_EXECUTABLE__DEPRECATED;
+
+	/**
+	 * The feature id for the '<em><b>Local Classes</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.6
+	 */
+	int JVM_OPERATION__LOCAL_CLASSES = JVM_EXECUTABLE__LOCAL_CLASSES;
+
+	/**
 	 * The feature id for the '<em><b>Type Parameters</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1879,13 +2141,53 @@ public interface TypesPackage extends EPackage
 	int JVM_OPERATION__DEFAULT_VALUE = JVM_EXECUTABLE_FEATURE_COUNT + 4;
 
 	/**
+	 * The feature id for the '<em><b>Synchronized</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.4
+	 */
+	int JVM_OPERATION__SYNCHRONIZED = JVM_EXECUTABLE_FEATURE_COUNT + 5;
+
+	/**
+	 * The feature id for the '<em><b>Default</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.4
+	 */
+	int JVM_OPERATION__DEFAULT = JVM_EXECUTABLE_FEATURE_COUNT + 6;
+
+	/**
+	 * The feature id for the '<em><b>Native</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.4
+	 */
+	int JVM_OPERATION__NATIVE = JVM_EXECUTABLE_FEATURE_COUNT + 7;
+
+	/**
+	 * The feature id for the '<em><b>Strict Floating Point</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.4
+	 */
+	int JVM_OPERATION__STRICT_FLOATING_POINT = JVM_EXECUTABLE_FEATURE_COUNT + 8;
+
+	/**
 	 * The number of structural features of the '<em>Jvm Operation</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int JVM_OPERATION_FEATURE_COUNT = JVM_EXECUTABLE_FEATURE_COUNT + 5;
+	int JVM_OPERATION_FEATURE_COUNT = JVM_EXECUTABLE_FEATURE_COUNT + 9;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.xtext.common.types.impl.JvmFormalParameterImpl <em>Jvm Formal Parameter</em>}' class.
@@ -1953,22 +2255,14 @@ public interface TypesPackage extends EPackage
 	int JVM_ANNOTATION_REFERENCE__ANNOTATION = 0;
 
 	/**
-	 * The feature id for the '<em><b>Target</b></em>' container reference.
+	 * The feature id for the '<em><b>Explicit Values</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
+	 * @since 2.5
 	 */
-	int JVM_ANNOTATION_REFERENCE__TARGET = 1;
-
-	/**
-	 * The feature id for the '<em><b>Values</b></em>' containment reference list.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 * @ordered
-	 */
-	int JVM_ANNOTATION_REFERENCE__VALUES = 2;
+	int JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES = 1;
 
 	/**
 	 * The number of structural features of the '<em>Jvm Annotation Reference</em>' class.
@@ -1977,7 +2271,7 @@ public interface TypesPackage extends EPackage
 	 * @generated
 	 * @ordered
 	 */
-	int JVM_ANNOTATION_REFERENCE_FEATURE_COUNT = 3;
+	int JVM_ANNOTATION_REFERENCE_FEATURE_COUNT = 2;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.xtext.common.types.impl.JvmAnnotationValueImpl <em>Jvm Annotation Value</em>}' class.
@@ -2577,15 +2871,14 @@ public interface TypesPackage extends EPackage
 	int JVM_UNKNOWN_TYPE_REFERENCE = 48;
 
 	/**
-	 * The feature id for the '<em><b>Exception</b></em>' attribute.
+	 * The feature id for the '<em><b>Qualified Name</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
-	 * @since 2.1
-	 * @noreference This field is not intended to be referenced by clients.
+	 * @since 2.4
 	 */
-	int JVM_UNKNOWN_TYPE_REFERENCE__EXCEPTION = JVM_TYPE_REFERENCE_FEATURE_COUNT + 0;
+	int JVM_UNKNOWN_TYPE_REFERENCE__QUALIFIED_NAME = JVM_TYPE_REFERENCE_FEATURE_COUNT + 0;
 
 	/**
 	 * The number of structural features of the '<em>Jvm Unknown Type Reference</em>' class.
@@ -2644,6 +2937,57 @@ public interface TypesPackage extends EPackage
 	int JVM_CUSTOM_ANNOTATION_VALUE_FEATURE_COUNT = JVM_ANNOTATION_VALUE_FEATURE_COUNT + 1;
 
 	/**
+	 * The meta object id for the '{@link org.eclipse.xtext.common.types.impl.JvmInnerTypeReferenceImpl <em>Jvm Inner Type Reference</em>}' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see org.eclipse.xtext.common.types.impl.JvmInnerTypeReferenceImpl
+	 * @see org.eclipse.xtext.common.types.impl.TypesPackageImpl#getJvmInnerTypeReference()
+	 * @generated
+	 * @since 2.7
+	 */
+	int JVM_INNER_TYPE_REFERENCE = 51;
+
+	/**
+	 * The feature id for the '<em><b>Arguments</b></em>' containment reference list.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.7
+	 */
+	int JVM_INNER_TYPE_REFERENCE__ARGUMENTS = JVM_PARAMETERIZED_TYPE_REFERENCE__ARGUMENTS;
+
+	/**
+	 * The feature id for the '<em><b>Type</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.7
+	 */
+	int JVM_INNER_TYPE_REFERENCE__TYPE = JVM_PARAMETERIZED_TYPE_REFERENCE__TYPE;
+
+	/**
+	 * The feature id for the '<em><b>Outer</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.7
+	 */
+	int JVM_INNER_TYPE_REFERENCE__OUTER = JVM_PARAMETERIZED_TYPE_REFERENCE_FEATURE_COUNT + 0;
+
+	/**
+	 * The number of structural features of the '<em>Jvm Inner Type Reference</em>' class.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 * @since 2.7
+	 */
+	int JVM_INNER_TYPE_REFERENCE_FEATURE_COUNT = JVM_PARAMETERIZED_TYPE_REFERENCE_FEATURE_COUNT + 1;
+
+	/**
 	 * The meta object id for the '{@link org.eclipse.xtext.common.types.JvmVisibility <em>Jvm Visibility</em>}' enum.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2653,7 +2997,7 @@ public interface TypesPackage extends EPackage
 	 * @since 2.1
 	 * @noreference This field is not intended to be referenced by clients.
 	 */
-	int JVM_VISIBILITY = 51;
+	int JVM_VISIBILITY = 52;
 
 	/**
 	 * The meta object id for the '<em>Iterable</em>' data type.
@@ -2665,7 +3009,7 @@ public interface TypesPackage extends EPackage
 	 * @since 2.1
 	 * @noreference This field is not intended to be referenced by clients.
 	 */
-	int ITERABLE = 52;
+	int ITERABLE = 53;
 
 	/**
 	 * The meta object id for the '<em>IType Reference Visitor</em>' data type.
@@ -2677,7 +3021,7 @@ public interface TypesPackage extends EPackage
 	 * @since 2.1
 	 * @noreference This field is not intended to be referenced by clients.
 	 */
-	int ITYPE_REFERENCE_VISITOR = 53;
+	int ITYPE_REFERENCE_VISITOR = 54;
 
 	/**
 	 * The meta object id for the '<em>IType Reference Visitor With Parameter</em>' data type.
@@ -2689,19 +3033,7 @@ public interface TypesPackage extends EPackage
 	 * @since 2.1
 	 * @noreference This field is not intended to be referenced by clients.
 	 */
-	int ITYPE_REFERENCE_VISITOR_WITH_PARAMETER = 54;
-
-	/**
-	 * The meta object id for the '<em>Exception</em>' data type.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see java.lang.Exception
-	 * @see org.eclipse.xtext.common.types.impl.TypesPackageImpl#getException()
-	 * @generated
-	 * @since 2.1
-	 * @noreference This field is not intended to be referenced by clients.
-	 */
-	int EXCEPTION = 55;
+	int ITYPE_REFERENCE_VISITOR_WITH_PARAMETER = 55;
 
 
 	/**
@@ -3062,6 +3394,30 @@ public interface TypesPackage extends EPackage
 	EAttribute getJvmGenericType_Interface();
 
 	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmGenericType#isStrictFloatingPoint <em>Strict Floating Point</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Strict Floating Point</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmGenericType#isStrictFloatingPoint()
+	 * @see #getJvmGenericType()
+	 * @generated
+	 * @since 2.4
+	 */
+	EAttribute getJvmGenericType_StrictFloatingPoint();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmGenericType#isAnonymous <em>Anonymous</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Anonymous</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmGenericType#isAnonymous()
+	 * @see #getJvmGenericType()
+	 * @generated
+	 * @since 2.6
+	 */
+	EAttribute getJvmGenericType_Anonymous();
+
+	/**
 	 * Returns the meta object for class '{@link org.eclipse.xtext.common.types.JvmTypeReference <em>Jvm Type Reference</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -3221,6 +3577,18 @@ public interface TypesPackage extends EPackage
 	EAttribute getJvmMember_Identifier();
 
 	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmMember#isDeprecated <em>Deprecated</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Deprecated</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmMember#isDeprecated()
+	 * @see #getJvmMember()
+	 * @generated
+	 * @since 2.7
+	 */
+	EAttribute getJvmMember_Deprecated();
+
+	/**
 	 * Returns the meta object for class '{@link org.eclipse.xtext.common.types.JvmFeature <em>Jvm Feature</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -3229,6 +3597,18 @@ public interface TypesPackage extends EPackage
 	 * @generated
 	 */
 	EClass getJvmFeature();
+
+	/**
+	 * Returns the meta object for the containment reference list '{@link org.eclipse.xtext.common.types.JvmFeature#getLocalClasses <em>Local Classes</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference list '<em>Local Classes</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmFeature#getLocalClasses()
+	 * @see #getJvmFeature()
+	 * @generated
+	 * @since 2.6
+	 */
+	EReference getJvmFeature_LocalClasses();
 
 	/**
 	 * Returns the meta object for class '{@link org.eclipse.xtext.common.types.JvmField <em>Jvm Field</em>}'.
@@ -3272,6 +3652,54 @@ public interface TypesPackage extends EPackage
 	 * @generated
 	 */
 	EReference getJvmField_Type();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmField#isVolatile <em>Volatile</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Volatile</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmField#isVolatile()
+	 * @see #getJvmField()
+	 * @generated
+	 * @since 2.4
+	 */
+	EAttribute getJvmField_Volatile();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmField#isTransient <em>Transient</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Transient</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmField#isTransient()
+	 * @see #getJvmField()
+	 * @generated
+	 * @since 2.4
+	 */
+	EAttribute getJvmField_Transient();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmField#isConstant <em>Constant</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Constant</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmField#isConstant()
+	 * @see #getJvmField()
+	 * @generated
+	 * @since 2.5
+	 */
+	EAttribute getJvmField_Constant();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmField#getConstantValue <em>Constant Value</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Constant Value</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmField#getConstantValue()
+	 * @see #getJvmField()
+	 * @generated
+	 * @since 2.5
+	 */
+	EAttribute getJvmField_ConstantValue();
 
 	/**
 	 * Returns the meta object for class '{@link org.eclipse.xtext.common.types.JvmExecutable <em>Jvm Executable</em>}'.
@@ -3392,6 +3820,54 @@ public interface TypesPackage extends EPackage
 	EReference getJvmOperation_DefaultValue();
 
 	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmOperation#isSynchronized <em>Synchronized</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Synchronized</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmOperation#isSynchronized()
+	 * @see #getJvmOperation()
+	 * @generated
+	 * @since 2.4
+	 */
+	EAttribute getJvmOperation_Synchronized();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmOperation#isDefault <em>Default</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Default</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmOperation#isDefault()
+	 * @see #getJvmOperation()
+	 * @generated
+	 * @since 2.4
+	 */
+	EAttribute getJvmOperation_Default();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmOperation#isNative <em>Native</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Native</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmOperation#isNative()
+	 * @see #getJvmOperation()
+	 * @generated
+	 * @since 2.4
+	 */
+	EAttribute getJvmOperation_Native();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmOperation#isStrictFloatingPoint <em>Strict Floating Point</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Strict Floating Point</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmOperation#isStrictFloatingPoint()
+	 * @see #getJvmOperation()
+	 * @generated
+	 * @since 2.4
+	 */
+	EAttribute getJvmOperation_StrictFloatingPoint();
+
+	/**
 	 * Returns the meta object for class '{@link org.eclipse.xtext.common.types.JvmFormalParameter <em>Jvm Formal Parameter</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -3466,26 +3942,16 @@ public interface TypesPackage extends EPackage
 	EReference getJvmAnnotationReference_Annotation();
 
 	/**
-	 * Returns the meta object for the container reference '{@link org.eclipse.xtext.common.types.JvmAnnotationReference#getTarget <em>Target</em>}'.
+	 * Returns the meta object for the containment reference list '{@link org.eclipse.xtext.common.types.JvmAnnotationReference#getExplicitValues <em>Explicit Values</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the container reference '<em>Target</em>'.
-	 * @see org.eclipse.xtext.common.types.JvmAnnotationReference#getTarget()
+	 * @return the meta object for the containment reference list '<em>Explicit Values</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmAnnotationReference#getExplicitValues()
 	 * @see #getJvmAnnotationReference()
 	 * @generated
+	 * @since 2.5
 	 */
-	EReference getJvmAnnotationReference_Target();
-
-	/**
-	 * Returns the meta object for the containment reference list '{@link org.eclipse.xtext.common.types.JvmAnnotationReference#getValues <em>Values</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference list '<em>Values</em>'.
-	 * @see org.eclipse.xtext.common.types.JvmAnnotationReference#getValues()
-	 * @see #getJvmAnnotationReference()
-	 * @generated
-	 */
-	EReference getJvmAnnotationReference_Values();
+	EReference getJvmAnnotationReference_ExplicitValues();
 
 	/**
 	 * Returns the meta object for class '{@link org.eclipse.xtext.common.types.JvmAnnotationValue <em>Jvm Annotation Value</em>}'.
@@ -3829,16 +4295,16 @@ public interface TypesPackage extends EPackage
 	EClass getJvmUnknownTypeReference();
 
 	/**
-	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmUnknownTypeReference#getException <em>Exception</em>}'.
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.common.types.JvmUnknownTypeReference#getQualifiedName <em>Qualified Name</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the attribute '<em>Exception</em>'.
-	 * @see org.eclipse.xtext.common.types.JvmUnknownTypeReference#getException()
+	 * @return the meta object for the attribute '<em>Qualified Name</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmUnknownTypeReference#getQualifiedName()
 	 * @see #getJvmUnknownTypeReference()
 	 * @generated
-	 * @since 2.1
+	 * @since 2.4
 	 */
-	EAttribute getJvmUnknownTypeReference_Exception();
+	EAttribute getJvmUnknownTypeReference_QualifiedName();
 
 	/**
 	 * Returns the meta object for class '{@link org.eclipse.xtext.common.types.JvmCompoundTypeReference <em>Jvm Compound Type Reference</em>}'.
@@ -3887,16 +4353,39 @@ public interface TypesPackage extends EPackage
 	EClass getJvmCustomAnnotationValue();
 
 	/**
-	 * Returns the meta object for the attribute list '{@link org.eclipse.xtext.common.types.JvmCustomAnnotationValue#getValues <em>Values</em>}'.
+	 * Returns the meta object for the reference list '{@link org.eclipse.xtext.common.types.JvmCustomAnnotationValue#getValues <em>Values</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @return the meta object for the attribute list '<em>Values</em>'.
 	 * @see org.eclipse.xtext.common.types.JvmCustomAnnotationValue#getValues()
 	 * @see #getJvmCustomAnnotationValue()
 	 * @generated
-	 * @since 2.1
+	 * @since 2.8
 	 */
-	EAttribute getJvmCustomAnnotationValue_Values();
+	EReference getJvmCustomAnnotationValue_Values();
+
+	/**
+	 * Returns the meta object for class '{@link org.eclipse.xtext.common.types.JvmInnerTypeReference <em>Jvm Inner Type Reference</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for class '<em>Jvm Inner Type Reference</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmInnerTypeReference
+	 * @generated
+	 * @since 2.7
+	 */
+	EClass getJvmInnerTypeReference();
+
+	/**
+	 * Returns the meta object for the containment reference '{@link org.eclipse.xtext.common.types.JvmInnerTypeReference#getOuter <em>Outer</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Outer</em>'.
+	 * @see org.eclipse.xtext.common.types.JvmInnerTypeReference#getOuter()
+	 * @see #getJvmInnerTypeReference()
+	 * @generated
+	 * @since 2.7
+	 */
+	EReference getJvmInnerTypeReference_Outer();
 
 	/**
 	 * Returns the meta object for enum '{@link org.eclipse.xtext.common.types.JvmVisibility <em>Jvm Visibility</em>}'.
@@ -3944,18 +4433,6 @@ public interface TypesPackage extends EPackage
 	EDataType getITypeReferenceVisitorWithParameter();
 
 	/**
-	 * Returns the meta object for data type '{@link java.lang.Exception <em>Exception</em>}'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the meta object for data type '<em>Exception</em>'.
-	 * @see java.lang.Exception
-	 * @model instanceClass="java.lang.Exception" serializeable="false"
-	 * @generated
-	 * @since 2.1
-	 */
-	EDataType getException();
-
-	/**
 	 * Returns the factory that creates the instances of the model.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -3976,6 +4453,7 @@ public interface TypesPackage extends EPackage
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @noimplement This interface is not intended to be implemented by clients.
+	 * @noextend 
 	 */
 	interface Literals
 	{
@@ -4286,6 +4764,24 @@ public interface TypesPackage extends EPackage
 		EAttribute JVM_GENERIC_TYPE__INTERFACE = eINSTANCE.getJvmGenericType_Interface();
 
 		/**
+		 * The meta object literal for the '<em><b>Strict Floating Point</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.4
+		 */
+		EAttribute JVM_GENERIC_TYPE__STRICT_FLOATING_POINT = eINSTANCE.getJvmGenericType_StrictFloatingPoint();
+
+		/**
+		 * The meta object literal for the '<em><b>Anonymous</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.6
+		 */
+		EAttribute JVM_GENERIC_TYPE__ANONYMOUS = eINSTANCE.getJvmGenericType_Anonymous();
+
+		/**
 		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.impl.JvmTypeReferenceImpl <em>Jvm Type Reference</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -4421,6 +4917,14 @@ public interface TypesPackage extends EPackage
 		EAttribute JVM_MEMBER__IDENTIFIER = eINSTANCE.getJvmMember_Identifier();
 
 		/**
+		 * The meta object literal for the '<em><b>Deprecated</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute JVM_MEMBER__DEPRECATED = eINSTANCE.getJvmMember_Deprecated();
+
+		/**
 		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.impl.JvmFeatureImpl <em>Jvm Feature</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -4429,6 +4933,15 @@ public interface TypesPackage extends EPackage
 		 * @generated
 		 */
 		EClass JVM_FEATURE = eINSTANCE.getJvmFeature();
+
+		/**
+		 * The meta object literal for the '<em><b>Local Classes</b></em>' containment reference list feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.6
+		 */
+		EReference JVM_FEATURE__LOCAL_CLASSES = eINSTANCE.getJvmFeature_LocalClasses();
 
 		/**
 		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.impl.JvmFieldImpl <em>Jvm Field</em>}' class.
@@ -4463,6 +4976,42 @@ public interface TypesPackage extends EPackage
 		 * @generated
 		 */
 		EReference JVM_FIELD__TYPE = eINSTANCE.getJvmField_Type();
+
+		/**
+		 * The meta object literal for the '<em><b>Volatile</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.4
+		 */
+		EAttribute JVM_FIELD__VOLATILE = eINSTANCE.getJvmField_Volatile();
+
+		/**
+		 * The meta object literal for the '<em><b>Transient</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.4
+		 */
+		EAttribute JVM_FIELD__TRANSIENT = eINSTANCE.getJvmField_Transient();
+
+		/**
+		 * The meta object literal for the '<em><b>Constant</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.5
+		 */
+		EAttribute JVM_FIELD__CONSTANT = eINSTANCE.getJvmField_Constant();
+
+		/**
+		 * The meta object literal for the '<em><b>Constant Value</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.5
+		 */
+		EAttribute JVM_FIELD__CONSTANT_VALUE = eINSTANCE.getJvmField_ConstantValue();
 
 		/**
 		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.impl.JvmExecutableImpl <em>Jvm Executable</em>}' class.
@@ -4559,6 +5108,42 @@ public interface TypesPackage extends EPackage
 		EReference JVM_OPERATION__DEFAULT_VALUE = eINSTANCE.getJvmOperation_DefaultValue();
 
 		/**
+		 * The meta object literal for the '<em><b>Synchronized</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.4
+		 */
+		EAttribute JVM_OPERATION__SYNCHRONIZED = eINSTANCE.getJvmOperation_Synchronized();
+
+		/**
+		 * The meta object literal for the '<em><b>Default</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.4
+		 */
+		EAttribute JVM_OPERATION__DEFAULT = eINSTANCE.getJvmOperation_Default();
+
+		/**
+		 * The meta object literal for the '<em><b>Native</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.4
+		 */
+		EAttribute JVM_OPERATION__NATIVE = eINSTANCE.getJvmOperation_Native();
+
+		/**
+		 * The meta object literal for the '<em><b>Strict Floating Point</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.4
+		 */
+		EAttribute JVM_OPERATION__STRICT_FLOATING_POINT = eINSTANCE.getJvmOperation_StrictFloatingPoint();
+
+		/**
 		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.impl.JvmFormalParameterImpl <em>Jvm Formal Parameter</em>}' class.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -4621,20 +5206,13 @@ public interface TypesPackage extends EPackage
 		EReference JVM_ANNOTATION_REFERENCE__ANNOTATION = eINSTANCE.getJvmAnnotationReference_Annotation();
 
 		/**
-		 * The meta object literal for the '<em><b>Target</b></em>' container reference feature.
+		 * The meta object literal for the '<em><b>Explicit Values</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
+		 * @since 2.5
 		 */
-		EReference JVM_ANNOTATION_REFERENCE__TARGET = eINSTANCE.getJvmAnnotationReference_Target();
-
-		/**
-		 * The meta object literal for the '<em><b>Values</b></em>' containment reference list feature.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @generated
-		 */
-		EReference JVM_ANNOTATION_REFERENCE__VALUES = eINSTANCE.getJvmAnnotationReference_Values();
+		EReference JVM_ANNOTATION_REFERENCE__EXPLICIT_VALUES = eINSTANCE.getJvmAnnotationReference_ExplicitValues();
 
 		/**
 		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.impl.JvmAnnotationValueImpl <em>Jvm Annotation Value</em>}' class.
@@ -4933,13 +5511,13 @@ public interface TypesPackage extends EPackage
 		EClass JVM_UNKNOWN_TYPE_REFERENCE = eINSTANCE.getJvmUnknownTypeReference();
 
 		/**
-		 * The meta object literal for the '<em><b>Exception</b></em>' attribute feature.
+		 * The meta object literal for the '<em><b>Qualified Name</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
-		 * @since 2.1
+		 * @since 2.4
 		 */
-		EAttribute JVM_UNKNOWN_TYPE_REFERENCE__EXCEPTION = eINSTANCE.getJvmUnknownTypeReference_Exception();
+		EAttribute JVM_UNKNOWN_TYPE_REFERENCE__QUALIFIED_NAME = eINSTANCE.getJvmUnknownTypeReference_QualifiedName();
 
 		/**
 		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.impl.JvmCompoundTypeReferenceImpl <em>Jvm Compound Type Reference</em>}' class.
@@ -4988,7 +5566,27 @@ public interface TypesPackage extends EPackage
 		 * @generated
 		 * @since 2.1
 		 */
-		EAttribute JVM_CUSTOM_ANNOTATION_VALUE__VALUES = eINSTANCE.getJvmCustomAnnotationValue_Values();
+		EReference JVM_CUSTOM_ANNOTATION_VALUE__VALUES = eINSTANCE.getJvmCustomAnnotationValue_Values();
+
+		/**
+		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.impl.JvmInnerTypeReferenceImpl <em>Jvm Inner Type Reference</em>}' class.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @see org.eclipse.xtext.common.types.impl.JvmInnerTypeReferenceImpl
+		 * @see org.eclipse.xtext.common.types.impl.TypesPackageImpl#getJvmInnerTypeReference()
+		 * @generated
+		 * @since 2.7
+		 */
+		EClass JVM_INNER_TYPE_REFERENCE = eINSTANCE.getJvmInnerTypeReference();
+
+		/**
+		 * The meta object literal for the '<em><b>Outer</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 * @since 2.7
+		 */
+		EReference JVM_INNER_TYPE_REFERENCE__OUTER = eINSTANCE.getJvmInnerTypeReference_Outer();
 
 		/**
 		 * The meta object literal for the '{@link org.eclipse.xtext.common.types.JvmVisibility <em>Jvm Visibility</em>}' enum.
@@ -5031,17 +5629,6 @@ public interface TypesPackage extends EPackage
 		 * @since 2.1
 		 */
 		EDataType ITYPE_REFERENCE_VISITOR_WITH_PARAMETER = eINSTANCE.getITypeReferenceVisitorWithParameter();
-
-		/**
-		 * The meta object literal for the '<em>Exception</em>' data type.
-		 * <!-- begin-user-doc -->
-		 * <!-- end-user-doc -->
-		 * @see java.lang.Exception
-		 * @see org.eclipse.xtext.common.types.impl.TypesPackageImpl#getException()
-		 * @generated
-		 * @since 2.1
-		 */
-		EDataType EXCEPTION = eINSTANCE.getException();
 
 	}
 

@@ -14,14 +14,13 @@ import java.util.List;
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.Action;
 import org.eclipse.xtext.Assignment;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
+import org.eclipse.xtext.XtextPackage;
 import org.eclipse.xtext.grammaranalysis.impl.GrammarElementTitleSwitch;
 import org.eclipse.xtext.nodemodel.BidiIterator;
 import org.eclipse.xtext.nodemodel.BidiTreeIterator;
@@ -30,8 +29,11 @@ import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.SyntaxErrorMessage;
 import org.eclipse.xtext.nodemodel.impl.AbstractNode;
+import org.eclipse.xtext.nodemodel.impl.InternalNodeModelUtils;
+import org.eclipse.xtext.nodemodel.impl.RootNode;
 import org.eclipse.xtext.resource.EObjectAtOffsetHelper;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
+import org.eclipse.xtext.util.LineAndColumn;
 
 import com.google.common.collect.Lists;
 
@@ -46,7 +48,7 @@ import com.google.common.collect.Lists;
  * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-public class NodeModelUtils {
+public class NodeModelUtils extends InternalNodeModelUtils {
 
 	/**
 	 * Find the leaf node at the given offset. May return <code>null</code> if the given offset is not valid for the
@@ -62,8 +64,8 @@ public class NodeModelUtils {
 	 * @param leafNodeOffset the offset that is covered by the searched node.
 	 * @return the leaf node at the given offset or <code>null</code>.
 	 */
-	@Nullable
-	public static ILeafNode findLeafNodeAtOffset(@NonNull INode node, int leafNodeOffset) {
+	/* @Nullable */
+	public static ILeafNode findLeafNodeAtOffset(/* @NonNull */ INode node, int leafNodeOffset) {
 		INode localNode = node;
 		while(!(localNode instanceof AbstractNode)) {
 			localNode = localNode.getParent();
@@ -104,6 +106,29 @@ public class NodeModelUtils {
 		}
 		return null;
 	}
+	
+	/**
+	 * Compute the line and column information at the given offset from any node that belongs the the document. The line is one-based, e.g.
+	 * the first line has the line number '1'. The line break belongs the line that it breaks. In other words, the first line break in the
+	 * document also has the line number '1'. The column number starts at '1', too. In effect, the document offset '0' will always return
+	 * line '1' and column '1'.
+	 * 
+	 * If the given documentOffset points exactly to {@code anyNode.root.text.length}, it's assumed to be a virtual character thus
+	 * the offset is valid and the column and line information is returned as if it was there.
+	 * 
+	 * This contract is in sync with {@link org.eclipse.emf.ecore.resource.Resource.Diagnostic}.
+	 * 
+	 * @throws IndexOutOfBoundsException
+	 *             if the document offset does not belong to the document, 
+	 *             {@code documentOffset < 0 || documentOffset > anyNode.rootNode.text.length}
+	 */
+	public static LineAndColumn getLineAndColumn(INode anyNode, int documentOffset) {
+		// special treatment for inconsistent nodes such as SyntheticLinkingLeafNode
+		if (anyNode.getParent() == null && !(anyNode instanceof RootNode)) {
+			return LineAndColumn.from(1,1);
+		}
+		return InternalNodeModelUtils.getLineAndColumn(anyNode, documentOffset);
+	}
 
 	private static boolean intersects(int offset, int length, int lookupOffset) {
 		if (offset <= lookupOffset && offset + length > lookupOffset)
@@ -118,8 +143,8 @@ public class NodeModelUtils {
 	 * @return the node that is directly associated with the given object.
 	 * @see NodeModelUtils#findActualNodeFor(EObject)
 	 */
-	@Nullable
-	public static ICompositeNode getNode(@Nullable EObject object) {
+	/* @Nullable */
+	public static ICompositeNode getNode(/* @Nullable */ EObject object) {
 		if (object == null)
 			return null;
 		List<Adapter> adapters = object.eAdapters();
@@ -136,7 +161,7 @@ public class NodeModelUtils {
 	 * 
 	 * @return the list of nodes that were used to assign values to the given feature for the given object.
 	 */
-	@NonNull
+	/* @NonNull */
 	public static List<INode> findNodesForFeature(EObject semanticObject, EStructuralFeature structuralFeature) {
 		ICompositeNode node = findActualNodeFor(semanticObject);
 		if (node != null) {
@@ -210,12 +235,17 @@ public class NodeModelUtils {
 	 * @param semanticObject the semantic object whose node should be provided.
 	 * @return the node that covers all assigned values of the given object.
 	 */
-	@Nullable
-	public static ICompositeNode findActualNodeFor(@Nullable EObject semanticObject) {
+	/* @Nullable */
+	public static ICompositeNode findActualNodeFor(/* @Nullable */ EObject semanticObject) {
 		ICompositeNode node = getNode(semanticObject);
 		if (node != null) {
-			while (GrammarUtil.containingAssignment(node.getGrammarElement()) == null && node.getParent() != null && !node.getParent().hasDirectSemanticElement()) {
-				node = node.getParent();
+			while(GrammarUtil.containingAssignment(node.getGrammarElement()) == null) {
+				ICompositeNode parent = node.getParent();
+				if (parent != null && !parent.hasDirectSemanticElement() && !GrammarUtil.isEObjectFragmentRuleCall(parent.getGrammarElement())) {
+					node = parent;
+				} else {
+					break;
+				}
 			}
 		}
 		return node;
@@ -228,38 +258,48 @@ public class NodeModelUtils {
 	 * 
 	 * @return the semantic object that is really associated with the actual container node of the given node.
 	 */
-	@Nullable
-	public static EObject findActualSemanticObjectFor(@Nullable INode node) {
+	/* @Nullable */
+	public static EObject findActualSemanticObjectFor(/* @Nullable */ INode node) {
 		if (node == null)
 			return null;
 		if (node.hasDirectSemanticElement())
 			return node.getSemanticElement();
 		EObject grammarElement = node.getGrammarElement();
+		ICompositeNode parent = node.getParent();
 		if (grammarElement == null)
-			return findActualSemanticObjectFor(node.getParent());
+			return findActualSemanticObjectFor(parent);
 		Assignment assignment = GrammarUtil.containingAssignment(grammarElement);
 		if (assignment != null) {
-			if (node.getParent().hasDirectSemanticElement())
-				return findActualSemanticObjectFor(node.getParent());
-			INode sibling = node.getParent().getFirstChild();
-			while(sibling != node) {
+			if (GrammarUtil.isEObjectFragmentRule(GrammarUtil.containingRule(assignment))) {
+				EObject result = findActualSemanticObjectInChildren(node, grammarElement);
+				if (result != null)
+					return result;
+			}
+			if (parent.hasDirectSemanticElement())
+				return findActualSemanticObjectFor(parent);
+			INode sibling = parent.getFirstChild();
+			while(!sibling.equals(node)) {
 				EObject siblingGrammarElement = sibling.getGrammarElement();
 				if (siblingGrammarElement != null && GrammarUtil.containingAssignment(siblingGrammarElement) == null) {
-					if (GrammarUtil.isEObjectRuleCall(siblingGrammarElement))
+					if (GrammarUtil.isEObjectRuleCall(siblingGrammarElement)) {
 						return findActualSemanticObjectFor(sibling);
+					}
+					if (siblingGrammarElement.eClass() == XtextPackage.Literals.ACTION) {
+						return findActualSemanticObjectFor(sibling);
+					}
 				}
 				sibling = sibling.getNextSibling();
 			}
-		} else {
+		} else if (!GrammarUtil.isEObjectFragmentRuleCall(grammarElement)) {
 			EObject result = findActualSemanticObjectInChildren(node, grammarElement);
 			if (result != null)
 				return result;
 		}
-		return findActualSemanticObjectFor(node.getParent());
+		return findActualSemanticObjectFor(parent);
 	}
 
-	@Nullable
-	private static EObject findActualSemanticObjectInChildren(@NonNull INode node, @Nullable EObject grammarElement) {
+	/* @Nullable */
+	private static EObject findActualSemanticObjectInChildren(/* @NonNull */ INode node, /* @Nullable */ EObject grammarElement) {
 		if (node.hasDirectSemanticElement())
 			return node.getSemanticElement();
 		AbstractRule rule = null;
@@ -318,7 +358,7 @@ public class NodeModelUtils {
 		}
 		if (node instanceof ICompositeNode) {
 			if (node.getGrammarElement() != null)
-				result.append(new GrammarElementTitleSwitch().doSwitch(node.getGrammarElement()));
+				result.append(new GrammarElementTitleSwitch().showAssignments().doSwitch(node.getGrammarElement()));
 			else
 				result.append("(unknown)");
 			String newPrefix = prefix + "  ";
@@ -338,7 +378,7 @@ public class NodeModelUtils {
 			if (((ILeafNode) node).isHidden())
 				result.append("hidden ");
 			if (node.getGrammarElement() != null)
-				result.append(new GrammarElementTitleSwitch().doSwitch(node.getGrammarElement()));
+				result.append(new GrammarElementTitleSwitch().showAssignments().doSwitch(node.getGrammarElement()));
 			else
 				result.append("(unknown)");
 			result.append(" => '");

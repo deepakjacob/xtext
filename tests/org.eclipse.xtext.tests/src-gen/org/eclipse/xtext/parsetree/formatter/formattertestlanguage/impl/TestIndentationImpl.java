@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.parsetree.formatter.formattertestlanguage.impl;
 
@@ -30,11 +27,11 @@ import org.eclipse.xtext.parsetree.formatter.formattertestlanguage.TestIndentati
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.parsetree.formatter.formattertestlanguage.impl.TestIndentationImpl#getItems <em>Items</em>}</li>
  *   <li>{@link org.eclipse.xtext.parsetree.formatter.formattertestlanguage.impl.TestIndentationImpl#isSemi <em>Semi</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

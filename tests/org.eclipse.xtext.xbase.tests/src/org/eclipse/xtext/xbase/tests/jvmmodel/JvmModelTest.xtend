@@ -2,18 +2,24 @@ package org.eclipse.xtext.xbase.tests.jvmmodel
 
 import com.google.inject.Inject
 import org.eclipse.xtext.junit4.validation.ValidationTestHelper
-import org.eclipse.xtext.resource.DerivedStateAwareResource
-import org.eclipse.xtext.resource.IResourceDescription$Manager
+import org.eclipse.xtext.resource.IResourceDescription
+import org.eclipse.xtext.xbase.lib.util.ReflectExtensions
+import org.junit.Test
 
-import static org.junit.Assert.*
 import static org.eclipse.xtext.xbase.XbasePackage$Literals.*
 import static org.eclipse.xtext.xbase.validation.IssueCodes.*
-import org.junit.Test
+import java.io.IOException
+import org.eclipse.xtext.resource.XtextResourceSet
+import com.google.inject.Provider
+import org.eclipse.emf.common.util.URI
+import org.eclipse.xtext.util.StringInputStream
 
 class JvmModelTest extends AbstractJvmModelTest {
 	
 	@Inject ValidationTestHelper helper
 	@Inject IResourceDescription$Manager manager
+	@Inject extension ReflectExtensions
+	@Inject Provider<XtextResourceSet> resourceSetProvider
 	
 	@Test
 	def void testSimple() {
@@ -25,13 +31,19 @@ class JvmModelTest extends AbstractJvmModelTest {
 	@Test
 	def void testResourceDescriptionsAreCorrect() {
 		val resource = newResource("return s.toUpperCase")
-		val field = typeof(DerivedStateAwareResource).getDeclaredField("fullyInitialized")
-		field.accessible = true
-		assertFalse(field.get(resource) as Boolean)
+		val boolean initialized = resource.get("fullyInitialized")
+		assertFalse(initialized)
 		val desc = manager.getResourceDescription(resource)
 		val list = newArrayList(desc.exportedObjects)
 		assertEquals(1, list.size)
-		assertFalse(field.get(resource) as Boolean)
+		assertFalse(resource.get("fullyInitialized"))
+	}
+	
+	override protected newResource(CharSequence input) throws IOException {
+		val resourceSet = resourceSetProvider.get
+		val resource = resourceSet.createResource(URI::createURI("Test.___xbase"));
+		resource.load(new StringInputStream(input.toString()), null);
+		return resource;
 	}
 	
 	@Test
@@ -41,3 +53,4 @@ class JvmModelTest extends AbstractJvmModelTest {
 	}
 	
 }
+

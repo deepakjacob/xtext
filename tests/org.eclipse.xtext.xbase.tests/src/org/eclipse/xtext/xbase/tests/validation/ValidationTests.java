@@ -14,12 +14,15 @@ import java.math.BigInteger;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.xtext.common.types.TypesPackage;
+import org.eclipse.xtext.diagnostics.Diagnostic;
 import org.eclipse.xtext.junit4.validation.ValidationTestHelper;
 import org.eclipse.xtext.xbase.XBlockExpression;
 import org.eclipse.xtext.xbase.XCasePart;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XSwitchExpression;
+import org.eclipse.xtext.xbase.XThrowExpression;
 import org.eclipse.xtext.xbase.XVariableDeclaration;
+import org.eclipse.xtext.xbase.XWhileExpression;
 import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
 import org.junit.Ignore;
@@ -66,12 +69,12 @@ public class ValidationTests extends AbstractXbaseTestCase {
 		helper.assertNoErrors(expr);
 	}
 	
-	@Test public void testNoWildCardsInTypeArgs() throws Exception {
+	@Test public void testNoWildcardsInTypeArgs() throws Exception {
 		XExpression expr = expression("java::util::Collections::<? extends String>singleton()");
 		helper.assertError(expr, TypesPackage.Literals.JVM_WILDCARD_TYPE_REFERENCE, INVALID_USE_OF_WILDCARD);
 	}
 	
-	@Test public void testNoWildCardsInTypeArgs_01() throws Exception {
+	@Test public void testNoWildcardsInTypeArgs_01() throws Exception {
 		XExpression expr = expression("new java.util.ArrayList<?>()");
 		helper.assertError(expr, TypesPackage.Literals.JVM_WILDCARD_TYPE_REFERENCE, INVALID_USE_OF_WILDCARD);
 	}
@@ -196,14 +199,23 @@ public class ValidationTests extends AbstractXbaseTestCase {
 		helper.assertNoErrors(expr);
 	}
 	
-	@Test public void testLocalVarWithArguments() throws Exception {
-		XExpression expr = expression("{ val x = 'foo' x(42) }");
-		helper.assertError(expr, XFEATURE_CALL, LOCAL_VAR_ACCESS_WITH_PARENTHESES, "local", "variable");
+	@Test
+	public void testLocalVarWithArguments_01() throws Exception {
+		XExpression expr = expression("{ val x = 'foo' x(42, 17bd) }");
+		helper.assertError(expr, XFEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "method", "x(int, BigDecimal)");
+	}
+	
+	@Test 
+	public void testLocalVarWithArguments_02() throws Exception {
+		XExpression expr = expression("{ val x = 'foo' x() }");
+		helper.assertError(expr, XFEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "method", "x()");
 	}
 	
 	@Test public void testLocalVarOfTypeVoid_01() throws Exception {
-		XBlockExpression block = (XBlockExpression) expression("{ var illegalAssignmentOfVoid = while(true) {} }");
-		helper.assertError(block, XVARIABLE_DECLARATION, INVALID_USE_OF_TYPE, "void");
+		XBlockExpression block = (XBlockExpression) expression("{ var illegalAssignmentOfVoid = while(true) {} illegalAssignmentOfVoid.doesNotExist }");
+		helper.assertError(block, XWHILE_EXPRESSION, INCOMPATIBLE_TYPES, "void");
+		helper.assertNoError(block, INVALID_USE_OF_TYPE);
+		helper.assertNoError(block, Diagnostic.LINKING_DIAGNOSTIC);
 	}
 	
 	@Test public void testLocalVarOfTypeVoid_02() throws Exception {
@@ -212,8 +224,9 @@ public class ValidationTests extends AbstractXbaseTestCase {
 	}
 	
 	@Test public void testLocalVarOfTypeVoid_03() throws Exception {
-		XBlockExpression block = (XBlockExpression) expression("{ var void illegalVoid; }");
+		XBlockExpression block = (XBlockExpression) expression("{ var void illegalVoid; illegalVoid.doesNotExist }");
 		helper.assertError(block, TypesPackage.Literals.JVM_PARAMETERIZED_TYPE_REFERENCE, INVALID_USE_OF_TYPE, "void");
+		helper.assertNoError(block, Diagnostic.LINKING_DIAGNOSTIC);
 	}
 	
 	@Test public void testVariableShadowing_00() throws Exception {
@@ -233,7 +246,7 @@ public class ValidationTests extends AbstractXbaseTestCase {
 	
 	@Test public void testVariableShadowing_04() throws Exception {
 		XExpression expression = expression("{ val x = 'foo' switch x : 'foo' { case 'foo' : 'foo' } }");
-		helper.assertError(expression, XbasePackage.Literals.XSWITCH_EXPRESSION, VARIABLE_NAME_SHADOWING, "x");
+		helper.assertError(expression, TypesPackage.Literals.JVM_FORMAL_PARAMETER, VARIABLE_NAME_SHADOWING, "x");
 	}
 	
 	@Test public void testVariableShadowing_05() throws Exception {
@@ -249,6 +262,20 @@ public class ValidationTests extends AbstractXbaseTestCase {
 	@Test public void testVariableShadowing_07() throws Exception {
 		XExpression expression = expression("{ val x = 'foo' try { 'foo'.length } catch (Exception x) { 'bar'.length } }");
 		helper.assertError(expression, TypesPackage.Literals.JVM_FORMAL_PARAMETER, VARIABLE_NAME_SHADOWING, "x");
+	}
+	
+	@Test
+	public void testVariableShadowing_08() throws Exception {
+		XExpression expression = expression("[ int x, String x | x.substring(1) ]");
+		helper.assertError(expression, TypesPackage.Literals.JVM_FORMAL_PARAMETER, VARIABLE_NAME_SHADOWING, "x");
+		helper.assertNoError(expression, Diagnostic.LINKING_DIAGNOSTIC);
+	}
+	
+	@Test 
+	public void testVariableShadowing_09() throws Exception {
+		XExpression expression = expression("[ String x, int x | x.substring(1) ]");
+		helper.assertError(expression, TypesPackage.Literals.JVM_FORMAL_PARAMETER, VARIABLE_NAME_SHADOWING, "x");
+		helper.assertError(expression, XMEMBER_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "substring(int)");
 	}
 	
 	@Test public void testNoPrimitivesInTypeArgs_00() throws Exception {
@@ -278,7 +305,7 @@ public class ValidationTests extends AbstractXbaseTestCase {
 
 	@Test public void testFinalCast() throws Exception {
 		XExpression expression = expression("'foo' as Cloneable");
-		helper.assertError(expression, TypesPackage.Literals.JVM_TYPE_REFERENCE, INVALID_CAST, "sealed");
+		helper.assertError(expression, TypesPackage.Literals.JVM_TYPE_REFERENCE, INVALID_CAST, "cast");
 		expression = expression("'foo' as CharSequence");
 		helper.assertNoError(expression, INVALID_CAST);
 	}
@@ -295,29 +322,36 @@ public class ValidationTests extends AbstractXbaseTestCase {
 		helper.assertError(expression, XWHILE_EXPRESSION, INCOMPATIBLE_TYPES);
 	}
 	
-	@Test public void testVoidInReturnExpression_02() throws Exception {
+	@Test
+	public void testVoidInReturnExpression_02() throws Exception {
 		XExpression expression = expression("return if (true) while(false) ('foo'+'bar').length");
-		helper.assertError(expression, XIF_EXPRESSION, INCOMPATIBLE_TYPES);
+		helper.assertError(expression, XWHILE_EXPRESSION, INCOMPATIBLE_TYPES);
+		helper.assertNoIssues(expression, XIF_EXPRESSION);
 	}
 	
 	@Test public void testVoidInReturnExpression_03() throws Exception {
 		XExpression expression = expression("return if (true) while(false) ('foo'+'bar').length else 'zonk'");
-		helper.assertNoErrors(expression);
+		helper.assertError(expression, XWHILE_EXPRESSION, INCOMPATIBLE_TYPES);
+		helper.assertNoIssues(expression, XIF_EXPRESSION);
+		helper.assertNoIssues(expression, XSTRING_LITERAL);
 	}
 	
 	@Test public void testVoidInReturnExpression_04() throws Exception {
 		XExpression expression = expression("return if (true) while(false) 'foo'+'bar' else while(false) 'foo'+'bar'");
-		helper.assertError(expression, XIF_EXPRESSION, INCOMPATIBLE_TYPES);
+		helper.assertError(expression, XWHILE_EXPRESSION, INCOMPATIBLE_TYPES);
 	}
 	
 	@Test public void testVoidInReturnExpression_05() throws Exception {
 		XExpression expression = expression("return if (true) while(false) ('foo'+'bar').length else null");
-		helper.assertNoErrors(expression);
+		helper.assertError(expression, XWHILE_EXPRESSION, INCOMPATIBLE_TYPES);
+		helper.assertNoIssues(expression, XIF_EXPRESSION);
+		helper.assertNoIssues(expression, XNULL_LITERAL);
 	}
 	
-	@Test public void testReturnExpressionInClosure_01() throws Exception {
+	@Test
+	public void testReturnExpressionInClosure_01() throws Exception {
 		XExpression expression = expression("{val (String)=>String func = [x | return true] func.apply('foo')}");
-		helper.assertError(expression, XBOOLEAN_LITERAL, INCOMPATIBLE_TYPES);
+		helper.assertError(expression, XCLOSURE, INCOMPATIBLE_TYPES, "(String)=>String", "(String)=>boolean");
 	}
 	
 	@Test public void testReturnExpressionInClosure_02() throws Exception {
@@ -350,29 +384,15 @@ public class ValidationTests extends AbstractXbaseTestCase {
 		helper.assertNoErrors(expression);
 	}
 	
+	@Test
+	public void testReturnExpressionInClosure_08() throws Exception {
+		XExpression expression = expression("{val (String)=>String func = [x | if (x == null) return x true] func.apply('foo')}");
+		helper.assertError(expression, XCLOSURE, INCOMPATIBLE_TYPES, "(String)=>String", "(String)=>Serializable & Comparable<?>");
+	}
+	
 	@Test public void testExceptionInClosure_00() throws Exception {
 		XExpression expression = expression("{val func = [Integer i| throw new RuntimeException()]}");
 		helper.assertNoErrors(expression);
-	}
-	
-	@Test public void testExceptionInClosure_01() throws Exception {
-		XExpression expression = expression("{val func = [Integer i| throw new Exception() ]}");
-		helper.assertError(expression, XTHROW_EXPRESSION, UNHANDLED_EXCEPTION);
-	}
-	
-	@Test public void testExceptionInClosure_02() throws Exception {
-		XExpression expression = expression("{val func = [Integer i| try { throw new Exception() } catch(Exception e) {} i]}");
-		helper.assertNoErrors(expression);
-	}
-	
-	@Test public void testExceptionInClosure_03() throws Exception {
-		XExpression expression = expression("{val func = [Integer i| try { throw new Exception() } catch(NoSuchFieldException e) {} i]}");
-		helper.assertError(expression, XTHROW_EXPRESSION, UNHANDLED_EXCEPTION);
-	}
-
-	@Test public void testExceptionInClosure_04() throws Exception {
-		XExpression expression = expression("{val func = [Integer i| while(i==1) { throw new Exception() } i]}");
-		helper.assertError(expression, XTHROW_EXPRESSION, UNHANDLED_EXCEPTION);
 	}
 	
 	@Test public void testInCompatibleRightOperand() throws Exception {
@@ -446,7 +466,7 @@ public class ValidationTests extends AbstractXbaseTestCase {
 	
 	@Test public void testInvalidEarlyExit_02() throws Exception {
 		XExpression expression = expression("if (throw new Exception()) {}");
-		helper.assertError(expression, XbasePackage.Literals.XTHROW_EXPRESSION, INCOMPATIBLE_TYPES, "void", "boolean");
+		helper.assertError(expression, XbasePackage.Literals.XBLOCK_EXPRESSION, UNREACHABLE_CODE);
 	}
 	
 	@Test public void testInvalidEarlyExit_03() throws Exception {
@@ -456,7 +476,7 @@ public class ValidationTests extends AbstractXbaseTestCase {
 	
 	@Test public void testInvalidEarlyExit_04() throws Exception {
 		XExpression expression = expression("if (return 1) {}");
-		helper.assertError(expression, XbasePackage.Literals.XRETURN_EXPRESSION, INCOMPATIBLE_TYPES, "void", "boolean");
+		helper.assertError(expression, XbasePackage.Literals.XBLOCK_EXPRESSION, UNREACHABLE_CODE);
 	}
 	
 	@Test public void testInvalidEarlyExit_05() throws Exception {
@@ -471,17 +491,20 @@ public class ValidationTests extends AbstractXbaseTestCase {
 				"      throw new Exception() " +
 				"   null" +
 				"}");
-		helper.assertNoErrors(expression);
+		helper.assertNoErrors(expression, UNREACHABLE_CODE);
 	}
 	
 	@Test public void testUnreachableCode_01() throws Exception {
-		XExpression expression = expression(
+		XBlockExpression expression = (XBlockExpression) expression(
 				"{" +
-				"	while (false) " +
+				"	while (false) {" +
 				"      throw new Exception() " +
+				"   }" +
 				"   null" +
-		"}");
-		helper.assertNoErrors(expression);
+				"}");
+		XWhileExpression whileLoop = (XWhileExpression) expression.getExpressions().get(0);
+		XThrowExpression throwExpression = (XThrowExpression) ((XBlockExpression) whileLoop.getBody()).getExpressions().get(0);
+		helper.assertError(throwExpression, XbasePackage.Literals.XTHROW_EXPRESSION, UNREACHABLE_CODE);
 	}
 	
 	@Test public void testUnreachableCode_02() throws Exception {
@@ -491,25 +514,174 @@ public class ValidationTests extends AbstractXbaseTestCase {
 				"      throw new Exception() " +
 				"   while (false)" +
 				"   null" +
-		"}");
+				"}");
 		helper.assertError(((XBlockExpression)expression).getExpressions().get(1), XbasePackage.Literals.XNULL_LITERAL, UNREACHABLE_CODE);
+	}
+	
+	@Test public void testUnreachableCode_03() throws Exception {
+		XExpression expression = expression(
+				"{\n" + 
+				"	switch i : 0 {\n" +
+				"		case 1: return 1\n" +
+				"		default: return 2\n" +
+				"	}\n" +
+				"	return 3" +
+				"}");
+		helper.assertError(expression, XbasePackage.Literals.XRETURN_EXPRESSION, UNREACHABLE_CODE);
+	}
+	
+	@Test public void testUnreachableCode_04() throws Exception {
+		XExpression expression = expression(
+				"{\n" + 
+				"	switch i : 0 {\n" +
+				"		case 1,\n" +
+				"		default: return 2\n" +
+				"	}\n" +
+				"	return 3" +
+				"}");
+		helper.assertError(expression, XbasePackage.Literals.XRETURN_EXPRESSION, UNREACHABLE_CODE);
+	}
+	
+	@Test public void testUnreachableCode_05() throws Exception {
+		XExpression expression = expression(
+				"for(; false; ) {}");
+		helper.assertError(expression, XbasePackage.Literals.XBLOCK_EXPRESSION, UNREACHABLE_CODE);
+	}
+	
+	@Test public void testUnreachableCode_06() throws Exception {
+		XExpression expression = expression(
+				"for(val x = false; x; ) {}");
+		helper.assertError(expression, XbasePackage.Literals.XBLOCK_EXPRESSION, UNREACHABLE_CODE);
+	}
+	
+	@Test public void testUnreachableCode_07() throws Exception {
+		XExpression expression = expression(
+				"for(; true; {}) return");
+		helper.assertError(expression, XbasePackage.Literals.XBLOCK_EXPRESSION, UNREACHABLE_CODE);
+	}
+
+	@Test public void testUnreachableCode_08() throws Exception {
+		XExpression expression = expression(
+				"{ while(true) return; 1 }");
+		helper.assertError(expression, XbasePackage.Literals.XNUMBER_LITERAL, UNREACHABLE_CODE);
+	}
+	
+	@Test public void testUnreachableCode_09() throws Exception {
+		XExpression expression = expression(
+				"while(false) return");
+		helper.assertError(expression, XbasePackage.Literals.XRETURN_EXPRESSION, UNREACHABLE_CODE);
+		helper.assertNoWarnings(expression, XbasePackage.Literals.XBOOLEAN_LITERAL, CONSTANT_BOOLEAN_CONDITION);
+	}
+
+	@Test public void testConstantCondition_01() throws Exception {
+		XExpression expression = expression(
+				"while(true && false) return");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always false");
+	}
+	
+	@Test public void testConstantCondition_02() throws Exception {
+		XExpression expression = expression(
+				"while(1 == 0 + 1) return");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always true");
+	}
+	
+	@Test public void testConstantCondition_03() throws Exception {
+		XExpression expression = expression(
+				"if('' == null) return");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always false");
+	}
+	
+	@Test public void testConstantCondition_04() throws Exception {
+		XExpression expression = expression(
+				"{ val x = false if(!x) return");
+		helper.assertWarning(expression, XbasePackage.Literals.XUNARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always true");
+	}
+	
+	@Test public void testConstantCondition_05() throws Exception {
+		XExpression expression = expression(
+				"for(val i = 1; i << 2 == 4;) return");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always true");
+	}
+	
+	@Test public void testConstantCondition_06() throws Exception {
+		XExpression expression = expression(
+				"do ''.toString while (String != null)");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always true");
+	}
+	
+	@Test public void testConstantCondition_07() throws Exception {
+		XExpression expression = expression(
+				"if (newArrayList.empty && false) {}");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always false");
+	}
+	
+	@Test public void testConstantCondition_08() throws Exception {
+		XExpression expression = expression(
+				"if (newArrayList('').empty || 2 == (1 << 1)) {}");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always true");
+	}
+	
+	@Test public void testConstantCondition_09() throws Exception {
+		XExpression expression = expression(
+				"while (newArrayList('').empty || 2 == (1 << 1)) {}");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always true");
+		helper.assertNoErrors(expression);
+	}
+	
+	@Test public void testConstantCondition_10() throws Exception {
+		XExpression expression = expression(
+				"if (String == typeof(String)) {}");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always true");
+		helper.assertNoErrors(expression);
+	}
+	
+	@Test public void testConstantCondition_11() throws Exception {
+		XExpression expression = expression(
+				"for(x: newArrayList('')) { val y = x if (x == y) {}}");
+		helper.assertWarning(expression, XbasePackage.Literals.XBINARY_OPERATION, CONSTANT_BOOLEAN_CONDITION, "Constant condition is always true");
+		helper.assertNoErrors(expression);
+	}
+	
+	@Test public void testUnreachableCode421508_01() throws Exception {
+		XExpression expression = expression(
+				"{  val a = true val b = true" +
+				"	a.equals(b) && {\n" + 
+				"		if (a == b) {\n" + 
+				"			return true\n" + 
+				"		}\n" + 
+				"		return false\n" + 
+				"	}" +
+				"}");
+		helper.assertError(((XBlockExpression)expression).getExpressions().get(1), XbasePackage.Literals.XBINARY_OPERATION, UNREACHABLE_CODE);
+	}
+
+	@Test public void testUnreachableCode421508_02() throws Exception {
+		XExpression expression = expression(
+				"{  val a = true val b = true" +
+				"	a.equals(b) && {\n" + 
+				"		if (a == b) {\n" + 
+				"			return true\n" + 
+				"		}\n" + 
+				"		false\n" + 
+				"	}" +
+				"}");
+		helper.assertNoErrors(expression);
 	}
 
 	@Test public void testNewAbstractClass() throws Exception {
 		XExpression expression = expression("new testdata.AbstractClassWithPublicConstructor()");
-		helper.assertError(expression, XCONSTRUCTOR_CALL, ABSTRACT_CLASS_INSTANTIATION, "abstract", "instantiate",
-				"class");
+		helper.assertError(expression, XCONSTRUCTOR_CALL, ABSTRACT_CLASS_INSTANTIATION, "abstract", "instantiate", "class");
 	}
 
-	@Test @Ignore public void testCast_0() throws Exception {
+	@Test public void testCast_0() throws Exception {
 		XExpression expression = expression("'foo' as String");
-		helper.assertWarning(expression, XCASTED_EXPRESSION, OBSOLETE_CAST, "cast", "obsolete");
+		helper.assertWarning(expression, TypesPackage.Literals.JVM_PARAMETERIZED_TYPE_REFERENCE, OBSOLETE_CAST, "Unnecessary cast from String to String");
 		helper.assertNoError(expression, INVALID_CAST);
 	}
 
 	@Test public void testCast_1() throws Exception {
 		XExpression expression = expression("'foo' as Cloneable");
-		helper.assertError(expression, TypesPackage.Literals.JVM_TYPE_REFERENCE, INVALID_CAST, "sealed", "type");
+		helper.assertError(expression, TypesPackage.Literals.JVM_TYPE_REFERENCE, INVALID_CAST, "cast");
 		helper.assertNoError(expression, OBSOLETE_CAST);
 	}
 
@@ -525,10 +697,31 @@ public class ValidationTests extends AbstractXbaseTestCase {
 		helper.assertError(expression, TypesPackage.Literals.JVM_TYPE_REFERENCE, INVALID_CAST, "Cannot", "cast");
 		helper.assertNoError(expression, OBSOLETE_CAST);
 	}
+	
+	@Test public void testCast_4() throws Exception {
+		XExpression expression = expression("new Object() as String");
+		helper.assertNoError(expression, INVALID_CAST);
+	}
+	
+	/**
+	 * see https://bugs.eclipse.org/bugs/show_bug.cgi?id=418578
+	 */
+	@Test public void testCast_5() throws Exception {
+		XExpression expression = expression("if ('f'=='l') { 'bla' } else { throw new Exception() } as String");
+		helper.assertError(expression, TypesPackage.Literals.JVM_TYPE_REFERENCE, INVALID_CAST);
+	}
+	
+	@Test
+	public void testCastInSwitch() throws Exception {
+		XExpression expression = expression("switch('foo') { String: it }");
+		helper.assertWarning(expression, TypesPackage.Literals.JVM_PARAMETERIZED_TYPE_REFERENCE, OBSOLETE_CAST, "Unnecessary cast from String to String");
+		helper.assertNoError(expression, INVALID_CAST);
+	}
 
-	@Test public void testInstanceOf_0() throws Exception {
+	@Test
+	public void testInstanceOf_0() throws Exception {
 		XExpression expression = expression("'foo' instanceof String");
-		helper.assertWarning(expression, XINSTANCE_OF_EXPRESSION, OBSOLETE_INSTANCEOF, "already", "java.lang.String");
+		helper.assertWarning(expression, XINSTANCE_OF_EXPRESSION, OBSOLETE_INSTANCEOF, "already", "String");
 		helper.assertNoError(expression, INVALID_INSTANCEOF);
 	}
 
@@ -761,6 +954,35 @@ public class ValidationTests extends AbstractXbaseTestCase {
 	@Test public void testTypeLiteralVoidArray() throws Exception {
 		XExpression expression = expression("typeof(void[])");
 		helper.assertError(expression, XTYPE_LITERAL, INVALID_TYPE);
+	}
+	
+	@Test public void testPrimitiveDefaultValueSynthesized_01() throws Exception {
+		XExpression expression = expression("{ val int i = if (true) 1 }");
+		helper.assertWarning(expression, XIF_EXPRESSION, NULL_SAFE_FEATURE_CALL_OF_PRIMITIVE_VALUED_FEATURE);
+	}
+	
+	@Test public void testPrimitiveDefaultValueSynthesized_02() throws Exception {
+		XExpression expression = expression("{ val int i = switch null as Object { String: 1 } }");
+		helper.assertWarning(expression, XSWITCH_EXPRESSION, NULL_SAFE_FEATURE_CALL_OF_PRIMITIVE_VALUED_FEATURE);
+	}
+	
+	@Test public void testPrimitiveDefaultValueSynthesized_03() throws Exception {
+		XExpression expression = expression("{ val x = if (true) return 1 x }");
+		helper.assertNoWarnings(expression, XIF_EXPRESSION, NULL_SAFE_FEATURE_CALL_OF_PRIMITIVE_VALUED_FEATURE);
+	}
+	
+	@Test public void testPrimitiveDefaultValueSynthesized_04() throws Exception {
+		XExpression expression = expression("{\n" + 
+				"			val Comparable<Object> it = null\n" + 
+				"			switch it {\n" + 
+				"	            CharSequence: switch(it) {\n" + 
+				"                    Appendable: {\n" + 
+				"                        charAt(1)\n" + 
+				"                    }\n" + 
+				"                }\n" + 
+				"        	}\n" + 
+				"		}");
+		helper.assertNoWarnings(expression, XSWITCH_EXPRESSION, NULL_SAFE_FEATURE_CALL_OF_PRIMITIVE_VALUED_FEATURE);
 	}
 	
 }

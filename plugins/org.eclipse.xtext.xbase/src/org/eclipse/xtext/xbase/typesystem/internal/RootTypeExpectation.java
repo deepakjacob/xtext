@@ -7,8 +7,6 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeExpectation;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
@@ -17,25 +15,27 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class RootTypeExpectation extends AbstractRootTypeExpectation {
 
 	private final LightweightTypeReference reference;
 
-	public RootTypeExpectation(@Nullable LightweightTypeReference reference, AbstractTypeComputationState state) {
+	public RootTypeExpectation(/* @Nullable */ LightweightTypeReference reference, AbstractTypeComputationState state) {
 		super(state);
 		this.reference = reference;
 	}
 	
+	@Override
 	public boolean isNoTypeExpectation() {
 		return false;
 	}
 	
-	@Nullable
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getExpectedType() {
 		return reference;
 	}
 
+	@Override
 	public ITypeExpectation copyInto(ITypeReferenceOwner referenceOwner) {
 		return new RootTypeExpectation(reference.copyInto(referenceOwner), getState());
 	}

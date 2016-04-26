@@ -35,17 +35,20 @@ import com.google.common.collect.Lists;
  * @noextend This class is not intended to be subclassed by clients.
  * @noinstantiate This class is not intended to be instantiated by clients.
  */
+@SuppressWarnings("restriction")
 public class ParameterContextInformation implements ISmartContextInformation {
 
 	private final ParameterData data;
 	private final String contextDisplayString;
-	private int position;
+	private int parameterListOffset;
 	private int currentParameter = -1;
+	private int initialCarretOffset;
 
-	public ParameterContextInformation(ParameterData data, String contextDisplayString, int position) {
+	public ParameterContextInformation(ParameterData data, String contextDisplayString, int parameterListOffset, int initialCarretOffset) {
 		this.data = data;
 		this.contextDisplayString = contextDisplayString;
-		this.position = position;
+		this.parameterListOffset = parameterListOffset;
+		this.initialCarretOffset = initialCarretOffset;
 	}
 
 	@Override
@@ -66,6 +69,7 @@ public class ParameterContextInformation implements ISmartContextInformation {
 		return (getInformationDisplayString().hashCode() << 16) | low;
 	}
 
+	@Override
 	public String getInformationDisplayString() {
 		return data.getDisplayString();
 	}
@@ -74,42 +78,47 @@ public class ParameterContextInformation implements ISmartContextInformation {
 		return data.getRawDisplayString();
 	}
 
+	@Override
 	public Image getImage() {
 		// TODO implement
 		return null;
 	}
 
+	@Override
 	public String getContextDisplayString() {
 		return contextDisplayString;
 	}
 
+	@Override
 	public int getContextInformationPosition() {
-		return position;
+		return initialCarretOffset;
 	}
 
+	@Override
 	public boolean isContextInformationValid(ITextViewer viewer, int position) {
 		try {
-			if (position < this.position)
+			if (position < this.parameterListOffset)
 				return false;
 
 			IDocument document= viewer.getDocument();
-			IRegion line= document.getLineInformationOfOffset(this.position);
+			IRegion line= document.getLineInformationOfOffset(this.parameterListOffset);
 
 			if (position < line.getOffset() || position >= document.getLength())
 				return false;
 
-			return getCharCount(document, this.position, position, "(<", ")>", false) >= 0; //$NON-NLS-1$ //$NON-NLS-2$
+			return getCharCount(document, this.parameterListOffset, position, "(<", ")>", false) >= 0; //$NON-NLS-1$ //$NON-NLS-2$
 
 		} catch (BadLocationException x) {
 			return false;
 		}
 	}
 
+	@Override
 	public boolean updatePresentation(ITextViewer viewer, int position, TextPresentation presentation) {
 		int currentParameter= -1;
 
 		try {
-			currentParameter= getCharCount(viewer.getDocument(), this.position, position, ",", "", true);  //$NON-NLS-1$//$NON-NLS-2$
+			currentParameter= getCharCount(viewer.getDocument(), this.parameterListOffset, position, ",", "", true);  //$NON-NLS-1$//$NON-NLS-2$
 		} catch (BadLocationException x) {
 			return false;
 		}

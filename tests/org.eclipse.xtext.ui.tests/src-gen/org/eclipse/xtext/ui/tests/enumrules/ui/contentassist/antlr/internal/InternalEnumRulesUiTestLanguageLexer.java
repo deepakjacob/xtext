@@ -37,15 +37,15 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalEnumRulesUiTestLanguage.g"; }
 
     // $ANTLR start "T__11"
     public final void mT__11() throws RecognitionException {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:11:7: ( 'SameName' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:11:9: 'SameName'
+            // InternalEnumRulesUiTestLanguage.g:11:7: ( 'SameName' )
+            // InternalEnumRulesUiTestLanguage.g:11:9: 'SameName'
             {
             match("SameName"); 
 
@@ -65,8 +65,8 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:12:7: ( 'overridden' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:12:9: 'overridden'
+            // InternalEnumRulesUiTestLanguage.g:12:7: ( 'overridden' )
+            // InternalEnumRulesUiTestLanguage.g:12:9: 'overridden'
             {
             match("overridden"); 
 
@@ -86,8 +86,8 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:13:7: ( 'DifferentLiteral' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:13:9: 'DifferentLiteral'
+            // InternalEnumRulesUiTestLanguage.g:13:7: ( 'DifferentLiteral' )
+            // InternalEnumRulesUiTestLanguage.g:13:9: 'DifferentLiteral'
             {
             match("DifferentLiteral"); 
 
@@ -107,8 +107,8 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__14;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:14:7: ( 'existing' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:14:9: 'existing'
+            // InternalEnumRulesUiTestLanguage.g:14:7: ( 'existing' )
+            // InternalEnumRulesUiTestLanguage.g:14:9: 'existing'
             {
             match("existing"); 
 
@@ -128,8 +128,8 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__15;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:15:7: ( 'generated' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:15:9: 'generated'
+            // InternalEnumRulesUiTestLanguage.g:15:7: ( 'generated' )
+            // InternalEnumRulesUiTestLanguage.g:15:9: 'generated'
             {
             match("generated"); 
 
@@ -149,10 +149,10 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:472:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:472:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalEnumRulesUiTestLanguage.g:472:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalEnumRulesUiTestLanguage.g:472:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:472:11: ( '^' )?
+            // InternalEnumRulesUiTestLanguage.g:472:11: ( '^' )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -161,7 +161,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:472:11: '^'
+                    // InternalEnumRulesUiTestLanguage.g:472:11: '^'
                     {
                     match('^'); 
 
@@ -179,7 +179,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:472:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalEnumRulesUiTestLanguage.g:472:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop2:
             do {
                 int alt2=2;
@@ -192,7 +192,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:
+            	    // InternalEnumRulesUiTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -228,10 +228,10 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:474:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:474:12: ( '0' .. '9' )+
+            // InternalEnumRulesUiTestLanguage.g:474:10: ( ( '0' .. '9' )+ )
+            // InternalEnumRulesUiTestLanguage.g:474:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:474:12: ( '0' .. '9' )+
+            // InternalEnumRulesUiTestLanguage.g:474:12: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -245,7 +245,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:474:13: '0' .. '9'
+            	    // InternalEnumRulesUiTestLanguage.g:474:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -277,10 +277,10 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalEnumRulesUiTestLanguage.g:476:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalEnumRulesUiTestLanguage.g:476:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalEnumRulesUiTestLanguage.g:476:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -298,10 +298,10 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalEnumRulesUiTestLanguage.g:476:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalEnumRulesUiTestLanguage.g:476:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop4:
                     do {
                         int alt4=3;
@@ -317,23 +317,15 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalEnumRulesUiTestLanguage.g:476:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalEnumRulesUiTestLanguage.g:476:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -358,10 +350,10 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalEnumRulesUiTestLanguage.g:476:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalEnumRulesUiTestLanguage.g:476:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -377,23 +369,15 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalEnumRulesUiTestLanguage.g:476:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:476:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalEnumRulesUiTestLanguage.g:476:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -436,12 +420,12 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:478:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:478:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalEnumRulesUiTestLanguage.g:478:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalEnumRulesUiTestLanguage.g:478:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:478:24: ( options {greedy=false; } : . )*
+            // InternalEnumRulesUiTestLanguage.g:478:24: ( options {greedy=false; } : . )*
             loop7:
             do {
                 int alt7=2;
@@ -466,7 +450,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:478:52: .
+            	    // InternalEnumRulesUiTestLanguage.g:478:52: .
             	    {
             	    matchAny(); 
 
@@ -496,12 +480,12 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:480:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:480:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalEnumRulesUiTestLanguage.g:480:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalEnumRulesUiTestLanguage.g:480:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:480:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalEnumRulesUiTestLanguage.g:480:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop8:
             do {
                 int alt8=2;
@@ -514,7 +498,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:480:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalEnumRulesUiTestLanguage.g:480:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -534,7 +518,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:480:40: ( ( '\\r' )? '\\n' )?
+            // InternalEnumRulesUiTestLanguage.g:480:40: ( ( '\\r' )? '\\n' )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -543,9 +527,9 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
             }
             switch (alt10) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:480:41: ( '\\r' )? '\\n'
+                    // InternalEnumRulesUiTestLanguage.g:480:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:480:41: ( '\\r' )?
+                    // InternalEnumRulesUiTestLanguage.g:480:41: ( '\\r' )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -554,7 +538,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
                     }
                     switch (alt9) {
                         case 1 :
-                            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:480:41: '\\r'
+                            // InternalEnumRulesUiTestLanguage.g:480:41: '\\r'
                             {
                             match('\r'); 
 
@@ -586,10 +570,10 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:482:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:482:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalEnumRulesUiTestLanguage.g:482:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalEnumRulesUiTestLanguage.g:482:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:482:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalEnumRulesUiTestLanguage.g:482:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -603,7 +587,7 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:
+            	    // InternalEnumRulesUiTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -643,8 +627,8 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:484:16: ( . )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:484:18: .
+            // InternalEnumRulesUiTestLanguage.g:484:16: ( . )
+            // InternalEnumRulesUiTestLanguage.g:484:18: .
             {
             matchAny(); 
 
@@ -659,89 +643,89 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | T__15 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalEnumRulesUiTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | T__15 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt12=12;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:10: T__11
+                // InternalEnumRulesUiTestLanguage.g:1:10: T__11
                 {
                 mT__11(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:16: T__12
+                // InternalEnumRulesUiTestLanguage.g:1:16: T__12
                 {
                 mT__12(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:22: T__13
+                // InternalEnumRulesUiTestLanguage.g:1:22: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:28: T__14
+                // InternalEnumRulesUiTestLanguage.g:1:28: T__14
                 {
                 mT__14(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:34: T__15
+                // InternalEnumRulesUiTestLanguage.g:1:34: T__15
                 {
                 mT__15(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:40: RULE_ID
+                // InternalEnumRulesUiTestLanguage.g:1:40: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:48: RULE_INT
+                // InternalEnumRulesUiTestLanguage.g:1:48: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:57: RULE_STRING
+                // InternalEnumRulesUiTestLanguage.g:1:57: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 9 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:69: RULE_ML_COMMENT
+                // InternalEnumRulesUiTestLanguage.g:1:69: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 10 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:85: RULE_SL_COMMENT
+                // InternalEnumRulesUiTestLanguage.g:1:85: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 11 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:101: RULE_WS
+                // InternalEnumRulesUiTestLanguage.g:1:101: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 12 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/enumrules/ui/contentassist/antlr/internal/InternalEnumRulesUiTestLanguage.g:1:109: RULE_ANY_OTHER
+                // InternalEnumRulesUiTestLanguage.g:1:109: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -755,35 +739,19 @@ public class InternalEnumRulesUiTestLanguageLexer extends Lexer {
 
     protected DFA12 dfa12 = new DFA12(this);
     static final String DFA12_eotS =
-        "\1\uffff\5\17\1\15\2\uffff\3\15\2\uffff\1\17\1\uffff\4\17\5\uffff"+
-        "\31\17\1\67\2\17\1\72\1\17\1\uffff\2\17\1\uffff\1\76\1\77\1\17\2"+
-        "\uffff\5\17\1\106\1\uffff";
+        "\1\uffff\5\17\1\15\2\uffff\3\15\2\uffff\1\17\1\uffff\4\17\5\uffff\31\17\1\67\2\17\1\72\1\17\1\uffff\2\17\1\uffff\1\76\1\77\1\17\2\uffff\5\17\1\106\1\uffff";
     static final String DFA12_eofS =
         "\107\uffff";
     static final String DFA12_minS =
-        "\1\0\1\141\1\166\1\151\1\170\1\145\1\101\2\uffff\2\0\1\52\2\uffff"+
-        "\1\155\1\uffff\1\145\1\146\1\151\1\156\5\uffff\1\145\1\162\1\146"+
-        "\1\163\1\145\1\116\1\162\1\145\1\164\1\162\1\141\1\151\1\162\1\151"+
-        "\1\141\1\155\1\144\1\145\1\156\1\164\1\145\1\144\1\156\1\147\1\145"+
-        "\1\60\1\145\1\164\1\60\1\144\1\uffff\1\156\1\114\1\uffff\2\60\1"+
-        "\151\2\uffff\1\164\1\145\1\162\1\141\1\154\1\60\1\uffff";
+        "\1\0\1\141\1\166\1\151\1\170\1\145\1\101\2\uffff\2\0\1\52\2\uffff\1\155\1\uffff\1\145\1\146\1\151\1\156\5\uffff\1\145\1\162\1\146\1\163\1\145\1\116\1\162\1\145\1\164\1\162\1\141\1\151\1\162\1\151\1\141\1\155\1\144\1\145\1\156\1\164\1\145\1\144\1\156\1\147\1\145\1\60\1\145\1\164\1\60\1\144\1\uffff\1\156\1\114\1\uffff\2\60\1\151\2\uffff\1\164\1\145\1\162\1\141\1\154\1\60\1\uffff";
     static final String DFA12_maxS =
-        "\1\uffff\1\141\1\166\1\151\1\170\1\145\1\172\2\uffff\2\uffff\1\57"+
-        "\2\uffff\1\155\1\uffff\1\145\1\146\1\151\1\156\5\uffff\1\145\1\162"+
-        "\1\146\1\163\1\145\1\116\1\162\1\145\1\164\1\162\1\141\1\151\1\162"+
-        "\1\151\1\141\1\155\1\144\1\145\1\156\1\164\1\145\1\144\1\156\1\147"+
-        "\1\145\1\172\1\145\1\164\1\172\1\144\1\uffff\1\156\1\114\1\uffff"+
-        "\2\172\1\151\2\uffff\1\164\1\145\1\162\1\141\1\154\1\172\1\uffff";
+        "\1\uffff\1\141\1\166\1\151\1\170\1\145\1\172\2\uffff\2\uffff\1\57\2\uffff\1\155\1\uffff\1\145\1\146\1\151\1\156\5\uffff\1\145\1\162\1\146\1\163\1\145\1\116\1\162\1\145\1\164\1\162\1\141\1\151\1\162\1\151\1\141\1\155\1\144\1\145\1\156\1\164\1\145\1\144\1\156\1\147\1\145\1\172\1\145\1\164\1\172\1\144\1\uffff\1\156\1\114\1\uffff\2\172\1\151\2\uffff\1\164\1\145\1\162\1\141\1\154\1\172\1\uffff";
     static final String DFA12_acceptS =
-        "\7\uffff\1\6\1\7\3\uffff\1\13\1\14\1\uffff\1\6\4\uffff\1\7\1\10"+
-        "\1\11\1\12\1\13\36\uffff\1\1\2\uffff\1\4\3\uffff\1\5\1\2\6\uffff"+
-        "\1\3";
+        "\7\uffff\1\6\1\7\3\uffff\1\13\1\14\1\uffff\1\6\4\uffff\1\7\1\10\1\11\1\12\1\13\36\uffff\1\1\2\uffff\1\4\3\uffff\1\5\1\2\6\uffff\1\3";
     static final String DFA12_specialS =
         "\1\1\10\uffff\1\2\1\0\74\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\11\15\2\14\2\15\1\14\22\15\1\14\1\15\1\11\4\15\1\12\7\15\1"+
-            "\13\12\10\7\15\3\7\1\3\16\7\1\1\7\7\3\15\1\6\1\7\1\15\4\7\1"+
-            "\4\1\7\1\5\7\7\1\2\13\7\uff85\15",
+            "\11\15\2\14\2\15\1\14\22\15\1\14\1\15\1\11\4\15\1\12\7\15\1\13\12\10\7\15\3\7\1\3\16\7\1\1\7\7\3\15\1\6\1\7\1\15\4\7\1\4\1\7\1\5\7\7\1\2\13\7\uff85\15",
             "\1\16",
             "\1\20",
             "\1\21",

@@ -1,27 +1,20 @@
 package org.eclipse.xtext.xbase.ui.tests.refactoring
 
-import javax.inject.Inject
+import com.google.inject.Inject
 import org.eclipse.jface.text.TextSelection
-import org.eclipse.xtext.junit4.InjectWith
-import org.eclipse.xtext.junit4.XtextRunner
 import org.eclipse.xtext.junit4.util.ParseHelper
 import org.eclipse.xtext.junit4.validation.ValidationTestHelper
 import org.eclipse.xtext.resource.ILocationInFileProvider
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.xbase.XExpression
+import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.eclipse.xtext.xbase.ui.refactoring.ExpressionUtil
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.eclipse.xtext.xbase.tests.XbaseInjectorProvider
-
-import static org.junit.Assert.*
 
 /**
  * @author Jan Koehnlein
  */
-@RunWith(typeof(XtextRunner))
-@InjectWith(typeof(XbaseInjectorProvider))
-class ExpressionUtilTest {
+class ExpressionUtilTest extends AbstractXbaseTestCase {
 
 	@Inject ExpressionUtil util
 	
@@ -45,16 +38,55 @@ class ExpressionUtilTest {
 		assertExpressionSelected('12$3+$456', '123+456')
 		assertExpressionSelected('123$+4$56', '123+456')
 		
-		assertExpressionSelected('if($$true) null', 'true')
-		assertExpressionSelected('if(true$$) null', 'true')
-		assertExpressionSelected('if(true)$$ null', 'if(true) null')
-		assertExpressionSelected('if(true) null$$ else null', 'null')
-		assertExpressionSelected('if(true) null $$else null', 'if(true) null else null')
+		assertExpressionSelected('if(Boolean.TRUE$$) null', 'Boolean.TRUE')
+		assertExpressionSelected('if(Boolean.TRUE)$$ null', 'if(Boolean.TRUE) null')
+		assertExpressionSelected('if(Boolean.TRUE) null$$ else null', 'null')
+		assertExpressionSelected('if(Boolean.TRUE) null $$else null', 'if(Boolean.TRUE) null else null')
 
 		assertExpressionSelected("newArrayList('jan','hein','claas','pit').map[$it|toFirstUpper]$", '[it|toFirstUpper]')
 		assertExpressionSelected("newArrayList('jan','hein','claas','pit').map[it$|$toFirstUpper]", '[it|toFirstUpper]')
 		assertExpressionSelected("newArrayList('jan','hein','claas','pit').map$[it|toFirstUpper]$", '[it|toFirstUpper]')
 		assertExpressionSelected("newArrayList('jan','hein','claas','pit').map$[it|toFirstUpper$]", '[it|toFirstUpper]')
+		assertExpressionSelected("newArrayList('jan','hein','claas','pit').map$[it|toFirstUpper$]", '[it|toFirstUpper]')
+	}
+	@Test
+	def testSelectedExpression_01() {
+		assertExpressionSelected("newArrayList($$true)", "true")
+		assertExpressionSelected("newArrayList($$'ru')", "'ru'")
+		assertExpressionSelected("newArrayList($'ru'$)", "'ru'")
+		assertExpressionSelected("newArrayList('ru'$$)", "'ru'")
+		assertExpressionSelected("newArrayList('ru$$')", "'ru'")
+		assertExpressionSelected("newArrayList('$ru$')", "'ru'")
+	}
+	@Test
+	def testSelectedExpression_02() {
+		assertExpressionSelected('if(Boolean.$$TRUE) null', 'Boolean.TRUE')
+//		assertExpressionSelected('if($$Boolean.TRUE) null', 'Boolean.TRUE')
+	}
+	
+	@Test
+	def testSelectedExpression_03() {
+		assertExpressionSelected('newArrayList($$#[42])', '#[42]')
+	}
+	@Test
+	def testSelectedExpression_04() {
+		assertExpressionSelected('newArrayList($$#{42})', '#{42}')
+	}
+	@Test
+	def testSelectedExpression_05() {
+		assertExpressionSelected('newArrayList($${42})', '{42}')
+	}
+	
+	@Test
+	def testSelectedExpression_06() {
+		assertExpressionSelected('newArrayList($ {$42})', '{42}')
+	}
+	
+	@Test
+	def testBug401082() {
+		assertExpressionSelected('{ var Object x val result = ($(x as String).toString$ ?:"foo") }', '(x as String).toString')
+		assertExpressionSelected('{ var Object x val result = ($(x as String).$toString ?:"foo") }', '(x as String).toString')
+		assertExpressionSelected('{ var Object x val result = ($(x as String)$.toString ?:"foo") }', 'x as String')
 	}
 
 	@Test
@@ -70,12 +102,13 @@ class ExpressionUtilTest {
 		assertSiblingExpressionsSelected('123$+$456', '123+456')
 		assertSiblingExpressionsSelected('12$3+$456', '123+456')
 		assertSiblingExpressionsSelected('123$+4$56', '123+456')
-		
-		assertSiblingExpressionsSelected('if($$true) null', 'true')
-		assertSiblingExpressionsSelected('if(true$$) null', 'true')
-		assertSiblingExpressionsSelected('if(true)$$ null', 'if(true) null')
-		assertSiblingExpressionsSelected('if(true) null$$ else null', 'null')
-		assertSiblingExpressionsSelected('if(true) null $$else null', 'if(true) null else null')
+//		assertSiblingExpressionsSelected('if($$Boolean.TRUE) null', 'Boolean.TRUE')
+		assertSiblingExpressionsSelected('if(Boolean.$$TRUE) null', 'Boolean.TRUE')
+		assertSiblingExpressionsSelected('if(Boolean.TRUE$$) null', 'Boolean.TRUE')
+		assertSiblingExpressionsSelected('if(Boolean.TRUE)$$ null', 'if(Boolean.TRUE) null')
+		assertSiblingExpressionsSelected('if(Boolean.TRUE) $$null', 'null')
+		assertSiblingExpressionsSelected('if(Boolean.TRUE) null$$ else null', 'null')
+		assertSiblingExpressionsSelected('if(Boolean.TRUE) null $$else null', 'if(Boolean.TRUE) null else null')
 	}
 	
 	@Test
@@ -98,11 +131,11 @@ class ExpressionUtilTest {
 
 	@Test 
 	def testInsertionPointIf() {
-		assertInsertionPoint('if($1==2) true', null)
-		assertInsertionPoint('{ if($1==2) true }', 'if(1==2) true')
-		assertInsertionPoint('if(1==2) $true', 'true')
-		assertInsertionPoint('if(1==2) true else $false', 'false')
-		assertInsertionPoint('if(1==2) { val x = 7 + $8 }', 'val x = 7 + 8')
+		assertInsertionPoint('if($1==2.intValue) true', null)
+		assertInsertionPoint('{ if($1==2.intValue) true }', 'if(1==2.intValue) true')
+		assertInsertionPoint('if(1==2.intValue) $true', 'true')
+		assertInsertionPoint('if(1==2.intValue) true else $false', 'false')
+		assertInsertionPoint('if(1==2.intValue) { val x = 7 + $8 }', 'val x = 7 + 8')
 	}
 	
 	@Test 
@@ -128,6 +161,8 @@ class ExpressionUtilTest {
 	@Test 
 	def testInsertionPointClosure() {
 		assertInsertionPoint('[|2+$3]', '2+3')
+		assertInsertionPoint('[|2$+3]', '2+3')
+		assertInsertionPoint('[|$2+3]', '2+3')
 	}
 	
 	@Test 

@@ -7,15 +7,17 @@
  *******************************************************************************/
 package org.eclipse.xtext.serializer.sequencer;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.AbstractElement;
-import org.eclipse.xtext.Action;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.EnumRule;
@@ -23,13 +25,15 @@ import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.serializer.ISerializationContext;
+import org.eclipse.xtext.serializer.analysis.SerializationContext;
 import org.eclipse.xtext.serializer.impl.FeatureFinderUtil;
 import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 import org.eclipse.xtext.serializer.tokens.IEnumLiteralSerializer;
 import org.eclipse.xtext.serializer.tokens.IKeywordSerializer;
 import org.eclipse.xtext.serializer.tokens.IValueSerializer;
 
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -55,8 +59,10 @@ public class AssignmentFinder implements IAssignmentFinder {
 	@Inject
 	protected IValueSerializer valueSerializer;
 
-	public Iterable<AbstractElement> findAssignmentsByValue(EObject semanticObj,
-			Iterable<AbstractElement> assignedElements, Object value, INode node) {
+	@Override
+	public Set<AbstractElement> findAssignmentsByValue(EObject semanticObj,
+			Multimap<AbstractElement, ISerializationContext> assignments, Object value, INode node) {
+		List<AbstractElement> assignedElements = Lists.newArrayList(assignments.keySet());
 		EStructuralFeature feature = FeatureFinderUtil.getFeature(assignedElements.iterator().next(),
 				semanticObj.eClass());
 		if (feature instanceof EAttribute) {
@@ -68,31 +74,41 @@ public class AssignmentFinder implements IAssignmentFinder {
 		} else if (feature instanceof EReference) {
 			EReference ref = (EReference) feature;
 			if (ref.isContainment())
-				return findValidAssignmentsForContainmentRef(semanticObj, assignedElements, (EObject) value);
+				return findValidAssignmentsForContainmentRef(semanticObj, assignments, (EObject) value);
 			else
 				return findValidAssignmentsForCrossRef(semanticObj, assignedElements, (EObject) value, node);
 		}
 		throw new RuntimeException("unknown feature type");
 	}
 
-	protected Iterable<AbstractElement> findValidAssignmentsForContainmentRef(EObject semanticObj,
-			Iterable<AbstractElement> assignedElements, EObject value) {
-		Multimap<EObject, AbstractElement> candidates = HashMultimap.create();
-		for (AbstractElement ass : assignedElements)
-			if (ass instanceof RuleCall)
-				candidates.put(((RuleCall) ass).getRule(), ass);
-			else if (ass instanceof Action)
-				candidates.put(ass, ass);
-		Iterable<EObject> contexts = Sets.newHashSet(contextFinder.findContextsByContents(value, candidates.keySet()));
-		List<AbstractElement> result = Lists.newArrayList();
-		for (EObject ctx : contexts)
-			result.addAll(candidates.get(ctx));
+	protected Set<AbstractElement> findValidAssignmentsForContainmentRef(EObject semanticObj,
+			Multimap<AbstractElement, ISerializationContext> assignments, EObject value) {
+		Multimap<ISerializationContext, AbstractElement> children = ArrayListMultimap.create();
+		for (Entry<AbstractElement, Collection<ISerializationContext>> e : assignments.asMap().entrySet()) {
+			AbstractElement ele = e.getKey();
+			if (ele instanceof RuleCall) {
+				EClassifier classifier = ((RuleCall) ele).getRule().getType().getClassifier();
+				if (!classifier.isInstance(value))
+					continue;
+			}
+			for (ISerializationContext container : e.getValue()) {
+				ISerializationContext child = SerializationContext.forChild(container, ele, value);
+				children.put(child, ele);
+			}
+		}
+		if (children.size() < 2)
+			return Sets.newHashSet(children.values());
+		Set<ISerializationContext> found = contextFinder.findByContents(value, children.keySet());
+		Set<AbstractElement> result = Sets.newLinkedHashSet();
+		for (ISerializationContext ctx : children.keySet())
+			if (found.contains(ctx))
+				result.addAll(children.get(ctx));
 		return result;
 	}
 
-	protected Iterable<AbstractElement> findValidAssignmentsForCrossRef(EObject semanticObj,
+	protected Set<AbstractElement> findValidAssignmentsForCrossRef(EObject semanticObj,
 			Iterable<AbstractElement> assignedElements, EObject value, INode node) {
-		List<AbstractElement> result = Lists.newArrayList();
+		Set<AbstractElement> result = Sets.newLinkedHashSet();
 		for (AbstractElement ass : assignedElements) {
 			CrossReference crossref = GrammarUtil.containingCrossReference(ass);
 			EReference eref = GrammarUtil.getReference(crossref, semanticObj.eClass());
@@ -103,9 +119,9 @@ public class AssignmentFinder implements IAssignmentFinder {
 		return result;
 	}
 
-	protected Iterable<AbstractElement> findValidBooleanAssignments(EObject semanticObj,
+	protected Set<AbstractElement> findValidBooleanAssignments(EObject semanticObj,
 			Iterable<AbstractElement> assignedElements, Object value) {
-		List<AbstractElement> result = Lists.newArrayList();
+		Set<AbstractElement> result = Sets.newLinkedHashSet();
 		for (AbstractElement ele : assignedElements)
 			if (GrammarUtil.isBooleanAssignment(GrammarUtil.containingAssignment(ele))) {
 				if (Boolean.TRUE.equals(value))
@@ -117,17 +133,13 @@ public class AssignmentFinder implements IAssignmentFinder {
 		return result;
 	}
 
-	protected Iterable<AbstractElement> findValidValueAssignments(EObject semanticObj,
+	protected Set<AbstractElement> findValidValueAssignments(EObject semanticObj,
 			Iterable<AbstractElement> assignedElements, Object value) {
-		// keywords have precedence over everything else
-		for (AbstractElement ass : assignedElements)
+		Set<AbstractElement> result = Sets.newLinkedHashSet();
+		for (AbstractElement ass : assignedElements) {
 			if (ass instanceof Keyword && keywordSerializer.isValid(semanticObj, (Keyword) ass, value, null))
-				return Collections.singletonList(ass);
-
-		// now check the remaining assignments
-		List<AbstractElement> result = Lists.newArrayList();
-		for (AbstractElement ass : assignedElements)
-			if (ass instanceof RuleCall) {
+				result.add(ass);
+			else if (ass instanceof RuleCall) {
 				RuleCall rc = (RuleCall) ass;
 				if (rc.getRule() instanceof EnumRule) {
 					if (enumLiteralSerializer.isValid(semanticObj, rc, value, null))
@@ -135,6 +147,7 @@ public class AssignmentFinder implements IAssignmentFinder {
 				} else if (valueSerializer.isValid(semanticObj, rc, value, null))
 					result.add(ass);
 			}
+		}
 		return result;
 	}
 

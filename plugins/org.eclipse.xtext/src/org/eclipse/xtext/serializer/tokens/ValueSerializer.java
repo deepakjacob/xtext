@@ -8,13 +8,16 @@
 package org.eclipse.xtext.serializer.tokens;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.conversion.IValueConverterService;
+import org.eclipse.xtext.linking.impl.LinkingHelper;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.parsetree.reconstr.impl.TokenUtil;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic.Acceptor;
 import org.eclipse.xtext.serializer.diagnostic.ITokenDiagnosticProvider;
+import org.eclipse.xtext.xtext.RuleNames;
 
 import com.google.inject.Inject;
 
@@ -27,14 +30,21 @@ public class ValueSerializer implements IValueSerializer {
 	private IValueConverterService converter;
 
 	@Inject
+	private RuleNames ruleNames;
+
+	@Inject
+	private LinkingHelper linkingHelper;
+
+	@Inject
 	protected ITokenDiagnosticProvider diagnostics;
 
 	@Inject
 	protected TokenUtil tokenUtil;
 
+	@Override
 	public boolean isValid(EObject context, RuleCall ruleCall, Object value, Acceptor errors) {
 		try {
-			String str = converter.toString(value, ruleCall.getRule().getName());
+			String str = converter.toString(value, ruleNames.getQualifiedName(ruleCall.getRule()));
 			if (str != null)
 				return true;
 			if (errors != null)
@@ -47,14 +57,21 @@ public class ValueSerializer implements IValueSerializer {
 		}
 	}
 
+	@Override
 	public String serializeAssignedValue(EObject context, RuleCall ruleCall, Object value, INode node, Acceptor errors) {
+		AbstractRule rule = ruleCall.getRule();
+		String ruleName = ruleNames.getQualifiedName(rule);
 		if (node != null) {
-			Object converted = converter.toValue(NodeModelUtils.getTokenText(node), ruleCall.getRule().getName(), node);
-			if (converted != null && converted.equals(value))
-				return tokenUtil.serializeNode(node);
+			AbstractRule nodeRule = linkingHelper.getRuleFrom(node.getGrammarElement());
+			// TODO: analyze why grammar element identity is broken here during generation of Xtext languages using MWE2  
+			if (nodeRule != null && ruleNames.getQualifiedName(nodeRule).equals(ruleName)) {
+				Object converted = converter.toValue(NodeModelUtils.getTokenText(node), ruleName, node);
+				if (converted != null && converted.equals(value))
+					return tokenUtil.serializeNode(node);
+			}
 		}
 		try {
-			String str = converter.toString(value, ruleCall.getRule().getName());
+			String str = converter.toString(value, ruleName);
 			if (str != null)
 				return str;
 			if (errors != null)

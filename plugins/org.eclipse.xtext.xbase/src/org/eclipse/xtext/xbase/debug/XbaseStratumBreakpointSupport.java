@@ -13,6 +13,7 @@ import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XbasePackage;
 
@@ -21,6 +22,7 @@ import org.eclipse.xtext.xbase.XbasePackage;
  */
 public class XbaseStratumBreakpointSupport implements IStratumBreakpointSupport {
 
+	@Override
 	public boolean isValidLineForBreakPoint(XtextResource resource, int line) {
 		IParseResult parseResult = resource.getParseResult();
 		if (parseResult == null)
@@ -31,7 +33,8 @@ public class XbaseStratumBreakpointSupport implements IStratumBreakpointSupport 
 
 	protected boolean isValidLineForBreakpoint(ICompositeNode node, int line) {
 		for (INode n : node.getChildren()) {
-			if (n.getStartLine()<= line && n.getEndLine() >= line) {
+			ITextRegionWithLineInformation textRegion = n.getTextRegionWithLineInformation();
+			if (textRegion.getLineNumber()<= line && textRegion.getEndLineNumber() >= line) {
 				EObject eObject = n.getSemanticElement();
 				if (eObject instanceof XExpression && !(eObject.eClass() == XbasePackage.Literals.XBLOCK_EXPRESSION)) {
 					return true;
@@ -40,7 +43,7 @@ public class XbaseStratumBreakpointSupport implements IStratumBreakpointSupport 
 					return true;
 				}
 			}
-			if (n.getStartLine() > line) {
+			if (textRegion.getLineNumber() > line) {
 				return false;
 			}
 		}

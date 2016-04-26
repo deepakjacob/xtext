@@ -13,10 +13,15 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import com.google.inject.ImplementedBy;
 
 /**
+ * This strategy allows to cope with low memory environments where resources have to
+ * be unloaded during the build.
+ * 
  * @author Knut Wannheden - Initial contribution and API
+ * @deprecated Use org.eclipse.xtext.resource.clustering.IResourceClusteringPolicy instead
  */
-@ImplementedBy(DynamicResourceClusteringPolicy.class)
-public interface IResourceClusteringPolicy {
+@ImplementedBy(DisabledClusteringPolicy.class)
+@Deprecated
+public interface IResourceClusteringPolicy extends org.eclipse.xtext.resource.clustering.IResourceClusteringPolicy {
 
 	/**
 	 * Determine whether another resource should be loaded into the resource set and be processed.
@@ -30,6 +35,7 @@ public interface IResourceClusteringPolicy {
 	 * @return <code>true</code> if another resource should be processed, <code>false</code> if a new cluster should be
 	 *         created.
 	 */
+	@Override
 	boolean continueProcessing(ResourceSet resourceSet, URI next, int alreadyProcessed);
 
 }

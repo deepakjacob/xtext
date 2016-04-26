@@ -9,6 +9,7 @@ package org.eclipse.xtext.common.types.xtext.ui;
 
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
+import org.eclipse.jdt.internal.corext.util.TypeFilter;
 import org.eclipse.xtext.common.types.xtext.ui.ITypesProposalProvider.Filter;
 
 /**
@@ -20,15 +21,35 @@ public final class TypeMatchFilters {
 		throw new AssertionError("May not be instantiated.");
 	}
 	
+	/**
+	 * @deprecated use {@link #isNotInternal()} instead
+	 */
+	@Deprecated
 	public static ITypesProposalProvider.Filter all() {
 		return new All();
 	}
 	
 	/**
 	 * @since 2.0
+	 * @deprecated use {@link #isNotInternal(int)} instead
 	 */
+	@Deprecated
 	public static ITypesProposalProvider.Filter all(int searchFor) {
 		return new All(searchFor);
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public static ITypesProposalProvider.Filter isNotInternal() {
+		return new IsNotInternal();
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public static ITypesProposalProvider.Filter isNotInternal(int searchFor) {
+		return new IsNotInternal(searchFor);
 	}
 	
 	public static ITypesProposalProvider.Filter none() {
@@ -56,6 +77,13 @@ public final class TypeMatchFilters {
 	}
 	
 	/**
+	 * @since 2.9
+	 */
+	public static ITypesProposalProvider.Filter isAcceptableByPreference() {
+		return new AcceptableByPreference();
+	}
+	
+	/**
 	 * @since 2.2
 	 */
 	public static boolean isInternalClass(char[] simpleTypeName,
@@ -68,7 +96,32 @@ public final class TypeMatchFilters {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * @since 2.9
+	 */
+	public static abstract class AbstractFilter implements ITypesProposalProvider.Filter {
+		
+		private final int searchFor;
+
+		public AbstractFilter(int searchFor) {
+			this.searchFor = searchFor;
+		}
+		
+		public AbstractFilter() {
+			this(IJavaSearchConstants.TYPE);
+		}
+		
+		@Override
+		public int getSearchFor() {
+			return searchFor;
+		}
+	}
+
+	/**
+	 * @deprecated Use {@link IsNotInternal} instead
+	 */
+	@Deprecated
 	public static class All implements ITypesProposalProvider.Filter {
 		
 		private final int searchFor;
@@ -84,6 +137,7 @@ public final class TypeMatchFilters {
 			this(IJavaSearchConstants.TYPE);
 		}
 
+		@Override
 		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName,
 				char[][] enclosingTypeNames, String path) {
 			if (isInternalClass(simpleTypeName, enclosingTypeNames)) {
@@ -95,13 +149,39 @@ public final class TypeMatchFilters {
 		/**
 		 * @since 2.0
 		 */
+		@Override
 		public int getSearchFor() {
 			return searchFor;
 		}
 	}
 	
+	/**
+	 * This filter will accept all types except for internal classes (class names starting with $ character).
+	 * @since 2.9
+	 */
+	public static class IsNotInternal extends AbstractFilter {
+		public IsNotInternal(int searchFor) {
+			super(searchFor);
+		}
+		
+		public IsNotInternal() {
+			super();
+		}
+
+		@Override
+		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName,
+				char[][] enclosingTypeNames, String path) {
+			if (isInternalClass(simpleTypeName, enclosingTypeNames)) {
+				return false;
+			}
+			return true;
+		}
+	}
+	
+	
 	public static class None implements ITypesProposalProvider.Filter {
 		
+		@Override
 		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName,
 				char[][] enclosingTypeNames, String path) {
 			return false;
@@ -110,6 +190,7 @@ public final class TypeMatchFilters {
 		/**
 		 * @since 2.0
 		 */
+		@Override
 		public int getSearchFor() {
 			return IJavaSearchConstants.TYPE;
 		}
@@ -123,6 +204,7 @@ public final class TypeMatchFilters {
 			this.delegate = delegate;
 		}
 		
+		@Override
 		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName,
 				char[][] enclosingTypeNames, String path) {
 			return !delegate.accept(modifiers, packageName, simpleTypeName, enclosingTypeNames, path);
@@ -131,6 +213,7 @@ public final class TypeMatchFilters {
 		/**
 		 * @since 2.0
 		 */
+		@Override
 		public int getSearchFor() {
 			return delegate.getSearchFor();
 		}
@@ -146,6 +229,7 @@ public final class TypeMatchFilters {
 				throw new IllegalArgumentException("Cannot 'and' empty delegates");
 		}
 		
+		@Override
 		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName,
 				char[][] enclosingTypeNames, String path) {
 			boolean result = true;
@@ -160,6 +244,7 @@ public final class TypeMatchFilters {
 		/**
 		 * @since 2.0
 		 */
+		@Override
 		public int getSearchFor() {
 			return delegates[0].getSearchFor();
 		}
@@ -175,6 +260,7 @@ public final class TypeMatchFilters {
 				throw new IllegalArgumentException("Cannot 'or' empty delegates");
 		}
 		
+		@Override
 		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName,
 				char[][] enclosingTypeNames, String path) {
 			boolean result = false;
@@ -189,12 +275,14 @@ public final class TypeMatchFilters {
 		/**
 		 * @since 2.0
 		 */
+		@Override
 		public int getSearchFor() {
 			return delegates[0].getSearchFor();
 		}
 	}
 	
 	public static class CanInstantiate implements ITypesProposalProvider.Filter {
+		@Override
 		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName,
 				char[][] enclosingTypeNames, String path) {
 			if (isInternalClass(simpleTypeName, enclosingTypeNames)) {
@@ -206,12 +294,14 @@ public final class TypeMatchFilters {
 		/**
 		 * @since 2.0
 		 */
+		@Override
 		public int getSearchFor() {
 			return IJavaSearchConstants.CLASS;
 		}
 	}
 	
 	public static class IsPublic implements ITypesProposalProvider.Filter {
+		@Override
 		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName,
 				char[][] enclosingTypeNames, String path) {
 			if (isInternalClass(simpleTypeName, enclosingTypeNames)) {
@@ -223,8 +313,36 @@ public final class TypeMatchFilters {
 		/**
 		 * @since 2.0
 		 */
+		@Override
 		public int getSearchFor() {
 			return IJavaSearchConstants.TYPE;
+		}
+	}
+
+	/**
+	 * Restricts types by consideration of the JDT type filter preference.
+	 * @since 2.9
+	 */
+	public static class AcceptableByPreference implements ITypesProposalProvider.Filter {
+		private final int searchFor;
+
+		public AcceptableByPreference() {
+			this(IJavaSearchConstants.TYPE);
+		}
+		
+		public AcceptableByPreference(int searchFor) {
+			this.searchFor = searchFor;
+		}
+		
+		@Override
+		public boolean accept(int modifiers, char[] packageName, char[] simpleTypeName, char[][] enclosingTypeNames,
+				String path) {
+			return !TypeFilter.isFiltered(packageName, simpleTypeName);
+		}
+		
+		@Override
+		public int getSearchFor() {
+			return searchFor;
 		}
 	}
 

@@ -1,0 +1,4 @@
+dependencies {
+	compile project(":plugins:org.eclipse.xtext.xbase.ide")
+	compile project(':plugins:org.eclipse.xtext.ecore')
+}

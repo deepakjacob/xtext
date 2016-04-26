@@ -33,15 +33,15 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalEcoreFragmentTestLanguage.g"; }
 
     // $ANTLR start "T__11"
     public final void mT__11() throws RecognitionException {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:11:7: ( 'first' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:11:9: 'first'
+            // InternalEcoreFragmentTestLanguage.g:11:7: ( 'first' )
+            // InternalEcoreFragmentTestLanguage.g:11:9: 'first'
             {
             match("first"); 
 
@@ -61,10 +61,10 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:122:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:122:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalEcoreFragmentTestLanguage.g:122:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalEcoreFragmentTestLanguage.g:122:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:122:11: ( '^' )?
+            // InternalEcoreFragmentTestLanguage.g:122:11: ( '^' )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -73,7 +73,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:122:11: '^'
+                    // InternalEcoreFragmentTestLanguage.g:122:11: '^'
                     {
                     match('^'); 
 
@@ -91,7 +91,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:122:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalEcoreFragmentTestLanguage.g:122:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop2:
             do {
                 int alt2=2;
@@ -104,7 +104,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:
+            	    // InternalEcoreFragmentTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -140,10 +140,10 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:124:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:124:12: ( '0' .. '9' )+
+            // InternalEcoreFragmentTestLanguage.g:124:10: ( ( '0' .. '9' )+ )
+            // InternalEcoreFragmentTestLanguage.g:124:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:124:12: ( '0' .. '9' )+
+            // InternalEcoreFragmentTestLanguage.g:124:12: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -157,7 +157,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:124:13: '0' .. '9'
+            	    // InternalEcoreFragmentTestLanguage.g:124:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -189,10 +189,10 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalEcoreFragmentTestLanguage.g:126:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalEcoreFragmentTestLanguage.g:126:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalEcoreFragmentTestLanguage.g:126:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -210,10 +210,10 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalEcoreFragmentTestLanguage.g:126:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalEcoreFragmentTestLanguage.g:126:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop4:
                     do {
                         int alt4=3;
@@ -229,23 +229,15 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalEcoreFragmentTestLanguage.g:126:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalEcoreFragmentTestLanguage.g:126:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -270,10 +262,10 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalEcoreFragmentTestLanguage.g:126:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalEcoreFragmentTestLanguage.g:126:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -289,23 +281,15 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalEcoreFragmentTestLanguage.g:126:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:126:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalEcoreFragmentTestLanguage.g:126:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -348,12 +332,12 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:128:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:128:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalEcoreFragmentTestLanguage.g:128:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalEcoreFragmentTestLanguage.g:128:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:128:24: ( options {greedy=false; } : . )*
+            // InternalEcoreFragmentTestLanguage.g:128:24: ( options {greedy=false; } : . )*
             loop7:
             do {
                 int alt7=2;
@@ -378,7 +362,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:128:52: .
+            	    // InternalEcoreFragmentTestLanguage.g:128:52: .
             	    {
             	    matchAny(); 
 
@@ -408,12 +392,12 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:130:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:130:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalEcoreFragmentTestLanguage.g:130:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalEcoreFragmentTestLanguage.g:130:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:130:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalEcoreFragmentTestLanguage.g:130:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop8:
             do {
                 int alt8=2;
@@ -426,7 +410,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:130:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalEcoreFragmentTestLanguage.g:130:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -446,7 +430,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:130:40: ( ( '\\r' )? '\\n' )?
+            // InternalEcoreFragmentTestLanguage.g:130:40: ( ( '\\r' )? '\\n' )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -455,9 +439,9 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
             }
             switch (alt10) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:130:41: ( '\\r' )? '\\n'
+                    // InternalEcoreFragmentTestLanguage.g:130:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:130:41: ( '\\r' )?
+                    // InternalEcoreFragmentTestLanguage.g:130:41: ( '\\r' )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -466,7 +450,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
                     }
                     switch (alt9) {
                         case 1 :
-                            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:130:41: '\\r'
+                            // InternalEcoreFragmentTestLanguage.g:130:41: '\\r'
                             {
                             match('\r'); 
 
@@ -498,10 +482,10 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:132:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:132:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalEcoreFragmentTestLanguage.g:132:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalEcoreFragmentTestLanguage.g:132:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:132:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalEcoreFragmentTestLanguage.g:132:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -515,7 +499,7 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:
+            	    // InternalEcoreFragmentTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -555,8 +539,8 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:134:16: ( . )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:134:18: .
+            // InternalEcoreFragmentTestLanguage.g:134:16: ( . )
+            // InternalEcoreFragmentTestLanguage.g:134:18: .
             {
             matchAny(); 
 
@@ -571,61 +555,61 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:8: ( T__11 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalEcoreFragmentTestLanguage.g:1:8: ( T__11 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt12=8;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:10: T__11
+                // InternalEcoreFragmentTestLanguage.g:1:10: T__11
                 {
                 mT__11(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:16: RULE_ID
+                // InternalEcoreFragmentTestLanguage.g:1:16: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:24: RULE_INT
+                // InternalEcoreFragmentTestLanguage.g:1:24: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:33: RULE_STRING
+                // InternalEcoreFragmentTestLanguage.g:1:33: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:45: RULE_ML_COMMENT
+                // InternalEcoreFragmentTestLanguage.g:1:45: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:61: RULE_SL_COMMENT
+                // InternalEcoreFragmentTestLanguage.g:1:61: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:77: RULE_WS
+                // InternalEcoreFragmentTestLanguage.g:1:77: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/generator/ecore/parser/antlr/internal/InternalEcoreFragmentTestLanguage.g:1:85: RULE_ANY_OTHER
+                // InternalEcoreFragmentTestLanguage.g:1:85: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -639,24 +623,19 @@ public class InternalEcoreFragmentTestLanguageLexer extends Lexer {
 
     protected DFA12 dfa12 = new DFA12(this);
     static final String DFA12_eotS =
-        "\1\uffff\1\13\1\11\2\uffff\3\11\2\uffff\1\13\6\uffff\2\13\1\24\1"+
-        "\uffff";
+        "\1\uffff\1\13\1\11\2\uffff\3\11\2\uffff\1\13\6\uffff\2\13\1\24\1\uffff";
     static final String DFA12_eofS =
         "\25\uffff";
     static final String DFA12_minS =
-        "\1\0\1\151\1\101\2\uffff\2\0\1\52\2\uffff\1\162\6\uffff\1\163\1"+
-        "\164\1\60\1\uffff";
+        "\1\0\1\151\1\101\2\uffff\2\0\1\52\2\uffff\1\162\6\uffff\1\163\1\164\1\60\1\uffff";
     static final String DFA12_maxS =
-        "\1\uffff\1\151\1\172\2\uffff\2\uffff\1\57\2\uffff\1\162\6\uffff"+
-        "\1\163\1\164\1\172\1\uffff";
+        "\1\uffff\1\151\1\172\2\uffff\2\uffff\1\57\2\uffff\1\162\6\uffff\1\163\1\164\1\172\1\uffff";
     static final String DFA12_acceptS =
-        "\3\uffff\1\2\1\3\3\uffff\1\7\1\10\1\uffff\1\2\1\3\1\4\1\5\1\6\1"+
-        "\7\3\uffff\1\1";
+        "\3\uffff\1\2\1\3\3\uffff\1\7\1\10\1\uffff\1\2\1\3\1\4\1\5\1\6\1\7\3\uffff\1\1";
     static final String DFA12_specialS =
         "\1\2\4\uffff\1\0\1\1\16\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\11\11\2\10\2\11\1\10\22\11\1\10\1\11\1\5\4\11\1\6\7\11\1\7"+
-            "\12\4\7\11\32\3\3\11\1\2\1\3\1\11\5\3\1\1\24\3\uff85\11",
+            "\11\11\2\10\2\11\1\10\22\11\1\10\1\11\1\5\4\11\1\6\7\11\1\7\12\4\7\11\32\3\3\11\1\2\1\3\1\11\5\3\1\1\24\3\uff85\11",
             "\1\12",
             "\32\13\4\uffff\1\13\1\uffff\32\13",
             "",

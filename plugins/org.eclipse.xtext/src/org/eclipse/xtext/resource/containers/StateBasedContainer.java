@@ -47,6 +47,7 @@ public class StateBasedContainer extends ResourceDescriptionsBasedContainer {
 		return Iterables.filter(unfiltered, new Predicate<IEObjectDescription>() {
 			private Collection<URI> contents = null;
 
+			@Override
 			public boolean apply(IEObjectDescription input) {
 				if(contents == null) {
 					contents = state.getContents();
@@ -126,6 +127,9 @@ public class StateBasedContainer extends ResourceDescriptionsBasedContainer {
 		return super.getExportedObjects(type, qualifiedName, ignoreCase);
 	}
 	
+	/**
+	 * @since 2.4
+	 */
 	@Override
 	public String toString() {
 		return "["+getClass().getSimpleName()+"] "+ state;

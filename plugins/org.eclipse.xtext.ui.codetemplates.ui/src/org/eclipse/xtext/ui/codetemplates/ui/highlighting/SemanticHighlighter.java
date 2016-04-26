@@ -21,6 +21,7 @@ import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.ui.codetemplates.templates.Codetemplate;
 import org.eclipse.xtext.ui.codetemplates.templates.Codetemplates;
 import org.eclipse.xtext.ui.codetemplates.templates.TemplatePart;
@@ -28,9 +29,11 @@ import org.eclipse.xtext.ui.codetemplates.templates.TemplatesPackage;
 import org.eclipse.xtext.ui.codetemplates.templates.Variable;
 import org.eclipse.xtext.ui.codetemplates.ui.evaluator.EvaluatedTemplate;
 import org.eclipse.xtext.ui.codetemplates.ui.registry.LanguageRegistry;
-import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightedPositionAcceptor;
-import org.eclipse.xtext.ui.editor.syntaxcoloring.ISemanticHighlightingCalculator;
+import org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor;
+import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 import org.eclipse.xtext.ui.editor.templates.ContextTypeIdHelper;
+import org.eclipse.xtext.util.CancelIndicator;
+import org.eclipse.xtext.util.ITextRegion;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
@@ -44,7 +47,11 @@ public class SemanticHighlighter implements ISemanticHighlightingCalculator {
 	@Inject
 	private LanguageRegistry registry;
 	
-	public void provideHighlightingFor(XtextResource resource, final IHighlightedPositionAcceptor acceptor) {
+	@Inject
+	private OperationCanceledManager operationCanceledManager;
+	
+	@Override
+	public void provideHighlightingFor(XtextResource resource, final IHighlightedPositionAcceptor acceptor, CancelIndicator cancelIndicator) {
 		if (resource == null || resource.getContents().isEmpty())
 			return;
 		Codetemplates templates = (Codetemplates) resource.getContents().get(0);
@@ -55,9 +62,11 @@ public class SemanticHighlighter implements ISemanticHighlightingCalculator {
 				ContextTypeIdHelper helper = registry.getContextTypeIdHelper(grammar);
 				ContextTypeRegistry contextTypeRegistry = registry.getContextTypeRegistry(grammar);
 				for(Codetemplate template: templates.getTemplates()) {
+					operationCanceledManager.checkCanceled(cancelIndicator);
 					if (template.getBody() != null) {
 						final EvaluatedTemplate evaluatedTemplate = new EvaluatedTemplate(template);
 						highlighter.provideHighlightingFor(evaluatedTemplate.getMappedString(), new IHighlightedPositionAcceptor() {
+							@Override
 							public void addPosition(int offset, int length, String... id) {
 								int beginOffset = evaluatedTemplate.getOriginalOffset(offset);
 								int endOffset = evaluatedTemplate.getOriginalOffset(offset + length);
@@ -127,11 +136,13 @@ public class SemanticHighlighter implements ISemanticHighlightingCalculator {
 		if (node == null)
 			return;
 		if (node instanceof ILeafNode) {
-			acceptor.addPosition(node.getOffset(), node.getLength(), id);
+			ITextRegion textRegion = node.getTextRegion();
+			acceptor.addPosition(textRegion.getOffset(), textRegion.getLength(), id);
 		} else {
 			for (ILeafNode leaf : node.getLeafNodes()) {
 				if (!leaf.isHidden()) {
-					acceptor.addPosition(leaf.getOffset(), leaf.getLength(), id);
+					ITextRegion leafRegion = leaf.getTextRegion();
+					acceptor.addPosition(leafRegion.getOffset(), leafRegion.getLength(), id);
 				}
 			}
 		}

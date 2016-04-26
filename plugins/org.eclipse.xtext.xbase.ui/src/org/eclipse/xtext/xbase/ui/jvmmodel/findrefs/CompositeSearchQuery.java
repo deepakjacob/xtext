@@ -22,11 +22,12 @@ import org.eclipse.jdt.internal.ui.search.SearchResultUpdater;
 import org.eclipse.jdt.ui.search.QuerySpecification;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
-import org.eclipse.xtext.xbase.ui.internal.XtypeActivator;
+import org.eclipse.xtext.xbase.ui.internal.XbaseActivator;
 
 /**
  * @author Jan Koehnlein - Initial contribution and API
  */
+@SuppressWarnings("restriction")
 public class CompositeSearchQuery extends JavaSearchQuery {
 
 	private List<ISearchQuery> children = newArrayList();
@@ -51,14 +52,15 @@ public class CompositeSearchQuery extends JavaSearchQuery {
 		for(ISearchQuery child: children) {
 			IStatus status = child.run(progress.newChild(1));
 			multiStatus.add(status);
-			if(progress.isCanceled())
-				multiStatus.add(new Status(IStatus.WARNING, getPluginId(), "Search operation canceled by user"));
+			if(progress.isCanceled()) {
+				return Status.CANCEL_STATUS;
+			}
 		}
 		return multiStatus;
 	}
 
 	protected String getPluginId() {
-		return XtypeActivator.getInstance().getBundle().getSymbolicName();
+		return XbaseActivator.getInstance().getBundle().getSymbolicName();
 	}
 
 	public void setLabel(String label) {

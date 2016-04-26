@@ -7,9 +7,12 @@
  *******************************************************************************/
 package org.eclipse.xtext.xtext;
 
+import static com.google.common.collect.Maps.*;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.Diagnostic;
@@ -41,11 +44,16 @@ import org.eclipse.xtext.TypeRef;
 import org.eclipse.xtext.UnorderedGroup;
 import org.eclipse.xtext.XtextFactory;
 import org.eclipse.xtext.XtextStandaloneSetup;
-import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.StringInputStream;
+import org.eclipse.xtext.validation.AbstractDeclarativeValidator.State;
 import org.eclipse.xtext.validation.AbstractValidationMessageAcceptingTestCase;
 import org.eclipse.xtext.validation.AbstractValidationMessageAcceptor;
+import org.eclipse.xtext.validation.CheckMode;
+import org.eclipse.xtext.validation.IResourceValidator;
+import org.eclipse.xtext.validation.Issue;
+import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -66,6 +74,189 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		super.setUp();
 		with(XtextStandaloneSetup.class);
 		EValidator.Registry.INSTANCE.put(EcorePackage.eINSTANCE, EcoreValidator.INSTANCE);
+	}
+	
+	private void configureValidator(XtextValidator validator, ValidationMessageAcceptor messageAcceptor, EObject currentObject) {
+		State state = validator.setMessageAcceptor(messageAcceptor).getState();
+		state.currentObject = currentObject;
+		state.context = newHashMap();
+	}
+	
+	@Test public void testRuleCalledSuper() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar com.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: super=super;\n" + 
+				"super: name=ID;");
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertEquals(issues.toString(), 1, issues.size());
+		assertEquals("Discouraged rule name 'super'", issues.get(0).getMessage());
+		Grammar grammar = (Grammar) resource.getContents().get(0);
+		AbstractRule model = grammar.getRules().get(0);
+		Assignment assignment = (Assignment) model.getAlternatives();
+		RuleCall ruleCall = (RuleCall) assignment.getTerminal();
+		assertSame(grammar.getRules().get(1), ruleCall.getRule());
+	}
+	
+	@Test public void testMissingArgument() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar com.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: rule=Rule<First=true, Second=false>;\n" + 
+				"Rule<First, Missing, Second>: name=ID;");
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertEquals(issues.toString(), 1, issues.size());
+		assertEquals("Missing argument for parameter Missing", issues.get(0).getMessage());
+	}
+	
+	@Test public void testMissingArgument2() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar com.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: rule=Rule<First=true>;\n" + 
+				"Rule<First, Missing, AlsoMissing>: name=ID;");
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertEquals(issues.toString(), 1, issues.size());
+		assertEquals("2 missing arguments for the following parameters: Missing, AlsoMissing", issues.get(0).getMessage());
+	}
+	
+	@Test public void testMissingArgument3() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar com.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: rule=Rule<true>;\n" + 
+				"Rule<First, Missing, AlsoMissing>: name=ID;");
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertEquals(issues.toString(), 1, issues.size());
+		assertEquals("Expected 3 arguments but got 1", issues.get(0).getMessage());
+	}
+
+	@Test public void testOutOfSequenceArgument_01() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar com.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: rule=Rule<true, C=false, B=true>;\n" + 
+				"Rule<A, B, C>: name=ID;");
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertEquals(issues.toString(), 2, issues.size());
+		assertEquals("Out of sequence named argument. Expected value for B", issues.get(0).getMessage());
+		assertEquals("Out of sequence named argument. Expected value for C", issues.get(1).getMessage());
+	}
+	
+	@Test public void testOutOfSequenceArgument_02() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar com.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: rule=Rule<true, B=false, C=true>;\n" + 
+				"Rule<A, B, C>: name=ID;");
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertEquals(issues.toString(), 0, issues.size());
+	}
+
+	@Test public void testOutOfSequenceArgument_03() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar com.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: rule=Rule<A=true, C=false, B=true>;\n" + 
+				"Rule<A, B, C>: name=ID;");
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertEquals(issues.toString(), 0, issues.size());
+	}
+	
+	@Test public void testDuplicateArgument() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar com.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: rule=Rule<Single=true, Single=false>;\n" + 
+				"Rule<Single>: name=ID;");
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertEquals(issues.toString(), 1, issues.size());
+		assertEquals("Duplicate value for parameter Single", issues.get(0).getMessage());
+	}
+	
+	@Test public void testInvalidOverride() throws Exception {
+		XtextResource resource = getResourceFromStringAndExpect(
+				"grammar org.foo.Bar with org.eclipse.xtext.testlanguages.SimpleExpressionsTestLanguage\n" +
+				"import 'http://www.eclipse.org/xtext/test/simpleExpressions' as mm\n" +
+				"Atom<Whoot> returns mm::Atom: name = ID;", 1);
+		String message = resource.getErrors().get(0).getMessage();
+		assertEquals("Overridden rule Atom does not declare any parameters", message);
+	}
+	
+	@Test public void testParameterNotAvailable() throws Exception {
+		XtextResource resource = getResourceFromStringAndExpect(
+				"grammar Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: rule=Rule<Arg>;\n" + 
+				"Rule<Arg>: name=ID;", 1);
+
+		String message = resource.getErrors().get(0).getMessage();
+		assertEquals("Couldn't resolve reference to Parameter 'Arg'.", message);
+	}
+	
+	/**
+	 * see https://bugs.eclipse.org/bugs/show_bug.cgi?id=287082
+	 */
+	@Test public void testOverriddenCardinality() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				"Model: ((name+=ID+)+)?;\n");
+		assertTrue(resource.getErrors().toString(), resource.getErrors().isEmpty());
+		assertEquals(2, resource.getWarnings().size());
+
+		String message = resource.getWarnings().get(0).getMessage();
+		assertEquals("More than one cardinality was set. Merging '+' with previously assigned cardinality to '+'.", message);
+		message = resource.getWarnings().get(1).getMessage();
+		assertEquals("More than one cardinality was set. Merging '?' with previously assigned cardinality to '*'.", message);
+	}
+	
+	@Test public void testSupressedWarning_01() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar org.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+				 
+				"Model: child=Child;\n" + 
+				"/* SuppressWarnings[noInstantiation] */\n" +
+				"Child: name=ID?;");
+		assertTrue(resource.getErrors().toString(), resource.getErrors().isEmpty());
+		assertTrue(resource.getWarnings().toString(), resource.getWarnings().isEmpty());
+
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertTrue(issues.toString(), issues.isEmpty());
+	}
+	
+	@Test public void testSupressedWarning_02() throws Exception {
+		XtextResource resource = getResourceFromString(
+				"grammar org.acme.Bar with org.eclipse.xtext.common.Terminals\n" +
+				"generate metamodel 'myURI'\n" +
+						
+				"/* SuppressWarnings[potentialOverride] */\n" + 
+				"Parens: \n" + 
+				"  ('(' Parens ')'|name=ID) em='!'?;");
+		assertTrue(resource.getErrors().toString(), resource.getErrors().isEmpty());
+		assertTrue(resource.getWarnings().toString(), resource.getWarnings().isEmpty());
+		
+		IResourceValidator validator = get(IResourceValidator.class);
+		List<Issue> issues = validator.validate(resource, CheckMode.FAST_ONLY, CancelIndicator.NullImpl);
+		assertTrue(issues.toString(), issues.isEmpty());
 	}
 	
 	/**
@@ -244,7 +435,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		child.getRules().add(subRuleFoo);
 
 		XtextValidator validator = get(XtextValidator.class);
-		validator.setMessageAcceptor(this).getState().currentObject = subRuleFoo;
+		configureValidator(validator, this, subRuleFoo);
 		validator.checkRuleName(subRuleFoo);
 		assertEquals("A rule's name has to be unique even case insensitive. A used grammar contains another rule 'Foo'.", lastMessage);
 	}
@@ -259,7 +450,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		base.getRules().add(subRuleFoo);
 
 		XtextValidator validator = get(XtextValidator.class);
-		validator.setMessageAcceptor(this).getState().currentObject = subRuleFoo;
+		configureValidator(validator, this, subRuleFoo);
 		validator.checkRuleName(subRuleFoo);
 		assertEquals("A rule's name has to be unique even case insensitive. This grammar contains another rule 'Foo'.", lastMessage);
 	}
@@ -274,7 +465,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		base.getRules().add(subRuleFoo);
 
 		XtextValidator validator = get(XtextValidator.class);
-		validator.setMessageAcceptor(this).getState().currentObject = subRuleFoo;
+		configureValidator(validator, this, subRuleFoo);
 		validator.checkRuleName(subRuleFoo);
 		assertEquals("A rule's name has to be unique.", lastMessage);
 	}
@@ -295,7 +486,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		base.getRules().add(subRuleFoo3);
 
 		XtextValidator validator = get(XtextValidator.class);
-		validator.setMessageAcceptor(this).getState().currentObject = subRuleFoo;
+		configureValidator(validator, this, subRuleFoo);
 		validator.checkRuleName(subRuleFoo);
 		assertEquals("A rule's name has to be unique even case insensitive. The conflicting rules are 'FOO' and 'Foo'.", lastMessage);
 	}
@@ -316,7 +507,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		base.getRules().add(subRuleFoo3);
 
 		XtextValidator validator = get(XtextValidator.class);
-		validator.setMessageAcceptor(this).getState().currentObject = subRuleFoo;
+		configureValidator(validator, this, subRuleFoo);
 		validator.checkRuleName(subRuleFoo);
 		assertEquals("A rule's name has to be unique even case insensitive. The conflicting rules are 'FOO', 'Foo' and 'fOO'.", lastMessage);
 	}
@@ -860,6 +1051,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		XtextResource resource = doGetResource(new org.eclipse.xtext.util.StringInputStream("A: value=B; B: name=ID;"),URI.createURI("testBug_293110"));
 		Diagnostic diagnostic = Diagnostician.INSTANCE.validate(resource.getContents().get(0));
 		Collection<Diagnostic> runtimeExceptions = Collections2.filter(diagnostic.getChildren(), new Predicate<Diagnostic>(){
+			@Override
 			public boolean apply(Diagnostic input) {
 				return input.getException() instanceof RuntimeException;
 			}});
@@ -915,7 +1107,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		Action action = XtextFactory.eINSTANCE.createAction();
 		unorderedGroup.getElements().add(action);
 		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(action, true, false);
-		validator.setMessageAcceptor(messageAcceptor);
+		configureValidator(validator, messageAcceptor, action);
 		validator.checkActionInUnorderedGroup(action);
 		messageAcceptor.validate();
 	}
@@ -1190,7 +1382,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		Grammar grammar = (Grammar) getModel(grammarAsText);
 		XtextValidator validator = get(XtextValidator.class);
 		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(grammar, true, false);
-		validator.setMessageAcceptor(messageAcceptor);
+		configureValidator(validator, messageAcceptor, grammar);
 		validator.checkHiddenTokenIsNotAFragment(grammar);
 		messageAcceptor.validate();
 	}
@@ -1206,7 +1398,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		ParserRule rule = (ParserRule) grammar.getRules().get(0);
 		XtextValidator validator = get(XtextValidator.class);
 		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(rule, true, false);
-		validator.setMessageAcceptor(messageAcceptor);
+		configureValidator(validator, messageAcceptor, rule);
 		validator.checkHiddenTokenIsNotAFragment(rule);
 		messageAcceptor.validate();
 	}
@@ -1221,7 +1413,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		Grammar grammar = (Grammar) getModel(grammarAsText);
 		XtextValidator validator = get(XtextValidator.class);
 		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(grammar, true, false);
-		validator.setMessageAcceptor(messageAcceptor);
+		configureValidator(validator, messageAcceptor, grammar);
 		validator.checkHiddenTokenIsNotAFragment(grammar);
 		messageAcceptor.validate();
 	}
@@ -1237,7 +1429,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		ParserRule rule = (ParserRule) grammar.getRules().get(0);
 		XtextValidator validator = get(XtextValidator.class);
 		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(rule, true, false);
-		validator.setMessageAcceptor(messageAcceptor);
+		configureValidator(validator, messageAcceptor, rule);
 		validator.checkHiddenTokenIsNotAFragment(rule);
 		messageAcceptor.validate();
 	}
@@ -1439,6 +1631,103 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		messageAcceptor.validate();
 	}
 	
+	@Test public void testRuleCallAllowed_10() throws Exception {
+		String grammarAsText =
+			"grammar test with org.eclipse.xtext.common.Terminals\n" +
+			"generate test 'http://test'\n" +
+			"Model: name=ID Fragment;\n"+
+			"fragment Fragment: value=STRING;";
+	
+		Grammar grammar = (Grammar) getModel(grammarAsText);
+		ParserRule rule = (ParserRule) grammar.getRules().get(0);
+		RuleCall ruleCall = (RuleCall) ((Group) rule.getAlternatives()).getElements().get(1);
+		XtextValidator validator = get(XtextValidator.class);
+		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(null, false, false);
+		validator.setMessageAcceptor(messageAcceptor);
+		validator.checkUnassignedRuleCallAllowed(ruleCall);
+		messageAcceptor.validate();
+	}
+	
+	@Test public void testRuleCallAllowed_11() throws Exception {
+		String grammarAsText =
+			"grammar test with org.eclipse.xtext.common.Terminals\n" +
+			"generate test 'http://test'\n" +
+			"Model: name=ID Fragment;\n" +
+			"fragment Fragment: Other;\n" +
+			"Other: name=ID;";
+	
+		Grammar grammar = (Grammar) getModel(grammarAsText);
+		ParserRule rule = (ParserRule) grammar.getRules().get(1);
+		RuleCall ruleCall = (RuleCall) rule.getAlternatives();
+		XtextValidator validator = get(XtextValidator.class);
+		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(ruleCall, true, false);
+		validator.setMessageAcceptor(messageAcceptor);
+		try {
+			validator.checkUnassignedRuleCallAllowed(ruleCall);
+			fail();
+		} catch(RuntimeException e) {
+			assertEquals("org.eclipse.xtext.validation.GuardException", e.getClass().getName());
+		}
+		messageAcceptor.validate();
+	}
+	
+	@Test public void testRuleCallAllowed_12() throws Exception {
+		String grammarAsText =
+			"grammar test with org.eclipse.xtext.common.Terminals\n" +
+			"generate test 'http://test'\n" +
+			"Model: name=ID Fragment;\n" +
+			"fragment Fragment: Other;\n" +
+			"fragment Other: name=ID;";
+	
+		Grammar grammar = (Grammar) getModel(grammarAsText);
+		ParserRule rule = (ParserRule) grammar.getRules().get(1);
+		RuleCall ruleCall = (RuleCall) rule.getAlternatives();
+		XtextValidator validator = get(XtextValidator.class);
+		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(null, false, false);
+		validator.setMessageAcceptor(messageAcceptor);
+		validator.checkUnassignedRuleCallAllowed(ruleCall);
+		messageAcceptor.validate();
+	}
+	
+	@Test public void testActionAllowed_01() throws Exception {
+		String grammarAsText =
+			"grammar test with org.eclipse.xtext.common.Terminals\n" +
+			"generate test 'http://test'\n" +
+			"Model: name=ID Fragment;\n" +
+			"fragment Fragment: {Model};\n";
+	
+		Grammar grammar = (Grammar) getModel(grammarAsText);
+		ParserRule rule = (ParserRule) grammar.getRules().get(1);
+		Action action = (Action) rule.getAlternatives();
+		XtextValidator validator = get(XtextValidator.class);
+		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(action, true, false);
+		validator.setMessageAcceptor(messageAcceptor);
+		try {
+			validator.checkUnassignedActionAfterAssignment(action);
+			fail();
+		} catch(RuntimeException e) {
+			assertEquals("org.eclipse.xtext.validation.GuardException", e.getClass().getName());
+		}
+		messageAcceptor.validate();
+	}
+	
+	@Test public void testActionAllowed_02() throws Exception {
+		String grammarAsText =
+			"grammar test with org.eclipse.xtext.common.Terminals\n" +
+			"generate test 'http://test'\n" +
+			"Model: name=ID Fragment;\n" +
+			"fragment Fragment: {Model.prev=current};\n";
+	
+		Grammar grammar = (Grammar) getModel(grammarAsText);
+		ParserRule rule = (ParserRule) grammar.getRules().get(1);
+		Action action = (Action) rule.getAlternatives();
+		XtextValidator validator = get(XtextValidator.class);
+		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(action, true, false);
+		validator.setMessageAcceptor(messageAcceptor);
+		validator.checkAssignedActionAfterAssignment(action);
+		messageAcceptor.validate();
+	}
+	
 	@Test public void testPredicatedUnorderedGroup_01() throws Exception {
 		String grammarAsText =
 				"grammar test with org.eclipse.xtext.common.Terminals\n" +
@@ -1486,7 +1775,7 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		TerminalRule rule = (TerminalRule) grammar.getRules().get(1);
 		XtextValidator validator = get(XtextValidator.class);
 		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(rule, false, true);
-		validator.setMessageAcceptor(messageAcceptor);
+		configureValidator(validator, messageAcceptor, rule);
 		validator.checkTerminalRuleNamingConventions(rule);
 		messageAcceptor.validate();
 	}
@@ -1532,6 +1821,51 @@ public class XtextValidationTest extends AbstractValidationMessageAcceptingTestC
 		);
 		validator.setMessageAcceptor(messageAcceptor);
 		validator.checkUnorderedGroupIsNotPredicated(grammar);
+		messageAcceptor.validate();
+	}
+	
+	@Test public void testEmptyKeyword() throws Exception {
+		String grammarAsText =
+				"grammar test with org.eclipse.xtext.common.Terminals\n" +
+				"generate test 'http://test'\n" +
+				"A: foo='';";
+		
+		Grammar grammar = (Grammar) getModel(grammarAsText);
+		XtextValidator validator = get(XtextValidator.class);
+		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(null, true, false);
+		Assignment valueAssignment = (Assignment) grammar.getRules().get(0).getAlternatives();
+		messageAcceptor.expectedContext(
+				valueAssignment.getTerminal()
+		);
+		configureValidator(validator, messageAcceptor, valueAssignment);
+		validator.checkKeywordNotEmpty((Keyword) valueAssignment.getTerminal());
+		messageAcceptor.validate();
+	}
+	
+	@Test public void testKeywordWithSpaces() throws Exception {
+		String grammarAsText =
+				"grammar test with org.eclipse.xtext.common.Terminals\n" +
+				"generate test 'http://test'\n" +
+				"A: foo='a b c'; B: bar='x\ty';";
+		
+		Grammar grammar = (Grammar) getModel(grammarAsText);
+		XtextValidator validator = get(XtextValidator.class);
+		ValidatingMessageAcceptor messageAcceptor = new ValidatingMessageAcceptor(null, false, true);
+		Assignment valueAssignment = (Assignment) grammar.getRules().get(0).getAlternatives();
+		Assignment valueAssignment2 = (Assignment) grammar.getRules().get(1).getAlternatives();
+		messageAcceptor.expectedContext(
+				valueAssignment.getTerminal()
+		);
+		configureValidator(validator, messageAcceptor, valueAssignment);
+		validator.checkKeywordNoSpaces((Keyword) valueAssignment.getTerminal());
+		messageAcceptor.validate();
+		
+		messageAcceptor = new ValidatingMessageAcceptor(null, false, true);
+		messageAcceptor.expectedContext(
+				valueAssignment2.getTerminal()
+		);
+		configureValidator(validator, messageAcceptor, valueAssignment2);
+		validator.checkKeywordNoSpaces((Keyword) valueAssignment2.getTerminal());
 		messageAcceptor.validate();
 	}
 	

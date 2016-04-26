@@ -8,6 +8,10 @@ package org.eclipse.xtext.xbase.compiler;
  * http://www.eclipse.org/legal/epl-v10.html
  *******************************************************************************/
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
+import static java.util.Collections.singletonMap;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -16,7 +20,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,25 +36,27 @@ import org.eclipse.jdt.core.compiler.CompilationProgress;
 import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.batch.Main;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
+import org.eclipse.xtext.junit4.TemporaryFolder;
 import org.eclipse.xtext.util.Files;
+import org.eclipse.xtext.util.JavaVersion;
 import org.eclipse.xtext.util.Pair;
+import org.eclipse.xtext.util.RuntimeIOException;
 import org.eclipse.xtext.util.Tuples;
 import org.eclipse.xtext.xbase.lib.Functions;
 import org.eclipse.xtext.xbase.lib.Functions.Function0;
 
 import com.google.inject.Inject;
-import com.google.inject.internal.MoreTypes;
-
-import static java.util.Collections.*;
-
-import static com.google.common.collect.Lists.*;
-
-import static com.google.common.collect.Maps.*;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
+ * @noextend This class is not intended to be subclassed by clients.
+ * @noreference This class is not intended to be referenced by clients.
+ * 
+ * @since 2.7
+ * 
+ * @deprecated use {@link InMemoryJavaCompiler}
  */
-@SuppressWarnings("restriction")
+@Deprecated
 public class OnTheFlyJavaCompiler {
 
 	static class DelegateOutStream extends OutputStream {
@@ -112,7 +117,12 @@ public class OnTheFlyJavaCompiler {
 		}
 	}
 
-	public static class PatchedFileSystem extends FileSystem {
+	/**
+	 * @noextend This class is not intended to be subclassed by clients.
+	 * @noreference This class is not intended to be referenced by clients.
+	 * @noinstantiate This class is not intended to be instantiated by clients. 
+	 */
+	static class PatchedFileSystem extends FileSystem {
 
 		private FileSystem delegate;
 
@@ -230,8 +240,18 @@ public class OnTheFlyJavaCompiler {
 	@Inject
 	private ClassPathAssembler classPathAssembler = new ClassPathAssembler();
 	
+	@Inject(optional=true)
+	private TemporaryFolder temporaryFolder;
+	
+	@Inject(optional=true)
+	private IGeneratorConfigProvider generatorConfigProvider;
+
 	public void addClassPath(String classpath) {
 		this.classpath.add(classpath);
+	}
+	
+	public void setTemporaryFolder(TemporaryFolder temporaryFolder) {
+		this.temporaryFolder = temporaryFolder;
 	}
 
 	public void addClassPathOfClass(Class<?> clazz) {
@@ -261,7 +281,10 @@ public class OnTheFlyJavaCompiler {
 		} else {
 			String resolvedRawPath;
 			try {
-				resolvedRawPath = URIUtil.toURI(url).getRawPath();
+				if (url.toExternalForm().contains(" "))
+					resolvedRawPath = URIUtil.toURI(url).getRawPath();
+				else
+					resolvedRawPath = url.toURI().getRawPath();
 			} catch (URISyntaxException e) {
 				throw new WrappedException(e);
 			}
@@ -290,6 +313,10 @@ public class OnTheFlyJavaCompiler {
 	}
 	
 	public Map<String,Class<?>> compileToClasses(Map<String,String> sources) {
+		return internalCompileToClasses(sources).getSecond();
+	}
+	
+	public Pair<ClassLoader, Map<String,Class<?>>> internalCompileToClasses(Map<String,String> sources) {
 		File tempDir = createTempDir();
 		try {
 			for (Entry<String, String> entry : sources.entrySet()) {
@@ -312,16 +339,19 @@ public class OnTheFlyJavaCompiler {
 			boolean compile = compile(sb.toString());
 			if (!compile)
 				throw new IllegalArgumentException("Couldn't compile : "
-						+ errorStream.toString() + "\n" + sources.keySet());
+						+ errorStream.toString() + "\n" + sources);
 			final URL url = tempDir.toURI().toURL();
 			final URLClassLoader loader = new URLClassLoader(new URL[] { url },
 					classPathAssembler.getClassLoader());
 			Map<String,Class<?>> result = newHashMap();
 			for (String name : sources.keySet()) {
-				Class<?> clazz = loader.loadClass(name.replace('/','.'));
+				String qname = name.replace('/','.');
+				Class<?> clazz = loader.loadClass(qname);
 				result.put(name, clazz);
 			}
-			return result;
+			return Tuples.<ClassLoader, Map<String,Class<?>>>create(loader, result);
+		} catch (IllegalArgumentException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} finally {
@@ -329,34 +359,35 @@ public class OnTheFlyJavaCompiler {
 		}
 	}
 
-	private File createTempDir() {
-		File rootTempDir = null;
-		String defTmpPath = System.getProperty("java.io.tmpdir");
-		if (defTmpPath != null) {
-			rootTempDir = new File(defTmpPath);
-		} else {
-			// use current directory, should be writable
-			rootTempDir = new File("./");
+	protected File createTempDir() {
+		if (temporaryFolder != null && temporaryFolder.isInitialized()) {
+			try {
+				return temporaryFolder.newFolder();
+			} catch (IOException e) {
+				throw new RuntimeIOException(e);
+			}
 		}
-		// VM unique temp dir
-		File tempDir = new File(rootTempDir, "otfjc"
-				+ OnTheFlyJavaCompiler.class.hashCode());
-		if (tempDir.exists()) {
-			tempDir.delete();
-		}
-		tempDir.mkdir();
-		return tempDir;
+		return com.google.common.io.Files.createTempDir();
 	}
-
-	private void cleanUpTmpFolder(File tempDir) {
-		try {
-			Files.cleanFolder(tempDir, new FileFilter() {
-				public boolean accept(File pathname) {
-					return !pathname.getName().endsWith(".class");
-				}
-			}, true, true);
-		} catch (FileNotFoundException e) {
-			// ignore
+	
+	protected void cleanUpTmpFolder(File tempDir) {
+		if (temporaryFolder == null || !temporaryFolder.isInitialized()) {
+			try {
+				tempDir.deleteOnExit();
+				// Classloader needs .class files to lazy load an anonymous non static classes
+				Files.cleanFolder(tempDir, new FileFilter() {
+					@Override
+					public boolean accept(File pathname) {
+						boolean isClass = pathname.getName().endsWith(".class");
+						if(isClass) {
+							pathname.deleteOnExit();
+						}
+						return !isClass;
+					}
+				}, true, true);
+			} catch (FileNotFoundException e) {
+				// ignore
+			}
 		}
 	}
 
@@ -416,7 +447,6 @@ public class OnTheFlyJavaCompiler {
 				Tuples.pair((Type) paramType2, "p2"));
 	}
 
-	@SuppressWarnings("deprecation")
 	public String getClasspathArgs() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("-classpath ");
@@ -433,7 +463,7 @@ public class OnTheFlyJavaCompiler {
 				sb.append(File.pathSeparator);
 		}
 		sb.append('"');
-		return sb.toString();
+		return sb.toString().replace("%20", " ");
 	}
 
 	public void initializeClassPath() {
@@ -442,7 +472,21 @@ public class OnTheFlyJavaCompiler {
 	}
 
 	protected String getComplianceLevelArg() {
-		return "-1.5";
+		JavaVersion javaVersion = JavaVersion.JAVA5;
+		if (generatorConfigProvider != null) {
+			GeneratorConfig generatorConfig = generatorConfigProvider.get(null);
+			javaVersion = generatorConfig.getJavaSourceVersion();
+		}
+		switch (javaVersion) {
+			case JAVA8:
+				return "-1.8";
+			case JAVA7:
+				return "-1.7";
+			case JAVA6:
+				return "-1.6";
+			default:
+				return "-1.5";
+		}
 	}
 
 	protected Main getMain() {
@@ -465,8 +509,11 @@ public class OnTheFlyJavaCompiler {
 		}
 	}
 
+	/**
+	 * @param url the location of the class file.
+	 */
 	protected URL resolveBundleResourceURL(URL url) throws IOException {
-		throw new UnsupportedOperationException();
+		return FileLocator.resolve(url);
 	}
 
 	public void setParentClassLoader(ClassLoader parentClassLoader) {
@@ -474,20 +521,7 @@ public class OnTheFlyJavaCompiler {
 	}
 
 	protected String toString(Type returnType) {
-		Class<MoreTypes> clazz = MoreTypes.class;
-		Method method = null;
-		try {
-			try {
-				// Guice 3
-				method = clazz.getDeclaredMethod("typeToString", Type.class);
-			} catch (NoSuchMethodException e) {
-				// Guice <3
-				method = clazz.getDeclaredMethod("toString", Type.class);
-			}
-			return (String) method.invoke(null, returnType);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return returnType instanceof Class ? ((Class<?>) returnType).getName() : returnType.toString();
 	}
 
 }

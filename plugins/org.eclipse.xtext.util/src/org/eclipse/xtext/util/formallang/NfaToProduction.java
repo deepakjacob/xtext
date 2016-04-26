@@ -9,6 +9,7 @@ package org.eclipse.xtext.util.formallang;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +22,9 @@ import org.eclipse.xtext.util.Tuples;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Predicates;
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -48,6 +50,12 @@ public class NfaToProduction {
 		}
 
 		protected abstract int getElementCount();
+
+		protected abstract void sort(Comparator<? super AbstractElementAlias<T>> comparator);
+
+		protected abstract T getFirstElement();
+
+		public abstract Collection<AbstractElementAlias<T>> getChildren();
 
 		public boolean isMany() {
 			return many;
@@ -77,6 +85,23 @@ public class NfaToProduction {
 
 	}
 
+	protected class ElementAliasComparator<T> implements Comparator<AbstractElementAlias<T>> {
+
+		protected final Comparator<? super T> delegate;
+
+		public ElementAliasComparator(Comparator<? super T> delegate) {
+			super();
+			this.delegate = delegate;
+		}
+
+		@Override
+		public int compare(AbstractElementAlias<T> o1, AbstractElementAlias<T> o2) {
+			T e1 = o1.getFirstElement();
+			T e2 = o2.getFirstElement();
+			return delegate.compare(e1, e2);
+		}
+	}
+
 	protected static class AliasGrammarProvider<TOKEN> implements Production<AbstractElementAlias<TOKEN>, TOKEN> {
 
 		protected AbstractElementAlias<TOKEN> root;
@@ -85,41 +110,49 @@ public class NfaToProduction {
 			this.root = root;
 		}
 
+		@Override
 		public Iterable<AbstractElementAlias<TOKEN>> getAlternativeChildren(AbstractElementAlias<TOKEN> ele) {
 			return ele instanceof AlternativeAlias ? ((AlternativeAlias<TOKEN>) ele).getChildren() : null;
 		}
 
+		@Override
 		public AbstractElementAlias<TOKEN> getParent(AbstractElementAlias<TOKEN> ele) {
 			return null;
 		}
 
+		@Override
 		public AbstractElementAlias<TOKEN> getRoot() {
 			return root;
 		}
 
+		@Override
 		public Iterable<AbstractElementAlias<TOKEN>> getSequentialChildren(AbstractElementAlias<TOKEN> ele) {
 			return ele instanceof GroupAlias ? ((GroupAlias<TOKEN>) ele).getChildren() : null;
 		}
 
+		@Override
 		public TOKEN getToken(AbstractElementAlias<TOKEN> owner) {
 			return owner instanceof ElementAlias ? ((ElementAlias<TOKEN>) owner).getElement() : null;
 		}
 
+		@Override
 		public Iterable<AbstractElementAlias<TOKEN>> getUnorderedChildren(AbstractElementAlias<TOKEN> ele) {
 			return null;
 		}
 
+		@Override
 		public boolean isMany(AbstractElementAlias<TOKEN> ele) {
 			return ele.isMany();
 		}
 
+		@Override
 		public boolean isOptional(AbstractElementAlias<TOKEN> ele) {
 			return ele.isOptional();
 		}
 	}
 
 	protected static class AlternativeAlias<T> extends AbstractElementAlias<T> {
-		protected Set<AbstractElementAlias<T>> children = Sets.newHashSet();
+		protected Set<AbstractElementAlias<T>> children = Sets.newLinkedHashSet();
 
 		public AlternativeAlias() {
 			super();
@@ -136,6 +169,7 @@ public class NfaToProduction {
 			children.add(child);
 		}
 
+		@Override
 		public Set<AbstractElementAlias<T>> getChildren() {
 			return children;
 		}
@@ -146,6 +180,20 @@ public class NfaToProduction {
 			for (AbstractElementAlias<T> child : children)
 				result += child.getElementCount();
 			return result;
+		}
+
+		@Override
+		protected void sort(Comparator<? super AbstractElementAlias<T>> comparator) {
+			for (AbstractElementAlias<T> child : this.children)
+				child.sort(comparator);
+			List<AbstractElementAlias<T>> sorting = Lists.newArrayList(this.children);
+			Collections.sort(sorting, comparator);
+			this.children = Sets.newLinkedHashSet(sorting);
+		}
+
+		@Override
+		protected T getFirstElement() {
+			return this.children.iterator().next().getFirstElement();
 		}
 
 	}
@@ -172,6 +220,20 @@ public class NfaToProduction {
 			return 1;
 		}
 
+		@Override
+		protected void sort(Comparator<? super AbstractElementAlias<T>> comparator) {
+		}
+
+		@Override
+		protected T getFirstElement() {
+			return element;
+		}
+
+		@Override
+		public Collection<AbstractElementAlias<T>> getChildren() {
+			return Collections.emptyList();
+		}
+
 	}
 
 	protected static class GroupAlias<T> extends AbstractElementAlias<T> {
@@ -192,6 +254,7 @@ public class NfaToProduction {
 			children.add(child);
 		}
 
+		@Override
 		public List<AbstractElementAlias<T>> getChildren() {
 			return children;
 		}
@@ -203,12 +266,24 @@ public class NfaToProduction {
 				result += child.getElementCount();
 			return result;
 		}
+
+		@Override
+		protected void sort(Comparator<? super AbstractElementAlias<T>> comparator) {
+			for (AbstractElementAlias<T> child : this.children)
+				child.sort(comparator);
+		}
+
+		@Override
+		protected T getFirstElement() {
+			return this.children.get(0).getFirstElement();
+		}
+
 	}
 
 	protected static class StateAlias<TOKEN> {
 		protected AbstractElementAlias<TOKEN> element;
-		protected Set<StateAlias<TOKEN>> incoming = Sets.newHashSet();
-		protected Set<StateAlias<TOKEN>> outgoing = Sets.newHashSet();
+		protected Set<StateAlias<TOKEN>> incoming = Sets.newLinkedHashSet();
+		protected Set<StateAlias<TOKEN>> outgoing = Sets.newLinkedHashSet();
 
 		protected StateAlias(AbstractElementAlias<TOKEN> element) {
 			super();
@@ -267,14 +342,17 @@ public class NfaToProduction {
 			this.stop = stop;
 		}
 
+		@Override
 		public Iterable<StateAlias<TOKEN>> getFollowers(StateAlias<TOKEN> state) {
 			return state.getOutgoing();
 		}
 
+		@Override
 		public StateAlias<TOKEN> getStart() {
 			return start;
 		}
 
+		@Override
 		public StateAlias<TOKEN> getStop() {
 			return stop;
 		}
@@ -314,7 +392,7 @@ public class NfaToProduction {
 
 	protected <T> boolean createAlternative(StateAliasNfa<T> states) {
 		boolean created = false;
-		Multimap<Pair<Set<StateAlias<T>>, Set<StateAlias<T>>>, StateAlias<T>> alternative = HashMultimap.create();
+		Multimap<Pair<Set<StateAlias<T>>, Set<StateAlias<T>>>, StateAlias<T>> alternative = LinkedHashMultimap.create();
 
 		for (StateAlias<T> candidate : new NfaUtil().collect(states))
 			if (!candidate.getIncoming().isEmpty() && !candidate.getOutgoing().isEmpty())
@@ -408,8 +486,136 @@ public class NfaToProduction {
 		return created;
 	}
 
+	protected <T> boolean mergeOptionalIntoMany(StateAlias<T> state, Set<StateAlias<T>> visited) {
+		if (!visited.add(state))
+			return false;
+		boolean merged = false;
+		if (state.getElement().isMany()) {
+			for (StateAlias<T> out : ImmutableList.copyOf(state.getOutgoing())) {
+				if (state.getIncoming().contains(out) && isOptionalIgnoring(out, state)) {
+					mergeOptionalIntoMany(state, out);
+					merged = true;
+				}
+			}
+			for (StateAlias<T> in : ImmutableList.copyOf(state.getIncoming())) {
+				if (state.getOutgoing().contains(in) && isOptionalIgnoring(in, state)) {
+					mergeOptionalIntoMany(in, state);
+					merged = true;
+				}
+			}
+		}
+		for (StateAlias<T> out : ImmutableList.copyOf(state.getOutgoing())) {
+			if (mergeOptionalIntoMany(out, visited))
+				merged = true;
+		}
+		return merged;
+	}
+
+	protected <T> boolean isOptionalIgnoring(StateAlias<T> cand, StateAlias<T> ignored) {
+		if (cand.getIncoming().isEmpty() || cand.getOutgoing().isEmpty())
+			return false;
+		for (StateAlias<T> in : cand.getIncoming())
+			if (!in.equals(ignored) && !in.getOutgoing().containsAll(cand.getOutgoing()))
+				return false;
+		return true;
+	}
+
+	protected <T> void mergeOptionalIntoMany(StateAlias<T> first, StateAlias<T> second) {
+		StateAlias<T> many = first.element.isMany() ? first : second;
+		StateAlias<T> optional = many == first ? second : first;
+		if (optional.getOutgoing().contains(optional)) {
+			optional.element.setMany(true);
+		}
+		many.element.setMany(false);
+		optional.element.setOptional(true);
+		for (StateAlias<T> out : optional.getOutgoing()) {
+			out.getIncoming().remove(optional);
+		}
+		for (StateAlias<T> in : optional.getIncoming()) {
+			in.getOutgoing().remove(optional);
+		}
+		GroupAlias<T> group = new GroupAlias<T>();
+		group.setMany(true);
+		if (first.element instanceof GroupAlias<?> && !first.element.many && !first.element.optional) {
+			group.children.addAll(((GroupAlias<T>) first.element).children);
+		} else {
+			group.addChild(first.getElement());
+		}
+		if (second.element instanceof GroupAlias<?> && !second.element.many && !second.element.optional) {
+			group.children.addAll(((GroupAlias<T>) second.element).children);
+		} else {
+			group.addChild(second.element);
+		}
+		many.element = group;
+	}
+
+	protected <T> boolean mergeAlternativeMultiples(StateAlias<T> state, Set<StateAlias<T>> visited) {
+		if (!visited.add(state))
+			return false;
+		boolean merged = false;
+
+		if (state.getElement().isMany()) {
+			for (StateAlias<T> out : ImmutableList.copyOf(state.getOutgoing())) {
+				if (areAlternativeMultiples(state, out)) {
+					mergeAlternativeMultiples(state, out);
+					merged = true;
+				}
+			}
+		}
+
+		for (StateAlias<T> out : ImmutableList.copyOf(state.getOutgoing())) {
+			if (mergeAlternativeMultiples(out, visited))
+				merged = true;
+		}
+		return merged;
+	}
+
+	protected <T> boolean areAlternativeMultiples(StateAlias<T> first, StateAlias<T> second) {
+		if (!first.getElement().isMany() || !second.getElement().isMany())
+			return false;
+		if (!first.getOutgoing().contains(second) || !first.getIncoming().contains(second))
+			return false;
+
+		for (StateAlias<T> in : first.getIncoming()) {
+			if (!in.equals(second) && !second.getIncoming().contains(in))
+				return false;
+		}
+		for (StateAlias<T> out : first.getOutgoing()) {
+			if (!out.equals(second) && !second.getOutgoing().contains(out))
+				return false;
+		}
+		return true;
+	}
+
+	protected <T> void mergeAlternativeMultiples(StateAlias<T> first, StateAlias<T> second) {
+		first.element.many = false;
+		second.element.many = false;
+		AlternativeAlias<T> alternative = new AlternativeAlias<T>();
+		alternative.many = true;
+		if (first.element instanceof AlternativeAlias<?>) {
+			alternative.getChildren().addAll(((AlternativeAlias<T>) first.element).children);
+		} else {
+			alternative.addChild(first.getElement());
+		}
+		if (second.element instanceof AlternativeAlias<?>) {
+			alternative.getChildren().addAll(((AlternativeAlias<T>) second.element).children);
+		} else {
+			alternative.addChild(second.element);
+		}
+		if (first.element.optional || second.element.optional) {
+			alternative.optional = true;
+		}
+		first.element = alternative;
+		for (StateAlias<T> out : second.getOutgoing()) {
+			out.getIncoming().remove(second);
+		}
+		for (StateAlias<T> in : second.getIncoming()) {
+			in.getOutgoing().remove(second);
+		}
+	}
+
 	protected <STATE, TOKEN> StateAliasNfa<TOKEN> createNfa(Nfa<STATE> nfa, Function<STATE, TOKEN> state2token) {
-		HashMap<STATE, StateAlias<TOKEN>> cache = Maps.<STATE, StateAlias<TOKEN>> newHashMap();
+		HashMap<STATE, StateAlias<TOKEN>> cache = Maps.<STATE, StateAlias<TOKEN>> newLinkedHashMap();
 		StateAlias<TOKEN> stop = null;
 		if (nfa.getStart() != nfa.getStop()) {
 			stop = new StateAlias<TOKEN>(new ElementAlias<TOKEN>(state2token.apply(nfa.getStop())));
@@ -470,7 +676,8 @@ public class NfaToProduction {
 		return result;
 	}
 
-	protected <T> boolean isPreferredSplitState(Pair<Integer, StateAlias<T>> state1, Pair<Integer, StateAlias<T>> state2) {
+	protected <T> boolean isPreferredSplitState(Pair<Integer, StateAlias<T>> state1,
+			Pair<Integer, StateAlias<T>> state2) {
 		int count1 = state1.getSecond().getElement().getElementCount();
 		int count2 = state2.getSecond().getElement().getElementCount();
 		if (count1 != count2)
@@ -484,6 +691,11 @@ public class NfaToProduction {
 
 	public <ELEMENT, STATE, TOKEN> ELEMENT nfaToGrammar(Nfa<STATE> nfa, Function<STATE, TOKEN> state2token,
 			ProductionFactory<ELEMENT, TOKEN> grammarFactory) {
+		return nfaToGrammar(nfa, state2token, null, grammarFactory);
+	}
+
+	public <ELEMENT, STATE, TOKEN> ELEMENT nfaToGrammar(Nfa<STATE> nfa, Function<STATE, TOKEN> state2token,
+			Comparator<? super TOKEN> order, ProductionFactory<ELEMENT, TOKEN> grammarFactory) {
 		StateAliasNfa<TOKEN> states = createNfa(nfa, state2token);
 		boolean changed = true;
 		//		System.out.println("init: " + Joiner.on(" ").join(getAllStates(start)));
@@ -497,13 +709,15 @@ public class NfaToProduction {
 				//				System.out.println("after Many: " + Joiner.on(" ").join(getAllStates(start)));
 				changed |= createGroups(states.getStart(), Sets.<StateAlias<TOKEN>> newHashSet());
 				//				System.out.println("after Groups: " + Joiner.on(" ").join(getAllStates(start)));
+				changed |= mergeOptionalIntoMany(states.getStart(), Sets.<StateAlias<TOKEN>> newHashSet());
+				changed |= mergeAlternativeMultiples(states.getStart(), Sets.<StateAlias<TOKEN>> newHashSet());
 			}
 			if (!states.getStart().getOutgoing().isEmpty()) {
 				Pair<Integer, StateAlias<TOKEN>> splitState = findSplitState(states.getStart(), 0,
 						Sets.<StateAlias<TOKEN>> newHashSet());
 				if (splitState != null) {
 					changed = true;
-					//					System.out.println("Splitting " + splitState);
+					//										System.out.println("Splitting " + splitState);
 					splitState(splitState.getSecond());
 				}
 				//				System.out.println("after Split: " + Joiner.on(" ").join(getAllStates(states.getStart())));
@@ -518,12 +732,78 @@ public class NfaToProduction {
 		//				e.printStackTrace();
 		//			}
 		//		}
-		AliasGrammarProvider<TOKEN> production = new AliasGrammarProvider<TOKEN>(states.getStart().getElement());
+		AbstractElementAlias<TOKEN> root = states.getStart().getElement();
+		if (excludeStartAndStop) {
+			root = removeStartAndStop(nfa, state2token, root);
+		}
+		normalize(root);
+		if (order != null)
+			root.sort(new ElementAliasComparator<TOKEN>(order));
+		AliasGrammarProvider<TOKEN> production = new AliasGrammarProvider<TOKEN>(root);
 		return new ProductionUtil().clone(production, grammarFactory);
+	}
+
+	protected <TOKEN, STATE> AbstractElementAlias<TOKEN> removeStartAndStop(Nfa<STATE> nfa,
+			Function<STATE, TOKEN> state2token, AbstractElementAlias<TOKEN> root) {
+		if (excludeStartAndStop && root instanceof GroupAlias<?>) {
+			GroupAlias<TOKEN> group = (GroupAlias<TOKEN>) root;
+			List<AbstractElementAlias<TOKEN>> children = group.getChildren();
+			if (children.size() > 1) {
+				AbstractElementAlias<TOKEN> first = children.get(0);
+				AbstractElementAlias<TOKEN> last = children.get(children.size() - 1);
+				if (first instanceof ElementAlias<?> && last instanceof ElementAlias<?>) {
+					TOKEN startToken = state2token.apply(nfa.getStart());
+					TOKEN stopToken = state2token.apply(nfa.getStop());
+					TOKEN firstToken = ((ElementAlias<TOKEN>) first).getElement();
+					TOKEN lastToken = ((ElementAlias<TOKEN>) last).getElement();
+					if (firstToken == startToken && lastToken == stopToken) {
+						if (children.size() == 3) {
+							return children.get(1);
+						} else {
+							children.remove(children.size() - 1);
+							children.remove(0);
+							return root;
+						}
+					}
+				}
+			}
+		}
+		return root;
+	}
+
+	protected <T> boolean collectMergeableOptions(boolean root, AbstractElementAlias<T> alt,
+			List<AbstractElementAlias<T>> result) {
+		boolean optional = alt.optional;
+		if ((root || !alt.isMany()) && alt instanceof AlternativeAlias<?>) {
+			for (AbstractElementAlias<T> child : ((AlternativeAlias<T>) alt).getChildren())
+				optional |= collectMergeableOptions(false, child, result);
+		} else {
+			result.add(alt);
+			alt.optional = false;
+		}
+		return optional;
+	}
+
+	protected <T> void normalize(AbstractElementAlias<T> element) {
+		if (element instanceof AlternativeAlias<?>) {
+			AlternativeAlias<T> alt = (AlternativeAlias<T>) element;
+			List<AbstractElementAlias<T>> mergeable = Lists.newArrayList();
+			alt.optional = collectMergeableOptions(true, element, mergeable);
+			alt.children = Sets.newLinkedHashSet(mergeable);
+		}
+		for (AbstractElementAlias<T> child : element.getChildren())
+			normalize(child);
 	}
 
 	public <ELEMENT, STATE> ELEMENT nfaToGrammar(Nfa<STATE> nfa, ProductionFactory<ELEMENT, STATE> grammarFactory) {
 		return nfaToGrammar(nfa, Functions.<STATE> identity(), grammarFactory);
+	}
+
+	private boolean excludeStartAndStop = false;
+
+	public NfaToProduction excludeStartAndStop() {
+		excludeStartAndStop = true;
+		return this;
 	}
 
 	protected <T> void splitState(StateAlias<T> state) {

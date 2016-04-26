@@ -88,6 +88,7 @@ public class RenameElementProcessor extends AbstractRenameProcessor {
 	private StatusWrapper status;
 
 	private IRenameElementContext renameElementContext;
+	private RefactoringResourceSetProvider resourceSets;
 	private ResourceSet resourceSet;
 	private URI targetElementURI;
 	private EObject targetElement;
@@ -105,16 +106,23 @@ public class RenameElementProcessor extends AbstractRenameProcessor {
 	public boolean initialize(final IRenameElementContext renameElementContext) {
 		try {
 			status = statusProvider.get();
+			
+			resourceSets = new CachingResourceSetProvider(resourceSetProvider);
+			
 			this.renameElementContext = renameElementContext;
 			this.targetElementURI = renameElementContext.getTargetElementURI();
 			resourceSet = getResourceSet(renameElementContext);
-			targetElement = resourceSet.getEObject(targetElementURI, true);
-			if (targetElement == null) {
-				status.add(FATAL, "Rename target element {0} can not be resolved", targetElementURI);
-			} else {
-				this.renameStrategy = createRenameElementStrategy(targetElement, renameElementContext);
-				if (this.renameStrategy == null)
-					return false;
+			// we may fail to obtain a resourceSet - in that case, it a fatal problem was logged already
+			// so we just stop the initialization process
+			if (resourceSet != null) {
+				targetElement = resourceSet.getEObject(targetElementURI, true);
+				if (targetElement == null) {
+					status.add(FATAL, "Rename target element {0} can not be resolved", targetElementURI);
+				} else {
+					this.renameStrategy = createRenameElementStrategy(targetElement, renameElementContext);
+					if (this.renameStrategy == null)
+						return false;
+				}
 			}
 		} catch (NoSuchStrategyException e) {
 			status.add(FATAL, e.getMessage());
@@ -137,7 +145,7 @@ public class RenameElementProcessor extends AbstractRenameProcessor {
 			status.add(FATAL, "Could not find project for ", renameElementContext.getTargetElementURI());
 			return null;
 		}
-		return resourceSet = resourceSetProvider.get(project);
+		return resourceSet = resourceSets.get(project);
 	}
 
 	protected boolean isValidTargetFile(Resource resource, StatusWrapper status) {
@@ -231,18 +239,34 @@ public class RenameElementProcessor extends AbstractRenameProcessor {
 		try {
 			currentUpdateAcceptor = updateAcceptorProvider.get();
 			transferChangeRedirector(currentUpdateAcceptor);
-			Iterable<URI> dependentElementURIs = dependentElementsCalculator.getDependentElementURIs(targetElement,
-					progress.newChild(1));
+			Iterable<URI> dependentElementURIs = dependentElementsCalculator.getDependentElementURIs(targetElement, progress.newChild(1));
 			Map<URI, URI> original2newElementURIs = renameElementTracker.renameAndTrack(
-					concat(getElementURIs(), dependentElementURIs), newName, resourceSet,
-					renameStrategy, progress.newChild(1));
+					concat(getElementURIs(), dependentElementURIs),
+					newName,
+					resourceSet,
+					renameStrategy,
+					progress.newChild(1));
 			renameStrategy.createDeclarationUpdates(newName, resourceSet, currentUpdateAcceptor);
-
-			renameArguments = new ElementRenameArguments(targetElementURI, newName, renameStrategy,
-					original2newElementURIs);
-			referenceUpdaterDispatcher.createReferenceUpdates(renameArguments, resourceSet, currentUpdateAcceptor,
+			if (progress.isCanceled()) {
+				throw new OperationCanceledException();
+			}
+			renameArguments = new ElementRenameArguments(
+					targetElementURI,
+					newName,
+					renameStrategy,
+					original2newElementURIs,
+					resourceSets);
+			if (progress.isCanceled()) {
+				throw new OperationCanceledException();
+			}
+			referenceUpdaterDispatcher.createReferenceUpdates(
+					renameArguments,
+					resourceSet,
+					currentUpdateAcceptor,
 					progress.newChild(98));
 			status.merge(currentUpdateAcceptor.getRefactoringStatus());
+		} catch (OperationCanceledException e) {
+			throw e;
 		} catch (Exception exc) {
 			handleException(exc, status);
 		}

@@ -18,9 +18,9 @@ import org.eclipse.xtext.resource.IFragmentProvider;
  */
 public class PrimitiveMirror extends AbstractClassMirror {
 	
-	private final ITypeFactory<Class<?>> typeFactory;
+	private final ITypeFactory<Class<?>, JvmType> typeFactory;
 
-	public PrimitiveMirror(ITypeFactory<Class<?>> typeProvider) {
+	public PrimitiveMirror(ITypeFactory<Class<?>, JvmType> typeProvider) {
 		this.typeFactory = typeProvider;
 	}
 
@@ -42,6 +42,7 @@ public class PrimitiveMirror extends AbstractClassMirror {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void initialize(TypeResource typeResource) {
 		for(Class<?> primitiveClass: Primitives.ALL_PRIMITIVE_TYPES) {
 			JvmType type = typeFactory.createType(primitiveClass);
@@ -52,6 +53,7 @@ public class PrimitiveMirror extends AbstractClassMirror {
 	/**
 	 * @since 2.3
 	 */
+	@Override
 	public boolean isSealed() {
 		return true;
 	}

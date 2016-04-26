@@ -22,10 +22,10 @@ import org.eclipse.xtext.xbase.XbasePackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XBooleanLiteralImpl#isIsTrue <em>Is True</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

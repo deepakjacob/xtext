@@ -8,15 +8,21 @@
 package org.eclipse.xtext.xbase.typesystem.util;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.xtext.common.types.JvmParameterizedTypeReference;
+import org.eclipse.xtext.common.types.JvmType;
+import org.eclipse.xtext.common.types.JvmTypeConstraint;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
+import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.ArrayTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.CompoundTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReferenceFactory;
 import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
 
@@ -24,9 +30,25 @@ import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString - focus on differences to ActualTypeArgumentCollector and UnboundTypeParameterAwareTypeArgumentCollector
  */
-@NonNullByDefault
 public class DeferredTypeParameterHintCollector extends AbstractTypeReferencePairWalker {
 	
+	protected class UnboundTypeParameterHintCollector extends UnboundTypeReferenceTraverser {
+		@Override
+		protected void doVisitTypeReference(LightweightTypeReference reference, UnboundTypeReference declaration) {
+			if (declaration.internalIsResolved() || getOwner().isResolved(declaration.getHandle())) {
+				declaration.tryResolve();
+				outerVisit(declaration, reference, declaration, getExpectedVariance(), getActualVariance());
+			} else if (reference.isValidHint()) {
+				addHint(declaration, reference);
+			}
+		}
+
+		@Override
+		protected void doVisitCompoundTypeReference(CompoundTypeReference reference, UnboundTypeReference param) {
+			doVisitTypeReference(reference, param);
+		}
+	}
+
 	public DeferredTypeParameterHintCollector(ITypeReferenceOwner owner) {
 		super(owner);
 	}
@@ -42,21 +64,7 @@ public class DeferredTypeParameterHintCollector extends AbstractTypeReferencePai
 	
 	@Override
 	protected UnboundTypeReferenceTraverser createUnboundTypeReferenceTraverser() {
-		return new UnboundTypeReferenceTraverser() {
-			@Override
-			protected void doVisitTypeReference(LightweightTypeReference reference, UnboundTypeReference declaration) {
-				if (declaration.internalIsResolved() || getOwner().isResolved(declaration.getHandle())) {
-					declaration.tryResolve();
-					outerVisit(declaration, reference, declaration, getExpectedVariance(), getActualVariance());
-				} else {
-					addHint(declaration, reference);
-				}
-			}
-			@Override
-			protected void doVisitCompoundTypeReference(CompoundTypeReference reference, UnboundTypeReference param) {
-				doVisitTypeReference(reference, param);
-			}
-		};
+		return new UnboundTypeParameterHintCollector();
 	}
 	
 	@Override
@@ -64,29 +72,52 @@ public class DeferredTypeParameterHintCollector extends AbstractTypeReferencePai
 		return new CompoundTypeReferenceTraverser() {
 			@Override
 			protected void doVisitUnboundTypeReference(UnboundTypeReference reference, CompoundTypeReference declaration) {
-				addHint(reference, declaration);
+				if (declaration.isSynonym()) {
+					super.doVisitUnboundTypeReference(reference, declaration);
+				} else {
+					addHint(reference, declaration);
+				}
 			}
 		};
+	}
+	
+	protected class DeferredParameterizedTypeReferenceHintCollector extends ParameterizedTypeReferenceTraverser {
+		@Override
+		public void doVisitUnboundTypeReference(UnboundTypeReference reference,
+				ParameterizedTypeReference declaration) {
+			addHint(reference, declaration);
+		}
+		
+		@Override
+		protected boolean shouldProcessInContextOf(JvmTypeParameter declaredTypeParameter, Set<JvmTypeParameter> boundParameters,
+				Set<JvmTypeParameter> visited) {
+			if (boundParameters.contains(declaredTypeParameter) && !visited.add(declaredTypeParameter)) {
+				return false;
+			}
+			return true;
+		}
+		
+		@Override
+		protected void doVisitArrayTypeReference(ArrayTypeReference reference, ParameterizedTypeReference declaration) {
+			JvmType type = declaration.getType();
+			if (type instanceof JvmTypeParameter) {
+				if (shouldProcess((JvmTypeParameter) type)) {
+					JvmTypeParameter typeParameter = (JvmTypeParameter) type;
+					processTypeParameter(typeParameter, reference);
+				}
+			} else {
+				if (!declaration.isRawType() && (declaration.isType(List.class) || declaration.isType(Collection.class) || declaration.isType(Iterable.class))) {
+					LightweightTypeReference elementType = declaration.getTypeArguments().get(0);
+					LightweightTypeReference componentType = reference.getComponentType();
+					outerVisit(componentType.getInvariantBoundSubstitute(), elementType);
+				}
+			}
+		}
 	}
 
 	@Override
 	protected ParameterizedTypeReferenceTraverser createParameterizedTypeReferenceTraverser() {
-		return new ParameterizedTypeReferenceTraverser() {
-			@Override
-			public void doVisitUnboundTypeReference(UnboundTypeReference reference,
-					ParameterizedTypeReference declaration) {
-				addHint(reference, declaration);
-			}
-			
-			@Override
-			protected boolean shouldProcessInContextOf(JvmTypeParameter declaredTypeParameter, Set<JvmTypeParameter> boundParameters,
-					Set<JvmTypeParameter> visited) {
-				if (boundParameters.contains(declaredTypeParameter) && !visited.add(declaredTypeParameter)) {
-					return false;
-				}
-				return true;
-			}
-		};
+		return new DeferredParameterizedTypeReferenceHintCollector();
 	}
 	
 	@Override
@@ -96,8 +127,38 @@ public class DeferredTypeParameterHintCollector extends AbstractTypeReferencePai
 	}
 
 	protected void addHint(UnboundTypeReference typeParameter, LightweightTypeReference reference) {
-		LightweightTypeReference wrapped = reference.getWrapperTypeIfPrimitive();
-		typeParameter.acceptHint(wrapped, BoundTypeArgumentSource.INFERRED_LATER, getOrigin(), getExpectedVariance(), getActualVariance());
+		LightweightTypeReference wrapped = getStricterConstraint(typeParameter, reference.getWrapperTypeIfPrimitive());
+		typeParameter.acceptHint(wrapped, getTypeArgumentSource(), getOrigin(), getExpectedVariance(), getActualVariance());
+	}
+
+	protected BoundTypeArgumentSource getTypeArgumentSource() {
+		return BoundTypeArgumentSource.INFERRED_LATER;
+	}
+
+	protected LightweightTypeReference getStricterConstraint(final UnboundTypeReference typeParameter, LightweightTypeReference hint) {
+		final JvmTypeParameter parameter = typeParameter.getTypeParameter();
+		List<JvmTypeConstraint> constraints = parameter.getConstraints();
+		for(JvmTypeConstraint constraint: constraints) {
+			JvmTypeReference constraintReference = constraint.getTypeReference();
+			if (constraintReference != null) {
+				final boolean[] recursive = new boolean[] { false };
+				LightweightTypeReferenceFactory factory = new LightweightTypeReferenceFactory(hint.getOwner()) {
+					@Override
+					public LightweightTypeReference doVisitParameterizedTypeReference(JvmParameterizedTypeReference reference) {
+						JvmType type = reference.getType();
+						if (type == parameter) {// recursively bound
+							recursive[0] = true;
+						}
+						return super.doVisitParameterizedTypeReference(reference);
+					}
+				};
+				LightweightTypeReference lightweightReference = factory.toLightweightReference(constraintReference);
+				if (!recursive[0] && hint.isAssignableFrom(lightweightReference)) {
+					hint = lightweightReference;
+				}
+			}
+		}
+		return hint;
 	}
 
 }

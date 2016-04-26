@@ -17,6 +17,7 @@ import org.eclipse.xtext.Alternatives;
 import org.eclipse.xtext.Assignment;
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.Group;
+import org.eclipse.xtext.Parameter;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.XtextPackage;
@@ -182,19 +183,54 @@ public class NodeModelUtilsTest extends AbstractXtextTests {
 		assertTrue(object instanceof ParserRule);
 	}
 	
+	@Test public void testFindActualSemanticObjectFor_10() throws Exception {
+		String grammarString = "grammar foo.Bar with org.eclipse.xtext.common.Terminals generate foo 'bar' Model:name=ID;";
+		Grammar grammar = (Grammar) getModel(grammarString);
+		ILeafNode ruleName = NodeModelUtils.findLeafNodeAtOffset(NodeModelUtils.getNode(grammar), grammarString.indexOf("Model"));
+		EObject object = NodeModelUtils.findActualSemanticObjectFor(ruleName);
+		assertTrue(object instanceof ParserRule);
+	}
+	
+	@Test public void testFindActualSemanticObjectFor_11() throws Exception {
+		String grammarString = "grammar foo.Bar with org.eclipse.xtext.common.Terminals generate foo 'bar' Model<Param>:name=ID;";
+		Grammar grammar = (Grammar) getModel(grammarString);
+		ILeafNode lessThan = NodeModelUtils.findLeafNodeAtOffset(NodeModelUtils.getNode(grammar), grammarString.indexOf("<"));
+		EObject object = NodeModelUtils.findActualSemanticObjectFor(lessThan);
+		assertTrue(object instanceof ParserRule);
+	}
+	
+	@Test public void testFindActualNode_01() throws Exception {
+		String grammarString = "grammar foo.Bar with org.eclipse.xtext.common.Terminals generate foo 'bar' Model<Param>:name=ID;";
+		Grammar grammar = (Grammar) getModel(grammarString);
+		ParserRule rule = (ParserRule) grammar.getRules().get(0);
+		Parameter parameter = rule.getParameters().get(0);
+		ICompositeNode node = NodeModelUtils.findActualNodeFor(parameter);
+		assertEquals("Param", node.getText());
+	}
+	
+	@Test public void testFindActualNode_02() throws Exception {
+		String grammarString = "grammar foo.Bar with org.eclipse.xtext.common.Terminals generate foo 'bar' Model<Param>:name=ID;";
+		Grammar grammar = (Grammar) getModel(grammarString);
+		ParserRule rule = (ParserRule) grammar.getRules().get(0);
+		ICompositeNode node = NodeModelUtils.findActualNodeFor(rule);
+		assertEquals(" Model<Param>:name=ID;", node.getText());
+	}
+	
 	@Test public void testCompactDump_1() throws Exception {
 		String grammarString = "grammar foo.Bar with org.eclipse.xtext.common.Terminals generate foo 'bar' Model:name=ID;";
 		Grammar grammar = (Grammar) getModel(grammarString);
 		String actual = NodeModelUtils.compactDump(NodeModelUtils.getNode(grammar.getMetamodelDeclarations().get(0)), true);
-		StringBuilder expected = new StringBuilder();
-		expected.append("GeneratedMetamodel {\n");
-		expected.append("  hidden WS returns EString: => ' '\n");
-		expected.append("  'generate' => 'generate'\n");
-		expected.append("  hidden WS returns EString: => ' '\n");
-		expected.append("  ID => 'foo'\n");
-		expected.append("  hidden WS returns EString: => ' '\n");
-		expected.append("  [EPackage] => ''bar''\n");
-		expected.append("}");
+		String expected = 
+				"GeneratedMetamodel {\n" + 
+				"  hidden WS returns EString: => ' '\n" + 
+				"  'generate' => 'generate'\n" + 
+				"  name=ValidID {\n" + 
+				"    hidden WS returns EString: => ' '\n" + 
+				"    ID => 'foo'\n" + 
+				"  }\n" + 
+				"  hidden WS returns EString: => ' '\n" + 
+				"  ePackage=[EPackage] => ''bar''\n" + 
+				"}";
 		assertEquals(expected.toString(), actual);
 	}
 	
@@ -202,35 +238,39 @@ public class NodeModelUtilsTest extends AbstractXtextTests {
 		String grammarString = "grammar foo.Bar with org.eclipse.xtext.common.Terminals generate foo x 'bar' Model:name=ID;";
 		Grammar grammar = (Grammar) getModelAndExpect(getAsStream(grammarString), 1);
 		String actual = NodeModelUtils.compactDump(NodeModelUtils.getNode(grammar.getMetamodelDeclarations().get(0)), true);
-		StringBuilder expected = new StringBuilder();
-		expected.append("GeneratedMetamodel {\n");
-		expected.append("  hidden WS returns EString: => ' '\n");
-		expected.append("  'generate' => 'generate'\n");
-		expected.append("  hidden WS returns EString: => ' '\n");
-		expected.append("  ID => 'foo'\n");
-		expected.append("  hidden WS returns EString: => ' '\n");
-		expected.append("  ID returns EString: => 'x' SyntaxError: [org.eclipse.xtext.diagnostics.Diagnostic.Syntax] extraneous input 'x' expecting RULE_STRING\n");
-		expected.append("  hidden WS returns EString: => ' '\n");
-		expected.append("  [EPackage] => ''bar''\n");
-		expected.append("}");
-		assertEquals(expected.toString(), actual);
+		String expected = 
+				"GeneratedMetamodel {\n" + 
+				"  hidden WS returns EString: => ' '\n" + 
+				"  'generate' => 'generate'\n" + 
+				"  name=ValidID {\n" + 
+				"    hidden WS returns EString: => ' '\n" + 
+				"    ID => 'foo'\n" + 
+				"  }\n" + 
+				"  hidden WS returns EString: => ' '\n" + 
+				"  ID returns EString: => 'x' SyntaxError: [org.eclipse.xtext.diagnostics.Diagnostic.Syntax] extraneous input 'x' expecting RULE_STRING\n" + 
+				"  hidden WS returns EString: => ' '\n" + 
+				"  ePackage=[EPackage] => ''bar''\n" + 
+				"}";
+		assertEquals(expected, actual);
 	}
 	
 	@Test public void testCompactDump_3() throws Exception {
 		String grammarString = "grammar 1 2";
 		Grammar grammar = (Grammar) getModelAndExpect(getAsStream(grammarString), UNKNOWN_EXPECTATION);
 		String actual = NodeModelUtils.compactDump(NodeModelUtils.getNode(grammar), true);
-		StringBuilder expected = new StringBuilder();
-		expected.append("Grammar: {\n");
-		expected.append("  'grammar' => 'grammar'\n");
-		expected.append("  GrammarID {\n");
-		expected.append("    hidden WS returns EString: => ' '\n");
-		expected.append("    INT returns EInt: => '1' SyntaxError: [org.eclipse.xtext.diagnostics.Diagnostic.Syntax] mismatched input '1' expecting RULE_ID\n");
-		expected.append("    hidden WS returns EString: => ' '\n");
-		expected.append("    INT returns EInt: => '2' SyntaxError: [org.eclipse.xtext.diagnostics.Diagnostic.Syntax] required (...)+ loop did not match anything at input '<EOF>'\n");
-		expected.append("  }\n");
-		expected.append("}");
-		assertEquals(expected.toString(), actual);
+		String expected = 
+				"Grammar: {\n" + 
+				"  'grammar' => 'grammar'\n" + 
+				"  name=GrammarID {\n" + 
+				"    ValidID {\n" + 
+				"      hidden WS returns EString: => ' '\n" + 
+				"      INT returns EInt: => '1' SyntaxError: [org.eclipse.xtext.diagnostics.Diagnostic.Syntax] no viable alternative at input '1'\n" + 
+				"      hidden WS returns EString: => ' '\n" + 
+				"      INT returns EInt: => '2' SyntaxError: [org.eclipse.xtext.diagnostics.Diagnostic.Syntax] required (...)+ loop did not match anything at input '<EOF>'\n" + 
+				"    }\n" + 
+				"  }\n" + 
+				"}";
+		assertEquals(expected, actual);
 	}
 
 	@Test public void testFindLeafNodeAtOffset_1() throws Exception {

@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.xtext.LanguageInfo;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IContainer.Manager;
@@ -27,13 +28,16 @@ import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescription.Delta;
 import org.eclipse.xtext.resource.IResourceDescriptions;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionDelta;
 import org.eclipse.xtext.resource.impl.DefaultResourceServiceProvider;
+import org.eclipse.xtext.resource.impl.ResourceServiceProviderRegistryImpl;
 import org.eclipse.xtext.ui.editor.DirtyStateEditorSupport;
 import org.eclipse.xtext.ui.editor.DirtyStateEditorSupport.IDirtyStateEditorSupportClient;
 import org.eclipse.xtext.ui.editor.DirtyStateManager;
+import org.eclipse.xtext.ui.editor.DirtyStateResourceDescription;
 import org.eclipse.xtext.ui.editor.DocumentBasedDirtyResource;
 import org.eclipse.xtext.ui.editor.IDirtyResource;
 import org.eclipse.xtext.ui.editor.model.ILexerTokenRegion;
@@ -60,7 +64,6 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 	private ResourceSetImpl resourceSet;
 	private DirtyStateManager dirtyStateManager;
 	private StateChangeEventBroker stateChangeEventBroker;
-	private IXtextModelListener modelListener;
 	private DocumentBasedDirtyResource dirtyResource;
 	private IXtextDocument document;
 	private List<IEObjectDescription> exportedObjects;
@@ -72,10 +75,27 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 		resourceSet = new ResourceSetImpl();
 		resourceURI = URI.createURI("scheme://foo");
 		resource = new XtextResource(resourceURI);
-		DefaultResourceServiceProvider resourceServiceProvider = new DefaultResourceServiceProvider() {
+		resource.setLanguageName("FooLanguage");
+		final DefaultResourceServiceProvider resourceServiceProvider = new DefaultResourceServiceProvider() {
 			@Override
 			public org.eclipse.xtext.resource.IResourceDescription.Manager getResourceDescriptionManager() {
 				return DirtyStateEditorSupportTest.this;
+			}
+			
+			@SuppressWarnings("unchecked")
+			@Override
+			public <T> T get(Class<T> t) {
+				if(DirtyStateResourceDescription.Manager.class.isAssignableFrom(t)) 
+					return (T) new DirtyStateResourceDescription.Manager(DirtyStateEditorSupportTest.this);
+				if(LanguageInfo.class.isAssignableFrom(t))
+					return (T) new LanguageInfo("FooLanguage");
+				return super.get(t);
+			}
+		};
+		ResourceServiceProviderRegistryImpl registry = new ResourceServiceProviderRegistryImpl() {
+			@Override
+			public IResourceServiceProvider getResourceServiceProvider(URI uri) {
+				return resourceServiceProvider;
 			}
 		};
 		resource.setResourceServiceProvider(resourceServiceProvider);
@@ -90,6 +110,7 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 		dirtyStateSupport.setStateChangeEventBroker(stateChangeEventBroker);
 		dirtyResource = new DocumentBasedDirtyResource();
 		dirtyStateSupport.setDirtyResource(dirtyResource);
+		dirtyStateSupport.setResourceServiceProviderRegistry(registry);
 		ignoreConcurrentEditing = Lists.newLinkedList();
 		exportedObjects = Collections.emptyList();
 	}
@@ -97,7 +118,6 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 	@Test public void testInitialize_01(){
 		dirtyStateSupport.initializeDirtyStateSupport(this);
 		assertNotNull(verifyListener);
-		assertNotNull(modelListener);
 		assertFalse(dirtyStateManager.hasContent(resourceURI));
 		assertEquals(resourceURI, dirtyResource.getURI());
 	}
@@ -106,7 +126,6 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 		dirtyStateSupport.initializeDirtyStateSupport(this);
 		dirtyStateSupport.removeDirtyStateSupport(this);
 		assertNull(verifyListener);
-		assertNull(modelListener);
 		assertFalse(dirtyStateManager.hasContent(resourceURI));
 		try {
 			dirtyResource.getURI();
@@ -121,7 +140,6 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 		document = null; // client.getDocument() returns null when editor is disposing
 		dirtyStateSupport.removeDirtyStateSupport(this);
 		assertNull(verifyListener);
-		assertNull(modelListener);
 		assertFalse(dirtyStateManager.hasContent(resourceURI));
 		try {
 			dirtyResource.getURI();
@@ -237,64 +255,64 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 		assertTrue(dirtyStateManager.hasContent(resourceURI));
 		dirtyStateSupport.markEditorClean(this);
 		assertFalse(dirtyStateManager.hasContent(resourceURI));
-		assertNotNull(modelListener);
 		assertNotNull(verifyListener);
 	}
 	
-	@Test public void testModelChanged_01() {
+	@Test public void testAnnounceDirtyState_01() {
 		dirtyStateSupport.initializeDirtyStateSupport(this);
-		dirtyStateSupport.modelChanged(resource);
+		dirtyStateSupport.announceDirtyState(resource);
 		assertTrue(dirtyStateManager.hasContent(resourceURI));
 	}
 
-	@Test public void testModelChanged_02() {
+	@Test public void testAnnounceDirtyState_02() {
 		ignoreConcurrentEditing.add(Boolean.TRUE);
 		dirtyStateManager.manageDirtyState(this);
 		dirtyStateSupport.initializeDirtyStateSupport(this);
 		dirtyStateSupport.isEditingPossible(this);
 		assertEquals(getContents(), dirtyStateManager.getContent(resourceURI));
 		exportedObjects = Lists.newArrayList(EObjectDescription.create(QualifiedName.create("foo"), EcoreFactory.eINSTANCE.createEClass()));
-		dirtyStateSupport.modelChanged(resource);
+		dirtyStateSupport.announceDirtyState(resource);
 		assertTrue(dirtyStateManager.hasContent(resourceURI));
 		assertEquals(get(), dirtyStateManager.getContent(resourceURI));
 	}
 	
-	@Test public void testModelChanged_03() {
+	@Test public void testAnnounceDirtyState_03() {
 		ignoreConcurrentEditing.add(Boolean.FALSE);
 		dirtyStateManager.manageDirtyState(this);
 		dirtyStateSupport.initializeDirtyStateSupport(this);
 		assertEquals(getContents(), dirtyStateManager.getContent(resourceURI));
-		dirtyStateSupport.modelChanged(resource);
+		dirtyStateSupport.announceDirtyState(resource);
 		assertTrue(dirtyStateManager.hasContent(resourceURI));
 		assertEquals(getContents(), dirtyStateManager.getContent(resourceURI));
 	}
 	
-	@Test public void testModelChanged_04() {
+	@Test public void testAnnounceDirtyState_04() {
 		ignoreConcurrentEditing.add(Boolean.TRUE);
 		dirtyStateManager.manageDirtyState(this);
 		dirtyStateSupport.initializeDirtyStateSupport(this);
 		dirtyStateSupport.isEditingPossible(this);
 		assertEquals(getContents(), dirtyStateManager.getContent(resourceURI));
-		dirtyStateSupport.modelChanged(resource);
+		dirtyStateSupport.announceDirtyState(resource);
 		assertTrue(dirtyStateManager.hasContent(resourceURI));
 		assertEquals(getContents(), dirtyStateManager.getContent(resourceURI));
 	}
 	
-	@Test public void testModelChanged_05() {
+	@Test public void testAnnounceDirtyState_05() {
 		dirtyStateSupport.initializeDirtyStateSupport(this);
 		resource.setTrackingModification(true);
-		dirtyStateSupport.modelChanged(resource);
+		dirtyStateSupport.announceDirtyState(resource);
 		assertFalse(dirtyStateManager.hasContent(resourceURI));
 	}
 	
-	@Test public void testModelChanged_06() {
+	@Test public void testAnnounceDirtyState_06() {
 		dirtyStateSupport.initializeDirtyStateSupport(this);
 		resource.setTrackingModification(true);
 		resource.setModified(true);
-		dirtyStateSupport.modelChanged(resource);
+		dirtyStateSupport.announceDirtyState(resource);
 		assertTrue(dirtyStateManager.hasContent(resourceURI));
 	}
 	
+	@Override
 	public void addVerifyListener(VerifyListener listener) {
 		assertNull(this.verifyListener);
 		this.verifyListener = listener;
@@ -302,16 +320,13 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 	
 	@Override
 	public void addModelListener(IXtextModelListener listener) {
-		assertNull(this.modelListener);
-		this.modelListener = listener;
 	}
 	
 	@Override
 	public void removeModelListener(IXtextModelListener listener) {
-		assertSame(this.modelListener, listener);
-		this.modelListener = null;
 	}
 
+	@Override
 	public IXtextDocument getDocument() {
 		return document;
 	}
@@ -330,35 +345,47 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 		}
 	}
 
+	@Override
+	public <T> T priorityReadOnly(IUnitOfWork<T, XtextResource> work) {
+		return readOnly(work);
+	}
+
+	@Override
 	public Shell getShell() {
 		fail("Unexpected call");
 		return null;
 	}
 
+	@Override
 	public void removeVerifyListener(VerifyListener listener) {
 		assertSame(this.verifyListener, listener);
 		this.verifyListener = null;
 	}
 
+	@Override
 	public boolean isConcurrentEditingIgnored(IDirtyStateEditorSupportClient client) {
 		assertFalse(ignoreConcurrentEditing.isEmpty());
 		return ignoreConcurrentEditing.removeFirst();
 	}
 
+	@Override
 	public String getContents() {
 		return "otherContents";
 	}
 	
+	@Override
 	public String getActualContents() {
 		fail("Unexpected call");
 		return null;
 	}
 
+	@Override
 	public IResourceDescription getDescription() {
 		fail("Unexpected call");
 		return null;
 	}
 
+	@Override
 	public URI getURI() {
 		return resourceURI;
 	}
@@ -368,6 +395,7 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 		return null;
 	}
 
+	@Override
 	public IResourceDescription getResourceDescription(Resource resource) {
 		return new DefaultResourceDescription(resource, null) {
 			@Override
@@ -377,47 +405,58 @@ public class DirtyStateEditorSupportTest extends AbstractDocumentSimulatingTest
 		};
 	}
 
+	@Override
 	public boolean isAffected(Delta delta, IResourceDescription candidate) throws IllegalArgumentException {
 		return false;
 	}
 	
+	@Override
 	public boolean isAffected(Collection<Delta> deltas, IResourceDescription candidate,
 			IResourceDescriptions descriptions) throws IllegalArgumentException {
 		return false;
 	}
 
+	@Override
 	public boolean isDirty() {
 		return true;
 	}
 
+	@Override
 	public Iterable<IResourceDescription> getAllResourceDescriptions() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public IResourceDescription getResourceDescription(URI uri) {
 		return null;
 	}
 	
+	@Override
 	public boolean isEmpty() {
 		return true;
 	}
 
+	@Override
 	public Iterable<IEObjectDescription> getExportedObjects() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IEObjectDescription> getExportedObjects(EClass type, QualifiedName name, boolean ignoreCase) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IEObjectDescription> getExportedObjectsByType(EClass type) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IEObjectDescription> getExportedObjectsByObject(EObject object) {
 		throw new UnsupportedOperationException();
 	}
 	
+	@Override
 	public Delta createDelta(IResourceDescription oldDescription, IResourceDescription newDescription) {
 		return new DefaultResourceDescriptionDelta(oldDescription, newDescription);
 	}

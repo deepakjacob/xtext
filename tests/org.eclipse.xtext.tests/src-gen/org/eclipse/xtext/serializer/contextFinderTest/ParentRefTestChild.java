@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.contextFinderTest;
 
@@ -14,10 +11,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.contextFinderTest.ParentRefTestChild#getChild <em>Child</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.serializer.contextFinderTest.ContextFinderTestPackage#getParentRefTestChild()
  * @model

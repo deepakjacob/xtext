@@ -19,12 +19,18 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.formatting.IFormatter;
 import org.eclipse.xtext.formatting.IFormatterExtension;
+import org.eclipse.xtext.formatting2.FormatterRequest;
+import org.eclipse.xtext.formatting2.IFormatter2;
+import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
+import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
+import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.parsetree.reconstr.ITokenStream;
 import org.eclipse.xtext.parsetree.reconstr.impl.TokenStringBuffer;
 import org.eclipse.xtext.parsetree.reconstr.impl.WriterTokenStream;
 import org.eclipse.xtext.resource.SaveOptions;
+import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.serializer.acceptor.ISemanticSequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.ISequenceAcceptor;
@@ -47,12 +53,22 @@ import com.google.inject.Provider;
  */
 public class Serializer implements ISerializer {
 
+	@Override
 	public String serialize(EObject obj) {
 		return serialize(obj, SaveOptions.defaultOptions());
 	}
 
-	@Inject
+	@Inject(optional = true)
 	protected IFormatter formatter;
+
+	@Inject(optional = true)
+	private Provider<IFormatter2> formatter2Provider;
+
+	@Inject
+	private Provider<FormatterRequest> formatterRequestProvider;
+
+	@Inject
+	private Provider<TextRegionAccessBuilder> textRegionBuilderProvider;
 
 	@Inject
 	protected Provider<ISemanticSequencer> semanticSequencerProvider;
@@ -72,7 +88,24 @@ public class Serializer implements ISerializer {
 	@Inject
 	protected IConcreteSyntaxValidator validator;
 
+	/**
+	 * @deprecated use {@link #serialize(ISerializationContext, EObject, ISequenceAcceptor, ISerializationDiagnostic.Acceptor)}
+	 */
+	@Deprecated
 	protected void serialize(EObject semanticObject, EObject context, ISequenceAcceptor tokens,
+			ISerializationDiagnostic.Acceptor errors) {
+		ISemanticSequencer semantic = semanticSequencerProvider.get();
+		ISyntacticSequencer syntactic = syntacticSequencerProvider.get();
+		IHiddenTokenSequencer hidden = hiddenTokenSequencerProvider.get();
+		semantic.init((ISemanticSequenceAcceptor) syntactic, errors);
+		syntactic.init(context, semanticObject, (ISyntacticSequenceAcceptor) hidden, errors);
+		hidden.init(context, semanticObject, tokens, errors);
+		if (tokens instanceof TokenStreamSequenceAdapter)
+			((TokenStreamSequenceAdapter) tokens).init(context);
+		semantic.createSequence(context, semanticObject);
+	}
+
+	protected void serialize(ISerializationContext context, EObject semanticObject, ISequenceAcceptor tokens,
 			ISerializationDiagnostic.Acceptor errors) {
 		ISemanticSequencer semantic = semanticSequencerProvider.get();
 		ISyntacticSequencer syntactic = syntacticSequencerProvider.get();
@@ -99,16 +132,40 @@ public class Serializer implements ISerializer {
 
 		ISerializationDiagnostic.Acceptor errors = ISerializationDiagnostic.EXCEPTION_THROWING_ACCEPTOR;
 		ITokenStream formatterTokenStream;
-		if(formatter instanceof IFormatterExtension)
-			formatterTokenStream = ((IFormatterExtension) formatter).createFormatterStream(obj, null, tokenStream, !options.isFormatting());
-		else 
+		if (formatter instanceof IFormatterExtension)
+			formatterTokenStream = ((IFormatterExtension) formatter).createFormatterStream(obj, null, tokenStream,
+					!options.isFormatting());
+		else
 			formatterTokenStream = formatter.createFormatterStream(null, tokenStream, !options.isFormatting());
-		EObject context = getContext(obj);
-		ISequenceAcceptor acceptor = new TokenStreamSequenceAdapter(formatterTokenStream, errors);
-		serialize(obj, context, acceptor, errors);
+		ISerializationContext context = getIContext(obj);
+		ISequenceAcceptor acceptor = new TokenStreamSequenceAdapter(formatterTokenStream, grammar.getGrammar(), errors);
+		serialize(context, obj, acceptor, errors);
 		formatterTokenStream.flush();
 	}
 
+	public ITextRegionAccess serializeToRegions(EObject obj) {
+		ISerializationContext context = getIContext(obj);
+		TextRegionAccessBuilder builder = textRegionBuilderProvider.get();
+		ISerializationDiagnostic.Acceptor errors = ISerializationDiagnostic.EXCEPTION_THROWING_ACCEPTOR;
+		serialize(context, obj, builder.forSequence(context, obj), errors);
+		ITextRegionAccess regionAccess = builder.create();
+		return regionAccess;
+	}
+
+	protected void serialize(EObject obj, Appendable appendable, SaveOptions options) throws IOException {
+		ITextRegionAccess regionAccess = serializeToRegions(obj);
+		FormatterRequest request = formatterRequestProvider.get();
+		request.setFormatUndefinedHiddenRegionsOnly(!options.isFormatting());
+		request.setTextRegionAccess(regionAccess);
+		IFormatter2 formatter2 = formatter2Provider.get();
+		List<ITextReplacement> replacements = formatter2.format(request);
+		regionAccess.getRewriter().renderToAppendable(replacements, appendable);
+	}
+
+	/**
+	 * @deprecated use {@link #getIContext(EObject)}
+	 */
+	@Deprecated
 	protected EObject getContext(EObject semanticObject) {
 		Iterator<EObject> contexts = contextFinder.findContextsByContentsAndContainer(semanticObject, null).iterator();
 		if (!contexts.hasNext())
@@ -116,20 +173,41 @@ public class Serializer implements ISerializer {
 		return contexts.next();
 	}
 
+	protected ISerializationContext getIContext(EObject semanticObject) {
+		Iterator<ISerializationContext> contexts = contextFinder.findByContentsAndContainer(semanticObject, null).iterator();
+		if (!contexts.hasNext())
+			throw new RuntimeException("No Context for " + EmfFormatter.objPath(semanticObject) + " could be found");
+		return contexts.next();
+	}
+
+	@Override
 	public String serialize(EObject obj, SaveOptions options) {
-		TokenStringBuffer tokenStringBuffer = new TokenStringBuffer();
 		try {
-			serialize(obj, tokenStringBuffer, options);
+			if (formatter2Provider != null) {
+				StringBuilder builder = new StringBuilder();
+				serialize(obj, builder, options);
+				return builder.toString();
+			} else {
+				TokenStringBuffer tokenStringBuffer = new TokenStringBuffer();
+				serialize(obj, tokenStringBuffer, options);
+				return tokenStringBuffer.toString();
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		return tokenStringBuffer.toString();
 	}
 
+	@Override
 	public void serialize(EObject obj, Writer writer, SaveOptions options) throws IOException {
-		serialize(obj, new WriterTokenStream(writer), options);
+		if (formatter2Provider != null) {
+			serialize(obj, (Appendable) writer, options);
+			writer.flush();
+		} else {
+			serialize(obj, new WriterTokenStream(writer), options);
+		}
 	}
 
+	@Override
 	public ReplaceRegion serializeReplacement(EObject obj, SaveOptions options) {
 		ICompositeNode node = NodeModelUtils.findActualNodeFor(obj);
 		if (node == null) {

@@ -33,7 +33,7 @@ import org.eclipse.xtext.util.Strings;
 public abstract class AbstractScopingFragment extends AbstractInheritingGeneratorFragment implements IStubGenerating, IStubGenerating.XtendOption {
 
 	public static String getScopeProviderName(Grammar grammar, Naming naming) {
-		return naming.basePackageRuntime(grammar) + ".scoping." + GrammarUtil.getName(grammar) + "ScopeProvider";
+		return naming.basePackageRuntime(grammar) + ".scoping." + GrammarUtil.getSimpleName(grammar) + "ScopeProvider";
 	}
 	
 	private boolean isGenerateStub = true;
@@ -43,6 +43,7 @@ public abstract class AbstractScopingFragment extends AbstractInheritingGenerato
 	/**
 	 * @since 2.4
 	 */
+	@Override
 	public boolean isGenerateXtendStub() {
 		return isGenerateXtendStub;
 	}
@@ -50,17 +51,22 @@ public abstract class AbstractScopingFragment extends AbstractInheritingGenerato
 	/**
 	 * @since 2.4
 	 */
+	@Override
 	public void setGenerateXtendStub(boolean isGenerateXtendStub) {
 		this.isGenerateXtendStub = isGenerateXtendStub;
 	}
 
+	@Override
 	public boolean isGenerateStub() {
 		return isGenerateStub;
 	}
 
+	@Override
 	public void setGenerateStub(boolean isGenerateStub) {
 		this.isGenerateStub = isGenerateStub;
 	}
+	
+	private boolean logged = false;
 	
 	/**
 	 * @since 2.1
@@ -68,7 +74,11 @@ public abstract class AbstractScopingFragment extends AbstractInheritingGenerato
 	public boolean isGenerateStub(Grammar grammar) {
 		if(isGenerateStub()) {
 			if (XbaseGeneratorFragment.doesUseXbase(grammar)) {
-				Logger.getLogger(this.getClass()).warn("Skipping stub generation as Xbase is used");
+				if (!logged) {
+					logged = true;
+					// TODO Does this really deserve a warning?
+					Logger.getLogger(this.getClass()).warn("Skipping stub generation as Xbase is used");
+				}
 				return false;
 			}
 			return true;
@@ -93,33 +103,35 @@ public abstract class AbstractScopingFragment extends AbstractInheritingGenerato
 	@Override
 	public Set<Binding> getGuiceBindingsRt(Grammar grammar) {
 		BindFactory factory = new BindFactory();
-		if(isGenerateStub) {
-			factory.addTypeToType(IScopeProvider.class.getName(), getScopeProviderName(grammar, getNaming()))
-					.addConfiguredBinding(
-							IScopeProvider.class.getName() + "Delegate",
-							"binder.bind(" + IScopeProvider.class.getName() + ".class"
-									+ ").annotatedWith(com.google.inject.name.Names.named("
-									+ AbstractDeclarativeScopeProvider.class.getName() + ".NAMED_DELEGATE" + ")).to("
-									+ getLocalScopeProvider().getName() + ".class)");
-		} else {
-			factory.addTypeToType(IScopeProvider.class.getName(), getLocalScopeProvider().getName());
+		if (!XbaseGeneratorFragment.doesUseXbase(grammar)) {
+			if(isGenerateStub) {
+				factory.addTypeToType(IScopeProvider.class.getName(), getScopeProviderName(grammar, getNaming()));
+			} else {
+				factory.addTypeToType(IScopeProvider.class.getName(), getLocalScopeProvider().getName());
+			}
+			factory.addConfiguredBinding(
+					IScopeProvider.class.getName() + "Delegate",
+					"binder.bind(" + IScopeProvider.class.getName() + ".class"
+							+ ").annotatedWith(com.google.inject.name.Names.named("
+							+ AbstractDeclarativeScopeProvider.class.getName() + ".NAMED_DELEGATE" + ")).to("
+							+ getLocalScopeProvider().getName() + ".class)");
+			factory.addTypeToType(IGlobalScopeProvider.class.getName(), getGlobalScopeProvider().getName());
 		}
-		factory.addTypeToType(IGlobalScopeProvider.class.getName(), getGlobalScopeProvider().getName());
 		factory.addConfiguredBinding(IgnoreCaseLinking.class.getSimpleName(), "binder.bindConstant().annotatedWith("
 				+ IgnoreCaseLinking.class.getName() + ".class).to(" + isIgnoreCase() + ")");
 		return factory.getBindings();
 	}
 
 	protected String getScopeProviderSuperClassName(Grammar grammar) {
-		Grammar superGrammar = getSuperGrammar(grammar);
-		if(superGrammar != null) {
-			return getSuperClassName(getScopeProviderName(superGrammar, getNaming()), getDefaultScopeProviderSuperClassName());
-		}
-		return getDefaultScopeProviderSuperClassName();
+		Grammar superGrammar = Util.getNonTerminalsSuperGrammar(grammar);
+		if(isInheritImplementation() && superGrammar != null) 
+			return getScopeProviderName(superGrammar, getNaming());
+		else 
+			return getDefaultScopeProviderSuperClassName();
 	}
 
 	protected String getDefaultScopeProviderSuperClassName() {
-		return "org.eclipse.xtext.scoping.impl.AbstractDeclarativeScopeProvider";
+		return AbstractDeclarativeScopeProvider.class.getName();
 	}
 
 	@Override
@@ -136,13 +148,16 @@ public abstract class AbstractScopingFragment extends AbstractInheritingGenerato
 	}
 	
 	@Override
-	public String[] getImportedPackagesRt(Grammar grammar) {
+	public String[] getRequiredBundlesRt(Grammar grammar) {
 		if(isGenerateXtendStub)
 			return new String[] { "org.eclipse.xtext.xbase.lib" };
 		else
 			return null;
 	}
 	
+	/**
+	 * @since 2.4
+	 */
 	@Override
 	protected String getTemplate() {
 		return super.getTemplate();

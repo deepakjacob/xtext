@@ -8,31 +8,26 @@
 package org.eclipse.xtext.xbase.tests.typesystem
 
 import com.google.inject.Inject
-import org.eclipse.xtext.junit4.InjectWith
-import org.eclipse.xtext.junit4.XtextRunner
 import org.eclipse.xtext.xbase.XBlockExpression
 import org.eclipse.xtext.xbase.XExpression
 import org.eclipse.xtext.xbase.XMemberFeatureCall
 import org.eclipse.xtext.xbase.XNullLiteral
+import org.eclipse.xtext.xbase.XNumberLiteral
 import org.eclipse.xtext.xbase.junit.typesystem.PublicReentrantTypeResolver
 import org.eclipse.xtext.xbase.junit.typesystem.PublicResolvedTypes
 import org.eclipse.xtext.xbase.lib.util.ReflectExtensions
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputationState
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputer
+import org.eclipse.xtext.xbase.typesystem.internal.ExpressionBasedRootTypeComputationState
 import org.eclipse.xtext.xbase.typesystem.internal.ExpressionTypeComputationState
 import org.eclipse.xtext.xbase.typesystem.internal.ResolvedTypes
-import org.eclipse.xtext.xbase.typesystem.internal.RootExpressionComputationState
-import org.eclipse.xtext.xbase.typesystem.references.AnyTypeReference
 import org.junit.Ignore
 import org.junit.Test
-import org.junit.runner.RunWith
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@RunWith(typeof(XtextRunner))
-@InjectWith(typeof(XbaseNewTypeSystemInjectorProvider))
 class TypeComputationStateTest extends AbstractXbaseTestCase implements ITypeComputer {
 		
 	@Inject PublicReentrantTypeResolver resolver
@@ -43,9 +38,10 @@ class TypeComputationStateTest extends AbstractXbaseTestCase implements ITypeCom
 	def void testChildrenAddEntryForParent() {
 		resolver.typeComputer = this 
 		val expression = expression("{ null }")
+		resolver.initializeFrom(expression)
 		val resolution = new PublicResolvedTypes(resolver)
-		val any = new AnyTypeReference(resolution.getReferenceOwner())
-		new RootExpressionComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, resolver, any).computeTypes
+		val any = resolution.getReferenceOwner().newAnyTypeReference()
+		new ExpressionBasedRootTypeComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, any).computeTypes
 		assertEquals(any.toString, resolution.getActualType(expression).toString)
 		assertEquals(any.toString, resolution.getActualType(expression.eContents.head as XNullLiteral).toString)
 	}
@@ -54,9 +50,10 @@ class TypeComputationStateTest extends AbstractXbaseTestCase implements ITypeCom
 	def void testTypeOnlyRegisteredOnce_01() {
 		resolver.typeComputer = this 
 		val expression = expression("{ null }")
+		resolver.initializeFrom(expression)
 		val resolution = new PublicResolvedTypes(resolver)
-		val any = new AnyTypeReference(resolution.getReferenceOwner())
-		new RootExpressionComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, resolver, any).computeTypes
+		val any = resolution.getReferenceOwner().newAnyTypeReference()
+		new ExpressionBasedRootTypeComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, any).computeTypes
 		val expressionTypes = resolution.basicGetExpressionTypes
 		val typesForNullLiteral = expressionTypes.get((expression as XBlockExpression).expressions.head)
 		assertEquals(typesForNullLiteral.toString, 1, typesForNullLiteral.filter[ returnType ].size)
@@ -71,8 +68,8 @@ class TypeComputationStateTest extends AbstractXbaseTestCase implements ITypeCom
 		val expression = expression("1.toString") as XMemberFeatureCall
 		resolver.initializeFrom(expression)
 		val resolution = new PublicResolvedTypes(resolver)
-		val any = new AnyTypeReference(resolution.getReferenceOwner())
-		new RootExpressionComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, resolver, any).computeTypes
+		val any = resolution.getReferenceOwner().newAnyTypeReference()
+		new ExpressionBasedRootTypeComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, any).computeTypes
 		val expressionTypes = resolution.basicGetExpressionTypes
 		expression.eAllContents.forEach [
 			val types = expressionTypes.get(it as XExpression)
@@ -80,20 +77,35 @@ class TypeComputationStateTest extends AbstractXbaseTestCase implements ITypeCom
 			assertEquals(types.toString, 1, types.filter[ !returnType ].size)
 		]
 	}
-	
+
 	@Ignore("TODO FixMe")
 	@Test
 	def void testTypeOnlyRegisteredOnce_03() {
 		val expression = expression("<String>newArrayList.map[toUpperCase]") as XMemberFeatureCall
 		resolver.initializeFrom(expression)
 		val resolution = new PublicResolvedTypes(resolver)
-		val any = new AnyTypeReference(resolution.getReferenceOwner())
-		new RootExpressionComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, resolver, any).computeTypes
+		val any = resolution.getReferenceOwner().newAnyTypeReference()
+		new ExpressionBasedRootTypeComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, any).computeTypes
 		val expressionTypes = resolution.basicGetExpressionTypes
 		expression.eAllContents.forEach [
 			val typesForMemberFeatureCall = expressionTypes.get(it as XExpression)
 			assertEquals(it + " " + typesForMemberFeatureCall.toString, 1, typesForMemberFeatureCall.filter[ returnType ].size)
 			assertEquals(typesForMemberFeatureCall.toString, 1, typesForMemberFeatureCall.filter[ !returnType ].size)
+		]
+	}
+	
+	@Test
+	def void testTypeOnlyRegisteredOnce_04() {
+		val expression = expression("1") as XNumberLiteral
+		resolver.initializeFrom(expression)
+		val resolution = new PublicResolvedTypes(resolver)
+		val any = resolution.getReferenceOwner().newAnyTypeReference()
+		new ExpressionBasedRootTypeComputationState(resolution, resolver.batchScopeProvider.newSession(expression.eResource), expression, any).computeTypes
+		val expressionTypes = resolution.basicGetExpressionTypes
+		expression.eAllContents.forEach [
+			val types = expressionTypes.get(it as XExpression)
+//			assertEquals(types.toString, 1, types.filter[ returnType ].size)
+			assertEquals(types.toString, 1, types.filter[ !returnType ].size)
 		]
 	}
 	

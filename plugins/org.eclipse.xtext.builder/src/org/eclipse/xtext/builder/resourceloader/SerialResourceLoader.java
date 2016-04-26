@@ -35,28 +35,33 @@ public class SerialResourceLoader extends AbstractResourceLoader {
 		super(resourceSetProvider, sorter);
 	}
 
+	@Override
 	public LoadOperation create(final ResourceSet parent, IProject project) {
 		final Queue<URI> queue = Lists.newLinkedList();
 		return new CheckedLoadOperation(new LoadOperation() {
 
+			@Override
 			public LoadResult next() {
 				URI uri = queue.poll();
 				try {
 					Resource resource = parent.getResource(uri, true);
 					return new LoadResult(resource, uri);
 				} catch(WrappedException e) {
-					throw new LoadOperationException(uri, e.getCause());
+					throw new LoadOperationException(uri, (Exception) e.getCause() );
 				}
 			}
 
+			@Override
 			public boolean hasNext() {
 				return !queue.isEmpty();
 			}
 
+			@Override
 			public Collection<URI> cancel() {
 				return queue;
 			}
 
+			@Override
 			public void load(Collection<URI> uris) {
 				queue.addAll(getSorter().sort(uris));
 			}

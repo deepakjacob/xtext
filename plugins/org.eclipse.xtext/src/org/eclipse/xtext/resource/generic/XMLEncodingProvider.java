@@ -7,6 +7,8 @@
  *******************************************************************************/
 package org.eclipse.xtext.resource.generic;
 
+import static com.google.common.collect.Maps.*;
+
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
@@ -26,8 +28,12 @@ public class XMLEncodingProvider implements IEncodingProvider {
 	
 	private static final Logger LOG = Logger.getLogger(XMLEncodingProvider.class);
 
+	@Override
 	public String getEncoding(URI uri) {
 		try {
+			if (uri == null || !URIConverter.INSTANCE.exists(uri, newHashMap())) {
+				return Charset.defaultCharset().name();
+			}
 			byte[] buffer = null;
 			InputStream inputStream = URIConverter.INSTANCE.createInputStream(uri);
 			// Adopted from XMLLoadImpl

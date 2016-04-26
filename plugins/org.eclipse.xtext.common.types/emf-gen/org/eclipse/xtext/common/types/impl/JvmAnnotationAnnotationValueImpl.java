@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.impl;
 
@@ -76,7 +78,7 @@ public class JvmAnnotationAnnotationValueImpl extends JvmAnnotationValueImplCust
 	{
 		if (values == null)
 		{
-			values = new EObjectContainmentEList.Resolving<JvmAnnotationReference>(JvmAnnotationReference.class, this, TypesPackage.JVM_ANNOTATION_ANNOTATION_VALUE__VALUES);
+			values = new EObjectContainmentEList<JvmAnnotationReference>(JvmAnnotationReference.class, this, TypesPackage.JVM_ANNOTATION_ANNOTATION_VALUE__VALUES);
 		}
 		return values;
 	}

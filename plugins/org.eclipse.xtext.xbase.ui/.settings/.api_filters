@@ -1,40 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <component id="org.eclipse.xtext.xbase.ui" version="2">
     <resource path="META-INF/MANIFEST.MF">
-        <filter comment="Hierarchy package marked as internal" id="923795461">
+        <filter comment="version will be generated during buckminster build" id="927989779">
             <message_arguments>
-                <message_argument value="2.3.0"/>
-                <message_argument value="2.2.1"/>
-            </message_arguments>
-        </filter>
-        <filter comment="Version numbers are set incremented during the build" id="927989779">
-            <message_arguments>
-                <message_argument value="2.3.0"/>
+                <message_argument value="2.10.0"/>
                 <message_argument value="org.eclipse.xtext.xbase"/>
             </message_arguments>
         </filter>
     </resource>
-    <resource path="META-INF/MANIFEST.MF" type="org.eclipse.xtext.xbase.ui.hierarchy.AbstractTypeHierarchyHandler">
-        <filter comment="Hierarchy package is no longer API" id="305324134">
+    <resource path="src-gen/org/eclipse/xtext/xbase/ui/internal/XtypeActivator.java" type="org.eclipse.xtext.xbase.ui.internal.XtypeActivator">
+        <filter id="640708718">
             <message_arguments>
-                <message_argument value="org.eclipse.xtext.xbase.ui.hierarchy.AbstractTypeHierarchyHandler"/>
-                <message_argument value="org.eclipse.xtext.xbase.ui_2.3.0"/>
-            </message_arguments>
-        </filter>
-    </resource>
-    <resource path="src/org/eclipse/xtext/xbase/ui/hierarchy/OpenTypeHierarchyHandler.java" type="org.eclipse.xtext.xbase.ui.hierarchy.OpenTypeHierarchyHandler">
-        <filter id="305365105">
-            <message_arguments>
-                <message_argument value="org.eclipse.xtext.xbase.ui.hierarchy.OpenTypeHierarchyHandler"/>
-                <message_argument value="org.eclipse.xtext.xbase.ui_2.3.0"/>
-            </message_arguments>
-        </filter>
-    </resource>
-    <resource path="src/org/eclipse/xtext/xbase/ui/hierarchy/QuickTypeHierarchyHandler.java" type="org.eclipse.xtext.xbase.ui.hierarchy.QuickTypeHierarchyHandler">
-        <filter id="305365105">
-            <message_arguments>
-                <message_argument value="org.eclipse.xtext.xbase.ui.hierarchy.QuickTypeHierarchyHandler"/>
-                <message_argument value="org.eclipse.xtext.xbase.ui_2.3.0"/>
+                <message_argument value="XbaseRuntimeModule()"/>
+                <message_argument value="XtypeActivator"/>
             </message_arguments>
         </filter>
     </resource>
@@ -70,6 +48,23 @@
             <message_arguments>
                 <message_argument value="IXtextBrowserInformationControl"/>
                 <message_argument value="XbaseInformationControl"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/eclipse/xtext/xbase/ui/jvmmodel/findrefs/JdtReferenceFinder.java" type="org.eclipse.xtext.xbase.ui.jvmmodel.findrefs.JdtReferenceFinder">
+        <filter id="572522506">
+            <message_arguments>
+                <message_argument value="ElementQuerySpecification"/>
+                <message_argument value="JdtReferenceFinder"/>
+            </message_arguments>
+        </filter>
+    </resource>
+    <resource path="src/org/eclipse/xtext/xbase/ui/quickfix/JavaTypeQuickfixes.java" type="org.eclipse.xtext.xbase.ui.quickfix.JavaTypeQuickfixes">
+        <filter id="640712815">
+            <message_arguments>
+                <message_argument value="JdtTypeRelevance"/>
+                <message_argument value="JavaTypeQuickfixes"/>
+                <message_argument value="getRelevance(String, String)"/>
             </message_arguments>
         </filter>
     </resource>

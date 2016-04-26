@@ -13,6 +13,7 @@ import static com.google.common.collect.Sets.*;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IMarker;
@@ -21,17 +22,21 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.xtext.generator.GeneratorContext;
+import org.eclipse.xtext.generator.GeneratorDelegate;
 import org.eclipse.xtext.generator.IFileSystemAccess;
-import org.eclipse.xtext.generator.IGenerator;
+import org.eclipse.xtext.generator.IFileSystemAccess2;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescription.Delta;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.ui.resource.IStorage2UriMapper;
+import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.IAcceptor;
 import org.eclipse.xtext.util.Pair;
 
@@ -46,8 +51,10 @@ import com.google.inject.Provider;
 @Deprecated
 public class JavaProjectBasedBuilderParticipant implements IXtextBuilderParticipant {
 
+	private final static Logger logger = Logger.getLogger(JavaProjectBasedBuilderParticipant.class);
+	
 	@Inject
-	private IGenerator generator;
+	private GeneratorDelegate generator;
 
 	@Inject
 	private Provider<EclipseResourceFileSystemAccess> fileAccessProvider;
@@ -60,6 +67,7 @@ public class JavaProjectBasedBuilderParticipant implements IXtextBuilderParticip
 
 	private Map<URI, Set<String>> sourceTargetMap = newHashMap();
 
+	@Override
 	public void build(IBuildContext context, IProgressMonitor monitor) throws CoreException {
 		final IProject builtProject = context.getBuiltProject();
 		IJavaProject javaProject = JavaCore.create(builtProject);
@@ -71,12 +79,16 @@ public class JavaProjectBasedBuilderParticipant implements IXtextBuilderParticip
 		if (!isValidOutputFolder(javaProject, srcGenFolder))
 			return;
 		for (IResourceDescription.Delta delta : context.getDeltas()) {
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			final Set<String> oldFiles = newHashSet();
 			if (sourceTargetMap.containsKey(delta.getUri())) {
 				oldFiles.addAll(sourceTargetMap.get(delta.getUri()));
 			}
 			final Set<String> newFiles = newHashSet();
 			IFileSystemAccess fileSystemAccess = getConfiguredFileSystemAccess(srcGenFolder, new IAcceptor<String>() {
+				@Override
 				public void accept(String fileName) {
 					oldFiles.remove(fileName);
 					newFiles.add(fileName);
@@ -85,7 +97,11 @@ public class JavaProjectBasedBuilderParticipant implements IXtextBuilderParticip
 			if (delta.getNew() == null) {
 				handleDeletion(delta, context, fileSystemAccess);
 			} else {
-				handleChangedContents(delta, context, fileSystemAccess);
+				try {
+					handleChangedContents(delta, context, fileSystemAccess);
+				} catch (Exception e) {
+					logger.error("Error during compilation of '"+delta.getUri()+"'.", e);
+				}
 			}
 			for (String removeFile : oldFiles) {
 				fileSystemAccess.deleteFile(removeFile);
@@ -122,7 +138,13 @@ public class JavaProjectBasedBuilderParticipant implements IXtextBuilderParticip
 			return;
 		Resource resource = context.getResourceSet().getResource(delta.getUri(), true);
 		if (shouldGenerate(resource, context)) {
-			generator.doGenerate(resource, fileSystemAccess);
+			CancelIndicator cancelIndicator = CancelIndicator.NullImpl;
+			if (fileSystemAccess instanceof EclipseResourceFileSystemAccess2) {
+				cancelIndicator = new MonitorBasedCancelIndicator(((EclipseResourceFileSystemAccess2) fileSystemAccess).getMonitor());
+			}
+			GeneratorContext generatorContext = new GeneratorContext();
+			generatorContext.setCancelIndicator(cancelIndicator);
+			generator.generate(resource, (IFileSystemAccess2) fileSystemAccess, generatorContext);
 			context.needRebuild();
 		}
 	}

@@ -26,7 +26,6 @@ import org.eclipse.xtext.ui.editor.outline.impl.DocumentRootNode;
 import org.eclipse.xtext.ui.editor.outline.impl.ModeAwareOutlineTreeProvider;
 import org.eclipse.xtext.ui.editor.outline.impl.OutlineMode;
 import org.eclipse.xtext.ui.label.StylerFactory;
-import org.eclipse.xtext.util.TextRegion;
 import org.eclipse.xtext.xtext.UsedRulesFinder;
 import org.eclipse.xtext.xtext.ui.editor.syntaxcoloring.SemanticHighlightingConfiguration;
 
@@ -42,8 +41,8 @@ public class XtextOutlineTreeProvider extends ModeAwareOutlineTreeProvider {
 
 	public static final String NAME_TYPE_SEPARATOR = " - ";
 
-	private static final OutlineMode SHOW_INHERITED_MODE = new OutlineMode("show", "show inherited rules");
-	private static final OutlineMode HIDE_INHERITED_MODE = new OutlineMode("hide", "hide inherited rules");
+	private static final OutlineMode SHOW_INHERITED_MODE = new OutlineMode("show", "Show inherited rules");
+	private static final OutlineMode HIDE_INHERITED_MODE = new OutlineMode("hide", "Hide inherited rules");
 	private static final List<OutlineMode> MODES = newArrayList(HIDE_INHERITED_MODE, SHOW_INHERITED_MODE);
 	
 	@Override
@@ -112,12 +111,12 @@ public class XtextOutlineTreeProvider extends ModeAwareOutlineTreeProvider {
 		}
 		Image image = imageDispatcher.invoke(rule);
 		RuleNode ruleNode = new RuleNode(rule, parentNode, image, text, isLeafDispatcher.invoke(rule));
+		ruleNode.setFullText(new StyledString().append(text).append(getReturnTypeText(rule)));
 		if (isLocalRule) {
 			ICompositeNode parserNode = NodeModelUtils.getNode(rule);
 			if (parserNode != null)
-				ruleNode.setTextRegion(new TextRegion(parserNode.getOffset(), parserNode.getLength()));
+				ruleNode.setTextRegion(parserNode.getTextRegion());
 			ruleNode.setShortTextRegion(locationInFileProvider.getSignificantTextRegion(rule));
-			ruleNode.setFullText(new StyledString().append(text).append(getReturnTypeText(rule)));
 		}
 	}
 
@@ -129,14 +128,15 @@ public class XtextOutlineTreeProvider extends ModeAwareOutlineTreeProvider {
 			createNode(parentNode, rule);
 		}
 		if (getCurrentMode() == SHOW_INHERITED_MODE) {
-			for (AbstractRule rule : GrammarUtil.allRules(grammar)) {
-				if (rule.eContainer() != grammar) {
+			List<Grammar> usedGrammars = GrammarUtil.allUsedGrammars(grammar);
+			for(Grammar usedGrammar: usedGrammars) {
+				for (AbstractRule rule : usedGrammar.getRules()) {
 					createRuleNode(parentNode, rule, true, false);
 				}
 			}
 		}
 	}
-
+	
 	protected boolean _isLeaf(AbstractRule rule) {
 		return true;
 	}

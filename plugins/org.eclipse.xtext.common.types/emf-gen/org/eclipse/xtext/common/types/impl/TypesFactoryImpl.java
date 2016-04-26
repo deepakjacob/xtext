@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.impl;
 
@@ -36,7 +38,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory
 	{
 		try
 		{
-			TypesFactory theTypesFactory = (TypesFactory)EPackage.Registry.INSTANCE.getEFactory("http://www.eclipse.org/xtext/common/JavaVMTypes"); 
+			TypesFactory theTypesFactory = (TypesFactory)EPackage.Registry.INSTANCE.getEFactory(TypesPackage.eNS_URI);
 			if (theTypesFactory != null)
 			{
 				return theTypesFactory;
@@ -106,6 +108,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory
 			case TypesPackage.JVM_SYNONYM_TYPE_REFERENCE: return createJvmSynonymTypeReference();
 			case TypesPackage.JVM_UNKNOWN_TYPE_REFERENCE: return createJvmUnknownTypeReference();
 			case TypesPackage.JVM_CUSTOM_ANNOTATION_VALUE: return createJvmCustomAnnotationValue();
+			case TypesPackage.JVM_INNER_TYPE_REFERENCE: return createJvmInnerTypeReference();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -321,7 +324,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory
 	 */
 	public JvmField createJvmField()
 	{
-		JvmFieldImpl jvmField = new JvmFieldImpl();
+		JvmFieldImplCustom jvmField = new JvmFieldImplCustom();
 		return jvmField;
 	}
 
@@ -365,7 +368,7 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory
 	 */
 	public JvmAnnotationReference createJvmAnnotationReference()
 	{
-		JvmAnnotationReferenceImpl jvmAnnotationReference = new JvmAnnotationReferenceImpl();
+		JvmAnnotationReferenceImplCustom jvmAnnotationReference = new JvmAnnotationReferenceImplCustom();
 		return jvmAnnotationReference;
 	}
 
@@ -543,6 +546,17 @@ public class TypesFactoryImpl extends EFactoryImpl implements TypesFactory
 	{
 		JvmCustomAnnotationValueImpl jvmCustomAnnotationValue = new JvmCustomAnnotationValueImpl();
 		return jvmCustomAnnotationValue;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public JvmInnerTypeReference createJvmInnerTypeReference()
+	{
+		JvmInnerTypeReferenceImplCustom jvmInnerTypeReference = new JvmInnerTypeReferenceImplCustom();
+		return jvmInnerTypeReference;
 	}
 
 	/**

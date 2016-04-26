@@ -18,6 +18,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -68,6 +69,7 @@ import com.ibm.icu.text.MessageFormat;
  * @author Michael Clay
  * @author Heiko Behrens
  * @author Sebastian Zarnekow - Resetting unchanged flag on undo / redo, support for IURIEditorInput
+ * @since 2.4
  */
 public class XtextDocumentProvider extends FileDocumentProvider {
 	
@@ -112,6 +114,13 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 
 	@Inject
 	private IEncodingProvider encodingProvider;
+	
+	/**
+	 * @since 2.4
+	 */
+	protected IStorage2UriMapper getStorage2UriMapper() {
+		return storage2UriMapper;
+	}
 
 	@Override
 	protected XtextDocument createEmptyDocument() {
@@ -124,7 +133,7 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 		IDocument document = null;
 		if (isWorkspaceExternalEditorInput(element)) {
 			document= createEmptyDocument();
-			if (setDocumentContent(document, (IEditorInput) element, Charset.defaultCharset().name())) {
+			if (setDocumentContent(document, (IEditorInput) element, getEncoding(element))) {
 				setupDocument(element, document);
 			}
 		} else {
@@ -185,13 +194,30 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 		} else {
 			result = super.setDocumentContent(document, editorInput, encoding);
 		}
-		if (result) {
-			XtextDocument xtextDocument = (XtextDocument) document;
-			XtextResource xtextResource = (XtextResource) resourceForEditorInputFactory.createResource(editorInput);
-			loadResource(xtextResource, xtextDocument.get(), encoding);
-			xtextDocument.setInput(xtextResource);
-		}
+		if (result) 
+			setDocumentResource((XtextDocument) document, editorInput, encoding);
 		return result;
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	protected void setDocumentResource(XtextDocument xtextDocument, IEditorInput editorInput, String encoding) throws CoreException {
+		try {
+			XtextResource xtextResource = (XtextResource) resourceForEditorInputFactory.createResource(editorInput);
+			// encoding can be null for FileRevisionEditorInput
+			loadResource(xtextResource, xtextDocument.get(), encoding == null ? getWorkspaceOrDefaultEncoding() : encoding);
+			xtextResource.setModificationStamp(xtextDocument.getModificationStamp());
+			xtextDocument.setInput(xtextResource);
+		} catch(CoreException e) {
+			throw e;
+		} catch(RuntimeException e) {
+			Throwable cause = e.getCause();
+			if (cause instanceof CoreException) {
+				throw (CoreException) cause;
+			}
+			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+		}
 	}
 
 	@Override
@@ -209,13 +235,11 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 
 	protected void loadResource(XtextResource resource, String document, String encoding) throws CoreException {
 		try {
-			// encoding can be null for FileRevisionEditorInput
 			byte[] bytes = encoding != null ? document.getBytes(encoding) : document.getBytes();
-			resource.load(new ByteArrayInputStream(bytes),
-					Collections.singletonMap(XtextResource.OPTION_ENCODING, encoding));
+			resource.load(new ByteArrayInputStream(bytes), Collections.singletonMap(XtextResource.OPTION_ENCODING, encoding));
 		} catch (IOException ex) {
 			String message = (ex.getMessage() != null ? ex.getMessage() : ex.toString());
-			IStatus s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, IStatus.OK, message, ex);
+			IStatus s = new Status(IStatus.ERROR, Activator.PLUGIN_ID, message, ex);
 			throw new CoreException(s);
 		}
 	}
@@ -238,6 +262,14 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 		} else {
 			info = super.createElementInfo(element);
 		}
+		registerAnnotationInfoProcessor(info);
+		return info;
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	protected void registerAnnotationInfoProcessor(ElementInfo info) {
 		XtextDocument doc = (XtextDocument) info.fDocument;
 		if(info.fModel != null) {
 			AnnotationIssueProcessor annotationIssueProcessor = new AnnotationIssueProcessor(doc, info.fModel,
@@ -245,7 +277,6 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 			ValidationJob job = new ValidationJob(resourceValidator, doc, annotationIssueProcessor, CheckMode.FAST_ONLY);
 			doc.setValidationJob(job);
 		}
-		return info;
 	}
 	
 	private UnchangedElementListener listener;
@@ -265,9 +296,11 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 
 		}
 
+		@Override
 		public void documentAboutToBeChanged(DocumentEvent event) {
 		}
 
+		@Override
 		public void documentChanged(DocumentEvent event) {
 			if (element.fCanBeSaved && modificationStamp == event.getModificationStamp()) {
 				element.fCanBeSaved = false;
@@ -286,7 +319,7 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 			if (listener != null)
 				info.fDocument.removeDocumentListener(listener);
 			listener = new UnchangedElementListener(info);
-			info.fDocument.addDocumentListener(new UnchangedElementListener(info));
+			info.fDocument.addDocumentListener(listener);
 		}
 	}
 
@@ -303,7 +336,7 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 		if (element instanceof IFileEditorInput) {
 			IFileEditorInput input = (IFileEditorInput) element;
 			return new XtextResourceMarkerAnnotationModel(input.getFile(), issueResolutionProvider, issueUtil);
-		} else if(element instanceof IURIEditorInput){
+		} else if (element instanceof IURIEditorInput) {
 			return new AnnotationModel();
 		}
 		return super.createAnnotationModel(element);
@@ -333,7 +366,28 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 				throw new WrappedException(e);
 			}
 		}
+		if (encoding == null) {
+			if (isWorkspaceExternalEditorInput(element))
+				encoding = getWorkspaceExternalEncoding((IURIEditorInput)element);
+			else
+				encoding = getWorkspaceOrDefaultEncoding();
+		}
 		return encoding;
+	}
+
+	/**
+	 * @since 2.5
+	 */
+	protected String getWorkspaceExternalEncoding(IURIEditorInput element) {
+		URI emfURI = toEmfUri(element.getURI());
+		return encodingProvider.getEncoding(emfURI);
+	}
+	
+	/**
+	 * @since 2.5
+	 */
+	protected String getWorkspaceOrDefaultEncoding() {
+		return encodingProvider.getEncoding(null);
 	}
 	
 	@Override
@@ -398,16 +452,14 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 	protected void updateCache(IURIEditorInput input) throws CoreException {
 		URIInfo info= (URIInfo) getElementInfo(input);
 		if (info != null) {
-			java.net.URI uri= input.getURI();
-			if (uri != null) {
+			URI emfURI = toEmfUri(input.getURI());
+			if (emfURI != null) {
 				boolean readOnly = true;
-				String uriAsString = uri.toString();
-				URI emfURI = URI.createURI(uriAsString);
 				if (emfURI.isFile() && !emfURI.isArchive()) {
-					// TODO: Should we use the resource set somehow to obtain the URIConverter for the file protocol?
+					// TODO: Should we use the ResourceSet somehow to obtain the URIConverter for the file protocol?
 					// see also todo below, but don't run into a stackoverflow ;-)
 					Map<String, ?> attributes = URIConverter.INSTANCE.getAttributes(emfURI, null);
-					readOnly = "true".equals(attributes.get(URIConverter.ATTRIBUTE_READ_ONLY));
+					readOnly = Boolean.TRUE.equals(attributes.get(URIConverter.ATTRIBUTE_READ_ONLY));
 				}
 				info.isReadOnly=  readOnly;
 				info.isModifiable= !readOnly;
@@ -416,14 +468,31 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 		}
 	}
 	
+	private URI toEmfUri(java.net.URI uri) {
+		if (uri == null)
+			return null;
+		String uriAsString = uri.toString();
+		URI emfURI = URI.createURI(uriAsString);
+		return emfURI;
+	}
+	
+	private Charset getCharset(String name) {
+		try {
+			return Charset.forName(name);
+		} catch(UnsupportedCharsetException e) {
+			return Charset.defaultCharset();
+		}
+	}
+	
 	@Override
 	protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite)
 			throws CoreException {
 		if (isWorkspaceExternalEditorInput(element)) {
-			CharsetEncoder encoder= Charset.defaultCharset().newEncoder();
+			IURIEditorInput casted = (IURIEditorInput) element;
+			String encoding = getWorkspaceExternalEncoding(casted);
+			CharsetEncoder encoder= getCharset(encoding).newEncoder();
 			encoder.onMalformedInput(CodingErrorAction.REPLACE);
 			encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
-
 			OutputStream stream = null;
 			try {
 				try {
@@ -436,10 +505,9 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 						bytes= new byte[byteBuffer.limit()];
 						byteBuffer.get(bytes);
 					}
-					String uriAsString = ((IURIEditorInput) element).getURI().toString();
-					URI emfURI = URI.createURI(uriAsString);
+					
 					// TODO: see todo above
-					stream = URIConverter.INSTANCE.createOutputStream(emfURI);
+					stream = URIConverter.INSTANCE.createOutputStream(toEmfUri(casted.getURI()));
 					stream.write(bytes, 0, byteBuffer.limit());
 				} finally {
 					monitor.done();
@@ -454,7 +522,11 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 				IStatus s= new Status(IStatus.ERROR, Activator.PLUGIN_ID, IResourceStatus.FAILED_WRITE_LOCAL, message, null);
 				throw new CoreException(s);
 			} finally {
-				Closeables.closeQuietly(stream);
+				try {
+					Closeables.close(stream, true);
+				} catch (IOException e) {
+					//never thrown, swallowed by Closeables.close
+				}
 			}
 			return;
 		}
@@ -471,5 +543,11 @@ public class XtextDocumentProvider extends FileDocumentProvider {
 			}
 		}
 		super.doUpdateStateCache(element);
+	}
+	
+	@Override
+	protected void handleCoreException(CoreException exception, String message) {
+		if(exception.getStatus() == null || exception.getStatus().getCode() != IResourceStatus.RESOURCE_NOT_FOUND)
+			super.handleCoreException(exception, message);
 	}
 }

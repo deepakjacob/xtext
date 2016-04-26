@@ -29,11 +29,11 @@ import org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationsPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.annotations.xAnnotations.impl.XAnnotationElementValuePairImpl#getValue <em>Value</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.annotations.xAnnotations.impl.XAnnotationElementValuePairImpl#getElement <em>Element</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

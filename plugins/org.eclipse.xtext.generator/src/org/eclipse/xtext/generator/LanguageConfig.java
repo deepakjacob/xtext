@@ -12,6 +12,7 @@ import static org.eclipse.xtext.util.Strings.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -19,6 +20,7 @@ import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.common.util.DiagnosticChain;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EValidator;
@@ -35,13 +37,17 @@ import org.eclipse.xtext.XtextPackage;
 import org.eclipse.xtext.ecore.EcoreSupportStandaloneSetup;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
+import org.eclipse.xtext.resource.impl.ResourceDescriptionsData;
 import org.eclipse.xtext.ui.generator.ImplicitUiFragment;
 import org.eclipse.xtext.util.Strings;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
@@ -59,6 +65,7 @@ public class LanguageConfig extends CompositeGeneratorFragment {
 			this.delim = string;
 		}
 
+		@Override
 		public String apply(IGeneratorFragment from) {
 			if (from instanceof CompositeGeneratorFragment) {
 				return Strings.toString(((CompositeGeneratorFragment) from).fragments, this, delim);
@@ -75,6 +82,8 @@ public class LanguageConfig extends CompositeGeneratorFragment {
 	private List<String> loadedResources = new ArrayList<String>();
 	
 	private ResourceSet forcedResourceSet = null;
+	
+	private String encoding;
 	
 	/**
 	 * @since 2.1
@@ -159,10 +168,10 @@ public class LanguageConfig extends CompositeGeneratorFragment {
 
 	public List<String> getFileExtensions(Grammar g) {
 		if (fileExtensions.isEmpty()) {
-			String lowerCase = GrammarUtil.getName(g).toLowerCase();
+			String lowerCase = GrammarUtil.getSimpleName(g).toLowerCase();
 			if (LOG.isInfoEnabled())
 				LOG.info("No explicit fileExtensions configured. Using '*." + lowerCase + "'.");
-			return Collections.singletonList(lowerCase);
+			return fileExtensions = Collections.singletonList(lowerCase);
 		}
 		return fileExtensions;
 	}
@@ -177,31 +186,97 @@ public class LanguageConfig extends CompositeGeneratorFragment {
 		ResourceSet rs = forcedResourceSet != null ? forcedResourceSet : new XtextResourceSet();
 		for (String loadedResource : loadedResources) {
 			URI loadedResourceUri = URI.createURI(loadedResource);
-			Resource res = rs.getResource(loadedResourceUri, true);
-			if(equal(loadedResourceUri.fileExtension(), "ecore")) {
+			if(equal(loadedResourceUri.fileExtension(), "genmodel")) {
+				IResourceServiceProvider resourceServiceProvider = IResourceServiceProvider.Registry.INSTANCE.getResourceServiceProvider(loadedResourceUri);
+				if(resourceServiceProvider == null) {
+					try {
+						Class<?> genModelSupport = Class.forName("org.eclipse.emf.codegen.ecore.xtext.GenModelSupport");
+						Object instance = genModelSupport.newInstance();
+						genModelSupport.getDeclaredMethod("createInjectorAndDoEMFRegistration").invoke(instance);
+					} catch (ClassNotFoundException e) {
+						LOG.error("Couldn't initialize GenModel support. Is it on the classpath?");
+						LOG.debug(e.getMessage(), e);
+					} catch (Exception e) {
+						LOG.error("Couldn't initialize GenModel support.", e);
+					}
+				}
+			} else if(equal(loadedResourceUri.fileExtension(), "ecore")) {
 				IResourceServiceProvider resourceServiceProvider = IResourceServiceProvider.Registry.INSTANCE.getResourceServiceProvider(loadedResourceUri);
 				if(resourceServiceProvider == null) {
 					EcoreSupportStandaloneSetup.setup();
 				}
+			} else if (equal(loadedResourceUri.fileExtension(), "xcore")) {
+				IResourceServiceProvider resourceServiceProvider = IResourceServiceProvider.Registry.INSTANCE.getResourceServiceProvider(loadedResourceUri);
+				if(resourceServiceProvider == null) {
+					try {
+						Class<?> xcore = Class.forName("org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup");
+						xcore.getDeclaredMethod("doSetup", new Class[0]).invoke(null);
+					} catch (ClassNotFoundException e) {
+						LOG.error("Couldn't initialize Xcore support. Is it on the classpath?");
+						LOG.debug(e.getMessage(), e);
+					} catch (Exception e) {
+						LOG.error("Couldn't initialize Xcore support.", e);
+					}
+				}
+				URI xcoreLangURI = URI.createPlatformResourceURI("/org.eclipse.emf.ecore.xcore.lib/model/XcoreLang.xcore", true);
+				try {
+					rs.getResource(xcoreLangURI, true);
+				} catch(WrappedException e) {
+					LOG.error("Could not load XcoreLang.xcore.", e);
+					Resource brokenResource = rs.getResource(xcoreLangURI, false);
+					rs.getResources().remove(brokenResource);
+				}
 			}
-			if (res == null || res.getContents().isEmpty())
-				LOG.error("Error loading '" + loadedResource + "'");
-			else if (!res.getErrors().isEmpty())
-				LOG.error("Error loading '" + loadedResource + "': " + res.getErrors().toString());
+			rs.getResource(loadedResourceUri, true);
 		}
-		EcoreUtil.resolveAll(rs);
+		if (!rs.getResources().isEmpty()) {
+			installIndex(rs);
+			for(int i = 0, size = rs.getResources().size(); i<size; i++) {
+				Resource res = rs.getResources().get(i);
+				if (res.getContents().isEmpty())
+					LOG.error("Error loading '" + res.getURI() + "'");
+				else if (!res.getErrors().isEmpty())
+					LOG.error("Error loading '" + res.getURI() + "':\n" + Joiner.on('\n').join(res.getErrors()));	
+			}
+			EcoreUtil.resolveAll(rs);
+		}
+		if (encoding != null) {
+			rs.getLoadOptions().put(XtextResource.OPTION_ENCODING, encoding);
+		}
 		XtextResource resource = (XtextResource) rs.getResource(URI.createURI(uri), true);
 		if (resource.getContents().isEmpty()) {
 			throw new IllegalArgumentException("Couldn't load grammar for '" + uri + "'.");
 		}
 		if (!resource.getErrors().isEmpty()) {
 			LOG.error(resource.getErrors());
-			throw new IllegalStateException("Problem parsing '"+uri+"':"+resource.getErrors().toString());
+			throw new IllegalStateException("Problem parsing '" + uri + "':\n" + Joiner.on('\n').join(resource.getErrors()));
 		}
 
 		final Grammar grammar = (Grammar) resource.getContents().get(0);
 		validateGrammar(grammar);
 		this.grammar = grammar;
+	}
+	
+	private void installIndex(ResourceSet resourceSet) {
+		if (ResourceDescriptionsData.ResourceSetAdapter.findResourceDescriptionsData(resourceSet) == null) {
+			// Fill index
+			ResourceDescriptionsData index = new ResourceDescriptionsData(Collections.<IResourceDescription>emptyList());
+			List<Resource> resources = Lists.newArrayList(resourceSet.getResources());
+			for (Resource resource : resources) {
+				index(resource, resource.getURI(), index);
+			}
+			ResourceDescriptionsData.ResourceSetAdapter.installResourceDescriptionsData(resourceSet, index);
+		}
+	}
+
+	private void index(Resource resource, URI uri, ResourceDescriptionsData index) {
+		IResourceServiceProvider serviceProvider = IResourceServiceProvider.Registry.INSTANCE.getResourceServiceProvider(uri);
+		if (serviceProvider != null) {
+			IResourceDescription resourceDescription = serviceProvider.getResourceDescriptionManager().getResourceDescription(resource);
+			if (resourceDescription != null) {
+				index.addDescription(uri, resourceDescription);
+			}
+		}
 	}
 	
 	/**
@@ -213,6 +288,7 @@ public class LanguageConfig extends CompositeGeneratorFragment {
 		if (validator != null) {
 			DiagnosticChain chain = new DiagnosticChain() {
 
+				@Override
 				public void add(Diagnostic diagnostic) {
 					if (diagnostic.getSeverity() == Diagnostic.ERROR) {
 						if (diagnostic.getException() == null)
@@ -222,10 +298,12 @@ public class LanguageConfig extends CompositeGeneratorFragment {
 					}
 				}
 
+				@Override
 				public void addAll(Diagnostic diagnostic) {
 					add(diagnostic);
 				}
 
+				@Override
 				public void merge(Diagnostic diagnostic) {
 					throw new UnsupportedOperationException();
 				}
@@ -233,7 +311,7 @@ public class LanguageConfig extends CompositeGeneratorFragment {
 			validator.validate(grammar, chain, null);
 			TreeIterator<EObject> iterator = grammar.eAllContents();
 			while (iterator.hasNext())
-				validator.validate(iterator.next(), chain, null);
+				validator.validate(iterator.next(), chain, new HashMap<Object, Object>());
 		}
 	}
 	
@@ -268,4 +346,17 @@ public class LanguageConfig extends CompositeGeneratorFragment {
 		return grammar;
 	}
 
+	/**
+	 * @since 2.9
+	 */
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public String getEncoding() {
+		return encoding;
+	}
 }

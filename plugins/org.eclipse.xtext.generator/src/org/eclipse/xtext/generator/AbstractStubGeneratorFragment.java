@@ -23,18 +23,22 @@ public class AbstractStubGeneratorFragment extends AbstractGeneratorFragment imp
 	
 	private boolean isGenerateXtendStub;
 
+	@Override
 	public boolean isGenerateXtendStub() {
 		return isGenerateXtendStub;
 	}
 
+	@Override
 	public void setGenerateXtendStub(boolean isGenerateXtendStub) {
 		this.isGenerateXtendStub = isGenerateXtendStub;
 	}
 
+	@Override
 	public boolean isGenerateStub() {
 		return isGenerateStub;
 	}
 
+	@Override
 	public void setGenerateStub(boolean isGenerateStub) {
 		this.isGenerateStub = isGenerateStub;
 	}
@@ -45,18 +49,19 @@ public class AbstractStubGeneratorFragment extends AbstractGeneratorFragment imp
 	}
 	
 	@Override
-	public String[] getImportedPackagesRt(Grammar grammar) {
+	public String[] getRequiredBundlesRt(Grammar grammar) {
 		if(isGenerateXtendStub)
 			return new String[] { "org.eclipse.xtext.xbase.lib" };
 		else 
 			return null;
 	}
-
+	
 	@Override
-	public String[] getImportedPackagesUi(Grammar grammar) {
+	public String[] getRequiredBundlesUi(Grammar grammar) {
 		if(isGenerateXtendStub)
 			return new String[] { "org.eclipse.xtext.xbase.lib" };
 		else 
 			return null;
 	}
+	
 }

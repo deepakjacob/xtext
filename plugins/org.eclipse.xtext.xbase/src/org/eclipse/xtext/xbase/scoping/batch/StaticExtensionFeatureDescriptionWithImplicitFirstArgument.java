@@ -7,10 +7,10 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.scoping.batch;
 
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmFeature;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
@@ -18,33 +18,43 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  */
 public class StaticExtensionFeatureDescriptionWithImplicitFirstArgument extends StaticExtensionFeatureDescription {
 
-	protected StaticExtensionFeatureDescriptionWithImplicitFirstArgument(QualifiedName qualifiedName,
-			JvmIdentifiableElement element, XExpression firstArgument,
-			LightweightTypeReference firstArgumentType, int bucketId, boolean visible) {
-		super(qualifiedName, element, firstArgument, firstArgumentType, bucketId, visible);
+	protected StaticExtensionFeatureDescriptionWithImplicitFirstArgument(
+			QualifiedName qualifiedName,
+			JvmFeature feature, 
+			XExpression firstArgument,
+			LightweightTypeReference firstArgumentType,
+			int bucketId,
+			boolean visible) {
+		super(qualifiedName, feature, firstArgument, firstArgumentType, bucketId, visible);
 	}
 
 	@Override
-	@Nullable
+	/* @Nullable */
 	public XExpression getSyntacticReceiver() {
 		return null;
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public LightweightTypeReference getSyntacticReceiverType() {
 		return null;
 	}
 	
 	@Override
-	@Nullable
+	public int getSyntacticReceiverConformanceFlags() {
+		return ConformanceFlags.NONE;
+	}
+	
+	@Override
+	/* @Nullable */
 	public XExpression getImplicitFirstArgument() {
 		return super.getSyntacticReceiver();
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public LightweightTypeReference getImplicitFirstArgumentType() {
 		return super.getSyntacticReceiverType();
 	}
+	
 }

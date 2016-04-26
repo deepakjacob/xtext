@@ -10,7 +10,6 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmFormalParameter;
 import org.eclipse.xtext.xbase.scoping.batch.IFeatureScopeSession;
@@ -21,12 +20,10 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class ConstructorBodyComputationState extends AbstractLogicalContainerAwareRootComputationState {
 
-	public ConstructorBodyComputationState(ResolvedTypes resolvedTypes, IFeatureScopeSession featureScopeSession, JvmConstructor constructor,
-			LogicalContainerAwareReentrantTypeResolver reentrantTypeResolver) {
-		super(resolvedTypes, featureScopeSession, constructor, reentrantTypeResolver);
+	public ConstructorBodyComputationState(ResolvedTypes resolvedTypes, IFeatureScopeSession featureScopeSession, JvmConstructor constructor) {
+		super(resolvedTypes.pushExpectedExceptions(constructor), featureScopeSession, constructor);
 		for(JvmFormalParameter parameter: constructor.getParameters()) {
 			addLocalToCurrentScope(parameter);
 		}
@@ -41,7 +38,7 @@ public class ConstructorBodyComputationState extends AbstractLogicalContainerAwa
 	
 	@Override
 	protected LightweightTypeReference getExpectedType() {
-		return getResolvedTypes().getConverter().toLightweightReference(getTypeReferences().getTypeForName(Void.TYPE, getMember()));
+		return getResolvedTypes().getReferenceOwner().toLightweightTypeReference(getTypeReferences().getTypeForName(Void.TYPE, getMember()));
 	}
 	
 	@Override

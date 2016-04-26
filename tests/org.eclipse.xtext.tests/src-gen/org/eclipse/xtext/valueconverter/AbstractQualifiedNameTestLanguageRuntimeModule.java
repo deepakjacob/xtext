@@ -6,7 +6,6 @@ package org.eclipse.xtext.valueconverter;
 import java.util.Properties;
 
 import org.eclipse.xtext.Constants;
-import org.eclipse.xtext.service.DefaultRuntimeModule;
 
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
@@ -14,8 +13,8 @@ import com.google.inject.name.Names;
 /**
  * Manual modifications go to {org.eclipse.xtext.valueconverter.QualifiedNameTestLanguageRuntimeModule}
  */
- @SuppressWarnings("all")
-public abstract class AbstractQualifiedNameTestLanguageRuntimeModule extends DefaultRuntimeModule {
+@SuppressWarnings("all")
+public abstract class AbstractQualifiedNameTestLanguageRuntimeModule extends org.eclipse.xtext.service.DefaultRuntimeModule {
 
 	protected Properties properties = null;
 
@@ -77,11 +76,6 @@ public abstract class AbstractQualifiedNameTestLanguageRuntimeModule extends Def
 	// contributed by org.eclipse.xtext.generator.grammarAccess.GrammarAccessFragment
 	public Class<? extends org.eclipse.xtext.IGrammarAccess> bindIGrammarAccess() {
 		return org.eclipse.xtext.valueconverter.services.QualifiedNameTestLanguageGrammarAccess.class;
-	}
-
-	// contributed by org.eclipse.xtext.generator.parseTreeConstructor.ParseTreeConstructorFragment
-	public Class<? extends org.eclipse.xtext.parsetree.reconstr.IParseTreeConstructor> bindIParseTreeConstructor() {
-		return org.eclipse.xtext.valueconverter.parseTreeConstruction.QualifiedNameTestLanguageParsetreeConstructor.class;
 	}
 
 	// contributed by org.eclipse.xtext.generator.serializer.SerializerFragment

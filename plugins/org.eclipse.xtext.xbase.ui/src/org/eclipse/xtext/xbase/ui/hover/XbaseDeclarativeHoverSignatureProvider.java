@@ -10,15 +10,15 @@ package org.eclipse.xtext.xbase.ui.hover;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.ui.JavaElementLabels;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.xtext.common.types.JvmAnnotationType;
 import org.eclipse.xtext.common.types.JvmAnyTypeReference;
 import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmEnumerationType;
@@ -31,10 +31,18 @@ import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.ui.label.ILabelProviderImageDescriptorExtension;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 import org.eclipse.xtext.util.PolymorphicDispatcher.ErrorHandler;
-import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations;
-import org.eclipse.xtext.xbase.typing.ITypeProvider;
+import org.eclipse.xtext.xbase.XAbstractFeatureCall;
+import org.eclipse.xtext.xbase.XConstructorCall;
+import org.eclipse.xtext.xbase.typesystem.IBatchTypeResolver;
+import org.eclipse.xtext.xbase.typesystem.IResolvedTypes;
+import org.eclipse.xtext.xbase.typesystem.override.InvokedResolvedOperation;
+import org.eclipse.xtext.xbase.typesystem.override.ResolvedConstructor;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
+import org.eclipse.xtext.xbase.typesystem.util.VarianceInfo;
 import org.eclipse.xtext.xbase.validation.UIStrings;
 
 import com.google.inject.Inject;
@@ -50,18 +58,155 @@ public class XbaseDeclarativeHoverSignatureProvider {
 
 	@Inject
 	protected UIStrings uiStrings;
-
-	@Inject
-	private IJvmModelAssociations associations;
-
+	
 	@Inject
 	private ILabelProvider labelProvider;
-
+	
 	@Inject
-	private ITypeProvider typeProvider;
+	private IBatchTypeResolver typeResolver;
+	
+	@Inject
+	private InvokedResolvedOperation.Provider invokedOperationProvider;
 
 	public String getSignature(EObject object) {
 		return internalGetSignature(object, false);
+	}
+	
+	protected String _signature(XConstructorCall constructorCall, boolean typeAtEnd) {
+		if (typeAtEnd) {
+			throw new UnsupportedOperationException();
+		}
+		IResolvedTypes resolvedTypes = typeResolver.resolveTypes(constructorCall);
+		LightweightTypeReference createdType = resolvedTypes.getActualType(constructorCall);
+		final List<LightweightTypeReference> typeArguments = resolvedTypes.getActualTypeArguments(constructorCall);
+		final int typeArgumentCount = createdType.getTypeArguments().size();
+		final int constructorTypeArgumentCount = typeArguments.size();
+		final JvmConstructor constructor = constructorCall.getConstructor();
+		ResolvedConstructor resolvedConstructor = new ResolvedConstructor(constructor, createdType) {
+			@Override
+			protected Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> computeContextTypeParameterMapping() {
+				Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> result = super.computeContextTypeParameterMapping();
+				if (typeArgumentCount == constructorTypeArgumentCount)
+					return result;
+				List<JvmTypeParameter> constructorTypeParameters = getDeclaration().getTypeParameters();
+				for(int i = 0; i < constructorTypeParameters.size(); i++) {
+					result.put(constructorTypeParameters.get(i), new LightweightMergedBoundTypeArgument(typeArguments.get(i), VarianceInfo.INVARIANT));
+				}
+				return result;
+			}
+		};
+		StringBuilder result = new StringBuilder(250);
+		if (typeArgumentCount != constructorTypeArgumentCount) {
+			result.append("<");
+			for(int i = 0; i < constructorTypeArgumentCount - typeArgumentCount; i++) {
+				if (i != 0) {
+					result.append(", ");
+				}
+				result.append(typeArguments.get(i).getHumanReadableName());
+			}
+			result.append("> ");
+		}
+		result.append(constructor.getDeclaringType().getSimpleName());
+		if (typeArgumentCount != 0) {
+			result.append("<");
+			for(int i = constructorTypeArgumentCount - typeArgumentCount; i < constructorTypeArgumentCount; i++) {
+				if (i != constructorTypeArgumentCount - typeArgumentCount) {
+					result.append(", ");
+				}
+				result.append(typeArguments.get(i).getHumanReadableName());
+			}
+			result.append(">");
+		}
+		result.append('(');
+		List<LightweightTypeReference> parameterTypes = resolvedConstructor.getResolvedParameterTypes();
+		for(int i = 0; i < parameterTypes.size(); i++) {
+			if (i != 0) {
+				result.append(", ");
+			}
+			result.append(parameterTypes.get(i).getHumanReadableName());
+			result.append(' ').append(constructor.getParameters().get(i).getSimpleName());
+		}
+		result.append(')');
+		List<LightweightTypeReference> exceptions = resolvedConstructor.getResolvedExceptions();
+		if (!exceptions.isEmpty()) {
+			result.append(" throws ");
+			for(int i = 0 ; i < exceptions.size(); i++) {
+				if (i != 0) {
+					result.append(", ");
+				}
+				result.append(exceptions.get(i).getHumanReadableName());
+			}
+		}
+		return result.toString();
+	}
+	protected String _signature(XAbstractFeatureCall featureCall, boolean typeAtEnd) {
+		if (typeAtEnd) {
+			throw new UnsupportedOperationException();
+		}
+		JvmIdentifiableElement feature = featureCall.getFeature();
+		if (feature instanceof JvmOperation) {
+			InvokedResolvedOperation resolvedOperation = invokedOperationProvider.resolve(featureCall);
+			StringBuilder result = new StringBuilder(250);
+			List<LightweightTypeReference> typeArguments = resolvedOperation.getResolvedTypeArguments();
+			if (!typeArguments.isEmpty()) {
+				result.append("<");
+				for(int i = 0 ; i < typeArguments.size(); i++) {
+					if (i != 0) {
+						result.append(", ");
+					}
+					result.append(typeArguments.get(i).getHumanReadableName());
+				}
+				result.append("> ");
+			}
+			result.append(resolvedOperation.getResolvedReturnType().getHumanReadableName()).append(' ');
+			JvmOperation operation = resolvedOperation.getDeclaration();
+			result.append(getDeclaratorName(operation)).append('.');
+			result.append(operation.getSimpleName()).append('(');
+			List<LightweightTypeReference> parameterTypes = resolvedOperation.getResolvedParameterTypes();
+			for(int i = 0; i < parameterTypes.size(); i++) {
+				if (i != 0) {
+					result.append(", ");
+				}
+				result.append(parameterTypes.get(i).getHumanReadableName());
+				result.append(' ').append(operation.getParameters().get(i).getSimpleName());
+			}
+			result.append(')');
+			List<LightweightTypeReference> exceptions = resolvedOperation.getResolvedExceptions();
+			if (!exceptions.isEmpty()) {
+				result.append(" throws ");
+				for(int i = 0 ; i < exceptions.size(); i++) {
+					if (i != 0) {
+						result.append(", ");
+					}
+					result.append(exceptions.get(i).getHumanReadableName());
+				}
+			}
+			return result.toString();
+		} else if (feature instanceof JvmConstructor) {
+			// TODO this or super
+			// see ignored tests in
+		} else if (feature instanceof JvmField) {
+			LightweightTypeReference referenceType = typeResolver.resolveTypes(featureCall).getActualType(featureCall);
+			StringBuilder result = new StringBuilder(250);
+			result.append(referenceType.getHumanReadableName()).append(' ');
+			JvmField field = (JvmField) feature;
+			result.append(getDeclaratorName(field)).append('.');
+			result.append(field.getSimpleName());
+			return result.toString();
+		} else {
+			String simpleName = feature.getSimpleName();
+			String type = typeResolver.resolveTypes(featureCall).getActualType(featureCall).getHumanReadableName();
+			if (simpleName != null) {
+				return type + ' ' + simpleName;
+			} else {
+				return type;
+			}
+		}
+		return getSignature(feature);
+	}
+
+	protected String getDeclaratorName(JvmMember member) {
+		return member.getDeclaringType().getSimpleName();
 	}
 
 	public String getDerivedOrSourceSignature(EObject object) {
@@ -71,6 +216,7 @@ public class XbaseDeclarativeHoverSignatureProvider {
 	protected String internalGetSignature(EObject object, boolean typeAtEnd) {
 		PolymorphicDispatcher<String> polymorphicDispatcher = new PolymorphicDispatcher<String>("_signature", 2, 2,
 				Collections.singletonList(this), new ErrorHandler<String>() {
+					@Override
 					public String handle(Object[] params, Throwable throwable) {
 						return null;
 					}
@@ -95,10 +241,12 @@ public class XbaseDeclarativeHoverSignatureProvider {
 
 	protected String _signature(JvmOperation jvmOperation, boolean typeAtEnd) {
 		String returnTypeString = "void";
-		JvmTypeReference returnType = typeProvider.getTypeForIdentifiable(jvmOperation);
+		// TODO resolved operations?
+		JvmTypeReference returnType = jvmOperation.getReturnType();
 		if (returnType != null) {
 			if (returnType instanceof JvmAnyTypeReference) {
-				returnTypeString = "Object";
+				throw new IllegalStateException();
+//				returnTypeString = "Object";
 			} else {
 				returnTypeString = returnType.getSimpleName();
 			}
@@ -129,31 +277,30 @@ public class XbaseDeclarativeHoverSignatureProvider {
 	}
 
 	protected String enrichWithDeclarator(String signature, EObject o) {
-		EObject object = o.eContainer();
-		if(object instanceof JvmMember){
-			String parentsName = ((JvmMember) object).getSimpleName();
+		if(o instanceof JvmMember && ((JvmMember) o).getDeclaringType() != null){
+			String parentsName = getDeclaratorName((JvmMember) o);
 			return parentsName + "." + signature;
 		}
 		return signature;
 	}
 
-	protected String _signature(JvmConstructor contructor, boolean typeAtEnd) {
-		return typeProvider.getTypeForIdentifiable(contructor).getSimpleName() + hoverUiStrings.parameters(contructor)
-				+ getThrowsDeclaration(contructor);
+	protected String _signature(JvmConstructor constructor, boolean typeAtEnd) {
+		return constructor.getSimpleName() + hoverUiStrings.typeParameters(constructor.getDeclaringType()) + hoverUiStrings.parameters(constructor)
+				+ getThrowsDeclaration(constructor);
 	}
 
 	protected String _signature(JvmFormalParameter parameter, boolean typeAtEnd) {
 		EObject container = parameter.eContainer();
-		JvmTypeReference type = typeProvider.getTypeForIdentifiable(parameter);
-		if (type != null) {
+		LightweightTypeReference parameterType = typeResolver.resolveTypes(parameter).getActualType(parameter);
+		if (parameterType != null) {
 			String signature = parameter.getName();
 			String signatureOfFather = getSimpleSignature(container);
 			if(signatureOfFather != null){
 				signature += JavaElementLabels.CONCAT_STRING + signatureOfFather;
 			}
 			if (typeAtEnd)
-				return signature + " : " + type.getSimpleName();
-			return type.getSimpleName() + " " + signature;
+				return signature + " : " + parameterType.getHumanReadableName();
+			return parameterType.getHumanReadableName() + " " + signature;
 		}
 		return parameter.getName();
 	}
@@ -169,7 +316,11 @@ public class XbaseDeclarativeHoverSignatureProvider {
 	}
 	
 	protected String _signature(JvmEnumerationType jvmEnumerationType, boolean typeAtEnd) {
-		return jvmEnumerationType.getQualifiedName();
+		return jvmEnumerationType.getSimpleName();
+	}
+
+	protected String _signature(JvmAnnotationType jvmAnnotationType, boolean typeAtEnd) {
+		return jvmAnnotationType.getSimpleName();
 	}
 
 	protected String getThrowsDeclaration(JvmExecutable executable) {
@@ -206,15 +357,13 @@ public class XbaseDeclarativeHoverSignatureProvider {
 	}
 
 	public String getImageTag(final EObject object) {
-		final String[] result = new String[1];
-		Display.getDefault().syncExec(new Runnable() {
-			
-			public void run() {
-				Image image = labelProvider.getImage(object);
-				result[0] = getImageTagLink(ImageDescriptor.createFromImage(image));
-			}
-		});
-		return result[0];
+		if (labelProvider instanceof ILabelProviderImageDescriptorExtension) {
+			ILabelProviderImageDescriptorExtension extension = (ILabelProviderImageDescriptorExtension) labelProvider;
+			ImageDescriptor descriptor = extension.getImageDescriptor(object);
+			if (descriptor != null)
+				return getImageTagLink(descriptor);
+		}
+		return null;
 	}
 
 	protected String getImageTagLink(ImageDescriptor imageDescriptor) {
@@ -224,8 +373,9 @@ public class XbaseDeclarativeHoverSignatureProvider {
 		return "";
 	}
 
+	@SuppressWarnings("restriction")
 	protected URL getURL(ImageDescriptor descriptor) {
-		return JavaPlugin.getDefault().getImagesOnFSRegistry().getImageURL(descriptor);
+		return org.eclipse.jdt.internal.ui.JavaPlugin.getDefault().getImagesOnFSRegistry().getImageURL(descriptor);
 	}
 
 	protected String getLabel(EObject object) {

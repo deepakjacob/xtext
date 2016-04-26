@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl;
 
@@ -32,11 +29,11 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.MyF
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl.MyFieldImpl#getAttr <em>Attr</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl.MyFieldImpl#getBindings <em>Bindings</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

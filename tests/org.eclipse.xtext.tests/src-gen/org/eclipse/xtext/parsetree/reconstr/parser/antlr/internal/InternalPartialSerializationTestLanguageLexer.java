@@ -36,15 +36,15 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalPartialSerializationTestLanguage.g"; }
 
     // $ANTLR start "T__11"
     public final void mT__11() throws RecognitionException {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:11:7: ( '#1' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:11:9: '#1'
+            // InternalPartialSerializationTestLanguage.g:11:7: ( '#1' )
+            // InternalPartialSerializationTestLanguage.g:11:9: '#1'
             {
             match("#1"); 
 
@@ -64,8 +64,8 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:12:7: ( 'node' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:12:9: 'node'
+            // InternalPartialSerializationTestLanguage.g:12:7: ( 'node' )
+            // InternalPartialSerializationTestLanguage.g:12:9: 'node'
             {
             match("node"); 
 
@@ -85,8 +85,8 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:13:7: ( '(' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:13:9: '('
+            // InternalPartialSerializationTestLanguage.g:13:7: ( '(' )
+            // InternalPartialSerializationTestLanguage.g:13:9: '('
             {
             match('('); 
 
@@ -105,8 +105,8 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = T__14;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:14:7: ( ')' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:14:9: ')'
+            // InternalPartialSerializationTestLanguage.g:14:7: ( ')' )
+            // InternalPartialSerializationTestLanguage.g:14:9: ')'
             {
             match(')'); 
 
@@ -125,10 +125,10 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:208:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:208:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalPartialSerializationTestLanguage.g:208:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalPartialSerializationTestLanguage.g:208:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:208:11: ( '^' )?
+            // InternalPartialSerializationTestLanguage.g:208:11: ( '^' )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -137,7 +137,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:208:11: '^'
+                    // InternalPartialSerializationTestLanguage.g:208:11: '^'
                     {
                     match('^'); 
 
@@ -155,7 +155,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:208:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalPartialSerializationTestLanguage.g:208:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop2:
             do {
                 int alt2=2;
@@ -168,7 +168,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:
+            	    // InternalPartialSerializationTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -204,10 +204,10 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:210:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:210:12: ( '0' .. '9' )+
+            // InternalPartialSerializationTestLanguage.g:210:10: ( ( '0' .. '9' )+ )
+            // InternalPartialSerializationTestLanguage.g:210:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:210:12: ( '0' .. '9' )+
+            // InternalPartialSerializationTestLanguage.g:210:12: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -221,7 +221,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:210:13: '0' .. '9'
+            	    // InternalPartialSerializationTestLanguage.g:210:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -253,10 +253,10 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalPartialSerializationTestLanguage.g:212:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalPartialSerializationTestLanguage.g:212:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalPartialSerializationTestLanguage.g:212:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -274,10 +274,10 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalPartialSerializationTestLanguage.g:212:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalPartialSerializationTestLanguage.g:212:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop4:
                     do {
                         int alt4=3;
@@ -293,23 +293,15 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalPartialSerializationTestLanguage.g:212:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalPartialSerializationTestLanguage.g:212:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -334,10 +326,10 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalPartialSerializationTestLanguage.g:212:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalPartialSerializationTestLanguage.g:212:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -353,23 +345,15 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalPartialSerializationTestLanguage.g:212:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:212:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalPartialSerializationTestLanguage.g:212:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -412,12 +396,12 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:214:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:214:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalPartialSerializationTestLanguage.g:214:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalPartialSerializationTestLanguage.g:214:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:214:24: ( options {greedy=false; } : . )*
+            // InternalPartialSerializationTestLanguage.g:214:24: ( options {greedy=false; } : . )*
             loop7:
             do {
                 int alt7=2;
@@ -442,7 +426,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:214:52: .
+            	    // InternalPartialSerializationTestLanguage.g:214:52: .
             	    {
             	    matchAny(); 
 
@@ -472,12 +456,12 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:216:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:216:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalPartialSerializationTestLanguage.g:216:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalPartialSerializationTestLanguage.g:216:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:216:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalPartialSerializationTestLanguage.g:216:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop8:
             do {
                 int alt8=2;
@@ -490,7 +474,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:216:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalPartialSerializationTestLanguage.g:216:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -510,7 +494,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:216:40: ( ( '\\r' )? '\\n' )?
+            // InternalPartialSerializationTestLanguage.g:216:40: ( ( '\\r' )? '\\n' )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -519,9 +503,9 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
             }
             switch (alt10) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:216:41: ( '\\r' )? '\\n'
+                    // InternalPartialSerializationTestLanguage.g:216:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:216:41: ( '\\r' )?
+                    // InternalPartialSerializationTestLanguage.g:216:41: ( '\\r' )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -530,7 +514,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
                     }
                     switch (alt9) {
                         case 1 :
-                            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:216:41: '\\r'
+                            // InternalPartialSerializationTestLanguage.g:216:41: '\\r'
                             {
                             match('\r'); 
 
@@ -562,10 +546,10 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:218:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:218:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalPartialSerializationTestLanguage.g:218:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalPartialSerializationTestLanguage.g:218:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:218:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalPartialSerializationTestLanguage.g:218:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -579,7 +563,7 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:
+            	    // InternalPartialSerializationTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -619,8 +603,8 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:220:16: ( . )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:220:18: .
+            // InternalPartialSerializationTestLanguage.g:220:16: ( . )
+            // InternalPartialSerializationTestLanguage.g:220:18: .
             {
             matchAny(); 
 
@@ -635,82 +619,82 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalPartialSerializationTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt12=11;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:10: T__11
+                // InternalPartialSerializationTestLanguage.g:1:10: T__11
                 {
                 mT__11(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:16: T__12
+                // InternalPartialSerializationTestLanguage.g:1:16: T__12
                 {
                 mT__12(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:22: T__13
+                // InternalPartialSerializationTestLanguage.g:1:22: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:28: T__14
+                // InternalPartialSerializationTestLanguage.g:1:28: T__14
                 {
                 mT__14(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:34: RULE_ID
+                // InternalPartialSerializationTestLanguage.g:1:34: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:42: RULE_INT
+                // InternalPartialSerializationTestLanguage.g:1:42: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:51: RULE_STRING
+                // InternalPartialSerializationTestLanguage.g:1:51: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:63: RULE_ML_COMMENT
+                // InternalPartialSerializationTestLanguage.g:1:63: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 9 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:79: RULE_SL_COMMENT
+                // InternalPartialSerializationTestLanguage.g:1:79: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 10 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:95: RULE_WS
+                // InternalPartialSerializationTestLanguage.g:1:95: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 11 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalPartialSerializationTestLanguage.g:1:103: RULE_ANY_OTHER
+                // InternalPartialSerializationTestLanguage.g:1:103: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -724,25 +708,19 @@ public class InternalPartialSerializationTestLanguageLexer extends Lexer {
 
     protected DFA12 dfa12 = new DFA12(this);
     static final String DFA12_eotS =
-        "\1\uffff\1\14\1\17\2\uffff\1\14\2\uffff\3\14\3\uffff\1\17\10\uffff"+
-        "\1\17\1\31\1\uffff";
+        "\1\uffff\1\14\1\17\2\uffff\1\14\2\uffff\3\14\3\uffff\1\17\10\uffff\1\17\1\31\1\uffff";
     static final String DFA12_eofS =
         "\32\uffff";
     static final String DFA12_minS =
-        "\1\0\1\61\1\157\2\uffff\1\101\2\uffff\2\0\1\52\3\uffff\1\144\10"+
-        "\uffff\1\145\1\60\1\uffff";
+        "\1\0\1\61\1\157\2\uffff\1\101\2\uffff\2\0\1\52\3\uffff\1\144\10\uffff\1\145\1\60\1\uffff";
     static final String DFA12_maxS =
-        "\1\uffff\1\61\1\157\2\uffff\1\172\2\uffff\2\uffff\1\57\3\uffff\1"+
-        "\144\10\uffff\1\145\1\172\1\uffff";
+        "\1\uffff\1\61\1\157\2\uffff\1\172\2\uffff\2\uffff\1\57\3\uffff\1\144\10\uffff\1\145\1\172\1\uffff";
     static final String DFA12_acceptS =
-        "\3\uffff\1\3\1\4\1\uffff\1\5\1\6\3\uffff\1\12\1\13\1\1\1\uffff\1"+
-        "\5\1\3\1\4\1\6\1\7\1\10\1\11\1\12\2\uffff\1\2";
+        "\3\uffff\1\3\1\4\1\uffff\1\5\1\6\3\uffff\1\12\1\13\1\1\1\uffff\1\5\1\3\1\4\1\6\1\7\1\10\1\11\1\12\2\uffff\1\2";
     static final String DFA12_specialS =
         "\1\1\7\uffff\1\2\1\0\20\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\11\14\2\13\2\14\1\13\22\14\1\13\1\14\1\10\1\1\3\14\1\11\1\3"+
-            "\1\4\5\14\1\12\12\7\7\14\32\6\3\14\1\5\1\6\1\14\15\6\1\2\14"+
-            "\6\uff85\14",
+            "\11\14\2\13\2\14\1\13\22\14\1\13\1\14\1\10\1\1\3\14\1\11\1\3\1\4\5\14\1\12\12\7\7\14\32\6\3\14\1\5\1\6\1\14\15\6\1\2\14\6\uff85\14",
             "\1\15",
             "\1\16",
             "",

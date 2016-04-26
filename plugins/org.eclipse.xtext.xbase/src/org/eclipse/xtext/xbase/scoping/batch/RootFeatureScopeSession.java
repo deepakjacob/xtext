@@ -7,16 +7,17 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.scoping.batch;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.common.types.JvmFeature;
-import org.eclipse.xtext.common.types.JvmVisibility;
+import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.xbase.typesystem.override.IResolvedFeatures;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
+import org.eclipse.xtext.xbase.typesystem.util.IVisibilityHelper;
 
 import com.google.inject.Inject;
 
@@ -26,7 +27,6 @@ import com.google.inject.Inject;
  * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class RootFeatureScopeSession extends AbstractFeatureScopeSession {
 
 	@Inject
@@ -36,14 +36,25 @@ public class RootFeatureScopeSession extends AbstractFeatureScopeSession {
 	private ConstructorScopes constructorScopes;
 	
 	@Inject
+	private IResolvedFeatures.Provider resolvedFeaturesProvider;
+	
+	@Inject
 	private TypeScopes typeScopes;
 	
 	@Inject
 	private IScopeProvider scopeProvider;
+	
+	@Inject
+	private IVisibilityHelper visibilityHelper;
 
 	@Override
 	protected FeatureScopes getFeatureScopes() {
 		return featureScopes;
+	}
+	
+	@Override
+	protected IResolvedFeatures.Provider getResolvedFeaturesProvider() {
+		return resolvedFeaturesProvider;
 	}
 	
 	@Override
@@ -61,13 +72,14 @@ public class RootFeatureScopeSession extends AbstractFeatureScopeSession {
 		return scopeProvider;
 	}
 
-	@Nullable
+	/* @Nullable */
+	@Override
 	public IEObjectDescription getLocalElement(QualifiedName name) {
 		return null;
 	}
 	
 	@Override
-	public Collection<IEObjectDescription> getLocalElements() {
+	public List<IEObjectDescription> getLocalElements() {
 		return Collections.emptyList();
 	}
 	
@@ -79,10 +91,41 @@ public class RootFeatureScopeSession extends AbstractFeatureScopeSession {
 	/**
 	 * {@inheritDoc}
 	 * 
+	 * By default, a session is not an instance context.
+	 */
+	@Override
+	public boolean isInstanceContext() {
+		return false;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * By default, a session is not a constructor context.
+	 */
+	@Override
+	public boolean isConstructorContext() {
+		return false;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
 	 * By default, all public features are considered to be accessible.
 	 */
-	public boolean isVisible(JvmFeature feature) {
-		return feature.getVisibility() == JvmVisibility.PUBLIC;
+	@Override
+	public boolean isVisible(JvmMember member) {
+		return visibilityHelper.isVisible(member);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * By default, all public features are considered to be accessible.
+	 */
+	@Override
+	public boolean isVisible(JvmMember member, /* @Nullable */ LightweightTypeReference receiverType, /* @Nullable */ JvmIdentifiableElement receiverFeature) {
+		return visibilityHelper.isVisible(member);
 	}
 	
 }

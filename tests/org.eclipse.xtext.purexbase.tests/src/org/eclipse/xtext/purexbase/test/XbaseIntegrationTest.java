@@ -60,31 +60,34 @@ public class XbaseIntegrationTest extends AbstractXbaseEvaluationTest {
 	}
 	
 	@Override
-	@Test
-	@Ignore
-	public void testClosure_06_1() throws Exception {
-		super.testClosure_06_1();
+	@Test 
+	@Ignore("Wrong type")
+	public void testReturnExpression_07() throws Exception {
+		assertEvaluatesTo(null, "return if (true) while(false) ('foo'+'bar').length else null");
+		assertEvaluatesTo(null, "return if (false) while(false) ('foo'+'bar').length else null");
 	}
 	
 	@Override
-	@Test
-	@Ignore
-	public void testClosure_10() throws Exception {
-		super.testClosure_10();
+	@Test 
+	@Ignore("Wrong type")
+	public void testReturnExpression_08() throws Exception {
+		assertEvaluatesTo(null, "return if (true) while(false) ('foo'+'bar').length else 'zonk'");
+		assertEvaluatesTo("zonk", "return if (false) while(false) ('foo'+'bar').length else 'zonk'");
 	}
 	
-	@Override
-	@Test
-	@Ignore
-	public void testClosure_10_2() throws Exception {
-		super.testClosure_10_2();
+	/**
+	 * @since 2.5
+	 */
+	@Test public void testIfExpression_06() throws Exception {
+		assertEvaluatesTo(0, 
+				"if (Boolean.FALSE) return 1");
 	}
 	
-	@Override
-	@Test
-	@Ignore
-	public void testStaticMethod_02() throws Exception {
-		super.testStaticMethod_02();
+	/**
+	 * @since 2.5
+	 */
+	@Test public void testIfExpression_07() throws Exception {
+		assertEvaluatesTo(0l, 
+				"if (Boolean.FALSE) return 1L");
 	}
-	
 }

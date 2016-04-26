@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: AbstractNegatedToken.java,v 1.3 2010/04/06 14:10:17 sefftinge Exp $
  */
 package org.eclipse.xtext;
 
@@ -14,10 +10,10 @@ package org.eclipse.xtext;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.AbstractNegatedToken#getTerminal <em>Terminal</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.XtextPackage#getAbstractNegatedToken()
  * @model

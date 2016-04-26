@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.eclipse.xtext.xbase.ui.tests.editor;
 
 import java.util.List;
@@ -8,6 +15,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+/**
+ * @author Sebastian Zarnekow - Initial contribution and API
+ */
 @SuppressWarnings("all")
 public class Bug372950Test extends AbstractXbaseContentAssistBugTest {
   @Ignore
@@ -48,14 +58,14 @@ public class Bug372950Test extends AbstractXbaseContentAssistBugTest {
     this.shouldPropose("if (true) { if (o as String != 1 && o instanceof StringBuff", StringBuffer.class);
   }
   
-  protected void shouldPropose(final String input, final Class<? extends Object> proposedType) throws Exception {
+  protected void shouldPropose(final String input, final Class<?> proposedType) throws Exception {
     final ContentAssistProcessorTestBuilder tester = this.newBuilder();
     ContentAssistProcessorTestBuilder _append = tester.append(input);
     final ICompletionProposal[] proposals = _append.computeCompletionProposals();
     final List<String> proposalStrings = tester.toString(proposals);
     String _string = proposalStrings.toString();
-    String _name = proposedType.getName();
-    boolean _contains = proposalStrings.contains(_name);
+    String _simpleName = proposedType.getSimpleName();
+    boolean _contains = proposalStrings.contains(_simpleName);
     Assert.assertTrue(_string, _contains);
   }
 }

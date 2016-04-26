@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl;
 
@@ -33,12 +30,12 @@ import org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.Referen
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl.ModelImpl#getImports <em>Imports</em>}</li>
  *   <li>{@link org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl.ModelImpl#getGenerateDirective <em>Generate Directive</em>}</li>
  *   <li>{@link org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl.ModelImpl#getReferenceHolder <em>Reference Holder</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -11,9 +11,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
+import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmFeature;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.nodemodel.ILeafNode;
@@ -28,6 +32,31 @@ import org.eclipse.xtext.xbase.XbasePackage;
  */
 public abstract class XAbstractFeatureCallImplCustom extends XAbstractFeatureCallImpl {
 	
+	private boolean isLinked = false;
+	
+	@Override
+	public void setFeature(JvmIdentifiableElement newFeature) {
+		isLinked = newFeature != null && !newFeature.eIsProxy();
+		super.setFeature(newFeature);
+	}
+	
+	@Override
+	public JvmIdentifiableElement getFeature() {
+		if (feature != null && feature.eIsProxy()) {
+			// body copied from super impl
+			InternalEObject oldFeature = (InternalEObject) feature;
+			feature = (JvmIdentifiableElement) eResolveProxy(oldFeature);
+			if (feature != oldFeature) {
+				if (eNotificationRequired())
+					eNotify(new ENotificationImpl(this, Notification.RESOLVE, XbasePackage.XABSTRACT_FEATURE_CALL__FEATURE, oldFeature, feature));
+			}
+			
+			// and additionally maintain #isLinked flag
+			isLinked = true;
+		}
+		return feature;
+	}
+	
 	@Override
 	public boolean isExplicitOperationCallOrBuilderSyntax() {
 		return true;
@@ -37,7 +66,9 @@ public abstract class XAbstractFeatureCallImplCustom extends XAbstractFeatureCal
 	public String getConcreteSyntaxFeatureName() {
 		List<INode> list = NodeModelUtils.findNodesForFeature(this, XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE);
 		if (list.size()!=1) {
-			return "<unkown>";
+			if (feature == null || feature.eIsProxy())
+				return "<unkown>";
+			return String.format("<implicit: %s>", feature.getIdentifier());
 		}
 		INode node = list.get(0);
 		if (node instanceof ILeafNode) {
@@ -76,12 +107,31 @@ public abstract class XAbstractFeatureCallImplCustom extends XAbstractFeatureCal
 		return super.getImplicitReceiver();
 	}
 	
+	@Override
+	public XExpression getImplicitFirstArgument() {
+		ensureFeatureLinked();
+		return super.getImplicitFirstArgument();
+	}
+	
+	@Override
+	public boolean isPackageFragment() {
+		return false;
+	}
+	
+	@Override
+	public boolean isTypeLiteral() {
+		return false;
+	}
+	
 	/**
 	 * checks whether the feature was successfully linked
 	 * Any features which rely on side effects done during linking of feature should call this method.
 	 */
 	protected void ensureFeatureLinked() {
-		// trigger linking
+		if (isLinked)
+			return;
+		
+		// simply trigger linking if not yet linked
 		getFeature();
 	}
 	
@@ -100,7 +150,7 @@ public abstract class XAbstractFeatureCallImplCustom extends XAbstractFeatureCal
 	public boolean isStatic() {
 		JvmIdentifiableElement element = getFeature();
 		if (element != null && !element.eIsProxy()) {
-			if (element instanceof JvmFeature)
+			if (element instanceof JvmFeature && !(element instanceof JvmConstructor))
 				return ((JvmFeature) element).isStatic();
 		}
 		return false;
@@ -154,6 +204,11 @@ public abstract class XAbstractFeatureCallImplCustom extends XAbstractFeatureCal
 		result.add(head);
 		result.addAll(tail);
 		return result;
+	}
+	
+	@Override
+	public boolean isOperation() {
+		return false;
 	}
 	
 }

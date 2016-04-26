@@ -7,12 +7,11 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeAssigner;
+import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -20,7 +19,6 @@ import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
  * @noinstantiate This class is not intended to be instantiated by clients.
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class TypeAssigner implements ITypeAssigner {
 	private final AbstractTypeComputationState state;
 
@@ -28,29 +26,33 @@ public class TypeAssigner implements ITypeAssigner {
 		this.state = state;
 	}
 
+	@Override
 	public AbstractTypeComputationState getForkedState() {
 		return state;
 	}
 
-	public void assignType(JvmIdentifiableElement element, LightweightTypeReference actualDeclaredType, LightweightTypeReference expectedType) {
-		// TODO validation messages
-//		if (declaredType != null)
-			state.getResolvedTypes().setType(element, actualDeclaredType);
-//		else
-//			state.getResolvedTypes().setType(element, expectedType);
-		state.addLocalToCurrentScope(element);
+	@Override
+	public void assignType(JvmIdentifiableElement element, /* @Nullable */ LightweightTypeReference actualType) {
+		assignType(element, actualType, true);
+	}
+	
+	protected void assignType(JvmIdentifiableElement element, /* @Nullable */ LightweightTypeReference actualType, boolean addToChildScope) {
+		if (actualType != null) {
+			state.getResolvedTypes().setType(element, actualType);
+		} else {
+			state.getResolvedTypes().setType(element, state.getReferenceOwner().newAnyTypeReference());
+		}
+		if (addToChildScope)
+			state.addLocalToCurrentScope(element);
 	}
 
-	public void assignType(JvmIdentifiableElement element, LightweightTypeReference expectedType) {
-		state.getResolvedTypes().setType(element, expectedType);
-		state.addLocalToCurrentScope(element);
+	@Override
+	public ITypeReferenceOwner getReferenceOwner() {
+		return state.getReferenceOwner();
 	}
 
-	protected OwnedConverter getConverter() {
-		return state.getResolvedTypes().getConverter();
-	}
-
+	@Override
 	public LightweightTypeReference toLightweightTypeReference(JvmTypeReference reference) {
-		return getConverter().toLightweightReference(reference);
+		return getReferenceOwner().toLightweightTypeReference(reference);
 	}
 }

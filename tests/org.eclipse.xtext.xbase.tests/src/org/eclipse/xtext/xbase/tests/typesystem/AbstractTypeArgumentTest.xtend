@@ -16,16 +16,15 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.xbase.XAbstractFeatureCall
 import org.eclipse.xtext.xbase.XConstructorCall
 import org.eclipse.xtext.xbase.XExpression
-import org.eclipse.xtext.xbase.XbasePackage$Literals
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
+import org.junit.Ignore
 import org.junit.Test
 
-import static org.junit.Assert.*
-import org.junit.Ignore
+import static org.eclipse.xtext.xbase.XbasePackage.Literals.*
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -92,11 +91,11 @@ abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
 		val result = EcoreUtil2::eAll(xExpression).filter(typeof(XExpression)).filter [ it |
 			switch(it) {
 				XAbstractFeatureCall:
-					!it.typeArguments.empty ||
+					!typeLiteral && !packageFragment && (!it.typeArguments.empty ||
 					switch feature: it.feature {
 						JvmTypeParameterDeclarator: !feature.typeParameters.empty
 						default: false
-					}
+					})
 				XConstructorCall:
 					!it.typeArguments.empty ||
 					!(it.constructor.declaringType as JvmGenericType).typeParameters.empty
@@ -106,11 +105,103 @@ abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
 		].toList
 		return result.sortBy [
 			val structuralFeature = switch(it) {
-				XAbstractFeatureCall: XbasePackage$Literals::XABSTRACT_FEATURE_CALL__FEATURE
-				XConstructorCall: XbasePackage$Literals::XCONSTRUCTOR_CALL__CONSTRUCTOR
+				XAbstractFeatureCall: XABSTRACT_FEATURE_CALL__FEATURE
+				XConstructorCall: XCONSTRUCTOR_CALL__CONSTRUCTOR
 			} 
 			return NodeModelUtils::findNodesForFeature(it, structuralFeature).head.offset
 		]
+	}
+	
+	@Test def void testBug461923_01() throws Exception {
+		"{ val Iterable<String> it = null com.google.common.collect.ImmutableList.builder.addAll(it).build }".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testBug461923_02() throws Exception {
+		"{ val Iterable<? extends String> it = null com.google.common.collect.ImmutableList.builder.addAll(it).build }".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testBug461923_03() throws Exception {
+		"{ val Iterable<? super String> it = null com.google.common.collect.ImmutableList.builder.addAll(it).build }".bindTypeArgumentsTo("Object").done
+	}
+	
+	@Test def void testBug461923_04() throws Exception {
+		"{ val Iterable<String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.map[it]).build }".bindTypeArgumentsTo("String").and("String", "String").done
+	}
+	
+	@Test def void testBug461923_05() throws Exception {
+		"{ val Iterable<? extends String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.map[it]).build }".bindTypeArgumentsTo("String").and("? extends String", "String").done
+	}
+	
+	@Test def void testBug461923_06() throws Exception {
+		"{ val Iterable<? super String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.map[it]).build }".bindTypeArgumentsTo("Object").and("? super String", "Object").done
+	}
+	
+	@Test def void testBug461923_07() throws Exception {
+		"{ val Iterable<String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).build }".bindTypeArgumentsTo("String").and("String").done
+	}
+	
+	@Test def void testBug461923_08() throws Exception {
+		"{ val Iterable<? extends String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).build }".bindTypeArgumentsTo("String").and("? extends String").done
+	}
+	
+	@Test def void testBug461923_09() throws Exception {
+		"{ val Iterable<? super String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).build }".bindTypeArgumentsTo("Object").and("? super String").done
+	}
+	
+	@Test def void testBug461923_10() throws Exception {
+		"{ val Iterable<String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).addAll(it.filter[true]).build }".bindTypeArgumentsTo("String").and("String").and("String").done
+	}
+	
+	@Test def void testBug461923_11() throws Exception {
+		"{ val Iterable<? extends String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).addAll(it.filter[true]).build }".bindTypeArgumentsTo("String").and("? extends String").and("? extends String").done
+	}
+	
+	@Test def void testBug461923_12() throws Exception {
+		"{ val Iterable<? super String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).addAll(it.filter[true]).build }".bindTypeArgumentsTo("Object").and("? super String").and("? super String").done
+	}
+	
+	@Test def void testBug461923_13() throws Exception {
+		"{ val java.util.Set<String> it = null new java.util.ArrayList().addAll(it) }".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testBug461923_14() throws Exception {
+		"{ val java.util.Set<? extends String> it = null new java.util.ArrayList().addAll(it) }".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testBug461923_15() throws Exception {
+		"{ val java.util.Set<? super String> it = null new java.util.ArrayList().addAll(it) }".bindTypeArgumentsTo("Object").done
+	}
+	
+	@Test def void testBug461923_16() throws Exception {
+		"{ val java.util.List<String> it = null new java.util.ArrayList().addAll(it.subList(1,1)) }".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testBug461923_17() throws Exception {
+		"{ val java.util.List<? extends String> it = null new java.util.ArrayList().addAll(it.subList(1,1)) }".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testBug461923_18() throws Exception {
+		"{ val java.util.List<? super String> it = null new java.util.ArrayList().addAll(it.subList(1,1)) }".bindTypeArgumentsTo("Object").done
+	}
+	
+	@Test def void testRawType_01() throws Exception {
+		"{ val java.util.Set set = newHashSet() set }".bindTypeArgumentsTo("").done
+	}
+	
+	@Test def void testRawType_02() throws Exception {
+		"{ val java.util.Set set = newHashSet set.head }".bindTypeArgumentsTo("").and("").done
+	}
+	
+	@Test def void testRawType_03() throws Exception {
+		"(null as java.util.Set<java.util.Set>).head".bindTypeArgumentsTo("Set").done
+	}
+	
+	@Test def void testRawType_04() throws Exception {
+		"{ val java.util.Set<java.util.Set> set = newHashSet set.head }".bindTypeArgumentsTo("Set").and("Set").done
+	}
+	
+	@Test def void testRawType_05() throws Exception {
+		"{ val java.util.Set<java.util.Set> set = newHashSet(newHashSet) set.head }".bindTypeArgumentsTo("Set").and("").and("Set").done
 	}
 	
 	@Test def void testNumberLiteralInClosure_01() throws Exception {
@@ -197,6 +288,11 @@ abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
 	
 	@Test def void testOverloadedOperators_17() throws Exception {
 		"(0..Math::sqrt(1l).intValue).filter[ i | 1l % i == 0 ].empty".bindTypeArgumentsTo("Integer").done
+	}
+	
+	@Test def void testOverloadedOperators_20() throws Exception {
+		"(null as Iterable<StringBuilder>) + (null as Iterable<StringBuffer>) + (null as Iterable<String>)"
+			.bindTypeArgumentsTo("AbstractStringBuilder & Serializable").and("Serializable & CharSequence").done
 	}
 
 	@Test def void testForExpression_01() throws Exception {
@@ -295,6 +391,75 @@ abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
 		"(null as Iterable<? super String>).map(null)".bindTypeArgumentsTo("? super String", "Object").done
 	}
 	
+	@Test def void testMethodTypeParamInference_14() throws Exception {
+		"(null as java.util.Collection<? super String>).addAll(null as Iterable<? extends String>)".bindTypeArgumentsTo("? super String").done
+	}
+	
+	@Test def void testMethodTypeParamInference_15() throws Exception {
+		"(null as java.util.Collection<? super String>).addAll(null as Iterable<String>)".bindTypeArgumentsTo("? super String").done
+	}
+	
+	@Test def void testMethodTypeParamInference_16() throws Exception {
+		"(null as java.util.Collection<String>).addAll(null as Iterable<? extends String>)".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testMethodTypeParamInference_17() throws Exception {
+		"(null as java.util.Collection<String>).addAll(null as Iterable<String>)".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testMethodTypeParamInference_18() throws Exception {
+		"testdata::OverloadedMethods::addAllSuperExtends(null as java.util.List<CharSequence>, null as java.util.List<String>)".bindTypeArgumentsTo("CharSequence").done
+	}
+	
+	@Test def void testMethodTypeParamInference_19() throws Exception {
+		"{
+			val Iterable<String> expectation = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<CharSequence>, null as java.util.List<String>)
+		}".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testMethodTypeParamInference_20() throws Exception {
+		"{
+			val Iterable<CharSequence> expectation = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<CharSequence>, null as java.util.List<String>)
+		}".bindTypeArgumentsTo("CharSequence").done
+	}
+	
+	@Test def void testMethodTypeParamInference_21() throws Exception {
+		"testdata::OverloadedMethods::<CharSequence>addAllSuperExtends(null as java.util.List<CharSequence>, null as java.util.List<String>)".bindTypeArgumentsTo("CharSequence").done
+	}
+
+	@Test def void testMethodTypeParamInference_22() throws Exception {
+		"testdata::OverloadedMethods::<String>addAllSuperExtends(null as java.util.List<CharSequence>, null as java.util.List<String>)".bindTypeArgumentsTo("String").done
+	}
+	
+	@Ignore("TODO subsequent usages of local vars should contribute to the expectation")
+	@Test def void testMethodTypeParamInference_23() throws Exception {
+		"{
+			val actual = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<CharSequence>, null as java.util.List<String>)
+			val Iterable<String> expectation = actual
+		}".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testMethodTypeParamInference_24() throws Exception {
+		"{
+			val actual = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<CharSequence>, null as java.util.List<String>)
+			val Iterable<CharSequence> expectation = actual
+		}".bindTypeArgumentsTo("CharSequence").done
+	}
+	
+	@Test def void testMethodTypeParamInference_25() throws Exception {
+		"{
+			val Iterable<CharSequence> expectation = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<Object>, null as java.util.List<String>)
+		}".bindTypeArgumentsTo("CharSequence").done
+	}
+	
+	@Ignore("TODO")
+	@Test def void testMethodTypeParamInference_26() throws Exception {
+		"{
+			val actual = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<Object>, null as java.util.List<String>)
+			val Iterable<CharSequence> expectation = actual
+		}".bindTypeArgumentsTo("CharSequence").done
+	}
+		
 	@Test def void testTypeForVoidClosure() throws Exception {
 		"newArrayList('foo','bar').forEach []".bindTypeArgumentsTo("String").and("String").done
 	}
@@ -430,7 +595,7 @@ abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
 			val fun = [ CharSequence x | x ]
 			val java.util.List<String> list = $$ListExtensions::map(newArrayList, fun)
 			fun
-		}".bindTypeArgumentsTo("CharSequence", "CharSequence").and("CharSequence").done
+		}".bindTypeArgumentsTo("CharSequence", "String").and("CharSequence").done
 	}
 	
 	@Test def void testClosure_23() throws Exception {
@@ -573,6 +738,14 @@ abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
 	
 	@Test def void testConstructorCall_07() throws Exception {
 		"new java.util.HashMap<? super String,Boolean>".bindTypeArgumentsTo("String", "Boolean").done
+	}
+	
+	@Test def void testConstructorTypeParameters_01() throws Exception {
+		"new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableValue, '')".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testConstructorTypeParameters_02() throws Exception {
+		"new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableValue, 1.0)".bindTypeArgumentsTo("Double").done
 	}
 	
 	@Test def void testConstructorTypeInference_01() throws Exception {
@@ -980,6 +1153,40 @@ abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
 	
 	@Test def void testFeatureCall_78() throws Exception {
 		"<String>newArrayList().get(0)".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testFeatureCallWithExpectation_01() throws Exception {
+		"{ val java.util.Set<java.util.Set<String>> set = newHashSet(newHashSet) set.head }".bindTypeArgumentsTo("Set<String>").and("String").and("Set<String>").done
+	}
+	
+	@Test def void testFeatureCallWithExpectation_02() throws Exception {
+		"{ val Iterable<CharSequence> set = newHashSet('') }".bindTypeArgumentsTo("CharSequence").done
+	}
+	
+	@Test def void testFeatureCallWithExpectation_03() throws Exception {
+		"{ val Iterable<CharSequence> set = newHashSet() }".bindTypeArgumentsTo("CharSequence").done
+	}
+	
+	@Test def void testFeatureCallWithExpectation_04() throws Exception {
+		"{ val java.util.List<CharSequence> set = newHashSet('') }".bindTypeArgumentsTo("CharSequence").done
+	}
+	
+	@Test def void testFeatureCallWithExpectation_05() throws Exception {
+		"{ val Iterable<? super CharSequence> set = newHashSet('') }".bindTypeArgumentsTo("CharSequence").done
+	}
+	
+	@Test def void testFeatureCallWithExpectation_06() throws Exception {
+		"{ val Iterable<? extends CharSequence> set = newHashSet('') }".bindTypeArgumentsTo("String").done
+	}
+	
+	@Test def void testJEP101Example_01() throws Exception {
+		"{ val foo.JEP101List<String> ls = foo::JEP101List::nil }".bindTypeArgumentsTo("String").done
+	}
+	@Test def void testJEP101Example_02() throws Exception {
+		"foo::JEP101List::cons(42, foo::JEP101List::nil)".bindTypeArgumentsTo("Integer").and("Integer").done
+	}
+	@Test def void testJEP101Example_03() throws Exception {
+		"{ val String s = foo::JEP101List::nil.head }".bindTypeArgumentsTo("String").done
 	}
 	
 	@Test def void testToList_01() throws Exception {
@@ -2510,6 +2717,11 @@ abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
 	
 	@Test def void testStaticMethods_05() throws Exception {
 		"newHashMap()".bindTypeArgumentsTo("Object", "Object").done
+	}
+	
+	@Ignore("TODO fix me")
+	@Test def void testJava8Inferrence_01() throws Exception {
+		"{ val Iterable<Iterable<Number>> l = java.util.Collections.singleton(java.util.Collections.singleton(1)) }".bindTypeArgumentsTo("Iterable<Number>").and("Number").done
 	}
 	
 }

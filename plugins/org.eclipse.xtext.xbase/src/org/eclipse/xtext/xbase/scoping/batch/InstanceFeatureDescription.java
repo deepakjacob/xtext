@@ -9,50 +9,76 @@ package org.eclipse.xtext.xbase.scoping.batch;
 
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmFeature;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class InstanceFeatureDescription extends BucketedEObjectDescription {
 
 	private final XExpression receiver;
 	private final LightweightTypeReference receiverType;
-	private final Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping;
+	private final Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> receiverTypeParameterMapping;
+	private final int receiverConformanceFlags;
 
 	protected InstanceFeatureDescription(
-			QualifiedName qualifiedName, JvmIdentifiableElement feature,
-			XExpression receiver, LightweightTypeReference receiverType, Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping, 
-			int bucketId, boolean visible) {
+			QualifiedName qualifiedName, 
+			JvmFeature feature,
+			XExpression receiver,
+			LightweightTypeReference receiverType,
+			Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> receiverTypeParameterMapping,
+			int receiverConformanceFlags,
+			int bucketId,
+			boolean visible) {
 		super(qualifiedName, feature, bucketId, visible);
+		if (feature.isStatic()) {
+			throw new IllegalArgumentException(String.valueOf(feature));
+		}
+		if (receiverConformanceFlags == ConformanceFlags.NONE) {
+			throw new IllegalArgumentException(String.valueOf(receiverConformanceFlags));
+		}
 		this.receiver = receiver;
 		this.receiverType = receiverType;
-		this.typeParameterMapping = typeParameterMapping;
+		this.receiverTypeParameterMapping = receiverTypeParameterMapping;
+		this.receiverConformanceFlags = receiverConformanceFlags;
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public XExpression getSyntacticReceiver() {
 		return receiver;
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public LightweightTypeReference getSyntacticReceiverType() {
 		return receiverType;
 	}
 	
 	@Override
 	public Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getSyntacticReceiverTypeParameterMapping() {
-		return typeParameterMapping;
+		return receiverTypeParameterMapping;
+	}
+	
+	@Override
+	public int getSyntacticReceiverConformanceFlags() {
+		return receiverConformanceFlags;
+	}
+	
+	@Override
+	public boolean isStatic() {
+		return false;
+	}
+	
+	@Override
+	public boolean isExtension() {
+		return false;
 	}
 
 }

@@ -9,11 +9,9 @@ package org.eclipse.xtext.common.types.util;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.notify.Notifier;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.common.types.JvmAnyTypeReference;
@@ -21,17 +19,20 @@ import org.eclipse.xtext.common.types.JvmArrayType;
 import org.eclipse.xtext.common.types.JvmDelegateTypeReference;
 import org.eclipse.xtext.common.types.JvmGenericArrayTypeReference;
 import org.eclipse.xtext.common.types.JvmGenericType;
+import org.eclipse.xtext.common.types.JvmInnerTypeReference;
+import org.eclipse.xtext.common.types.JvmLowerBound;
 import org.eclipse.xtext.common.types.JvmMultiTypeReference;
 import org.eclipse.xtext.common.types.JvmParameterizedTypeReference;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.common.types.JvmUnknownTypeReference;
 import org.eclipse.xtext.common.types.JvmUpperBound;
 import org.eclipse.xtext.common.types.JvmWildcardTypeReference;
 import org.eclipse.xtext.common.types.TypesFactory;
 import org.eclipse.xtext.common.types.access.IJvmTypeProvider;
 import org.eclipse.xtext.common.types.access.TypeResource;
-import org.eclipse.xtext.common.types.access.impl.ClassURIHelper;
+import org.eclipse.xtext.service.OperationCanceledManager;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -50,13 +51,10 @@ public class TypeReferences {
 
 	@Inject
 	private IJvmTypeProvider.Factory typeProviderFactory;
-
+	
 	@Inject
-	private ClassURIHelper uriHelper;
-
-	@Inject
-	private SuperTypeCollector superTypeCollector;
-
+	private OperationCanceledManager operationCanceledManager;
+	
 	/**
 	 * @return a fresh {@link JvmAnyTypeReference} or null if {@link Object} is not on the context's classpath
 	 */
@@ -106,8 +104,10 @@ public class TypeReferences {
 				typeReferences.add(EcoreUtil2.cloneIfContained(jvmTypeReference));
 			}
 		}
+		JvmParameterizedTypeReference reference;
 		if (type instanceof JvmGenericType) {
-			List<JvmTypeParameter> list = ((JvmGenericType) type).getTypeParameters();
+			JvmGenericType casted = (JvmGenericType) type;
+			List<JvmTypeParameter> list = casted.getTypeParameters();
 			if (!typeReferences.isEmpty() && list.size() != typeReferences.size()) {
 				throw new IllegalArgumentException("The type " + type.getIdentifier() + " expects " + list.size()
 						+ " type arguments, but was " + typeReferences.size()
@@ -120,8 +120,16 @@ public class TypeReferences {
 					typeReferences.add(createTypeRef(typeParameter));
 				}
 			}
+			if (!casted.isStatic() && casted.eContainer() instanceof JvmType) {
+				JvmParameterizedTypeReference outer = createTypeRef((JvmType)casted.eContainer());
+				reference = factory.createJvmInnerTypeReference();
+				((JvmInnerTypeReference) reference).setOuter(outer);
+			} else {
+				reference = factory.createJvmParameterizedTypeReference();	
+			}
+		} else {
+			reference = factory.createJvmParameterizedTypeReference();
 		}
-		JvmParameterizedTypeReference reference = factory.createJvmParameterizedTypeReference();
 		reference.setType(type);
 		if (!typeReferences.isEmpty())
 			reference.getArguments().addAll(typeReferences);
@@ -166,19 +174,32 @@ public class TypeReferences {
 		return result;
 	}
 
-	protected URI toCommonTypesUri(Class<?> clazz) {
-		URI result = uriHelper.getFullURI(clazz);
+	public JvmWildcardTypeReference wildCardSuper(JvmTypeReference clone) {
+		JvmWildcardTypeReference result = factory.createJvmWildcardTypeReference();
+		JvmLowerBound lowerBound = factory.createJvmLowerBound();
+		lowerBound.setTypeReference(clone);
+		JvmUpperBound upperBound = factory.createJvmUpperBound();
+		upperBound.setTypeReference(getTypeForName(Object.class, clone.getType()));
+		result.getConstraints().add(lowerBound);
+		result.getConstraints().add(upperBound);
 		return result;
 	}
 
+	/* @NotNull */
 	public JvmTypeReference getTypeForName(Class<?> clazz, Notifier context, JvmTypeReference... params) {
 		if (clazz == null)
 			throw new NullPointerException("clazz");
 		JvmType declaredType = findDeclaredType(clazz, context);
 		if (declaredType == null)
-			return null;
+			return getUnknownTypeReference(clazz.getName());
 		JvmParameterizedTypeReference result = createTypeRef(declaredType, params);
 		return result;
+	}
+	
+	protected JvmUnknownTypeReference getUnknownTypeReference(String qualifiedName) {
+		JvmUnknownTypeReference reference = TypesFactory.eINSTANCE.createJvmUnknownTypeReference();
+		reference.setQualifiedName(qualifiedName);
+		return reference;
 	}
 
 	public JvmTypeReference getTypeForName(String typeName, Notifier context, JvmTypeReference... params) {
@@ -186,7 +207,7 @@ public class TypeReferences {
 			throw new NullPointerException("typeName");
 		JvmType declaredType = findDeclaredType(typeName, context);
 		if (declaredType == null)
-			return null;
+			return getUnknownTypeReference(typeName);
 		JvmParameterizedTypeReference result = createTypeRef(declaredType, params);
 		return result;
 	}
@@ -234,6 +255,7 @@ public class TypeReferences {
 			final JvmType result = typeProvider.findTypeByName(typeName);
 			return result;
 		} catch (RuntimeException e) {
+			operationCanceledManager.propagateAsErrorIfCancelException(e);
 			log.info("Couldn't find JvmType for name '" + typeName + "' in context " + context, e);
 			return null;
 		}
@@ -249,26 +271,16 @@ public class TypeReferences {
 	public boolean is(final JvmType type, final Class<?> clazz) {
 		if (type == null)
 			return false;
-		boolean result = clazz.getCanonicalName().equals(type.getIdentifier());
+		String className = clazz.getName();
+		if (className.charAt(0) == '[') {
+			className = clazz.getCanonicalName();
+		}
+		boolean result = className.equals(type.getIdentifier());
 		return result;
 	}
-
+	
 	public boolean isNullOrProxy(final JvmTypeReference reference) {
 		return reference == null || reference.getType() == null || reference.getType().eIsProxy();
-	}
-
-	public boolean isInstanceOf(JvmTypeReference reference, Class<?> clazz) {
-		if (isNullOrProxy(reference))
-			return false;
-		if (is(reference, clazz)) {
-			return true;
-		}
-		Set<JvmTypeReference> types = superTypeCollector.collectSuperTypes(reference);
-		for (JvmTypeReference jvmTypeReference : types) {
-			if (is(jvmTypeReference, clazz))
-				return true;
-		}
-		return false;
 	}
 
 	public boolean isArray(JvmTypeReference type) {

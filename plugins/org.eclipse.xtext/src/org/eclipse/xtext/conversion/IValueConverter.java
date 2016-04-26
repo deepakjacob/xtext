@@ -20,9 +20,11 @@ import org.eclipse.xtext.nodemodel.INode;
 public interface IValueConverter<Type> {
 	
 	IValueConverter<? extends Object> NO_OP_CONVERTER = new IValueConverter<String>() {
+		@Override
 		public String toString(String value) {
 			return value;
 		}
+		@Override
 		public String toValue(String string, INode node) {
 			return string;
 		}
@@ -60,8 +62,10 @@ public interface IValueConverter<Type> {
 	 * that is converted, may implement this interface. The framework will
 	 * set the rule according to the annotation of the method that provides
 	 * the value converter.
+	 * 
+	 * @throw IllegalArgumentException if the rule doesn't match the expectation of the value converter
 	 */
 	interface RuleSpecific {
-		void setRule(AbstractRule rule);
+		void setRule(AbstractRule rule) throws IllegalArgumentException;
 	}
 }

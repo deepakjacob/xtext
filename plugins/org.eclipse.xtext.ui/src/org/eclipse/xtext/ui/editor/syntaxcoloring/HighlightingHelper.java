@@ -55,6 +55,7 @@ public class HighlightingHelper implements IHighlightingHelper, IPropertyChangeL
 
 	private IPreferenceStore preferenceStore;
 
+	@Override
 	public void install(XtextEditor editor, XtextSourceViewer sourceViewer) {
 		fEditor= editor;
 		if (fEditor != null) {
@@ -92,6 +93,7 @@ public class HighlightingHelper implements IHighlightingHelper, IPropertyChangeL
 		}
 	}
 
+	@Override
 	public void uninstall() {
 		disable();
 		if (preferenceStore != null) {
@@ -151,10 +153,13 @@ public class HighlightingHelper implements IHighlightingHelper, IPropertyChangeL
 		return preferenceStoreAccessor;
 	}
 
+	@Override
 	public void propertyChange(PropertyChangeEvent event) {
-		if (fReconciler != null && event.getProperty().contains(".syntaxColorer.tokenStyles")) {
-			textAttributeProvider.propertyChange(event);
-			fReconciler.refresh();
+		if (fReconciler != null && fEditor != null) {
+			if (event.getProperty().startsWith(PreferenceStoreAccessor.tokenTypeTag(fEditor.getLanguageName()))) {
+				textAttributeProvider.propertyChange(event);
+				fReconciler.refresh();
+			}
 		}
 	}
 

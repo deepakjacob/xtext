@@ -11,8 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.emf.codegen.util.CodeGenUtil;
 import org.eclipse.xtext.util.Strings;
+import org.eclipse.xtext.util.internal.CodeGenUtil2;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -24,13 +24,20 @@ public class JavaFile {
 
 	protected String body;
 
-	protected Map<String, String> imports = Maps.newHashMap();
+	protected final Map<String, String> imports = Maps.newHashMap();
 
-	protected String packageName;
+	protected final String packageName;
+	
+	protected final String fileHeader;
 
-	public JavaFile(String packageName) {
+	public JavaFile(String packageName, String fileHeader) {
 		super();
 		this.packageName = packageName;
+		this.fileHeader = fileHeader;
+	}
+	
+	public JavaFile(String packageName) {
+		this(packageName, null);
 	}
 
 	public String imported(Class<?> clazz) {
@@ -39,7 +46,7 @@ public class JavaFile {
 
 	public String imported(String clazz) {
 		String simpleName = Strings.lastToken(clazz, ".");
-		if (CodeGenUtil.isJavaDefaultType(simpleName))
+		if (CodeGenUtil2.isJavaDefaultType(simpleName))
 			return clazz;
 		String imported = imports.get(simpleName);
 		if (imported != null) {
@@ -59,7 +66,10 @@ public class JavaFile {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		result.append("package " + packageName + ";\n\n");
+		if (fileHeader != null) {
+			result.append(fileHeader).append('\n');
+		}
+		result.append("package ").append(packageName).append(";\n\n");
 		List<String> sortedImports = Lists.newArrayList(imports.values());
 		Collections.sort(sortedImports);
 		for (String importName : sortedImports) {

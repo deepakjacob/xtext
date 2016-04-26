@@ -27,11 +27,11 @@ import org.eclipse.xtext.xbase.XbasePackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XCastedExpressionImpl#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XCastedExpressionImpl#getTarget <em>Target</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

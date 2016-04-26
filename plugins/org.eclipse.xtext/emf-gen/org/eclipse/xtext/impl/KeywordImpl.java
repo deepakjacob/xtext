@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: KeywordImpl.java,v 1.14 2010/04/06 14:09:57 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -21,10 +17,10 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.impl.KeywordImpl#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

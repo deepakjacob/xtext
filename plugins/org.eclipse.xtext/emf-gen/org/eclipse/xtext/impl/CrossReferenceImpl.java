@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: CrossReferenceImpl.java,v 1.8 2010/04/06 14:10:06 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -25,11 +21,11 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.impl.CrossReferenceImpl#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.CrossReferenceImpl#getTerminal <em>Terminal</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

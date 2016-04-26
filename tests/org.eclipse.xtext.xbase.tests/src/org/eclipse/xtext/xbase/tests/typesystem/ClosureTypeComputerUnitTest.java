@@ -12,18 +12,17 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.common.types.JvmFeature;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
-import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.common.types.TypesFactory;
 import org.eclipse.xtext.junit4.util.ParseHelper;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.validation.IssueSeverities;
 import org.eclipse.xtext.xbase.XClosure;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XbaseFactory;
@@ -38,20 +37,18 @@ import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
 import org.eclipse.xtext.xbase.tests.typesystem.TypeResolutionTestData.ListFunction1;
 import org.eclipse.xtext.xbase.typesystem.computation.ClosureTypeComputer;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputationState;
-import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.internal.AbstractTypeComputationState;
 import org.eclipse.xtext.xbase.typesystem.internal.AbstractTypeExpectation;
-import org.eclipse.xtext.xbase.typesystem.internal.DefaultReentrantTypeResolver;
 import org.eclipse.xtext.xbase.typesystem.internal.ResolvedTypes;
 import org.eclipse.xtext.xbase.typesystem.internal.TypeExpectation;
+import org.eclipse.xtext.xbase.typesystem.override.IResolvedFeatures;
 import org.eclipse.xtext.xbase.typesystem.references.CompoundTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.FunctionTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
 import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.WildcardTypeReference;
 import org.eclipse.xtext.xbase.typesystem.util.CommonTypeComputationServices;
 import org.junit.After;
 import org.junit.Before;
@@ -60,11 +57,12 @@ import org.junit.Test;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implements ITypeReferenceOwner {
+public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase {
 	
 	@Inject
 	private CommonTypeComputationServices services;
@@ -73,34 +71,43 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	private ParseHelper<XExpression> parseHelper;
 	
 	@Inject
+	private Provider<PublicReentrantTypeResolver> reentrantResolverProvider;
+	
 	private PublicReentrantTypeResolver reentrantResolver;
 	
 	private TestableState state;
 	
 	private ResourceSet contextResourceSet;
 	
-	private OwnedConverter owner = new OwnedConverter(this);
+//	private ITypeReferenceOwner owner;
 	
 	interface IntFunction {
 		int apply(int i, int j);
 	}
 	interface StringIterable extends Iterable<String> {}
 	interface CharSequenceIterable<C extends CharSequence> extends Iterable<C> {}
+	@SuppressWarnings("rawtypes")
+	interface StrangeIterable<C> extends Iterable {}
+	interface StrangeStringIterable<C> extends Iterable<String> {}
 	interface ListIteratorIterable<E> extends Iterable<E> {
+		@Override
 		ListIterator<E> iterator();
+	}
+	class IterableContainer<E> {
+		abstract class Iter implements Iterable<E> {}
 	}
 	
 	@Test
 	public void testPrepareComputation_01() throws Exception {
 		JvmType iterableType = getTypeForName(Iterable.class, state);
 		JvmTypeParameter typeParameter = createTypeParameter("ELEMENT", state);
-		ParameterizedTypeReference iterableTypeReference = new ParameterizedTypeReference(this, iterableType);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
 		iterableTypeReference.addTypeArgument(createTypeReference(typeParameter, state));
 		assertFalse(iterableTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
 		assertEquals("Iterable<Unbound[T]>", getEquivalentSimpleName(closureType));
@@ -110,12 +117,12 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	@Test
 	public void testPrepareComputation_02() throws Exception {
 		JvmType iterableType = getTypeForName(StringIterable.class, state);
-		ParameterizedTypeReference iterableTypeReference = new ParameterizedTypeReference(this, iterableType);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
 		assertTrue(iterableTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
 		assertEquals("StringIterable", getEquivalentSimpleName(closureType));
@@ -126,13 +133,13 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	public void testPrepareComputation_03() throws Exception {
 		JvmType iterableType = getTypeForName(CharSequenceIterable.class, state);
 		JvmTypeParameter typeParameter = createTypeParameter("STRING", state);
-		ParameterizedTypeReference iterableTypeReference = new ParameterizedTypeReference(this, iterableType);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
 		iterableTypeReference.addTypeArgument(createTypeReference(typeParameter, state));
 		assertFalse(iterableTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
 		assertEquals("CharSequenceIterable<Unbound[C]>", getEquivalentSimpleName(closureType));
@@ -143,13 +150,13 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	public void testPrepareComputation_04() throws Exception {
 		JvmType iterableType = getTypeForName(ListIteratorIterable.class, state);
 		JvmTypeParameter typeParameter = createTypeParameter("STRING", state);
-		ParameterizedTypeReference iterableTypeReference = new ParameterizedTypeReference(this, iterableType);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
 		iterableTypeReference.addTypeArgument(createTypeReference(typeParameter, state));
 		assertFalse(iterableTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("org.eclipse.xtext.xbase.tests.typesystem.ClosureTypeComputerUnitTest$ListIteratorIterable.iterator()", computer.getOperation().getIdentifier());
 		assertEquals("ListIteratorIterable<Unbound[E]>", getEquivalentSimpleName(closureType));
@@ -160,13 +167,13 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	public void testPrepareComputation_05() throws Exception {
 		JvmType iterableType = getTypeForName(Iterable.class, state);
 		JvmType elementType = getTypeForName(String.class, state);
-		ParameterizedTypeReference iterableTypeReference = new ParameterizedTypeReference(this, iterableType);
-		iterableTypeReference.addTypeArgument(new ParameterizedTypeReference(this, elementType));
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
+		iterableTypeReference.addTypeArgument(state.getReferenceOwner().newParameterizedTypeReference(elementType));
 		assertTrue(iterableTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
 		assertEquals("Iterable<Unbound[T]>", getEquivalentSimpleName(closureType));
@@ -176,56 +183,53 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	@Test
 	public void testPrepareComputation_06() throws Exception {
 		JvmType stringType = getTypeForName(String.class, state);
-		ParameterizedTypeReference stringTypeReference = new ParameterizedTypeReference(this, stringType);
+		ParameterizedTypeReference stringTypeReference = state.getReferenceOwner().newParameterizedTypeReference(stringType);
 		assertTrue(stringTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(stringTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
-		assertEquals("org.eclipse.xtext.xbase.lib.Functions$Function1.apply(Param)", computer.getOperation().getIdentifier());
-		assertEquals("Function1<Unbound[Param], Unbound[Result]>", getEquivalentSimpleName(closureType));
-		assertEquals("(Unbound[Param])=>Unbound[Result]", closureType.getSimpleName());
+		assertEquals("org.eclipse.xtext.xbase.lib.Procedures$Procedure1.apply(Param)", computer.getOperation().getIdentifier());
+		assertEquals("Procedure1<Unbound[Param]>", getEquivalentSimpleName(closureType));
 	}
 	
 	@Test
 	public void testPrepareComputation_07() throws Exception {
 		TypeExpectation expectation = new TypeExpectation(null, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
-		assertEquals("org.eclipse.xtext.xbase.lib.Functions$Function1.apply(Param)", computer.getOperation().getIdentifier());
-		assertEquals("Function1<Unbound[Param], Unbound[Result]>", getEquivalentSimpleName(closureType));
-		assertEquals("(Unbound[Param])=>Unbound[Result]", closureType.getSimpleName());
+		assertEquals("org.eclipse.xtext.xbase.lib.Procedures$Procedure1.apply(Param)", computer.getOperation().getIdentifier());
+		assertEquals("Procedure1<Unbound[Param]>", getEquivalentSimpleName(closureType));
 	}
 	
 	@Test
 	public void testPrepareComputation_08() throws Exception {
 		JvmType iterableType = getTypeForName(Iterable.class, state);
 		JvmTypeParameter typeParameter = createTypeParameter("ELEMENT", state);
-		ParameterizedTypeReference iterableTypeReference = new ParameterizedTypeReference(this, iterableType);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
 		iterableTypeReference.addTypeArgument(createTypeReference(typeParameter, state));
 		assertFalse(iterableTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
 		// closure indicates Function1 but Iterable is Function0 - type is Function1
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
-		assertEquals("org.eclipse.xtext.xbase.lib.Functions$Function1.apply(Param)", computer.getOperation().getIdentifier());
-		assertEquals("Function1<Unbound[Param], Unbound[Result]>", getEquivalentSimpleName(closureType));
-		assertEquals("(Unbound[Param])=>Unbound[Result]", closureType.getSimpleName());
+		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
+		assertEquals("Iterable<Unbound[T]>", getEquivalentSimpleName(closureType));
 	}
 	
 	@Test
 	public void testPrepareComputation_09() throws Exception {
 		JvmType runnableType = getTypeForName(Runnable.class, state);
-		ParameterizedTypeReference runnableTypeReference = new ParameterizedTypeReference(this, runnableType);
+		ParameterizedTypeReference runnableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(runnableType);
 		assertTrue(runnableTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(runnableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.lang.Runnable.run()", computer.getOperation().getIdentifier());
 		assertEquals("Runnable", getEquivalentSimpleName(closureType));
@@ -237,13 +241,13 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		JvmType runnableType = getTypeForName(Runnable.class, state);
 		// type with illegal type parameters
 		JvmTypeParameter typeParameter = createTypeParameter("ILLEGAL", state);
-		ParameterizedTypeReference runnableTypeReference = new ParameterizedTypeReference(this, runnableType);
+		ParameterizedTypeReference runnableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(runnableType);
 		runnableTypeReference.addTypeArgument(createTypeReference(typeParameter, state));
 		assertFalse(runnableTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(runnableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.lang.Runnable.run()", computer.getOperation().getIdentifier());
 		assertEquals("Runnable", getEquivalentSimpleName(closureType));
@@ -255,13 +259,13 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		JvmType listFunctionType = getTypeForName(ListFunction1.class, state);
 		// type with illegal type parameters
 		JvmTypeParameter singleTypeParameter = createTypeParameter("InAndOut", state);
-		ParameterizedTypeReference listFunctionTypeReference = new ParameterizedTypeReference(this, listFunctionType);
+		ParameterizedTypeReference listFunctionTypeReference = state.getReferenceOwner().newParameterizedTypeReference(listFunctionType);
 		listFunctionTypeReference.addTypeArgument(createTypeReference(singleTypeParameter, state));
 		assertFalse(listFunctionTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(listFunctionTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("org.eclipse.xtext.xbase.tests.typesystem.TypeResolutionTestData$ListFunction1.apply(java.util.List)", computer.getOperation().getIdentifier());
 		assertEquals("ListFunction1<Unbound[T], Unbound[R]>", getEquivalentSimpleName(closureType));
@@ -273,13 +277,13 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		JvmType comparatorType = getTypeForName(Comparator.class, state);
 		// type with illegal type parameters
 		JvmTypeParameter typeParameter = createTypeParameter("COMPARABLE", state);
-		ParameterizedTypeReference comparatorTypeReference = new ParameterizedTypeReference(this, comparatorType);
+		ParameterizedTypeReference comparatorTypeReference = state.getReferenceOwner().newParameterizedTypeReference(comparatorType);
 		comparatorTypeReference.addTypeArgument(createTypeReference(typeParameter, state));
 		assertFalse(comparatorTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(comparatorTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[x, y|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.util.Comparator.compare(T,T)", computer.getOperation().getIdentifier());
 		assertEquals("Comparator<Unbound[T]>", getEquivalentSimpleName(closureType));
@@ -289,12 +293,12 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	@Test
 	public void testPrepareComputation_13() throws Exception {
 		JvmType functionType = getTypeForName(IntFunction.class, state);
-		ParameterizedTypeReference functionTypeReference = new ParameterizedTypeReference(this, functionType);
+		ParameterizedTypeReference functionTypeReference = state.getReferenceOwner().newParameterizedTypeReference(functionType);
 		assertTrue(functionTypeReference.isResolved());
 		
 		TypeExpectation expectation = new TypeExpectation(functionTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[x, y|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		LightweightTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("org.eclipse.xtext.xbase.tests.typesystem.ClosureTypeComputerUnitTest$IntFunction.apply(int,int)", computer.getOperation().getIdentifier());
 		assertEquals("IntFunction", getEquivalentSimpleName(closureType));
@@ -302,10 +306,61 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	}
 	
 	@Test
+	public void testPrepareComputation_14() throws Exception {
+		JvmType iterableType = getTypeForName(Iterable.class, state);
+		JvmType elementType = getTypeForName(String.class, state);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
+		WildcardTypeReference wildcard = state.getReferenceOwner().newWildcardTypeReference();
+		wildcard.addUpperBound(state.getReferenceOwner().newParameterizedTypeReference(elementType));
+		iterableTypeReference.addTypeArgument(wildcard);
+		assertTrue(iterableTypeReference.isResolved());
+		
+		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
+		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
+		computer.selectStrategy();
+		LightweightTypeReference closureType = computer.getExpectedClosureType();
+		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
+		assertEquals("Iterable<Unbound[T]>", getEquivalentSimpleName(closureType));
+		assertEquals("()=>Iterator<Unbound[T]>", closureType.getSimpleName());
+	}
+	
+	@Test
+	public void testPrepareComputation_15() throws Exception {
+		JvmType runnableType = getTypeForName(Runnable.class, state);
+		ParameterizedTypeReference runnableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(runnableType);
+		assertTrue(runnableTypeReference.isResolved());
+		
+		TypeExpectation expectation = new TypeExpectation(runnableTypeReference, state, false);
+		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[]", getContextResourceSet()), expectation, state);
+		computer.selectStrategy();
+		LightweightTypeReference closureType = computer.getExpectedClosureType();
+		assertEquals("java.lang.Runnable.run()", computer.getOperation().getIdentifier());
+		assertEquals("Runnable", getEquivalentSimpleName(closureType));
+		assertEquals("()=>void", closureType.getSimpleName());
+	}
+	
+	@Test
+	public void testPrepareComputation_16() throws Exception {
+		JvmType iterableType = getTypeForName(Iterable.class, state);
+		JvmTypeParameter typeParameter = createTypeParameter("ELEMENT", state);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
+		iterableTypeReference.addTypeArgument(createTypeReference(typeParameter, state));
+		assertFalse(iterableTypeReference.isResolved());
+		
+		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
+		// closure indicates Function1 but Iterable is Function0 - type is Function1
+		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[it|]", getContextResourceSet()), expectation, state);
+		computer.selectStrategy();
+		LightweightTypeReference closureType = computer.getExpectedClosureType();
+		assertEquals("org.eclipse.xtext.xbase.lib.Procedures$Procedure1.apply(Param)", computer.getOperation().getIdentifier());
+		assertEquals("Procedure1<Unbound[Param]>", getEquivalentSimpleName(closureType));
+	}
+	
+	@Test
 	public void testHintsAfterPrepareComputation_01() throws Exception {
 		JvmType iterableType = getTypeForName(Iterable.class, state);
 		JvmTypeParameter typeParameter = createTypeParameter("ELEMENT", state);
-		ParameterizedTypeReference iterableTypeReference = new ParameterizedTypeReference(this, iterableType);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
 		UnboundTypeReference elementReference = (UnboundTypeReference) createTypeReference(typeParameter, state);
 		iterableTypeReference.addTypeArgument(elementReference);
 
@@ -313,7 +368,7 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		
 		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		FunctionTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
 		assertEquals("Iterable<Unbound[T]>", getEquivalentSimpleName(closureType));
@@ -329,15 +384,15 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		JvmType iterableType = getTypeForName(Iterable.class, state);
 		JvmType appendableType = getTypeForName(Appendable.class, state);
 		JvmType charSequenceType = getTypeForName(CharSequence.class, state);
-		ParameterizedTypeReference iterableTypeReference = new ParameterizedTypeReference(this, iterableType);
-		CompoundTypeReference typeArgument = new CompoundTypeReference(this, false);
-		typeArgument.addComponent(new ParameterizedTypeReference(this, appendableType));
-		typeArgument.addComponent(new ParameterizedTypeReference(this, charSequenceType));
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
+		CompoundTypeReference typeArgument = state.getReferenceOwner().newCompoundTypeReference(false);
+		typeArgument.addComponent(state.getReferenceOwner().newParameterizedTypeReference(appendableType));
+		typeArgument.addComponent(state.getReferenceOwner().newParameterizedTypeReference(charSequenceType));
 		iterableTypeReference.addTypeArgument(typeArgument);
 		
 		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
 		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
-		computer.prepareComputation();
+		computer.selectStrategy();
 		FunctionTypeReference closureType = computer.getExpectedClosureType();
 		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
 		assertEquals("Iterable<Unbound[T]>", getEquivalentSimpleName(closureType));
@@ -348,30 +403,49 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		assertEquals(hints.toString(), 1, hints.size());
 	}
 	
+	@Test
+	public void testHintsAfterPrepareComputation_03() throws Exception {
+		JvmType iterableType = getTypeForName(Iterable.class, state);
+		JvmType appendableType = getTypeForName(Appendable.class, state);
+		JvmType charSequenceType = getTypeForName(CharSequence.class, state);
+		ParameterizedTypeReference iterableTypeReference = state.getReferenceOwner().newParameterizedTypeReference(iterableType);
+		WildcardTypeReference typeArgument = state.getReferenceOwner().newWildcardTypeReference();
+		typeArgument.addUpperBound(state.getReferenceOwner().newParameterizedTypeReference(appendableType));
+		typeArgument.addUpperBound(state.getReferenceOwner().newParameterizedTypeReference(charSequenceType));
+		iterableTypeReference.addTypeArgument(typeArgument);
+		
+		TypeExpectation expectation = new TypeExpectation(iterableTypeReference, state, false);
+		ClosureTypeComputer computer = new ClosureTypeComputer(closure("[|]", getContextResourceSet()), expectation, state);
+		computer.selectStrategy();
+		FunctionTypeReference closureType = computer.getExpectedClosureType();
+		assertEquals("java.lang.Iterable.iterator()", computer.getOperation().getIdentifier());
+		assertEquals("Iterable<Unbound[T]>", getEquivalentSimpleName(closureType));
+		assertEquals("()=>Iterator<Unbound[T]>", closureType.getSimpleName());
+		
+		UnboundTypeReference closureTypeArgument = (UnboundTypeReference) closureType.getTypeArguments().get(0);
+		List<LightweightBoundTypeArgument> hints = state.getResolvedTypes().getHints(closureTypeArgument.getHandle());
+		assertEquals(hints.toString(), 2, hints.size());
+	}
+	
 	protected XClosure closure(String string, ResourceSet contextResourceSet) throws Exception {
 		return (XClosure) expression(string, contextResourceSet);
 	}
 	
 	protected String getEquivalentSimpleName(LightweightTypeReference type) {
 		assertTrue("Expected FunctionTypeRef but was: " + type.getSimpleName(), type instanceof FunctionTypeReference);
-		@SuppressWarnings("null") // NPE would be ok here since the test would fail
+		// NPE would be ok here since the test would fail
 		String typeSimpleName = type.getType().getSimpleName();
 		List<LightweightTypeReference> typeArguments = ((ParameterizedTypeReference) type).getTypeArguments();
 		if (typeArguments.isEmpty())
 			return typeSimpleName;
-		return typeSimpleName + "<" + Joiner.on(", ").join(Iterables.transform(typeArguments, new LightweightTypeReference.SimpleNameFunction())) + ">";
+		return typeSimpleName + "<" + Joiner.on(", ").join(Iterables.transform(typeArguments, LightweightTypeReference.SimpleNameFunction.INSTANCE)) + ">";
 	}
 
 	protected LightweightTypeReference createTypeReference(JvmType type, ITypeComputationState state) {
 		if (type instanceof JvmTypeParameter) {
 			return this.state.createUnboundTypeReference((JvmTypeParameter) type);
 		}
-		return new ParameterizedTypeReference(state.getReferenceOwner(), type);
-	}
-	
-	@Before
-	public void setComputationState() {
-		this.state = createTypeComputationState();
+		return state.getReferenceOwner().newParameterizedTypeReference(type);
 	}
 	
 	@After
@@ -381,30 +455,23 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 	
 	protected TestableState createTypeComputationState() {
 		return new TestableState(new PublicResolvedTypes(reentrantResolver) {
-			@Override
-			@NonNull 
-			public ITypeReferenceOwner getReferenceOwner() {
-				return ClosureTypeComputerUnitTest.this;
-			}
-		}, new NullFeatureScopeSession(), reentrantResolver);
+		}, new NullFeatureScopeSession());
 	}
 	
-	@NonNullByDefault
 	public void acceptHint(Object handle, LightweightBoundTypeArgument boundTypeArgument) {
 		state.getResolvedTypes().acceptHint(handle, boundTypeArgument);
 	}
 	
-	@NonNull
+	/* @NonNull */
 	public List<JvmTypeParameter> getDeclaredTypeParameters() {
 		return state.getResolvedTypes().getDeclaredTypeParameters();
 	}
 	
-	@NonNullByDefault
 	public List<LightweightBoundTypeArgument> getAllHints(Object handle) {
 		return state.getResolvedTypes().getAllHints(handle);
 	}
 	
-	public boolean isResolved(@NonNull Object handle) {
+	public boolean isResolved(/* @NonNull */ Object handle) {
 		return state.getResolvedTypes().isResolved(handle);
 	}
 	
@@ -419,19 +486,19 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		return result;
 	}
 	
-	public LightweightTypeReference toLightweightReference(JvmTypeReference reference) {
-		return owner.toLightweightReference(reference);
-	}
-
 	@Before
 	public void obtainResourceSet() throws Exception {
-		expression("null");
+		XExpression expression = expression("null");
 		assertNotNull(contextResourceSet);
+		reentrantResolver = reentrantResolverProvider.get();
+		reentrantResolver.initializeFrom(EcoreUtil.getRootContainer(expression));
+		state = createTypeComputationState();
 	}
 	
 	@After
 	public void tearDown() {
 		contextResourceSet = null;
+		reentrantResolver = null;
 	}
 	
 	protected XExpression expression(String string) throws Exception {
@@ -444,34 +511,30 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		return parseHelper.parse(string, resourceSet);
 	}
 
-	@NonNull 
 	public ResourceSet getContextResourceSet() {
 		return contextResourceSet;
 	}
 	
-	@NonNull 
 	public CommonTypeComputationServices getServices() {
 		return services;
 	}
 
-	@NonNullByDefault
 	class TestableState extends AbstractTypeComputationState {
 
-		protected TestableState(ResolvedTypes resolvedTypes, IFeatureScopeSession featureScopeSession,
-				DefaultReentrantTypeResolver reentrantTypeResolver) {
-			super(resolvedTypes, featureScopeSession, reentrantTypeResolver);
+		protected TestableState(ResolvedTypes resolvedTypes, IFeatureScopeSession featureScopeSession) {
+			super(resolvedTypes, featureScopeSession);
 		}
 
 		@Override
 		protected LightweightTypeReference acceptType(ResolvedTypes types, AbstractTypeExpectation expectation,
-				LightweightTypeReference type, boolean returnType, ConformanceHint... conformanceHint) {
+				LightweightTypeReference type, boolean returnType, int conformanceHint) {
 			throw new UnsupportedOperationException();
 		}
 		
 		@Override
 		protected LightweightTypeReference acceptType(XExpression alreadyHandled, ResolvedTypes types,
 				AbstractTypeExpectation expectation, LightweightTypeReference type, boolean returnType,
-				ConformanceHint... conformanceHint) {
+				int conformanceHint) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -491,26 +554,57 @@ public class ClosureTypeComputerUnitTest extends AbstractXbaseTestCase implement
 		}
 		
 		@Override
-		protected PublicResolvedTypes getResolvedTypes() {
+		public PublicResolvedTypes getResolvedTypes() {
 			return (PublicResolvedTypes) super.getResolvedTypes();
 		}
-		
-	}
-	
-	@NonNullByDefault
-	class NullFeatureScopeSession extends AbstractFeatureScopeSession {
 
-		public boolean isVisible(JvmFeature feature) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Nullable
-		public IEObjectDescription getLocalElement(QualifiedName name) {
+		@Override
+		public List<LightweightTypeReference> getExpectedExceptions() {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
+		protected IssueSeverities getSeverities() {
+			throw new UnsupportedOperationException();
+		}
+		
+	}
+	
+	class NullFeatureScopeSession extends AbstractFeatureScopeSession {
+
+		@Override
+		public boolean isVisible(JvmMember member) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public boolean isVisible(JvmMember member, /* @Nullable */ LightweightTypeReference receiverType, /* @Nullable */ JvmIdentifiableElement receiverFeature) {
+			throw new UnsupportedOperationException();
+		}
+
+		/* @Nullable */
+		@Override
+		public IEObjectDescription getLocalElement(QualifiedName name) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
 		protected FeatureScopes getFeatureScopes() {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		protected IResolvedFeatures.Provider getResolvedFeaturesProvider() {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public boolean isInstanceContext() {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public boolean isConstructorContext() {
 			throw new UnsupportedOperationException();
 		}
 		

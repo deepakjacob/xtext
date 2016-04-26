@@ -138,6 +138,7 @@ public class GrammarElementTitleSwitch extends XtextSwitch<String> implements Fu
 		return nodes.get(rule.getAlternatives()).toString();
 	}
 
+	@Override
 	public String apply(AbstractElement from) {
 		return doSwitch(from);
 	}
@@ -168,7 +169,7 @@ public class GrammarElementTitleSwitch extends XtextSwitch<String> implements Fu
 		o = (o == null) ? "" : o;
 		String result;
 		if (showActionAsRuleCall && f != null) {
-			result = f + o + new Context2NameFunction().apply(object) + card(object);
+			result = f + o + new Context2NameFunction().toFunction(null).apply(object) + card(object);
 		} else {
 			String t = object.getType() != null && object.getType().getClassifier() != null ? object.getType()
 					.getClassifier().getName() : "null";

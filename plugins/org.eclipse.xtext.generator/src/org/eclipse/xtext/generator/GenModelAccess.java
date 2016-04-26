@@ -26,7 +26,7 @@ import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.xtext.generator.ecore.EcoreGeneratorFragment;
+import org.eclipse.xtext.generator.ecore.EMFGeneratorFragment;
 
 /**
  * @author Moritz Eysholdt - Initial contribution and API
@@ -62,7 +62,7 @@ public class GenModelAccess {
 			if (feature.getName().equals(genFeat.getEcoreFeature().getName())) {
 				return genFeat;
 			}
-		throw new RuntimeException("No GenClassifier named '" + feature.getName() + "' found in GenClass '" + genCls
+		throw new RuntimeException("No GenFeature named '" + feature.getName() + "' found in GenClass '" + genCls
 				+ "' from GenModel" + genCls.eResource().getURI());
 	}
 
@@ -101,11 +101,28 @@ public class GenModelAccess {
 	/**
 	 * @since 2.1
 	 */
+	@SuppressWarnings("deprecation")
 	public static Resource getGenModelResource(String locationInfo, String nsURI, ResourceSet resourceSet) {
-		URI genModelURI = EcorePlugin.getEPackageNsURIToGenModelLocationMap().get(nsURI);
+		URI genModelURI = EcorePlugin.getEPackageNsURIToGenModelLocationMap(false).get(nsURI);
 		if (genModelURI == null) {
 			if (EcorePackage.eNS_URI.equals(nsURI)) // if we really want to use the registered ecore ...
 				return null;
+			
+			// look into the resource set to find a genpackage for the given URI
+			for (Resource res: resourceSet.getResources()) {
+				
+				// we only look into the first level, as genmodels are usually among the top level elements.
+				// this just to avoid traversing all eobjects in the resource set.
+				for (EObject obj : res.getContents()) {
+					if (obj instanceof GenModel) {
+						for (GenPackage genPackage:((GenModel) obj).getGenPackages()) {
+							if (genPackage.getNSURI().equals(nsURI)) {
+								return genPackage.eResource();
+							}
+						}
+					}
+				}
+			}
 			
 			StringBuilder buf = new StringBuilder();
 			if (locationInfo != null && locationInfo.length() > 0)
@@ -113,7 +130,8 @@ public class GenModelAccess {
 			else 
 				locationInfo = "";
 			buf.append("Could not find a GenModel for EPackage '").append(nsURI).append("'").append(locationInfo).append("\n");
-			buf.append("If the missing GenModel has been generated via " + EcoreGeneratorFragment.class.getSimpleName());
+			buf.append("If the missing GenModel has been generated via " + EMFGeneratorFragment.class.getSimpleName() + " or " + 
+					org.eclipse.xtext.generator.ecore.EcoreGeneratorFragment.class.getSimpleName());
 			buf.append(" make sure to run it first in the workflow.\n");
 			buf.append("If you have a *.genmodel-file, make sure to register it via StandaloneSetup.registerGenModelFile(String)");
 			throw new RuntimeException(buf.toString());

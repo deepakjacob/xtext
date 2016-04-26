@@ -40,12 +40,13 @@ public class FindReferencesHandler extends AbstractHandler {
 
 	private static final Logger LOG = Logger.getLogger(FindReferencesHandler.class);
 
+	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		try {
 			XtextEditor editor = EditorUtils.getActiveXtextEditor(event);
 			if (editor != null) {
 				final ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
-				editor.getDocument().readOnly(new IUnitOfWork.Void<XtextResource>() {
+				editor.getDocument().priorityReadOnly(new IUnitOfWork.Void<XtextResource>() {
 					@Override
 					public void process(XtextResource state) throws Exception {
 						EObject target = eObjectAtOffsetHelper.resolveElementAt(state, selection.getOffset());
@@ -66,7 +67,7 @@ public class FindReferencesHandler extends AbstractHandler {
 	}
 
 	protected ReferenceQueryExecutor getQueryExecutor(EObject target) {
-		URI targetURI = EcoreUtil2.getNormalizedURI(target);
+		URI targetURI = EcoreUtil2.getPlatformResourceOrNormalizedURI(target);
 		if(targetURI != null) {
 			ReferenceQueryExecutor queryExecutor = globalServiceProvider.findService(targetURI.trimFragment(), ReferenceQueryExecutor.class);
 			if (queryExecutor != null) {

@@ -14,8 +14,8 @@ import java.util.ArrayList;
 public class InternalXbaseLexer extends Lexer {
     public static final int T__68=68;
     public static final int T__69=69;
-    public static final int RULE_ID=8;
     public static final int T__66=66;
+    public static final int RULE_ID=8;
     public static final int T__67=67;
     public static final int T__29=29;
     public static final int T__64=64;
@@ -43,8 +43,8 @@ public class InternalXbaseLexer extends Lexer {
     public static final int T__58=58;
     public static final int T__16=16;
     public static final int T__51=51;
-    public static final int T__15=15;
     public static final int T__52=52;
+    public static final int T__15=15;
     public static final int T__53=53;
     public static final int T__18=18;
     public static final int T__54=54;
@@ -60,12 +60,19 @@ public class InternalXbaseLexer extends Lexer {
     public static final int T__40=40;
     public static final int T__41=41;
     public static final int T__46=46;
+    public static final int T__80=80;
     public static final int T__47=47;
+    public static final int T__81=81;
     public static final int T__44=44;
+    public static final int T__82=82;
     public static final int T__45=45;
+    public static final int T__83=83;
     public static final int T__48=48;
     public static final int T__49=49;
+    public static final int T__85=85;
+    public static final int T__84=84;
     public static final int RULE_SL_COMMENT=10;
+    public static final int T__86=86;
     public static final int RULE_ML_COMMENT=9;
     public static final int T__30=30;
     public static final int T__31=31;
@@ -86,6 +93,7 @@ public class InternalXbaseLexer extends Lexer {
     public static final int T__75=75;
     public static final int T__74=74;
     public static final int T__73=73;
+    public static final int T__79=79;
     public static final int T__78=78;
     public static final int T__77=77;
 
@@ -100,15 +108,15 @@ public class InternalXbaseLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g"; }
+    public String getGrammarFileName() { return "InternalXbase.g"; }
 
     // $ANTLR start "T__13"
     public final void mT__13() throws RecognitionException {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:11:7: ( '=' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:11:9: '='
+            // InternalXbase.g:11:7: ( '=' )
+            // InternalXbase.g:11:9: '='
             {
             match('='); 
 
@@ -127,8 +135,8 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__14;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:12:7: ( '+=' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:12:9: '+='
+            // InternalXbase.g:12:7: ( '+=' )
+            // InternalXbase.g:12:9: '+='
             {
             match("+="); 
 
@@ -148,10 +156,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__15;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:13:7: ( '||' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:13:9: '||'
+            // InternalXbase.g:13:7: ( '-=' )
+            // InternalXbase.g:13:9: '-='
             {
-            match("||"); 
+            match("-="); 
 
 
             }
@@ -169,10 +177,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__16;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:14:7: ( '&&' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:14:9: '&&'
+            // InternalXbase.g:14:7: ( '*=' )
+            // InternalXbase.g:14:9: '*='
             {
-            match("&&"); 
+            match("*="); 
 
 
             }
@@ -190,10 +198,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__17;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:15:7: ( '==' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:15:9: '=='
+            // InternalXbase.g:15:7: ( '/=' )
+            // InternalXbase.g:15:9: '/='
             {
-            match("=="); 
+            match("/="); 
 
 
             }
@@ -211,10 +219,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__18;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:16:7: ( '!=' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:16:9: '!='
+            // InternalXbase.g:16:7: ( '%=' )
+            // InternalXbase.g:16:9: '%='
             {
-            match("!="); 
+            match("%="); 
 
 
             }
@@ -232,11 +240,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__19;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:17:7: ( 'instanceof' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:17:9: 'instanceof'
+            // InternalXbase.g:17:7: ( '<' )
+            // InternalXbase.g:17:9: '<'
             {
-            match("instanceof"); 
-
+            match('<'); 
 
             }
 
@@ -253,11 +260,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__20;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:18:7: ( '>=' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:18:9: '>='
+            // InternalXbase.g:18:7: ( '>' )
+            // InternalXbase.g:18:9: '>'
             {
-            match(">="); 
-
+            match('>'); 
 
             }
 
@@ -274,10 +280,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__21;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:19:7: ( '<=' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:19:9: '<='
+            // InternalXbase.g:19:7: ( '>=' )
+            // InternalXbase.g:19:9: '>='
             {
-            match("<="); 
+            match(">="); 
 
 
             }
@@ -295,10 +301,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__22;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:20:7: ( '>' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:20:9: '>'
+            // InternalXbase.g:20:7: ( '||' )
+            // InternalXbase.g:20:9: '||'
             {
-            match('>'); 
+            match("||"); 
+
 
             }
 
@@ -315,10 +322,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__23;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:21:7: ( '<' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:21:9: '<'
+            // InternalXbase.g:21:7: ( '&&' )
+            // InternalXbase.g:21:9: '&&'
             {
-            match('<'); 
+            match("&&"); 
+
 
             }
 
@@ -335,10 +343,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__24;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:22:7: ( '->' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:22:9: '->'
+            // InternalXbase.g:22:7: ( '==' )
+            // InternalXbase.g:22:9: '=='
             {
-            match("->"); 
+            match("=="); 
 
 
             }
@@ -356,10 +364,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__25;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:23:7: ( '..' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:23:9: '..'
+            // InternalXbase.g:23:7: ( '!=' )
+            // InternalXbase.g:23:9: '!='
             {
-            match(".."); 
+            match("!="); 
 
 
             }
@@ -377,10 +385,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__26;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:24:7: ( '=>' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:24:9: '=>'
+            // InternalXbase.g:24:7: ( '===' )
+            // InternalXbase.g:24:9: '==='
             {
-            match("=>"); 
+            match("==="); 
 
 
             }
@@ -398,10 +406,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__27;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:25:7: ( '<>' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:25:9: '<>'
+            // InternalXbase.g:25:7: ( '!==' )
+            // InternalXbase.g:25:9: '!=='
             {
-            match("<>"); 
+            match("!=="); 
 
 
             }
@@ -419,10 +427,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__28;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:26:7: ( '?:' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:26:9: '?:'
+            // InternalXbase.g:26:7: ( 'instanceof' )
+            // InternalXbase.g:26:9: 'instanceof'
             {
-            match("?:"); 
+            match("instanceof"); 
 
 
             }
@@ -440,10 +448,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__29;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:27:7: ( '<=>' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:27:9: '<=>'
+            // InternalXbase.g:27:7: ( '->' )
+            // InternalXbase.g:27:9: '->'
             {
-            match("<=>"); 
+            match("->"); 
 
 
             }
@@ -461,10 +469,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__30;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:28:7: ( '+' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:28:9: '+'
+            // InternalXbase.g:28:7: ( '..<' )
+            // InternalXbase.g:28:9: '..<'
             {
-            match('+'); 
+            match("..<"); 
+
 
             }
 
@@ -481,10 +490,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__31;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:29:7: ( '-' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:29:9: '-'
+            // InternalXbase.g:29:7: ( '..' )
+            // InternalXbase.g:29:9: '..'
             {
-            match('-'); 
+            match(".."); 
+
 
             }
 
@@ -501,10 +511,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__32;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:30:7: ( '*' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:30:9: '*'
+            // InternalXbase.g:30:7: ( '=>' )
+            // InternalXbase.g:30:9: '=>'
             {
-            match('*'); 
+            match("=>"); 
+
 
             }
 
@@ -521,10 +532,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__33;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:31:7: ( '**' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:31:9: '**'
+            // InternalXbase.g:31:7: ( '<>' )
+            // InternalXbase.g:31:9: '<>'
             {
-            match("**"); 
+            match("<>"); 
 
 
             }
@@ -542,10 +553,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__34;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:32:7: ( '/' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:32:9: '/'
+            // InternalXbase.g:32:7: ( '?:' )
+            // InternalXbase.g:32:9: '?:'
             {
-            match('/'); 
+            match("?:"); 
+
 
             }
 
@@ -562,10 +574,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__35;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:33:7: ( '%' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:33:9: '%'
+            // InternalXbase.g:33:7: ( '+' )
+            // InternalXbase.g:33:9: '+'
             {
-            match('%'); 
+            match('+'); 
 
             }
 
@@ -582,10 +594,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__36;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:34:7: ( '!' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:34:9: '!'
+            // InternalXbase.g:34:7: ( '-' )
+            // InternalXbase.g:34:9: '-'
             {
-            match('!'); 
+            match('-'); 
 
             }
 
@@ -602,11 +614,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__37;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:35:7: ( 'as' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:35:9: 'as'
+            // InternalXbase.g:35:7: ( '*' )
+            // InternalXbase.g:35:9: '*'
             {
-            match("as"); 
-
+            match('*'); 
 
             }
 
@@ -623,10 +634,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__38;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:36:7: ( '.' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:36:9: '.'
+            // InternalXbase.g:36:7: ( '**' )
+            // InternalXbase.g:36:9: '**'
             {
-            match('.'); 
+            match("**"); 
+
 
             }
 
@@ -643,11 +655,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__39;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:37:7: ( '?.' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:37:9: '?.'
+            // InternalXbase.g:37:7: ( '/' )
+            // InternalXbase.g:37:9: '/'
             {
-            match("?."); 
-
+            match('/'); 
 
             }
 
@@ -664,11 +675,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__40;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:38:7: ( '*.' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:38:9: '*.'
+            // InternalXbase.g:38:7: ( '%' )
+            // InternalXbase.g:38:9: '%'
             {
-            match("*."); 
-
+            match('%'); 
 
             }
 
@@ -685,10 +695,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__41;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:39:7: ( ',' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:39:9: ','
+            // InternalXbase.g:39:7: ( '!' )
+            // InternalXbase.g:39:9: '!'
             {
-            match(','); 
+            match('!'); 
 
             }
 
@@ -705,10 +715,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__42;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:40:7: ( '(' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:40:9: '('
+            // InternalXbase.g:40:7: ( 'as' )
+            // InternalXbase.g:40:9: 'as'
             {
-            match('('); 
+            match("as"); 
+
 
             }
 
@@ -725,10 +736,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__43;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:41:7: ( ')' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:41:9: ')'
+            // InternalXbase.g:41:7: ( '++' )
+            // InternalXbase.g:41:9: '++'
             {
-            match(')'); 
+            match("++"); 
+
 
             }
 
@@ -745,10 +757,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__44;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:42:7: ( '[' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:42:9: '['
+            // InternalXbase.g:42:7: ( '--' )
+            // InternalXbase.g:42:9: '--'
             {
-            match('['); 
+            match("--"); 
+
 
             }
 
@@ -765,10 +778,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__45;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:43:7: ( '|' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:43:9: '|'
+            // InternalXbase.g:43:7: ( '.' )
+            // InternalXbase.g:43:9: '.'
             {
-            match('|'); 
+            match('.'); 
 
             }
 
@@ -785,10 +798,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__46;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:44:7: ( ']' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:44:9: ']'
+            // InternalXbase.g:44:7: ( '::' )
+            // InternalXbase.g:44:9: '::'
             {
-            match(']'); 
+            match("::"); 
+
 
             }
 
@@ -805,10 +819,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__47;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:45:7: ( ';' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:45:9: ';'
+            // InternalXbase.g:45:7: ( '?.' )
+            // InternalXbase.g:45:9: '?.'
             {
-            match(';'); 
+            match("?."); 
+
 
             }
 
@@ -825,11 +840,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__48;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:46:7: ( 'if' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:46:9: 'if'
+            // InternalXbase.g:46:7: ( ',' )
+            // InternalXbase.g:46:9: ','
             {
-            match("if"); 
-
+            match(','); 
 
             }
 
@@ -846,11 +860,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__49;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:47:7: ( 'else' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:47:9: 'else'
+            // InternalXbase.g:47:7: ( '(' )
+            // InternalXbase.g:47:9: '('
             {
-            match("else"); 
-
+            match('('); 
 
             }
 
@@ -867,11 +880,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__50;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:48:7: ( 'switch' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:48:9: 'switch'
+            // InternalXbase.g:48:7: ( ')' )
+            // InternalXbase.g:48:9: ')'
             {
-            match("switch"); 
-
+            match(')'); 
 
             }
 
@@ -888,10 +900,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__51;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:49:7: ( ':' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:49:9: ':'
+            // InternalXbase.g:49:7: ( '#' )
+            // InternalXbase.g:49:9: '#'
             {
-            match(':'); 
+            match('#'); 
 
             }
 
@@ -908,8 +920,8 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__52;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:50:7: ( '{' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:50:9: '{'
+            // InternalXbase.g:50:7: ( '{' )
+            // InternalXbase.g:50:9: '{'
             {
             match('{'); 
 
@@ -928,11 +940,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__53;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:51:7: ( 'default' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:51:9: 'default'
+            // InternalXbase.g:51:7: ( '}' )
+            // InternalXbase.g:51:9: '}'
             {
-            match("default"); 
-
+            match('}'); 
 
             }
 
@@ -949,10 +960,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__54;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:52:7: ( '}' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:52:9: '}'
+            // InternalXbase.g:52:7: ( '[' )
+            // InternalXbase.g:52:9: '['
             {
-            match('}'); 
+            match('['); 
 
             }
 
@@ -969,11 +980,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__55;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:53:7: ( 'case' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:53:9: 'case'
+            // InternalXbase.g:53:7: ( ']' )
+            // InternalXbase.g:53:9: ']'
             {
-            match("case"); 
-
+            match(']'); 
 
             }
 
@@ -990,11 +1000,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__56;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:54:7: ( 'for' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:54:9: 'for'
+            // InternalXbase.g:54:7: ( '|' )
+            // InternalXbase.g:54:9: '|'
             {
-            match("for"); 
-
+            match('|'); 
 
             }
 
@@ -1011,11 +1020,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__57;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:55:7: ( 'while' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:55:9: 'while'
+            // InternalXbase.g:55:7: ( ';' )
+            // InternalXbase.g:55:9: ';'
             {
-            match("while"); 
-
+            match(';'); 
 
             }
 
@@ -1032,10 +1040,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__58;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:56:7: ( 'do' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:56:9: 'do'
+            // InternalXbase.g:56:7: ( 'if' )
+            // InternalXbase.g:56:9: 'if'
             {
-            match("do"); 
+            match("if"); 
 
 
             }
@@ -1053,10 +1061,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__59;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:57:7: ( 'var' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:57:9: 'var'
+            // InternalXbase.g:57:7: ( 'else' )
+            // InternalXbase.g:57:9: 'else'
             {
-            match("var"); 
+            match("else"); 
 
 
             }
@@ -1074,10 +1082,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__60;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:58:7: ( 'val' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:58:9: 'val'
+            // InternalXbase.g:58:7: ( 'switch' )
+            // InternalXbase.g:58:9: 'switch'
             {
-            match("val"); 
+            match("switch"); 
 
 
             }
@@ -1095,11 +1103,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__61;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:59:7: ( 'super' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:59:9: 'super'
+            // InternalXbase.g:59:7: ( ':' )
+            // InternalXbase.g:59:9: ':'
             {
-            match("super"); 
-
+            match(':'); 
 
             }
 
@@ -1116,10 +1123,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__62;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:60:7: ( '::' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:60:9: '::'
+            // InternalXbase.g:60:7: ( 'default' )
+            // InternalXbase.g:60:9: 'default'
             {
-            match("::"); 
+            match("default"); 
 
 
             }
@@ -1137,10 +1144,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__63;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:61:7: ( 'new' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:61:9: 'new'
+            // InternalXbase.g:61:7: ( 'case' )
+            // InternalXbase.g:61:9: 'case'
             {
-            match("new"); 
+            match("case"); 
 
 
             }
@@ -1158,10 +1165,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__64;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:62:7: ( 'false' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:62:9: 'false'
+            // InternalXbase.g:62:7: ( 'for' )
+            // InternalXbase.g:62:9: 'for'
             {
-            match("false"); 
+            match("for"); 
 
 
             }
@@ -1179,10 +1186,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__65;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:63:7: ( 'true' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:63:9: 'true'
+            // InternalXbase.g:63:7: ( 'while' )
+            // InternalXbase.g:63:9: 'while'
             {
-            match("true"); 
+            match("while"); 
 
 
             }
@@ -1200,10 +1207,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__66;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:64:7: ( 'null' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:64:9: 'null'
+            // InternalXbase.g:64:7: ( 'do' )
+            // InternalXbase.g:64:9: 'do'
             {
-            match("null"); 
+            match("do"); 
 
 
             }
@@ -1221,10 +1228,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__67;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:65:7: ( 'typeof' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:65:9: 'typeof'
+            // InternalXbase.g:65:7: ( 'var' )
+            // InternalXbase.g:65:9: 'var'
             {
-            match("typeof"); 
+            match("var"); 
 
 
             }
@@ -1242,10 +1249,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__68;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:66:7: ( 'throw' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:66:9: 'throw'
+            // InternalXbase.g:66:7: ( 'val' )
+            // InternalXbase.g:66:9: 'val'
             {
-            match("throw"); 
+            match("val"); 
 
 
             }
@@ -1263,10 +1270,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__69;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:67:7: ( 'return' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:67:9: 'return'
+            // InternalXbase.g:67:7: ( 'extends' )
+            // InternalXbase.g:67:9: 'extends'
             {
-            match("return"); 
+            match("extends"); 
 
 
             }
@@ -1284,10 +1291,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__70;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:68:7: ( 'try' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:68:9: 'try'
+            // InternalXbase.g:68:7: ( 'static' )
+            // InternalXbase.g:68:9: 'static'
             {
-            match("try"); 
+            match("static"); 
 
 
             }
@@ -1305,10 +1312,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__71;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:69:7: ( 'finally' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:69:9: 'finally'
+            // InternalXbase.g:69:7: ( 'import' )
+            // InternalXbase.g:69:9: 'import'
             {
-            match("finally"); 
+            match("import"); 
 
 
             }
@@ -1326,10 +1333,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__72;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:70:7: ( 'catch' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:70:9: 'catch'
+            // InternalXbase.g:70:7: ( 'extension' )
+            // InternalXbase.g:70:9: 'extension'
             {
-            match("catch"); 
+            match("extension"); 
 
 
             }
@@ -1347,10 +1354,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__73;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:71:7: ( '?' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:71:9: '?'
+            // InternalXbase.g:71:7: ( 'super' )
+            // InternalXbase.g:71:9: 'super'
             {
-            match('?'); 
+            match("super"); 
+
 
             }
 
@@ -1367,10 +1375,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__74;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:72:7: ( 'extends' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:72:9: 'extends'
+            // InternalXbase.g:72:7: ( 'new' )
+            // InternalXbase.g:72:9: 'new'
             {
-            match("extends"); 
+            match("new"); 
 
 
             }
@@ -1388,10 +1396,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__75;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:73:7: ( '&' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:73:9: '&'
+            // InternalXbase.g:73:7: ( 'false' )
+            // InternalXbase.g:73:9: 'false'
             {
-            match('&'); 
+            match("false"); 
+
 
             }
 
@@ -1408,10 +1417,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__76;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:74:7: ( 'import' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:74:9: 'import'
+            // InternalXbase.g:74:7: ( 'true' )
+            // InternalXbase.g:74:9: 'true'
             {
-            match("import"); 
+            match("true"); 
 
 
             }
@@ -1429,10 +1438,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__77;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:75:7: ( 'static' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:75:9: 'static'
+            // InternalXbase.g:75:7: ( 'null' )
+            // InternalXbase.g:75:9: 'null'
             {
-            match("static"); 
+            match("null"); 
 
 
             }
@@ -1450,10 +1459,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = T__78;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:76:7: ( 'extension' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:76:9: 'extension'
+            // InternalXbase.g:76:7: ( 'typeof' )
+            // InternalXbase.g:76:9: 'typeof'
             {
-            match("extension"); 
+            match("typeof"); 
 
 
             }
@@ -1466,15 +1475,181 @@ public class InternalXbaseLexer extends Lexer {
     }
     // $ANTLR end "T__78"
 
+    // $ANTLR start "T__79"
+    public final void mT__79() throws RecognitionException {
+        try {
+            int _type = T__79;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalXbase.g:77:7: ( 'throw' )
+            // InternalXbase.g:77:9: 'throw'
+            {
+            match("throw"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__79"
+
+    // $ANTLR start "T__80"
+    public final void mT__80() throws RecognitionException {
+        try {
+            int _type = T__80;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalXbase.g:78:7: ( 'return' )
+            // InternalXbase.g:78:9: 'return'
+            {
+            match("return"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__80"
+
+    // $ANTLR start "T__81"
+    public final void mT__81() throws RecognitionException {
+        try {
+            int _type = T__81;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalXbase.g:79:7: ( 'try' )
+            // InternalXbase.g:79:9: 'try'
+            {
+            match("try"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__81"
+
+    // $ANTLR start "T__82"
+    public final void mT__82() throws RecognitionException {
+        try {
+            int _type = T__82;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalXbase.g:80:7: ( 'finally' )
+            // InternalXbase.g:80:9: 'finally'
+            {
+            match("finally"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__82"
+
+    // $ANTLR start "T__83"
+    public final void mT__83() throws RecognitionException {
+        try {
+            int _type = T__83;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalXbase.g:81:7: ( 'synchronized' )
+            // InternalXbase.g:81:9: 'synchronized'
+            {
+            match("synchronized"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__83"
+
+    // $ANTLR start "T__84"
+    public final void mT__84() throws RecognitionException {
+        try {
+            int _type = T__84;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalXbase.g:82:7: ( 'catch' )
+            // InternalXbase.g:82:9: 'catch'
+            {
+            match("catch"); 
+
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__84"
+
+    // $ANTLR start "T__85"
+    public final void mT__85() throws RecognitionException {
+        try {
+            int _type = T__85;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalXbase.g:83:7: ( '?' )
+            // InternalXbase.g:83:9: '?'
+            {
+            match('?'); 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__85"
+
+    // $ANTLR start "T__86"
+    public final void mT__86() throws RecognitionException {
+        try {
+            int _type = T__86;
+            int _channel = DEFAULT_TOKEN_CHANNEL;
+            // InternalXbase.g:84:7: ( '&' )
+            // InternalXbase.g:84:9: '&'
+            {
+            match('&'); 
+
+            }
+
+            state.type = _type;
+            state.channel = _channel;
+        }
+        finally {
+        }
+    }
+    // $ANTLR end "T__86"
+
     // $ANTLR start "RULE_HEX"
     public final void mRULE_HEX() throws RecognitionException {
         try {
             int _type = RULE_HEX;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:10: ( ( '0x' | '0X' ) ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' )+ ( '#' ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) ) )? )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:12: ( '0x' | '0X' ) ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' )+ ( '#' ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) ) )?
+            // InternalXbase.g:6349:10: ( ( '0x' | '0X' ) ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' )+ ( '#' ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) ) )? )
+            // InternalXbase.g:6349:12: ( '0x' | '0X' ) ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' )+ ( '#' ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) ) )?
             {
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:12: ( '0x' | '0X' )
+            // InternalXbase.g:6349:12: ( '0x' | '0X' )
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -1502,7 +1677,7 @@ public class InternalXbaseLexer extends Lexer {
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:13: '0x'
+                    // InternalXbase.g:6349:13: '0x'
                     {
                     match("0x"); 
 
@@ -1510,7 +1685,7 @@ public class InternalXbaseLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:18: '0X'
+                    // InternalXbase.g:6349:18: '0X'
                     {
                     match("0X"); 
 
@@ -1520,7 +1695,7 @@ public class InternalXbaseLexer extends Lexer {
 
             }
 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:24: ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' )+
+            // InternalXbase.g:6349:24: ( '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' | '_' )+
             int cnt2=0;
             loop2:
             do {
@@ -1534,7 +1709,7 @@ public class InternalXbaseLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:
+            	    // InternalXbase.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='F')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='f') ) {
             	        input.consume();
@@ -1558,7 +1733,7 @@ public class InternalXbaseLexer extends Lexer {
                 cnt2++;
             } while (true);
 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:58: ( '#' ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) ) )?
+            // InternalXbase.g:6349:58: ( '#' ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) ) )?
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -1567,10 +1742,10 @@ public class InternalXbaseLexer extends Lexer {
             }
             switch (alt4) {
                 case 1 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:59: '#' ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) )
+                    // InternalXbase.g:6349:59: '#' ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) )
                     {
                     match('#'); 
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:63: ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) )
+                    // InternalXbase.g:6349:63: ( ( 'b' | 'B' ) ( 'i' | 'I' ) | ( 'l' | 'L' ) )
                     int alt3=2;
                     int LA3_0 = input.LA(1);
 
@@ -1588,7 +1763,7 @@ public class InternalXbaseLexer extends Lexer {
                     }
                     switch (alt3) {
                         case 1 :
-                            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:64: ( 'b' | 'B' ) ( 'i' | 'I' )
+                            // InternalXbase.g:6349:64: ( 'b' | 'B' ) ( 'i' | 'I' )
                             {
                             if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
                                 input.consume();
@@ -1612,7 +1787,7 @@ public class InternalXbaseLexer extends Lexer {
                             }
                             break;
                         case 2 :
-                            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4963:84: ( 'l' | 'L' )
+                            // InternalXbase.g:6349:84: ( 'l' | 'L' )
                             {
                             if ( input.LA(1)=='L'||input.LA(1)=='l' ) {
                                 input.consume();
@@ -1651,11 +1826,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4965:10: ( '0' .. '9' ( '0' .. '9' | '_' )* )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4965:12: '0' .. '9' ( '0' .. '9' | '_' )*
+            // InternalXbase.g:6351:10: ( '0' .. '9' ( '0' .. '9' | '_' )* )
+            // InternalXbase.g:6351:12: '0' .. '9' ( '0' .. '9' | '_' )*
             {
             matchRange('0','9'); 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4965:21: ( '0' .. '9' | '_' )*
+            // InternalXbase.g:6351:21: ( '0' .. '9' | '_' )*
             loop5:
             do {
                 int alt5=2;
@@ -1668,7 +1843,7 @@ public class InternalXbaseLexer extends Lexer {
 
                 switch (alt5) {
             	case 1 :
-            	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:
+            	    // InternalXbase.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||input.LA(1)=='_' ) {
             	        input.consume();
@@ -1704,11 +1879,11 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = RULE_DECIMAL;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4967:14: ( RULE_INT ( ( 'e' | 'E' ) ( '+' | '-' )? RULE_INT )? ( ( 'b' | 'B' ) ( 'i' | 'I' | 'd' | 'D' ) | ( 'l' | 'L' | 'd' | 'D' | 'f' | 'F' ) )? )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4967:16: RULE_INT ( ( 'e' | 'E' ) ( '+' | '-' )? RULE_INT )? ( ( 'b' | 'B' ) ( 'i' | 'I' | 'd' | 'D' ) | ( 'l' | 'L' | 'd' | 'D' | 'f' | 'F' ) )?
+            // InternalXbase.g:6353:14: ( RULE_INT ( ( 'e' | 'E' ) ( '+' | '-' )? RULE_INT )? ( ( 'b' | 'B' ) ( 'i' | 'I' | 'd' | 'D' ) | ( 'l' | 'L' | 'd' | 'D' | 'f' | 'F' ) )? )
+            // InternalXbase.g:6353:16: RULE_INT ( ( 'e' | 'E' ) ( '+' | '-' )? RULE_INT )? ( ( 'b' | 'B' ) ( 'i' | 'I' | 'd' | 'D' ) | ( 'l' | 'L' | 'd' | 'D' | 'f' | 'F' ) )?
             {
             mRULE_INT(); 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4967:25: ( ( 'e' | 'E' ) ( '+' | '-' )? RULE_INT )?
+            // InternalXbase.g:6353:25: ( ( 'e' | 'E' ) ( '+' | '-' )? RULE_INT )?
             int alt7=2;
             int LA7_0 = input.LA(1);
 
@@ -1717,7 +1892,7 @@ public class InternalXbaseLexer extends Lexer {
             }
             switch (alt7) {
                 case 1 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4967:26: ( 'e' | 'E' ) ( '+' | '-' )? RULE_INT
+                    // InternalXbase.g:6353:26: ( 'e' | 'E' ) ( '+' | '-' )? RULE_INT
                     {
                     if ( input.LA(1)=='E'||input.LA(1)=='e' ) {
                         input.consume();
@@ -1728,7 +1903,7 @@ public class InternalXbaseLexer extends Lexer {
                         recover(mse);
                         throw mse;}
 
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4967:36: ( '+' | '-' )?
+                    // InternalXbase.g:6353:36: ( '+' | '-' )?
                     int alt6=2;
                     int LA6_0 = input.LA(1);
 
@@ -1737,7 +1912,7 @@ public class InternalXbaseLexer extends Lexer {
                     }
                     switch (alt6) {
                         case 1 :
-                            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:
+                            // InternalXbase.g:
                             {
                             if ( input.LA(1)=='+'||input.LA(1)=='-' ) {
                                 input.consume();
@@ -1761,7 +1936,7 @@ public class InternalXbaseLexer extends Lexer {
 
             }
 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4967:58: ( ( 'b' | 'B' ) ( 'i' | 'I' | 'd' | 'D' ) | ( 'l' | 'L' | 'd' | 'D' | 'f' | 'F' ) )?
+            // InternalXbase.g:6353:58: ( ( 'b' | 'B' ) ( 'i' | 'I' | 'd' | 'D' ) | ( 'l' | 'L' | 'd' | 'D' | 'f' | 'F' ) )?
             int alt8=3;
             int LA8_0 = input.LA(1);
 
@@ -1773,7 +1948,7 @@ public class InternalXbaseLexer extends Lexer {
             }
             switch (alt8) {
                 case 1 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4967:59: ( 'b' | 'B' ) ( 'i' | 'I' | 'd' | 'D' )
+                    // InternalXbase.g:6353:59: ( 'b' | 'B' ) ( 'i' | 'I' | 'd' | 'D' )
                     {
                     if ( input.LA(1)=='B'||input.LA(1)=='b' ) {
                         input.consume();
@@ -1797,7 +1972,7 @@ public class InternalXbaseLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4967:87: ( 'l' | 'L' | 'd' | 'D' | 'f' | 'F' )
+                    // InternalXbase.g:6353:87: ( 'l' | 'L' | 'd' | 'D' | 'f' | 'F' )
                     {
                     if ( input.LA(1)=='D'||input.LA(1)=='F'||input.LA(1)=='L'||input.LA(1)=='d'||input.LA(1)=='f'||input.LA(1)=='l' ) {
                         input.consume();
@@ -1830,10 +2005,10 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4969:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4969:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' | '0' .. '9' )*
+            // InternalXbase.g:6355:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' | '0' .. '9' )* )
+            // InternalXbase.g:6355:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4969:11: ( '^' )?
+            // InternalXbase.g:6355:11: ( '^' )?
             int alt9=2;
             int LA9_0 = input.LA(1);
 
@@ -1842,7 +2017,7 @@ public class InternalXbaseLexer extends Lexer {
             }
             switch (alt9) {
                 case 1 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4969:11: '^'
+                    // InternalXbase.g:6355:11: '^'
                     {
                     match('^'); 
 
@@ -1860,7 +2035,7 @@ public class InternalXbaseLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4969:44: ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' | '0' .. '9' )*
+            // InternalXbase.g:6355:44: ( 'a' .. 'z' | 'A' .. 'Z' | '$' | '_' | '0' .. '9' )*
             loop10:
             do {
                 int alt10=2;
@@ -1873,7 +2048,7 @@ public class InternalXbaseLexer extends Lexer {
 
                 switch (alt10) {
             	case 1 :
-            	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:
+            	    // InternalXbase.g:
             	    {
             	    if ( input.LA(1)=='$'||(input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -1909,31 +2084,31 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalXbase.g:6357:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* ( '\"' )? | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* ( '\\'' )? ) )
+            // InternalXbase.g:6357:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* ( '\"' )? | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* ( '\\'' )? )
             {
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
-            int alt13=2;
-            int LA13_0 = input.LA(1);
+            // InternalXbase.g:6357:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* ( '\"' )? | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* ( '\\'' )? )
+            int alt15=2;
+            int LA15_0 = input.LA(1);
 
-            if ( (LA13_0=='\"') ) {
-                alt13=1;
+            if ( (LA15_0=='\"') ) {
+                alt15=1;
             }
-            else if ( (LA13_0=='\'') ) {
-                alt13=2;
+            else if ( (LA15_0=='\'') ) {
+                alt15=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 13, 0, input);
+                    new NoViableAltException("", 15, 0, input);
 
                 throw nvae;
             }
-            switch (alt13) {
+            switch (alt15) {
                 case 1 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalXbase.g:6357:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* ( '\"' )?
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalXbase.g:6357:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop11:
                     do {
                         int alt11=3;
@@ -1949,23 +2124,15 @@ public class InternalXbaseLexer extends Lexer {
 
                         switch (alt11) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalXbase.g:6357:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalXbase.g:6357:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -1985,47 +2152,56 @@ public class InternalXbaseLexer extends Lexer {
                         }
                     } while (true);
 
-                    match('\"'); 
+                    // InternalXbase.g:6357:44: ( '\"' )?
+                    int alt12=2;
+                    int LA12_0 = input.LA(1);
+
+                    if ( (LA12_0=='\"') ) {
+                        alt12=1;
+                    }
+                    switch (alt12) {
+                        case 1 :
+                            // InternalXbase.g:6357:44: '\"'
+                            {
+                            match('\"'); 
+
+                            }
+                            break;
+
+                    }
+
 
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalXbase.g:6357:49: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* ( '\\'' )?
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
-                    loop12:
+                    // InternalXbase.g:6357:54: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    loop13:
                     do {
-                        int alt12=3;
-                        int LA12_0 = input.LA(1);
+                        int alt13=3;
+                        int LA13_0 = input.LA(1);
 
-                        if ( (LA12_0=='\\') ) {
-                            alt12=1;
+                        if ( (LA13_0=='\\') ) {
+                            alt13=1;
                         }
-                        else if ( ((LA12_0>='\u0000' && LA12_0<='&')||(LA12_0>='(' && LA12_0<='[')||(LA12_0>=']' && LA12_0<='\uFFFF')) ) {
-                            alt12=2;
+                        else if ( ((LA13_0>='\u0000' && LA13_0<='&')||(LA13_0>='(' && LA13_0<='[')||(LA13_0>=']' && LA13_0<='\uFFFF')) ) {
+                            alt13=2;
                         }
 
 
-                        switch (alt12) {
+                        switch (alt13) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalXbase.g:6357:55: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4971:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalXbase.g:6357:62: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -2041,11 +2217,28 @@ public class InternalXbaseLexer extends Lexer {
                     	    break;
 
                     	default :
-                    	    break loop12;
+                    	    break loop13;
                         }
                     } while (true);
 
-                    match('\''); 
+                    // InternalXbase.g:6357:79: ( '\\'' )?
+                    int alt14=2;
+                    int LA14_0 = input.LA(1);
+
+                    if ( (LA14_0=='\'') ) {
+                        alt14=1;
+                    }
+                    switch (alt14) {
+                        case 1 :
+                            // InternalXbase.g:6357:79: '\\''
+                            {
+                            match('\''); 
+
+                            }
+                            break;
+
+                    }
+
 
                     }
                     break;
@@ -2068,37 +2261,37 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4973:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4973:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalXbase.g:6359:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalXbase.g:6359:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4973:24: ( options {greedy=false; } : . )*
-            loop14:
+            // InternalXbase.g:6359:24: ( options {greedy=false; } : . )*
+            loop16:
             do {
-                int alt14=2;
-                int LA14_0 = input.LA(1);
+                int alt16=2;
+                int LA16_0 = input.LA(1);
 
-                if ( (LA14_0=='*') ) {
-                    int LA14_1 = input.LA(2);
+                if ( (LA16_0=='*') ) {
+                    int LA16_1 = input.LA(2);
 
-                    if ( (LA14_1=='/') ) {
-                        alt14=2;
+                    if ( (LA16_1=='/') ) {
+                        alt16=2;
                     }
-                    else if ( ((LA14_1>='\u0000' && LA14_1<='.')||(LA14_1>='0' && LA14_1<='\uFFFF')) ) {
-                        alt14=1;
+                    else if ( ((LA16_1>='\u0000' && LA16_1<='.')||(LA16_1>='0' && LA16_1<='\uFFFF')) ) {
+                        alt16=1;
                     }
 
 
                 }
-                else if ( ((LA14_0>='\u0000' && LA14_0<=')')||(LA14_0>='+' && LA14_0<='\uFFFF')) ) {
-                    alt14=1;
+                else if ( ((LA16_0>='\u0000' && LA16_0<=')')||(LA16_0>='+' && LA16_0<='\uFFFF')) ) {
+                    alt16=1;
                 }
 
 
-                switch (alt14) {
+                switch (alt16) {
             	case 1 :
-            	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4973:52: .
+            	    // InternalXbase.g:6359:52: .
             	    {
             	    matchAny(); 
 
@@ -2106,7 +2299,7 @@ public class InternalXbaseLexer extends Lexer {
             	    break;
 
             	default :
-            	    break loop14;
+            	    break loop16;
                 }
             } while (true);
 
@@ -2128,25 +2321,25 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4975:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4975:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalXbase.g:6361:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalXbase.g:6361:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4975:24: (~ ( ( '\\n' | '\\r' ) ) )*
-            loop15:
+            // InternalXbase.g:6361:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            loop17:
             do {
-                int alt15=2;
-                int LA15_0 = input.LA(1);
+                int alt17=2;
+                int LA17_0 = input.LA(1);
 
-                if ( ((LA15_0>='\u0000' && LA15_0<='\t')||(LA15_0>='\u000B' && LA15_0<='\f')||(LA15_0>='\u000E' && LA15_0<='\uFFFF')) ) {
-                    alt15=1;
+                if ( ((LA17_0>='\u0000' && LA17_0<='\t')||(LA17_0>='\u000B' && LA17_0<='\f')||(LA17_0>='\u000E' && LA17_0<='\uFFFF')) ) {
+                    alt17=1;
                 }
 
 
-                switch (alt15) {
+                switch (alt17) {
             	case 1 :
-            	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4975:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalXbase.g:6361:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -2162,31 +2355,31 @@ public class InternalXbaseLexer extends Lexer {
             	    break;
 
             	default :
-            	    break loop15;
+            	    break loop17;
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4975:40: ( ( '\\r' )? '\\n' )?
-            int alt17=2;
-            int LA17_0 = input.LA(1);
+            // InternalXbase.g:6361:40: ( ( '\\r' )? '\\n' )?
+            int alt19=2;
+            int LA19_0 = input.LA(1);
 
-            if ( (LA17_0=='\n'||LA17_0=='\r') ) {
-                alt17=1;
+            if ( (LA19_0=='\n'||LA19_0=='\r') ) {
+                alt19=1;
             }
-            switch (alt17) {
+            switch (alt19) {
                 case 1 :
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4975:41: ( '\\r' )? '\\n'
+                    // InternalXbase.g:6361:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4975:41: ( '\\r' )?
-                    int alt16=2;
-                    int LA16_0 = input.LA(1);
+                    // InternalXbase.g:6361:41: ( '\\r' )?
+                    int alt18=2;
+                    int LA18_0 = input.LA(1);
 
-                    if ( (LA16_0=='\r') ) {
-                        alt16=1;
+                    if ( (LA18_0=='\r') ) {
+                        alt18=1;
                     }
-                    switch (alt16) {
+                    switch (alt18) {
                         case 1 :
-                            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4975:41: '\\r'
+                            // InternalXbase.g:6361:41: '\\r'
                             {
                             match('\r'); 
 
@@ -2218,24 +2411,24 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4977:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4977:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalXbase.g:6363:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalXbase.g:6363:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4977:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
-            int cnt18=0;
-            loop18:
+            // InternalXbase.g:6363:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            int cnt20=0;
+            loop20:
             do {
-                int alt18=2;
-                int LA18_0 = input.LA(1);
+                int alt20=2;
+                int LA20_0 = input.LA(1);
 
-                if ( ((LA18_0>='\t' && LA18_0<='\n')||LA18_0=='\r'||LA18_0==' ') ) {
-                    alt18=1;
+                if ( ((LA20_0>='\t' && LA20_0<='\n')||LA20_0=='\r'||LA20_0==' ') ) {
+                    alt20=1;
                 }
 
 
-                switch (alt18) {
+                switch (alt20) {
             	case 1 :
-            	    // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:
+            	    // InternalXbase.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -2251,12 +2444,12 @@ public class InternalXbaseLexer extends Lexer {
             	    break;
 
             	default :
-            	    if ( cnt18 >= 1 ) break loop18;
+            	    if ( cnt20 >= 1 ) break loop20;
                         EarlyExitException eee =
-                            new EarlyExitException(18, input);
+                            new EarlyExitException(20, input);
                         throw eee;
                 }
-                cnt18++;
+                cnt20++;
             } while (true);
 
 
@@ -2275,8 +2468,8 @@ public class InternalXbaseLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4979:16: ( . )
-            // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:4979:18: .
+            // InternalXbase.g:6365:16: ( . )
+            // InternalXbase.g:6365:18: .
             {
             matchAny(); 
 
@@ -2291,530 +2484,586 @@ public class InternalXbaseLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:8: ( T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | T__25 | T__26 | T__27 | T__28 | T__29 | T__30 | T__31 | T__32 | T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | T__45 | T__46 | T__47 | T__48 | T__49 | T__50 | T__51 | T__52 | T__53 | T__54 | T__55 | T__56 | T__57 | T__58 | T__59 | T__60 | T__61 | T__62 | T__63 | T__64 | T__65 | T__66 | T__67 | T__68 | T__69 | T__70 | T__71 | T__72 | T__73 | T__74 | T__75 | T__76 | T__77 | T__78 | RULE_HEX | RULE_INT | RULE_DECIMAL | RULE_ID | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
-        int alt19=75;
-        alt19 = dfa19.predict(input);
-        switch (alt19) {
+        // InternalXbase.g:1:8: ( T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | T__25 | T__26 | T__27 | T__28 | T__29 | T__30 | T__31 | T__32 | T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | T__45 | T__46 | T__47 | T__48 | T__49 | T__50 | T__51 | T__52 | T__53 | T__54 | T__55 | T__56 | T__57 | T__58 | T__59 | T__60 | T__61 | T__62 | T__63 | T__64 | T__65 | T__66 | T__67 | T__68 | T__69 | T__70 | T__71 | T__72 | T__73 | T__74 | T__75 | T__76 | T__77 | T__78 | T__79 | T__80 | T__81 | T__82 | T__83 | T__84 | T__85 | T__86 | RULE_HEX | RULE_INT | RULE_DECIMAL | RULE_ID | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        int alt21=83;
+        alt21 = dfa21.predict(input);
+        switch (alt21) {
             case 1 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:10: T__13
+                // InternalXbase.g:1:10: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:16: T__14
+                // InternalXbase.g:1:16: T__14
                 {
                 mT__14(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:22: T__15
+                // InternalXbase.g:1:22: T__15
                 {
                 mT__15(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:28: T__16
+                // InternalXbase.g:1:28: T__16
                 {
                 mT__16(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:34: T__17
+                // InternalXbase.g:1:34: T__17
                 {
                 mT__17(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:40: T__18
+                // InternalXbase.g:1:40: T__18
                 {
                 mT__18(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:46: T__19
+                // InternalXbase.g:1:46: T__19
                 {
                 mT__19(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:52: T__20
+                // InternalXbase.g:1:52: T__20
                 {
                 mT__20(); 
 
                 }
                 break;
             case 9 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:58: T__21
+                // InternalXbase.g:1:58: T__21
                 {
                 mT__21(); 
 
                 }
                 break;
             case 10 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:64: T__22
+                // InternalXbase.g:1:64: T__22
                 {
                 mT__22(); 
 
                 }
                 break;
             case 11 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:70: T__23
+                // InternalXbase.g:1:70: T__23
                 {
                 mT__23(); 
 
                 }
                 break;
             case 12 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:76: T__24
+                // InternalXbase.g:1:76: T__24
                 {
                 mT__24(); 
 
                 }
                 break;
             case 13 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:82: T__25
+                // InternalXbase.g:1:82: T__25
                 {
                 mT__25(); 
 
                 }
                 break;
             case 14 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:88: T__26
+                // InternalXbase.g:1:88: T__26
                 {
                 mT__26(); 
 
                 }
                 break;
             case 15 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:94: T__27
+                // InternalXbase.g:1:94: T__27
                 {
                 mT__27(); 
 
                 }
                 break;
             case 16 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:100: T__28
+                // InternalXbase.g:1:100: T__28
                 {
                 mT__28(); 
 
                 }
                 break;
             case 17 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:106: T__29
+                // InternalXbase.g:1:106: T__29
                 {
                 mT__29(); 
 
                 }
                 break;
             case 18 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:112: T__30
+                // InternalXbase.g:1:112: T__30
                 {
                 mT__30(); 
 
                 }
                 break;
             case 19 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:118: T__31
+                // InternalXbase.g:1:118: T__31
                 {
                 mT__31(); 
 
                 }
                 break;
             case 20 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:124: T__32
+                // InternalXbase.g:1:124: T__32
                 {
                 mT__32(); 
 
                 }
                 break;
             case 21 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:130: T__33
+                // InternalXbase.g:1:130: T__33
                 {
                 mT__33(); 
 
                 }
                 break;
             case 22 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:136: T__34
+                // InternalXbase.g:1:136: T__34
                 {
                 mT__34(); 
 
                 }
                 break;
             case 23 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:142: T__35
+                // InternalXbase.g:1:142: T__35
                 {
                 mT__35(); 
 
                 }
                 break;
             case 24 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:148: T__36
+                // InternalXbase.g:1:148: T__36
                 {
                 mT__36(); 
 
                 }
                 break;
             case 25 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:154: T__37
+                // InternalXbase.g:1:154: T__37
                 {
                 mT__37(); 
 
                 }
                 break;
             case 26 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:160: T__38
+                // InternalXbase.g:1:160: T__38
                 {
                 mT__38(); 
 
                 }
                 break;
             case 27 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:166: T__39
+                // InternalXbase.g:1:166: T__39
                 {
                 mT__39(); 
 
                 }
                 break;
             case 28 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:172: T__40
+                // InternalXbase.g:1:172: T__40
                 {
                 mT__40(); 
 
                 }
                 break;
             case 29 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:178: T__41
+                // InternalXbase.g:1:178: T__41
                 {
                 mT__41(); 
 
                 }
                 break;
             case 30 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:184: T__42
+                // InternalXbase.g:1:184: T__42
                 {
                 mT__42(); 
 
                 }
                 break;
             case 31 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:190: T__43
+                // InternalXbase.g:1:190: T__43
                 {
                 mT__43(); 
 
                 }
                 break;
             case 32 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:196: T__44
+                // InternalXbase.g:1:196: T__44
                 {
                 mT__44(); 
 
                 }
                 break;
             case 33 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:202: T__45
+                // InternalXbase.g:1:202: T__45
                 {
                 mT__45(); 
 
                 }
                 break;
             case 34 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:208: T__46
+                // InternalXbase.g:1:208: T__46
                 {
                 mT__46(); 
 
                 }
                 break;
             case 35 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:214: T__47
+                // InternalXbase.g:1:214: T__47
                 {
                 mT__47(); 
 
                 }
                 break;
             case 36 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:220: T__48
+                // InternalXbase.g:1:220: T__48
                 {
                 mT__48(); 
 
                 }
                 break;
             case 37 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:226: T__49
+                // InternalXbase.g:1:226: T__49
                 {
                 mT__49(); 
 
                 }
                 break;
             case 38 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:232: T__50
+                // InternalXbase.g:1:232: T__50
                 {
                 mT__50(); 
 
                 }
                 break;
             case 39 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:238: T__51
+                // InternalXbase.g:1:238: T__51
                 {
                 mT__51(); 
 
                 }
                 break;
             case 40 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:244: T__52
+                // InternalXbase.g:1:244: T__52
                 {
                 mT__52(); 
 
                 }
                 break;
             case 41 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:250: T__53
+                // InternalXbase.g:1:250: T__53
                 {
                 mT__53(); 
 
                 }
                 break;
             case 42 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:256: T__54
+                // InternalXbase.g:1:256: T__54
                 {
                 mT__54(); 
 
                 }
                 break;
             case 43 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:262: T__55
+                // InternalXbase.g:1:262: T__55
                 {
                 mT__55(); 
 
                 }
                 break;
             case 44 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:268: T__56
+                // InternalXbase.g:1:268: T__56
                 {
                 mT__56(); 
 
                 }
                 break;
             case 45 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:274: T__57
+                // InternalXbase.g:1:274: T__57
                 {
                 mT__57(); 
 
                 }
                 break;
             case 46 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:280: T__58
+                // InternalXbase.g:1:280: T__58
                 {
                 mT__58(); 
 
                 }
                 break;
             case 47 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:286: T__59
+                // InternalXbase.g:1:286: T__59
                 {
                 mT__59(); 
 
                 }
                 break;
             case 48 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:292: T__60
+                // InternalXbase.g:1:292: T__60
                 {
                 mT__60(); 
 
                 }
                 break;
             case 49 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:298: T__61
+                // InternalXbase.g:1:298: T__61
                 {
                 mT__61(); 
 
                 }
                 break;
             case 50 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:304: T__62
+                // InternalXbase.g:1:304: T__62
                 {
                 mT__62(); 
 
                 }
                 break;
             case 51 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:310: T__63
+                // InternalXbase.g:1:310: T__63
                 {
                 mT__63(); 
 
                 }
                 break;
             case 52 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:316: T__64
+                // InternalXbase.g:1:316: T__64
                 {
                 mT__64(); 
 
                 }
                 break;
             case 53 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:322: T__65
+                // InternalXbase.g:1:322: T__65
                 {
                 mT__65(); 
 
                 }
                 break;
             case 54 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:328: T__66
+                // InternalXbase.g:1:328: T__66
                 {
                 mT__66(); 
 
                 }
                 break;
             case 55 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:334: T__67
+                // InternalXbase.g:1:334: T__67
                 {
                 mT__67(); 
 
                 }
                 break;
             case 56 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:340: T__68
+                // InternalXbase.g:1:340: T__68
                 {
                 mT__68(); 
 
                 }
                 break;
             case 57 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:346: T__69
+                // InternalXbase.g:1:346: T__69
                 {
                 mT__69(); 
 
                 }
                 break;
             case 58 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:352: T__70
+                // InternalXbase.g:1:352: T__70
                 {
                 mT__70(); 
 
                 }
                 break;
             case 59 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:358: T__71
+                // InternalXbase.g:1:358: T__71
                 {
                 mT__71(); 
 
                 }
                 break;
             case 60 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:364: T__72
+                // InternalXbase.g:1:364: T__72
                 {
                 mT__72(); 
 
                 }
                 break;
             case 61 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:370: T__73
+                // InternalXbase.g:1:370: T__73
                 {
                 mT__73(); 
 
                 }
                 break;
             case 62 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:376: T__74
+                // InternalXbase.g:1:376: T__74
                 {
                 mT__74(); 
 
                 }
                 break;
             case 63 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:382: T__75
+                // InternalXbase.g:1:382: T__75
                 {
                 mT__75(); 
 
                 }
                 break;
             case 64 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:388: T__76
+                // InternalXbase.g:1:388: T__76
                 {
                 mT__76(); 
 
                 }
                 break;
             case 65 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:394: T__77
+                // InternalXbase.g:1:394: T__77
                 {
                 mT__77(); 
 
                 }
                 break;
             case 66 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:400: T__78
+                // InternalXbase.g:1:400: T__78
                 {
                 mT__78(); 
 
                 }
                 break;
             case 67 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:406: RULE_HEX
+                // InternalXbase.g:1:406: T__79
+                {
+                mT__79(); 
+
+                }
+                break;
+            case 68 :
+                // InternalXbase.g:1:412: T__80
+                {
+                mT__80(); 
+
+                }
+                break;
+            case 69 :
+                // InternalXbase.g:1:418: T__81
+                {
+                mT__81(); 
+
+                }
+                break;
+            case 70 :
+                // InternalXbase.g:1:424: T__82
+                {
+                mT__82(); 
+
+                }
+                break;
+            case 71 :
+                // InternalXbase.g:1:430: T__83
+                {
+                mT__83(); 
+
+                }
+                break;
+            case 72 :
+                // InternalXbase.g:1:436: T__84
+                {
+                mT__84(); 
+
+                }
+                break;
+            case 73 :
+                // InternalXbase.g:1:442: T__85
+                {
+                mT__85(); 
+
+                }
+                break;
+            case 74 :
+                // InternalXbase.g:1:448: T__86
+                {
+                mT__86(); 
+
+                }
+                break;
+            case 75 :
+                // InternalXbase.g:1:454: RULE_HEX
                 {
                 mRULE_HEX(); 
 
                 }
                 break;
-            case 68 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:415: RULE_INT
+            case 76 :
+                // InternalXbase.g:1:463: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
-            case 69 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:424: RULE_DECIMAL
+            case 77 :
+                // InternalXbase.g:1:472: RULE_DECIMAL
                 {
                 mRULE_DECIMAL(); 
 
                 }
                 break;
-            case 70 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:437: RULE_ID
+            case 78 :
+                // InternalXbase.g:1:485: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
-            case 71 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:445: RULE_STRING
+            case 79 :
+                // InternalXbase.g:1:493: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
-            case 72 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:457: RULE_ML_COMMENT
+            case 80 :
+                // InternalXbase.g:1:505: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
-            case 73 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:473: RULE_SL_COMMENT
+            case 81 :
+                // InternalXbase.g:1:521: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
-            case 74 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:489: RULE_WS
+            case 82 :
+                // InternalXbase.g:1:537: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
-            case 75 :
-                // ../org.eclipse.xtext.xbase/src-gen/org/eclipse/xtext/xbase/parser/antlr/internal/InternalXbase.g:1:497: RULE_ANY_OTHER
+            case 83 :
+                // InternalXbase.g:1:545: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -2826,473 +3075,392 @@ public class InternalXbaseLexer extends Lexer {
     }
 
 
-    protected DFA19 dfa19 = new DFA19(this);
-    static final String DFA19_eotS =
-        "\1\uffff\1\55\1\57\1\61\1\63\1\65\1\71\1\73\1\76\1\100\1\102\1\105"+
-        "\1\110\1\113\1\uffff\1\71\6\uffff\2\71\1\132\1\uffff\1\71\1\uffff"+
-        "\7\71\2\155\1\52\1\uffff\2\52\15\uffff\1\71\1\162\1\71\3\uffff\1"+
-        "\165\20\uffff\1\166\6\uffff\5\71\3\uffff\1\71\1\175\1\uffff\14\71"+
-        "\1\uffff\1\155\4\uffff\1\71\1\uffff\1\71\3\uffff\6\71\1\uffff\2"+
-        "\71\1\u0097\3\71\1\u009b\1\u009c\1\u009d\2\71\1\u00a0\5\71\1\u00a6"+
-        "\5\71\1\u00ac\1\71\1\uffff\3\71\3\uffff\1\u00b1\1\u00b2\1\uffff"+
-        "\5\71\1\uffff\2\71\1\u00bb\2\71\1\uffff\1\u00be\1\u00bf\1\71\1\u00c1"+
-        "\2\uffff\1\71\1\u00c3\2\71\1\u00c6\2\71\1\u00c9\1\uffff\1\u00ca"+
-        "\1\71\2\uffff\1\71\1\uffff\1\u00cd\1\uffff\1\u00ce\1\71\1\uffff"+
-        "\1\u00d0\1\71\2\uffff\1\u00d2\1\u00d3\2\uffff\1\71\1\uffff\1\71"+
-        "\2\uffff\1\71\1\u00d7\1\u00d8\2\uffff";
-    static final String DFA19_eofS =
-        "\u00d9\uffff";
-    static final String DFA19_minS =
-        "\1\0\2\75\1\174\1\46\1\75\1\146\2\75\1\76\2\56\2\52\1\uffff\1\163"+
-        "\6\uffff\1\154\1\164\1\72\1\uffff\1\145\1\uffff\2\141\1\150\1\141"+
-        "\1\145\1\150\1\145\2\60\1\44\1\uffff\2\0\15\uffff\1\163\1\44\1\160"+
-        "\3\uffff\1\76\20\uffff\1\44\6\uffff\1\163\1\164\1\151\1\160\1\141"+
-        "\3\uffff\1\146\1\44\1\uffff\1\163\1\162\1\154\1\156\1\151\1\154"+
-        "\1\167\1\154\1\165\1\160\1\162\1\164\1\uffff\1\60\4\uffff\1\164"+
-        "\1\uffff\1\157\3\uffff\2\145\1\164\1\145\1\164\1\141\1\uffff\1\145"+
-        "\1\143\1\44\1\163\1\141\1\154\3\44\1\154\1\145\1\44\1\145\1\157"+
-        "\1\165\1\141\1\162\1\44\1\156\1\143\1\162\1\151\1\165\1\44\1\150"+
-        "\1\uffff\1\145\1\154\1\145\3\uffff\2\44\1\uffff\1\157\1\167\1\162"+
-        "\1\156\1\164\1\uffff\1\144\1\150\1\44\1\143\1\154\1\uffff\2\44\1"+
-        "\154\1\44\2\uffff\1\146\1\44\1\156\1\143\1\44\1\163\1\151\1\44\1"+
-        "\uffff\1\44\1\164\2\uffff\1\171\1\uffff\1\44\1\uffff\1\44\1\145"+
-        "\1\uffff\1\44\1\157\2\uffff\2\44\2\uffff\1\157\1\uffff\1\156\2\uffff"+
-        "\1\146\2\44\2\uffff";
-    static final String DFA19_maxS =
-        "\1\uffff\1\76\1\75\1\174\1\46\1\75\1\156\1\75\2\76\1\56\1\72\1\56"+
-        "\1\57\1\uffff\1\163\6\uffff\1\170\1\167\1\72\1\uffff\1\157\1\uffff"+
-        "\1\141\1\157\1\150\1\141\1\165\1\171\1\145\1\170\1\154\1\172\1\uffff"+
-        "\2\uffff\15\uffff\1\163\1\172\1\160\3\uffff\1\76\20\uffff\1\172"+
-        "\6\uffff\1\163\1\164\1\151\1\160\1\141\3\uffff\1\146\1\172\1\uffff"+
-        "\1\164\1\162\1\154\1\156\1\151\1\162\1\167\1\154\1\171\1\160\1\162"+
-        "\1\164\1\uffff\1\154\4\uffff\1\164\1\uffff\1\157\3\uffff\2\145\1"+
-        "\164\1\145\1\164\1\141\1\uffff\1\145\1\143\1\172\1\163\1\141\1\154"+
-        "\3\172\1\154\1\145\1\172\1\145\1\157\1\165\1\141\1\162\1\172\1\156"+
-        "\1\143\1\162\1\151\1\165\1\172\1\150\1\uffff\1\145\1\154\1\145\3"+
-        "\uffff\2\172\1\uffff\1\157\1\167\1\162\1\156\1\164\1\uffff\1\163"+
-        "\1\150\1\172\1\143\1\154\1\uffff\2\172\1\154\1\172\2\uffff\1\146"+
-        "\1\172\1\156\1\143\1\172\1\163\1\151\1\172\1\uffff\1\172\1\164\2"+
-        "\uffff\1\171\1\uffff\1\172\1\uffff\1\172\1\145\1\uffff\1\172\1\157"+
-        "\2\uffff\2\172\2\uffff\1\157\1\uffff\1\156\2\uffff\1\146\2\172\2"+
-        "\uffff";
-    static final String DFA19_acceptS =
-        "\16\uffff\1\27\1\uffff\1\35\1\36\1\37\1\40\1\42\1\43\3\uffff\1\50"+
-        "\1\uffff\1\52\12\uffff\1\106\2\uffff\1\112\1\113\1\5\1\16\1\1\1"+
-        "\2\1\22\1\3\1\41\1\4\1\77\1\6\1\30\3\uffff\1\106\1\10\1\12\1\uffff"+
-        "\1\17\1\13\1\14\1\23\1\15\1\32\1\20\1\33\1\75\1\25\1\34\1\24\1\110"+
-        "\1\111\1\26\1\27\1\uffff\1\35\1\36\1\37\1\40\1\42\1\43\5\uffff\1"+
-        "\62\1\47\1\50\2\uffff\1\52\14\uffff\1\103\1\uffff\1\104\1\105\1"+
-        "\107\1\112\1\uffff\1\44\1\uffff\1\21\1\11\1\31\6\uffff\1\56\31\uffff"+
-        "\1\54\3\uffff\1\57\1\60\1\63\2\uffff\1\72\5\uffff\1\45\5\uffff\1"+
-        "\53\4\uffff\1\66\1\65\10\uffff\1\61\2\uffff\1\74\1\64\1\uffff\1"+
-        "\55\1\uffff\1\70\2\uffff\1\100\2\uffff\1\46\1\101\2\uffff\1\67\1"+
-        "\71\1\uffff\1\76\1\uffff\1\51\1\73\3\uffff\1\102\1\7";
-    static final String DFA19_specialS =
-        "\1\2\46\uffff\1\1\1\0\u00b0\uffff}>";
-    static final String[] DFA19_transitionS = {
-            "\11\52\2\51\2\52\1\51\22\52\1\51\1\5\1\47\1\52\1\46\1\16\1\4"+
-            "\1\50\1\21\1\22\1\14\1\2\1\20\1\11\1\12\1\15\1\43\11\44\1\30"+
-            "\1\25\1\10\1\1\1\7\1\13\1\52\32\46\1\23\1\52\1\24\1\45\1\46"+
-            "\1\52\1\17\1\46\1\34\1\32\1\26\1\35\2\46\1\6\4\46\1\40\3\46"+
-            "\1\42\1\27\1\41\1\46\1\37\1\36\3\46\1\31\1\3\1\33\uff82\52",
-            "\1\53\1\54",
-            "\1\56",
-            "\1\60",
-            "\1\62",
-            "\1\64",
-            "\1\67\6\uffff\1\70\1\66",
-            "\1\72",
-            "\1\74\1\75",
+    protected DFA21 dfa21 = new DFA21(this);
+    static final String DFA21_eotS =
+        "\1\uffff\1\56\1\61\1\65\1\70\1\74\1\76\1\100\1\102\1\104\1\106\1\110\1\114\1\116\1\121\1\114\1\124\11\uffff\12\114\2\164\1\53\5\uffff\1\171\32\uffff\1\173\1\uffff\1\114\1\175\1\114\1\uffff\1\u0080\4\uffff\1\u0081\13\uffff\7\114\1\u0089\14\114\1\uffff\1\164\10\uffff\1\114\1\uffff\1\114\3\uffff\7\114\1\uffff\2\114\1\u00a4\3\114\1\u00a8\1\u00a9\1\u00aa\2\114\1\u00ad\5\114\1\u00b3\6\114\1\u00ba\1\114\1\uffff\3\114\3\uffff\1\u00bf\1\u00c0\1\uffff\5\114\1\uffff\3\114\1\u00ca\2\114\1\uffff\1\u00cd\1\u00ce\1\114\1\u00d0\2\uffff\1\114\1\u00d2\2\114\1\u00d5\2\114\1\u00d8\1\u00d9\1\uffff\2\114\2\uffff\1\114\1\uffff\1\u00dd\1\uffff\1\u00de\1\114\1\uffff\1\u00e0\1\114\2\uffff\1\114\1\u00e3\1\u00e4\2\uffff\1\114\1\uffff\2\114\2\uffff\1\114\1\u00e9\1\114\1\u00eb\1\uffff\1\114\1\uffff\1\114\1\u00ee\1\uffff";
+    static final String DFA21_eofS =
+        "\u00ef\uffff";
+    static final String DFA21_minS =
+        "\1\0\1\75\1\53\1\55\2\52\1\75\1\76\1\75\1\174\1\46\1\75\1\146\2\56\1\163\1\72\11\uffff\1\154\1\164\1\145\2\141\1\150\1\141\1\145\1\150\1\145\2\60\1\44\5\uffff\1\75\32\uffff\1\75\1\uffff\1\163\1\44\1\160\1\uffff\1\74\4\uffff\1\44\13\uffff\1\163\1\164\1\151\1\141\1\160\1\156\1\146\1\44\1\163\1\162\1\154\1\156\1\151\1\154\1\167\1\154\1\165\1\160\1\162\1\164\1\uffff\1\60\10\uffff\1\164\1\uffff\1\157\3\uffff\2\145\2\164\1\145\1\143\1\141\1\uffff\1\145\1\143\1\44\1\163\1\141\1\154\3\44\1\154\1\145\1\44\1\145\1\157\1\165\1\141\1\162\1\44\1\156\1\143\1\151\1\162\1\150\1\165\1\44\1\150\1\uffff\1\145\1\154\1\145\3\uffff\2\44\1\uffff\1\157\1\167\1\162\1\156\1\164\1\uffff\1\144\1\150\1\143\1\44\1\162\1\154\1\uffff\2\44\1\154\1\44\2\uffff\1\146\1\44\1\156\1\143\1\44\1\163\1\151\2\44\1\uffff\1\157\1\164\2\uffff\1\171\1\uffff\1\44\1\uffff\1\44\1\145\1\uffff\1\44\1\157\2\uffff\1\156\2\44\2\uffff\1\157\1\uffff\1\156\1\151\2\uffff\1\146\1\44\1\172\1\44\1\uffff\1\145\1\uffff\1\144\1\44\1\uffff";
+    static final String DFA21_maxS =
+        "\1\uffff\1\76\1\75\1\76\3\75\1\76\1\75\1\174\1\46\1\75\1\156\1\56\1\72\1\163\1\72\11\uffff\1\170\1\171\1\157\1\141\1\157\1\150\1\141\1\165\1\171\1\145\1\170\1\154\1\172\5\uffff\1\75\32\uffff\1\75\1\uffff\1\163\1\172\1\160\1\uffff\1\74\4\uffff\1\172\13\uffff\1\163\1\164\1\151\1\141\1\160\1\156\1\146\1\172\1\164\1\162\1\154\1\156\1\151\1\162\1\167\1\154\1\171\1\160\1\162\1\164\1\uffff\1\154\10\uffff\1\164\1\uffff\1\157\3\uffff\2\145\2\164\1\145\1\143\1\141\1\uffff\1\145\1\143\1\172\1\163\1\141\1\154\3\172\1\154\1\145\1\172\1\145\1\157\1\165\1\141\1\162\1\172\1\156\1\143\1\151\1\162\1\150\1\165\1\172\1\150\1\uffff\1\145\1\154\1\145\3\uffff\2\172\1\uffff\1\157\1\167\1\162\1\156\1\164\1\uffff\1\163\1\150\1\143\1\172\1\162\1\154\1\uffff\2\172\1\154\1\172\2\uffff\1\146\1\172\1\156\1\143\1\172\1\163\1\151\2\172\1\uffff\1\157\1\164\2\uffff\1\171\1\uffff\1\172\1\uffff\1\172\1\145\1\uffff\1\172\1\157\2\uffff\1\156\2\172\2\uffff\1\157\1\uffff\1\156\1\151\2\uffff\1\146\3\172\1\uffff\1\145\1\uffff\1\144\1\172\1\uffff";
+    static final String DFA21_acceptS =
+        "\21\uffff\1\44\1\45\1\46\1\47\1\50\1\51\1\52\1\53\1\55\15\uffff\1\116\2\117\1\122\1\123\1\uffff\1\24\1\1\1\2\1\37\1\27\1\3\1\21\1\40\1\30\1\4\1\32\1\31\1\5\1\120\1\121\1\33\1\6\1\34\1\25\1\7\1\11\1\10\1\12\1\54\1\13\1\112\1\uffff\1\35\3\uffff\1\116\1\uffff\1\41\1\26\1\43\1\111\1\uffff\1\42\1\61\1\44\1\45\1\46\1\47\1\50\1\51\1\52\1\53\1\55\24\uffff\1\113\1\uffff\1\114\1\115\1\117\1\122\1\16\1\14\1\17\1\15\1\uffff\1\56\1\uffff\1\22\1\23\1\36\7\uffff\1\66\32\uffff\1\64\3\uffff\1\67\1\70\1\76\2\uffff\1\105\5\uffff\1\57\6\uffff\1\63\4\uffff\1\101\1\100\11\uffff\1\75\2\uffff\1\110\1\77\1\uffff\1\65\1\uffff\1\103\2\uffff\1\73\2\uffff\1\60\1\72\3\uffff\1\102\1\104\1\uffff\1\71\2\uffff\1\62\1\106\4\uffff\1\74\1\uffff\1\20\2\uffff\1\107";
+    static final String DFA21_specialS =
+        "\1\0\u00ee\uffff}>";
+    static final String[] DFA21_transitionS = {
+            "\11\53\2\52\2\53\1\52\22\53\1\52\1\13\1\50\1\24\1\47\1\6\1\12\1\51\1\22\1\23\1\4\1\2\1\21\1\3\1\15\1\5\1\44\11\45\1\20\1\31\1\7\1\1\1\10\1\16\1\53\32\47\1\27\1\53\1\30\1\46\1\47\1\53\1\17\1\47\1\35\1\34\1\32\1\36\2\47\1\14\4\47\1\41\3\47\1\43\1\33\1\42\1\47\1\40\1\37\3\47\1\25\1\11\1\26\uff82\53",
+            "\1\54\1\55",
+            "\1\60\21\uffff\1\57",
+            "\1\64\17\uffff\1\62\1\63",
+            "\1\67\22\uffff\1\66",
+            "\1\72\4\uffff\1\73\15\uffff\1\71",
+            "\1\75",
             "\1\77",
             "\1\101",
-            "\1\104\13\uffff\1\103",
-            "\1\106\3\uffff\1\107",
-            "\1\111\4\uffff\1\112",
-            "",
+            "\1\103",
+            "\1\105",
+            "\1\107",
+            "\1\112\6\uffff\1\113\1\111",
             "\1\115",
+            "\1\120\13\uffff\1\117",
+            "\1\122",
+            "\1\123",
             "",
             "",
             "",
             "",
             "",
             "",
-            "\1\124\13\uffff\1\125",
-            "\1\130\1\127\1\uffff\1\126",
-            "\1\131",
             "",
-            "\1\134\11\uffff\1\135",
             "",
-            "\1\137",
-            "\1\141\7\uffff\1\142\5\uffff\1\140",
-            "\1\143",
-            "\1\144",
-            "\1\145\17\uffff\1\146",
-            "\1\151\11\uffff\1\147\6\uffff\1\150",
+            "",
+            "\1\136\13\uffff\1\137",
+            "\1\141\1\142\1\uffff\1\140\1\uffff\1\143",
+            "\1\144\11\uffff\1\145",
+            "\1\146",
+            "\1\150\7\uffff\1\151\5\uffff\1\147",
             "\1\152",
-            "\12\154\10\uffff\1\156\1\uffff\3\156\5\uffff\1\156\13\uffff"+
-            "\1\153\6\uffff\1\154\2\uffff\1\156\1\uffff\3\156\5\uffff\1\156"+
-            "\13\uffff\1\153",
-            "\12\154\10\uffff\1\156\1\uffff\3\156\5\uffff\1\156\22\uffff"+
-            "\1\154\2\uffff\1\156\1\uffff\3\156\5\uffff\1\156",
-            "\1\71\34\uffff\32\71\4\uffff\1\71\1\uffff\32\71",
-            "",
-            "\0\157",
-            "\0\157",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "\1\153",
+            "\1\154\17\uffff\1\155",
+            "\1\160\11\uffff\1\156\6\uffff\1\157",
             "\1\161",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\163",
-            "",
-            "",
-            "",
-            "\1\164",
+            "\12\163\10\uffff\1\165\1\uffff\3\165\5\uffff\1\165\13\uffff\1\162\6\uffff\1\163\2\uffff\1\165\1\uffff\3\165\5\uffff\1\165\13\uffff\1\162",
+            "\12\163\10\uffff\1\165\1\uffff\3\165\5\uffff\1\165\22\uffff\1\163\2\uffff\1\165\1\uffff\3\165\5\uffff\1\165",
+            "\1\114\34\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "",
             "",
             "",
             "",
             "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "\1\167",
             "\1\170",
-            "\1\171",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
             "\1\172",
-            "\1\173",
-            "",
-            "",
             "",
             "\1\174",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\176",
             "",
-            "\1\176\1\177",
-            "\1\u0080",
-            "\1\u0081",
+            "\1\177",
+            "",
+            "",
+            "",
+            "",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
             "\1\u0082",
             "\1\u0083",
-            "\1\u0085\5\uffff\1\u0084",
+            "\1\u0084",
+            "\1\u0085",
             "\1\u0086",
             "\1\u0087",
-            "\1\u0088\3\uffff\1\u0089",
-            "\1\u008a",
-            "\1\u008b",
+            "\1\u0088",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\u008a\1\u008b",
             "\1\u008c",
-            "",
-            "\12\154\10\uffff\1\156\1\uffff\3\156\5\uffff\1\156\22\uffff"+
-            "\1\154\2\uffff\1\156\1\uffff\3\156\5\uffff\1\156",
-            "",
-            "",
-            "",
-            "",
             "\1\u008d",
-            "",
             "\1\u008e",
-            "",
-            "",
-            "",
             "\1\u008f",
-            "\1\u0090",
-            "\1\u0091",
+            "\1\u0091\5\uffff\1\u0090",
             "\1\u0092",
             "\1\u0093",
-            "\1\u0094",
-            "",
-            "\1\u0095",
+            "\1\u0094\3\uffff\1\u0095",
             "\1\u0096",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\u0097",
             "\1\u0098",
+            "",
+            "\12\163\10\uffff\1\165\1\uffff\3\165\5\uffff\1\165\22\uffff\1\163\2\uffff\1\165\1\uffff\3\165\5\uffff\1\165",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
             "\1\u0099",
+            "",
             "\1\u009a",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "",
+            "",
+            "",
+            "\1\u009b",
+            "\1\u009c",
+            "\1\u009d",
             "\1\u009e",
             "\1\u009f",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\u00a0",
             "\1\u00a1",
+            "",
             "\1\u00a2",
             "\1\u00a3",
-            "\1\u00a4",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "\1\u00a5",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\u00a6",
             "\1\u00a7",
-            "\1\u00a8",
-            "\1\u00a9",
-            "\1\u00aa",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "\1\u00ab",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\u00ad",
-            "",
+            "\1\u00ac",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "\1\u00ae",
             "\1\u00af",
             "\1\u00b0",
-            "",
-            "",
-            "",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "",
-            "\1\u00b3",
+            "\1\u00b1",
+            "\1\u00b2",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "\1\u00b4",
             "\1\u00b5",
             "\1\u00b6",
             "\1\u00b7",
+            "\1\u00b8",
+            "\1\u00b9",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\u00bb",
             "",
-            "\1\u00b8\16\uffff\1\u00b9",
-            "\1\u00ba",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
             "\1\u00bc",
             "\1\u00bd",
-            "",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\u00c0",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\u00be",
             "",
             "",
+            "",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "",
+            "\1\u00c1",
             "\1\u00c2",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\u00c3",
             "\1\u00c4",
             "\1\u00c5",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\u00c7",
+            "",
+            "\1\u00c6\16\uffff\1\u00c7",
             "\1\u00c8",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\u00c9",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "\1\u00cb",
-            "",
-            "",
             "\1\u00cc",
             "",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "\1\u00cf",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "",
             "\1\u00d1",
-            "",
-            "",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "",
-            "",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\u00d3",
             "\1\u00d4",
-            "",
-            "\1\u00d5",
-            "",
-            "",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "\1\u00d6",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
-            "\1\71\13\uffff\12\71\7\uffff\32\71\4\uffff\1\71\1\uffff\32"+
-            "\71",
+            "\1\u00d7",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             "",
+            "\1\u00da",
+            "\1\u00db",
+            "",
+            "",
+            "\1\u00dc",
+            "",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\u00df",
+            "",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\u00e1",
+            "",
+            "",
+            "\1\u00e2",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "",
+            "",
+            "\1\u00e5",
+            "",
+            "\1\u00e6",
+            "\1\u00e7",
+            "",
+            "",
+            "\1\u00e8",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "\1\u00ea",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
+            "",
+            "\1\u00ec",
+            "",
+            "\1\u00ed",
+            "\1\114\13\uffff\12\114\7\uffff\32\114\4\uffff\1\114\1\uffff\32\114",
             ""
     };
 
-    static final short[] DFA19_eot = DFA.unpackEncodedString(DFA19_eotS);
-    static final short[] DFA19_eof = DFA.unpackEncodedString(DFA19_eofS);
-    static final char[] DFA19_min = DFA.unpackEncodedStringToUnsignedChars(DFA19_minS);
-    static final char[] DFA19_max = DFA.unpackEncodedStringToUnsignedChars(DFA19_maxS);
-    static final short[] DFA19_accept = DFA.unpackEncodedString(DFA19_acceptS);
-    static final short[] DFA19_special = DFA.unpackEncodedString(DFA19_specialS);
-    static final short[][] DFA19_transition;
+    static final short[] DFA21_eot = DFA.unpackEncodedString(DFA21_eotS);
+    static final short[] DFA21_eof = DFA.unpackEncodedString(DFA21_eofS);
+    static final char[] DFA21_min = DFA.unpackEncodedStringToUnsignedChars(DFA21_minS);
+    static final char[] DFA21_max = DFA.unpackEncodedStringToUnsignedChars(DFA21_maxS);
+    static final short[] DFA21_accept = DFA.unpackEncodedString(DFA21_acceptS);
+    static final short[] DFA21_special = DFA.unpackEncodedString(DFA21_specialS);
+    static final short[][] DFA21_transition;
 
     static {
-        int numStates = DFA19_transitionS.length;
-        DFA19_transition = new short[numStates][];
+        int numStates = DFA21_transitionS.length;
+        DFA21_transition = new short[numStates][];
         for (int i=0; i<numStates; i++) {
-            DFA19_transition[i] = DFA.unpackEncodedString(DFA19_transitionS[i]);
+            DFA21_transition[i] = DFA.unpackEncodedString(DFA21_transitionS[i]);
         }
     }
 
-    class DFA19 extends DFA {
+    class DFA21 extends DFA {
 
-        public DFA19(BaseRecognizer recognizer) {
+        public DFA21(BaseRecognizer recognizer) {
             this.recognizer = recognizer;
-            this.decisionNumber = 19;
-            this.eot = DFA19_eot;
-            this.eof = DFA19_eof;
-            this.min = DFA19_min;
-            this.max = DFA19_max;
-            this.accept = DFA19_accept;
-            this.special = DFA19_special;
-            this.transition = DFA19_transition;
+            this.decisionNumber = 21;
+            this.eot = DFA21_eot;
+            this.eof = DFA21_eof;
+            this.min = DFA21_min;
+            this.max = DFA21_max;
+            this.accept = DFA21_accept;
+            this.special = DFA21_special;
+            this.transition = DFA21_transition;
         }
         public String getDescription() {
-            return "1:1: Tokens : ( T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | T__25 | T__26 | T__27 | T__28 | T__29 | T__30 | T__31 | T__32 | T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | T__45 | T__46 | T__47 | T__48 | T__49 | T__50 | T__51 | T__52 | T__53 | T__54 | T__55 | T__56 | T__57 | T__58 | T__59 | T__60 | T__61 | T__62 | T__63 | T__64 | T__65 | T__66 | T__67 | T__68 | T__69 | T__70 | T__71 | T__72 | T__73 | T__74 | T__75 | T__76 | T__77 | T__78 | RULE_HEX | RULE_INT | RULE_DECIMAL | RULE_ID | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER );";
+            return "1:1: Tokens : ( T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | T__25 | T__26 | T__27 | T__28 | T__29 | T__30 | T__31 | T__32 | T__33 | T__34 | T__35 | T__36 | T__37 | T__38 | T__39 | T__40 | T__41 | T__42 | T__43 | T__44 | T__45 | T__46 | T__47 | T__48 | T__49 | T__50 | T__51 | T__52 | T__53 | T__54 | T__55 | T__56 | T__57 | T__58 | T__59 | T__60 | T__61 | T__62 | T__63 | T__64 | T__65 | T__66 | T__67 | T__68 | T__69 | T__70 | T__71 | T__72 | T__73 | T__74 | T__75 | T__76 | T__77 | T__78 | T__79 | T__80 | T__81 | T__82 | T__83 | T__84 | T__85 | T__86 | RULE_HEX | RULE_INT | RULE_DECIMAL | RULE_ID | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             IntStream input = _input;
         	int _s = s;
             switch ( s ) {
                     case 0 : 
-                        int LA19_40 = input.LA(1);
+                        int LA21_0 = input.LA(1);
 
                         s = -1;
-                        if ( ((LA19_40>='\u0000' && LA19_40<='\uFFFF')) ) {s = 111;}
+                        if ( (LA21_0=='=') ) {s = 1;}
 
-                        else s = 42;
+                        else if ( (LA21_0=='+') ) {s = 2;}
 
-                        if ( s>=0 ) return s;
-                        break;
-                    case 1 : 
-                        int LA19_39 = input.LA(1);
+                        else if ( (LA21_0=='-') ) {s = 3;}
 
-                        s = -1;
-                        if ( ((LA19_39>='\u0000' && LA19_39<='\uFFFF')) ) {s = 111;}
+                        else if ( (LA21_0=='*') ) {s = 4;}
 
-                        else s = 42;
+                        else if ( (LA21_0=='/') ) {s = 5;}
 
-                        if ( s>=0 ) return s;
-                        break;
-                    case 2 : 
-                        int LA19_0 = input.LA(1);
+                        else if ( (LA21_0=='%') ) {s = 6;}
 
-                        s = -1;
-                        if ( (LA19_0=='=') ) {s = 1;}
+                        else if ( (LA21_0=='<') ) {s = 7;}
 
-                        else if ( (LA19_0=='+') ) {s = 2;}
+                        else if ( (LA21_0=='>') ) {s = 8;}
 
-                        else if ( (LA19_0=='|') ) {s = 3;}
+                        else if ( (LA21_0=='|') ) {s = 9;}
 
-                        else if ( (LA19_0=='&') ) {s = 4;}
+                        else if ( (LA21_0=='&') ) {s = 10;}
 
-                        else if ( (LA19_0=='!') ) {s = 5;}
+                        else if ( (LA21_0=='!') ) {s = 11;}
 
-                        else if ( (LA19_0=='i') ) {s = 6;}
+                        else if ( (LA21_0=='i') ) {s = 12;}
 
-                        else if ( (LA19_0=='>') ) {s = 7;}
+                        else if ( (LA21_0=='.') ) {s = 13;}
 
-                        else if ( (LA19_0=='<') ) {s = 8;}
+                        else if ( (LA21_0=='?') ) {s = 14;}
 
-                        else if ( (LA19_0=='-') ) {s = 9;}
+                        else if ( (LA21_0=='a') ) {s = 15;}
 
-                        else if ( (LA19_0=='.') ) {s = 10;}
+                        else if ( (LA21_0==':') ) {s = 16;}
 
-                        else if ( (LA19_0=='?') ) {s = 11;}
+                        else if ( (LA21_0==',') ) {s = 17;}
 
-                        else if ( (LA19_0=='*') ) {s = 12;}
+                        else if ( (LA21_0=='(') ) {s = 18;}
 
-                        else if ( (LA19_0=='/') ) {s = 13;}
+                        else if ( (LA21_0==')') ) {s = 19;}
 
-                        else if ( (LA19_0=='%') ) {s = 14;}
+                        else if ( (LA21_0=='#') ) {s = 20;}
 
-                        else if ( (LA19_0=='a') ) {s = 15;}
+                        else if ( (LA21_0=='{') ) {s = 21;}
 
-                        else if ( (LA19_0==',') ) {s = 16;}
+                        else if ( (LA21_0=='}') ) {s = 22;}
 
-                        else if ( (LA19_0=='(') ) {s = 17;}
+                        else if ( (LA21_0=='[') ) {s = 23;}
 
-                        else if ( (LA19_0==')') ) {s = 18;}
+                        else if ( (LA21_0==']') ) {s = 24;}
 
-                        else if ( (LA19_0=='[') ) {s = 19;}
+                        else if ( (LA21_0==';') ) {s = 25;}
 
-                        else if ( (LA19_0==']') ) {s = 20;}
+                        else if ( (LA21_0=='e') ) {s = 26;}
 
-                        else if ( (LA19_0==';') ) {s = 21;}
+                        else if ( (LA21_0=='s') ) {s = 27;}
 
-                        else if ( (LA19_0=='e') ) {s = 22;}
+                        else if ( (LA21_0=='d') ) {s = 28;}
 
-                        else if ( (LA19_0=='s') ) {s = 23;}
+                        else if ( (LA21_0=='c') ) {s = 29;}
 
-                        else if ( (LA19_0==':') ) {s = 24;}
+                        else if ( (LA21_0=='f') ) {s = 30;}
 
-                        else if ( (LA19_0=='{') ) {s = 25;}
+                        else if ( (LA21_0=='w') ) {s = 31;}
 
-                        else if ( (LA19_0=='d') ) {s = 26;}
+                        else if ( (LA21_0=='v') ) {s = 32;}
 
-                        else if ( (LA19_0=='}') ) {s = 27;}
+                        else if ( (LA21_0=='n') ) {s = 33;}
 
-                        else if ( (LA19_0=='c') ) {s = 28;}
+                        else if ( (LA21_0=='t') ) {s = 34;}
 
-                        else if ( (LA19_0=='f') ) {s = 29;}
+                        else if ( (LA21_0=='r') ) {s = 35;}
 
-                        else if ( (LA19_0=='w') ) {s = 30;}
+                        else if ( (LA21_0=='0') ) {s = 36;}
 
-                        else if ( (LA19_0=='v') ) {s = 31;}
+                        else if ( ((LA21_0>='1' && LA21_0<='9')) ) {s = 37;}
 
-                        else if ( (LA19_0=='n') ) {s = 32;}
+                        else if ( (LA21_0=='^') ) {s = 38;}
 
-                        else if ( (LA19_0=='t') ) {s = 33;}
+                        else if ( (LA21_0=='$'||(LA21_0>='A' && LA21_0<='Z')||LA21_0=='_'||LA21_0=='b'||(LA21_0>='g' && LA21_0<='h')||(LA21_0>='j' && LA21_0<='m')||(LA21_0>='o' && LA21_0<='q')||LA21_0=='u'||(LA21_0>='x' && LA21_0<='z')) ) {s = 39;}
 
-                        else if ( (LA19_0=='r') ) {s = 34;}
+                        else if ( (LA21_0=='\"') ) {s = 40;}
 
-                        else if ( (LA19_0=='0') ) {s = 35;}
+                        else if ( (LA21_0=='\'') ) {s = 41;}
 
-                        else if ( ((LA19_0>='1' && LA19_0<='9')) ) {s = 36;}
+                        else if ( ((LA21_0>='\t' && LA21_0<='\n')||LA21_0=='\r'||LA21_0==' ') ) {s = 42;}
 
-                        else if ( (LA19_0=='^') ) {s = 37;}
-
-                        else if ( (LA19_0=='$'||(LA19_0>='A' && LA19_0<='Z')||LA19_0=='_'||LA19_0=='b'||(LA19_0>='g' && LA19_0<='h')||(LA19_0>='j' && LA19_0<='m')||(LA19_0>='o' && LA19_0<='q')||LA19_0=='u'||(LA19_0>='x' && LA19_0<='z')) ) {s = 38;}
-
-                        else if ( (LA19_0=='\"') ) {s = 39;}
-
-                        else if ( (LA19_0=='\'') ) {s = 40;}
-
-                        else if ( ((LA19_0>='\t' && LA19_0<='\n')||LA19_0=='\r'||LA19_0==' ') ) {s = 41;}
-
-                        else if ( ((LA19_0>='\u0000' && LA19_0<='\b')||(LA19_0>='\u000B' && LA19_0<='\f')||(LA19_0>='\u000E' && LA19_0<='\u001F')||LA19_0=='#'||LA19_0=='@'||LA19_0=='\\'||LA19_0=='`'||(LA19_0>='~' && LA19_0<='\uFFFF')) ) {s = 42;}
+                        else if ( ((LA21_0>='\u0000' && LA21_0<='\b')||(LA21_0>='\u000B' && LA21_0<='\f')||(LA21_0>='\u000E' && LA21_0<='\u001F')||LA21_0=='@'||LA21_0=='\\'||LA21_0=='`'||(LA21_0>='~' && LA21_0<='\uFFFF')) ) {s = 43;}
 
                         if ( s>=0 ) return s;
                         break;
             }
             NoViableAltException nvae =
-                new NoViableAltException(getDescription(), 19, _s, input);
+                new NoViableAltException(getDescription(), 21, _s, input);
             error(nvae);
             throw nvae;
         }

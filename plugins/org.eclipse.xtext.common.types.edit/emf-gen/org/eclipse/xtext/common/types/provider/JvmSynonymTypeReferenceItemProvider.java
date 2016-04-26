@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.provider;
 
@@ -11,29 +13,15 @@ import java.util.List;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
-
-import org.eclipse.emf.edit.provider.IEditingDomainItemProvider;
-import org.eclipse.emf.edit.provider.IItemLabelProvider;
 import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
-import org.eclipse.emf.edit.provider.IItemPropertySource;
-import org.eclipse.emf.edit.provider.IStructuredItemContentProvider;
-import org.eclipse.emf.edit.provider.ITreeItemContentProvider;
 
 /**
  * This is the item provider adapter for a {@link org.eclipse.xtext.common.types.JvmSynonymTypeReference} object.
  * <!-- begin-user-doc -->
  * <!-- end-user-doc -->
  * @generated
- * @since 2.1
  */
-public class JvmSynonymTypeReferenceItemProvider
-	extends JvmCompoundTypeReferenceItemProvider
-	implements
-		IEditingDomainItemProvider,
-		IStructuredItemContentProvider,
-		ITreeItemContentProvider,
-		IItemLabelProvider,
-		IItemPropertySource
+public class JvmSynonymTypeReferenceItemProvider extends JvmCompoundTypeReferenceItemProvider
 {
 	/**
 	 * This constructs an instance from a factory and a notifier.
@@ -86,6 +74,7 @@ public class JvmSynonymTypeReferenceItemProvider
 	{
 		return getString("_UI_JvmSynonymTypeReference_type");
 	}
+	
 
 	/**
 	 * This handles model notifications by calling {@link #updateChildren} to update any cached

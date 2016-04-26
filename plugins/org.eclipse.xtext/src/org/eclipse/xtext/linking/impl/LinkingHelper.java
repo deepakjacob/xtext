@@ -14,6 +14,7 @@ import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.conversion.ValueConverterException;
+import org.eclipse.xtext.conversion.ValueConverterWithValueException;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
@@ -36,15 +37,22 @@ public class LinkingHelper {
 	 *            may be any crossreferencable element, i.e. a keyword or a rulecall
 	 */
 	public String getRuleNameFrom(EObject grammarElement) {
+		AbstractRule rule = getRuleFrom(grammarElement);
+		return rule != null ? rule.getName() : null;
+	}
+	
+	/**
+	 * @since 2.10
+	 */
+	public AbstractRule getRuleFrom(EObject grammarElement) {
 		if (!(grammarElement instanceof Keyword || grammarElement instanceof RuleCall || grammarElement instanceof CrossReference))
 			throw new IllegalArgumentException("grammarElement is of type: '" + grammarElement.eClass().getName() + "'");
-		AbstractRule rule = null;
 		EObject elementToUse = grammarElement;
 		if (grammarElement instanceof CrossReference)
 			elementToUse = ((CrossReference) grammarElement).getTerminal();
 		if (elementToUse instanceof RuleCall)
-			rule = ((RuleCall) elementToUse).getRule();
-		return rule != null ? rule.getName() : null;
+			return ((RuleCall) elementToUse).getRule();
+		return null;
 	}
 
 	public String getCrossRefNodeAsString(INode node, boolean convert) {
@@ -56,6 +64,9 @@ public class LinkingHelper {
 			if (ruleName == null)
 				return convertMe;
 			Object result = valueConverter.toValue(convertMe, ruleName, node);
+			return result != null ? result.toString() : null;
+		} catch (ValueConverterWithValueException ex) {
+			Object result = ex.getValue();
 			return result != null ? result.toString() : null;
 		} catch (ValueConverterException ex) {
 			throw new IllegalNodeException(node, ex);

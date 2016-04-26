@@ -7,35 +7,46 @@
  *******************************************************************************/
 package org.eclipse.xtext.builder.smap;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.emf.common.util.URI;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.BuildContext;
 import org.eclipse.jdt.core.compiler.CompilationParticipant;
 import org.eclipse.jdt.internal.core.Region;
 import org.eclipse.xtext.builder.EclipseOutputConfigurationProvider;
-import org.eclipse.xtext.builder.trace.AbstractTrace;
 import org.eclipse.xtext.generator.OutputConfiguration;
 import org.eclipse.xtext.generator.trace.AbstractTraceRegion;
 import org.eclipse.xtext.generator.trace.ITrace;
-import org.eclipse.xtext.generator.trace.ITraceInformation;
-import org.eclipse.xtext.generator.trace.SmapSupport;
+import org.eclipse.xtext.generator.trace.ITraceToBytecodeInstaller;
+import org.eclipse.xtext.generator.trace.SourceRelativeURI;
+import org.eclipse.xtext.generator.trace.TraceAsPrimarySourceInstaller;
+import org.eclipse.xtext.generator.trace.TraceAsSmapInstaller;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.ui.XtextProjectHelper;
+import org.eclipse.xtext.ui.generator.trace.AbstractEclipseTrace;
+import org.eclipse.xtext.ui.generator.trace.IEclipseTrace;
+import org.eclipse.xtext.ui.generator.trace.ITraceForStorageProvider;
 import org.eclipse.xtext.ui.util.ResourceUtil;
+import org.eclipse.xtext.util.internal.Stopwatches;
+import org.eclipse.xtext.util.internal.Stopwatches.StoppedTask;
 
 import com.google.common.collect.Lists;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
@@ -44,38 +55,61 @@ import com.google.inject.Inject;
 public class DebugSourceInstallingCompilationParticipant extends CompilationParticipant {
 
 	private static final Logger log = Logger.getLogger(DebugSourceInstallingCompilationParticipant.class);
-
 	private List<BuildContext> files;
 
 	@Inject
 	private IResourceServiceProvider.Registry serviceProviderRegistry;
 
 	@Inject
-	private SmapSupport smapSupport;
+	private Provider<TraceAsSmapInstaller> traceAsSmapInstaller;
 
 	@Inject
-	private PrimarySourceInstaller traceAsPrimarySource;
+	private Provider<TraceAsPrimarySourceInstaller> traceAsPrimarySourceInstallerProvider;
 
 	@Inject
-	private ITraceInformation traceInformation;
+	private ITraceForStorageProvider traceInformation;
 
-	protected OutputConfiguration findOutputConfiguration(URI dslSourceFile, IFile generatedJavaFile) {
-		IResourceServiceProvider serviceProvider = serviceProviderRegistry.getResourceServiceProvider(dslSourceFile);
+	@Inject
+	private DerivedResourceMarkerCopier markerReflector;
+
+	protected OutputConfiguration findOutputConfiguration(SourceRelativeURI dslSourceFile, IFile generatedJavaFile) {
+		IResourceServiceProvider serviceProvider = serviceProviderRegistry.getResourceServiceProvider(dslSourceFile.getURI());
 		if (serviceProvider == null)
 			return null;
 		EclipseOutputConfigurationProvider cfgProvider = serviceProvider.get(EclipseOutputConfigurationProvider.class);
 		IProject project = generatedJavaFile.getProject();
-		for (OutputConfiguration out : cfgProvider.getOutputConfigurations(project)) {
-			IContainer container = ResourceUtil.getContainer(project, out.getOutputDirectory());
-			if (container != null && container.getFullPath().isPrefixOf(generatedJavaFile.getFullPath()))
-				return out;
+		Set<OutputConfiguration> configurations = cfgProvider.getOutputConfigurations(project);
+		if (!configurations.isEmpty()) {
+			if (configurations.size() == 1)
+				return configurations.iterator().next();
+			for (OutputConfiguration out : configurations) {
+				for (String source : out.getSourceFolders()) {
+					IContainer container = ResourceUtil.getContainer(project, out.getOutputDirectory(source));
+					if (container != null && container.getFullPath().isPrefixOf(generatedJavaFile.getFullPath()))
+						return out;
+				}
+			}
 		}
+		log.error("Could not find output configuration for file " + generatedJavaFile.getFullPath());
 		return null;
+	}
+
+	protected ITraceToBytecodeInstaller getInstaller(OutputConfiguration config) {
+		if (config.isInstallDslAsPrimarySource()) {
+			TraceAsPrimarySourceInstaller installer = traceAsPrimarySourceInstallerProvider.get();
+			installer.setHideSyntheticVariables(config.isHideSyntheticLocalVariables());
+			return installer;
+		} else {
+			TraceAsSmapInstaller installer = traceAsSmapInstaller.get();
+			return installer;
+		}
 	}
 
 	@Override
 	public void buildFinished(IJavaProject project) {
+		StoppedTask task = Stopwatches.forTask("DebugSourceInstallingCompilationParticipant.install");
 		try {
+			task.start();
 			super.buildFinished(project);
 			if (files == null)
 				return;
@@ -84,10 +118,15 @@ public class DebugSourceInstallingCompilationParticipant extends CompilationPart
 					IFile generatedJavaFile = ctx.getFile();
 
 					// This may fail if there is no trace file.
-					AbstractTraceRegion traceToSource = findRootTraceRegion(generatedJavaFile);
-					if (traceToSource == null)
+					IEclipseTrace traceToSource = traceInformation.getTraceToSource(generatedJavaFile);
+					if (traceToSource == null) {
 						continue;
-					URI dslSourceFile = traceToSource.getAssociatedPath();
+					}
+					AbstractTraceRegion rootTraceRegion = findRootTraceRegion(traceToSource);
+					if (rootTraceRegion == null)
+						continue;
+
+					SourceRelativeURI dslSourceFile = rootTraceRegion.getAssociatedSrcRelativePath();
 
 					// OutputConfigurations are only available for folders targeted by Xtext's code generation.
 					OutputConfiguration outputConfiguration = findOutputConfiguration(dslSourceFile, generatedJavaFile);
@@ -98,15 +137,25 @@ public class DebugSourceInstallingCompilationParticipant extends CompilationPart
 					if (element == null)
 						continue;
 
-					if (outputConfiguration.isInstallDslAsPrimarySource()) {
-						boolean hideSyntheticLocalVariables = outputConfiguration.isHideSyntheticLocalVariables();
-						for (IFile javaClassFile : findGeneratedJavaClassFiles(element)) {
-							traceAsPrimarySource.install(javaClassFile, traceToSource, hideSyntheticLocalVariables);
+					deleteTaskMarkers(generatedJavaFile);
+					markerReflector.reflectErrorMarkerInSource(generatedJavaFile, traceToSource);
+
+					ITraceToBytecodeInstaller installer = getInstaller(outputConfiguration);
+					installer.setTrace(generatedJavaFile.getName(), rootTraceRegion);
+					for (IFile javaClassFile : findGeneratedJavaClassFiles(element)) {
+						InputStream contents = javaClassFile.getContents();
+						try {
+							byte[] byteCode = installer.installTrace(ByteStreams.toByteArray(contents));
+							if (byteCode != null) {
+								javaClassFile.setContents(new ByteArrayInputStream(byteCode), 0, null);
+							} else {
+								// we need to touch the class file to do a respin of the build
+								// otherwise a needsRebuild request is ignored since no IResourceDelta is available
+								javaClassFile.touch(null);
+							}
+						} finally {
+							contents.close();
 						}
-					} else {
-						String smap = smapSupport.generateSmap(traceToSource, generatedJavaFile.getName());
-						for (IFile javaClassFile : findGeneratedJavaClassFiles(element))
-							installSmapInformation(javaClassFile, smap);
 					}
 				} catch (Exception e) {
 					String msg = "Could not process %s to install source information: %s";
@@ -115,7 +164,15 @@ public class DebugSourceInstallingCompilationParticipant extends CompilationPart
 			}
 		} finally {
 			files = null;
+			task.stop();
 		}
+	}
+
+	/**
+	 * Deletes task markers in generated Java files, because they would duplicate the markers in the source file.
+	 */
+	protected void deleteTaskMarkers(IFile generatedJavaFile) throws CoreException {
+		generatedJavaFile.deleteMarkers(IJavaModelMarker.TASK_MARKER, false, IResource.DEPTH_ZERO);
 	}
 
 	@Override
@@ -137,22 +194,10 @@ public class DebugSourceInstallingCompilationParticipant extends CompilationPart
 		return result;
 	}
 
-	@SuppressWarnings("null")
-	protected AbstractTraceRegion findRootTraceRegion(IFile javaFile) {
-		ITrace traceToSource = traceInformation.getTraceToSource(javaFile);
-		if (!(traceToSource instanceof AbstractTrace))
+	protected AbstractTraceRegion findRootTraceRegion(ITrace traceToSource) {
+		if (!(traceToSource instanceof AbstractEclipseTrace))
 			return null;
-		return ((AbstractTrace) traceToSource).getRootTraceRegion();
-	}
-
-	protected void installSmapInformation(IFile compiledFile, String smap) {
-		try {
-			InputStream newByteCode = smapSupport.getModifiedByteCode(smap, compiledFile.getContents());
-			compiledFile.setContents(newByteCode, 0, null);
-		} catch (Exception e) {
-			String msg = "Could not install smap information into %s: %s";
-			log.error(String.format(msg, compiledFile.getFullPath().toString(), e.getMessage()), e);
-		}
+		return ((AbstractEclipseTrace) traceToSource).getRootTraceRegion();
 	}
 
 	@Override

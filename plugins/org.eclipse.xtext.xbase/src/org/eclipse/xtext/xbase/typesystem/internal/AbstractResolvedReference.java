@@ -9,25 +9,29 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
+import org.eclipse.xtext.diagnostics.AbstractDiagnostic;
+import org.eclipse.xtext.util.IAcceptor;
 import org.eclipse.xtext.xbase.XExpression;
-import org.eclipse.xtext.xbase.typesystem.computation.ILinkingCandidate;
+import org.eclipse.xtext.xbase.typesystem.IResolvedTypes;
+import org.eclipse.xtext.xbase.typesystem.computation.ITypeExpectation;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public abstract class AbstractResolvedReference<Expression extends XExpression> extends AbstractLinkingCandidate<Expression> {
 	
 	protected final JvmIdentifiableElement resolvedElement;
 	private final Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping;
 	
-	protected AbstractResolvedReference(Expression expression, JvmIdentifiableElement resolvedElement,
+	protected AbstractResolvedReference(
+			Expression expression, 
+			JvmIdentifiableElement resolvedElement,
+			ITypeExpectation expectation,
 			ExpressionTypeComputationState state) {
-		super(expression, state);
+		super(expression, expectation, state);
 		this.resolvedElement = resolvedElement;
 		this.typeParameterMapping = initializeTypeParameterMapping();
 	}
@@ -38,12 +42,14 @@ public abstract class AbstractResolvedReference<Expression extends XExpression> 
 	}
 
 	@Override
-	public boolean isPreferredOver(ILinkingCandidate other) {
-		return true;
+	public void applyToModel(IResolvedTypes resolvedTypes) {
+		// nothing to do
 	}
 	
-	public void resolveLinkingProxy() {
+	@Override
+	public boolean validate(IAcceptor<? super AbstractDiagnostic> result) {
 		// nothing to do
+		return true;
 	}
 	
 	@Override

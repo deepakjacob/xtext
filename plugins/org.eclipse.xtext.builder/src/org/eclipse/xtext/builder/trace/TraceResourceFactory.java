@@ -17,6 +17,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceFactoryImpl;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
+import org.eclipse.xtext.generator.trace.SourceRelativeURI;
 import org.eclipse.xtext.generator.trace.TraceRegionSerializer;
 import org.eclipse.xtext.generator.trace.TraceRegionSerializer.Callback;
 
@@ -27,38 +28,42 @@ public class TraceResourceFactory extends ResourceFactoryImpl {
 	
 	protected class Strategy implements TraceRegionSerializer.Strategy<DebugTraceRegion, DebugLocationData> {
 
-		public DebugLocationData createLocation(int offset, int length, int lineNumber, int endLineNumber, URI path, String projectName) {
+		@Override
+		public DebugLocationData createLocation(int offset, int length, int lineNumber, int endLineNumber, SourceRelativeURI path) {
 			DebugLocationData result = TraceFactory.eINSTANCE.createDebugLocationData();
 			result.setOffset(offset);
 			result.setLength(length);
 			result.setLineNumber(lineNumber);
 			result.setEndLineNumber(endLineNumber);
-			result.setPath(path);
-			result.setProjectName(projectName);
+			result.setPath(path != null ? path.getURI() : null);
 			return result;
 		}
 
-		public DebugTraceRegion createRegion(int offset, int length, int lineNumber, int endLineNumber, List<DebugLocationData> associations,
+		@Override
+		public DebugTraceRegion createRegion(int offset, int length, int lineNumber, int endLineNumber, boolean isUseForDebugging, List<DebugLocationData> associations,
 				DebugTraceRegion parent) {
 			DebugTraceRegion result = TraceFactory.eINSTANCE.createDebugTraceRegion();
 			result.setMyOffset(offset);
 			result.setMyLength(length);
 			result.setMyLineNumber(lineNumber);
 			result.setMyEndLineNumber(endLineNumber);
+			result.setUseForDebugging(isUseForDebugging);
 			result.getAssociations().addAll(associations);
 			if (parent != null)
 				parent.getNestedRegions().add(result);
 			return result;
 		}
 
+		@Override
 		public void writeRegion(DebugTraceRegion region, Callback<DebugTraceRegion, DebugLocationData> callback)
 				throws IOException {
-			callback.doWriteRegion(region.getMyOffset(), region.getMyLength(), region.getMyLineNumber(), region.getMyEndLineNumber(), region.getAssociations(), region.getNestedRegions());
+			callback.doWriteRegion(region.getMyOffset(), region.getMyLength(), region.getMyLineNumber(), region.getMyEndLineNumber(), region.isUseForDebugging(), region.getAssociations(), region.getNestedRegions());
 		}
 
+		@Override
 		public void writeLocation(DebugLocationData location, Callback<DebugTraceRegion, DebugLocationData> callback)
 				throws IOException {
-			callback.doWriteLocation(location.getOffset(), location.getLength(), location.getLineNumber(), location.getEndLineNumber(), location.getPath(), location.getProjectName());
+			callback.doWriteLocation(location.getOffset(), location.getLength(), location.getLineNumber(), location.getEndLineNumber(), location.getPath() != null ? new SourceRelativeURI(location.getPath()) : null);
 		}
 	}
 

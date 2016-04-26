@@ -154,6 +154,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	/**
 	 * @since 2.2
 	 */
+	@Override
 	public String[] getManagingPositionCategories() {
 		return new String[] { fPositionCategory };
 	}
@@ -164,6 +165,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	/**
 	 * @since 2.2
 	 */
+	@Override
 	public final void connect(IDocument document) {
 		connect(document, false);
 	}
@@ -176,7 +178,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	public void connect(IDocument document, boolean delayInitialization) {
+	@Override
+	public synchronized void connect(IDocument document, boolean delayInitialization) {
 		Assert.isNotNull(document);
 		Assert.isTrue(!document.containsPositionCategory(fPositionCategory));
 
@@ -240,7 +243,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	public void disconnect() {
+	@Override
+	public synchronized void disconnect() {
 
 		Assert.isTrue(fDocument.containsPositionCategory(fPositionCategory));
 
@@ -259,7 +263,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	public void documentAboutToBeChanged(DocumentEvent e) {
+	@Override
+	public synchronized void documentAboutToBeChanged(DocumentEvent e) {
 		if (fIsInitialized) {
 
 			Assert.isTrue(e.getDocument() == fDocument);
@@ -276,7 +281,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	/**
 	 * @since 2.2
 	 */
-	public final boolean documentChanged(DocumentEvent e) {
+	@Override
+	public synchronized final boolean documentChanged(DocumentEvent e) {
 		if (fIsInitialized) {
 			IRegion region = documentChanged2(e);
 			return (region != null);
@@ -347,7 +353,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	public IRegion documentChanged2(DocumentEvent e) {
+	@Override
+	public synchronized IRegion documentChanged2(DocumentEvent e) {
 
 		if (!fIsInitialized)
 			return null;
@@ -537,7 +544,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	public String getContentType(int offset) {
+	@Override
+	public synchronized String getContentType(int offset) {
 		checkInitialization();
 
 		TypedPosition p = findClosestPosition(offset);
@@ -555,7 +563,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	public ITypedRegion getPartition(int offset) {
+	@Override
+	public synchronized ITypedRegion getPartition(int offset) {
 		checkInitialization();
 
 		try {
@@ -586,8 +595,13 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 			}
 
 			TypedPosition previous = (TypedPosition) category[category.length - 1];
-			if (previous.includes(offset))
+			if (previous.includes(offset)) {
 				return new TypedRegion(previous.getOffset(), previous.getLength(), previous.getType());
+			}
+			
+			if (isOpenSingleLineCommentPartition(previous, offset)) {
+				return new TypedRegion(previous.getOffset(), previous.getLength() + 1, previous.getType());
+			}
 
 			int endOffset = previous.getOffset() + previous.getLength();
 			return new TypedRegion(endOffset, fDocument.getLength() - endOffset, IDocument.DEFAULT_CONTENT_TYPE);
@@ -599,12 +613,28 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 		return new TypedRegion(0, fDocument.getLength(), IDocument.DEFAULT_CONTENT_TYPE);
 	}
 
+	private boolean isOpenSingleLineCommentPartition(TypedPosition position, int offset) throws BadLocationException {
+		if (position.isDeleted()) {
+			return false;
+		}
+		int endOffset = position.getOffset() + position.getLength();
+		if (offset != endOffset) {
+			return false;
+		}
+		if (!TerminalsTokenTypeToPartitionMapper.SL_COMMENT_PARTITION.equals(position.getType())) {
+			return false;
+		}
+		int line = fDocument.getLineOfOffset(offset - 1);
+		return fDocument.getLineDelimiter(line) == null;
+	}
+
 	/*
 	 * @see IDocumentPartitioner#computePartitioning(int, int)
 	 */
 	/**
 	 * @since 2.2
 	 */
+	@Override
 	public final ITypedRegion[] computePartitioning(int offset, int length) {
 		return computePartitioning(offset, length, false);
 	}
@@ -617,6 +647,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
+	@Override
 	public String[] getLegalContentTypes() {
 		return TextUtilities.copy(fLegalContentTypes);
 	}
@@ -672,6 +703,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
+	@Override
 	public String getContentType(int offset, boolean preferOpenPartitions) {
 		return getPartition(offset, preferOpenPartitions).getType();
 	}
@@ -684,7 +716,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	public ITypedRegion getPartition(int offset, boolean preferOpenPartitions) {
+	@Override
+	public synchronized ITypedRegion getPartition(int offset, boolean preferOpenPartitions) {
 		ITypedRegion region = getPartition(offset);
 		if (preferOpenPartitions) {
 			if (region.getOffset() == offset && !region.getType().equals(IDocument.DEFAULT_CONTENT_TYPE)) {
@@ -707,7 +740,8 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	public ITypedRegion[] computePartitioning(int offset, int length, boolean includeZeroLengthPartitions) {
+	@Override
+	public synchronized ITypedRegion[] computePartitioning(int offset, int length, boolean includeZeroLengthPartitions) {
 		checkInitialization();
 		List<ITypedRegion> list = new ArrayList<ITypedRegion>();
 
@@ -846,6 +880,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	/**
 	 * @since 2.2
 	 */
+	@Override
 	public void startRewriteSession(DocumentRewriteSession session) throws IllegalStateException {
 		if (fActiveRewriteSession != null)
 			throw new IllegalStateException();
@@ -860,6 +895,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
+	@Override
 	public void stopRewriteSession(DocumentRewriteSession session) {
 		if (fActiveRewriteSession == session)
 			flushRewriteSession();
@@ -873,6 +909,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
+	@Override
 	public DocumentRewriteSession getActiveRewriteSession() {
 		return fActiveRewriteSession;
 	}
@@ -882,7 +919,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 * 
 	 * @since 2.2
 	 */
-	protected final void flushRewriteSession() {
+	protected synchronized final void flushRewriteSession() {
 		fActiveRewriteSession = null;
 
 		// remove all position belonging to the partitioner position category
@@ -914,7 +951,7 @@ public class DocumentPartitioner implements IDocumentPartitioner, IDocumentParti
 	 *             if getting the positions from the document fails
 	 * @since 2.2
 	 */
-	protected final Position[] getPositions() throws BadPositionCategoryException {
+	protected synchronized final Position[] getPositions() throws BadPositionCategoryException {
 		if (fCachedPositions == null) {
 			fCachedPositions = fDocument.getPositions(fPositionCategory);
 		} else if (CHECK_CACHE_CONSISTENCY) {

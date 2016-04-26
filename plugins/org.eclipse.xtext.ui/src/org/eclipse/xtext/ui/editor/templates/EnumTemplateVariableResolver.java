@@ -10,6 +10,7 @@ import org.eclipse.xtext.Grammar;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.inject.Singleton;
 
 /**
  * Resolves a template variable to <code>EEnumLiteral literals</code> which are
@@ -18,6 +19,7 @@ import com.google.common.collect.Lists;
  * 
  * @author Michael Clay - Initial contribution and API
  */
+@Singleton
 public class EnumTemplateVariableResolver extends
 		AbstractTemplateVariableResolver {
 
@@ -39,6 +41,7 @@ public class EnumTemplateVariableResolver extends
 			return Collections.emptyList();
 		}
 		return Lists.transform(enumeration.getELiterals(), new Function<EEnumLiteral, String>() {
+			@Override
 			public String apply(EEnumLiteral enumLiteral) {
 				return enumLiteral.getLiteral();
 			}

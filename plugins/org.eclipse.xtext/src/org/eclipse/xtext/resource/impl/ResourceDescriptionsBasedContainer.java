@@ -55,6 +55,7 @@ public class ResourceDescriptionsBasedContainer extends AbstractContainer implem
 		return null;
 	}
 
+	@Override
 	public Iterable<IResourceDescription> getResourceDescriptions() {
 		return getUriToDescription().values();
 	}
@@ -116,6 +117,7 @@ public class ResourceDescriptionsBasedContainer extends AbstractContainer implem
 	
 	private class DelegatingPredicate implements Predicate<IResourceDescription> {
 
+		@Override
 		public boolean apply(IResourceDescription input) {
 			return contains(input);
 		}
@@ -128,13 +130,14 @@ public class ResourceDescriptionsBasedContainer extends AbstractContainer implem
 	
 	@Override
 	public boolean hasResourceDescription(URI uri) {
-		return true;
+		return descriptions.getResourceDescription(uri) != null;
 	}
 	
 	protected IResourceDescriptions getDescriptions() {
 		return descriptions;
 	}
 
+	@Override
 	public void descriptionsChanged(IResourceDescription.Event event) {
 		if (uriToDescription != null) {
 			for(IResourceDescription.Delta delta: event.getDeltas()) {

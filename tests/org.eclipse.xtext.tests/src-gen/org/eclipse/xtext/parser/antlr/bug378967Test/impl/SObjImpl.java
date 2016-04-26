@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.parser.antlr.bug378967Test.impl;
 
@@ -21,10 +18,10 @@ import org.eclipse.xtext.parser.antlr.bug378967Test.SObj;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.parser.antlr.bug378967Test.impl.SObjImpl#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

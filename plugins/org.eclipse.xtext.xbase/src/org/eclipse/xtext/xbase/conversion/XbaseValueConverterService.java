@@ -42,6 +42,8 @@ public class XbaseValueConverterService extends DefaultTerminalConverters {
 		private final static Set<String> operators = ImmutableSet.of(
 			"->",
 			"..",
+			"..<",
+			">..",
 			"=>",
 			">>",
 			">>>",
@@ -51,10 +53,63 @@ public class XbaseValueConverterService extends DefaultTerminalConverters {
 			"?:",
 			"<=>");
 		
+		@Override
 		public String toValue(String string, INode node) throws ValueConverterException {
 			return string;
 		}
 
+		@Override
+		public String toString(String value) throws ValueConverterException {
+			if (!operators.contains(value))
+				throw new ValueConverterException("'" + value + "' is not a valid operator.", null, null);
+			return value;
+		}
+		
+	}
+	
+	public static class CompareOperatorsValueConverter extends AbstractValueConverter<String> {
+
+		private final static Set<String> operators = ImmutableSet.of(
+			">=",
+			"<=",
+			">",
+			"<");
+		
+		@Override
+		public String toValue(String string, INode node) throws ValueConverterException {
+			return string;
+		}
+
+		@Override
+		public String toString(String value) throws ValueConverterException {
+			if (!operators.contains(value))
+				throw new ValueConverterException("'" + value + "' is not a valid operator.", null, null);
+			return value;
+		}
+		
+	}
+	
+	public static class MultiAssignOperatorsValueConverter extends AbstractValueConverter<String> {
+
+		private final static Set<String> operators = ImmutableSet.of(
+			"+=",
+			"-=",
+			"*=",
+			"/=",
+			"&=",
+			"|=",
+			"^=",
+			"%=",
+			"<<=",
+			">>=",
+			">>>=");
+		
+		@Override
+		public String toValue(String string, INode node) throws ValueConverterException {
+			return string;
+		}
+
+		@Override
 		public String toString(String value) throws ValueConverterException {
 			if (!operators.contains(value))
 				throw new ValueConverterException("'" + value + "' is not a valid operator.", null, null);
@@ -67,7 +122,7 @@ public class XbaseValueConverterService extends DefaultTerminalConverters {
 	private XbaseQualifiedNameValueConverter qualifiedNameValueConverter;
 	
 	@Inject
-	private StaticQualifierValueConverter staticQualifierConverter;
+	private XbaseQualifiedNameInStaticImportValueConverter qualifiedNameInStaticImportValueConverter;
 	
 	@Inject
 	private Provider<KeywordBasedValueConverter> keywordBasedConverterProvider;
@@ -76,7 +131,16 @@ public class XbaseValueConverterService extends DefaultTerminalConverters {
 	private OtherOperatorsValueConverter otherOperatorsValueConverter;
 	
 	@Inject
+	private CompareOperatorsValueConverter compareOperatorsValueConverter;
+	
+	@Inject
+	private MultiAssignOperatorsValueConverter multiAssignOperatorsValueConverter;
+	
+	@Inject
 	private KeywordAlternativeConverter validIDConverter;
+	
+	@Inject
+	private KeywordAlternativeConverter featureCallIDConverter;
 	
 	@Inject
 	private KeywordAlternativeConverter idOrSuperConverter;
@@ -91,14 +155,24 @@ public class XbaseValueConverterService extends DefaultTerminalConverters {
 		return validIDConverter;
 	}
 	
+	@ValueConverter(rule = "FeatureCallID")
+	public IValueConverter<String> getFeatureCallIDValueConverter() {
+		return featureCallIDConverter;
+	}
+	
 	@ValueConverter(rule = "QualifiedName")
 	public IValueConverter<String> getQualifiedNameValueConverter() {
 		return qualifiedNameValueConverter;
 	}
 	
-	@ValueConverter(rule = "StaticQualifier")
-	public IValueConverter<String> getStaticQualifierConverter() {
-		return staticQualifierConverter;
+	@ValueConverter(rule = "QualifiedNameWithWildcard")
+	public IValueConverter<String> getQualifiedNameWithWildCardValueConverter() {
+		return getQualifiedNameValueConverter();
+	}
+	
+	@ValueConverter(rule = "QualifiedNameInStaticImport")
+	public IValueConverter<String> getQualifiedNameInStaticImportValueConverter() {
+		return qualifiedNameInStaticImportValueConverter;
 	}
 	
 	@ValueConverter(rule = "OpSingleAssign")
@@ -108,7 +182,7 @@ public class XbaseValueConverterService extends DefaultTerminalConverters {
 	
 	@ValueConverter(rule = "OpMultiAssign")
 	public IValueConverter<String> getOpMultiAssignConverter() {
-		return keywordBasedConverterProvider.get();
+		return multiAssignOperatorsValueConverter;
 	}
 	
 	@ValueConverter(rule = "OpOr")
@@ -128,7 +202,7 @@ public class XbaseValueConverterService extends DefaultTerminalConverters {
 	
 	@ValueConverter(rule = "OpCompare")
 	public IValueConverter<String> getOpCompareConverter() {
-		return keywordBasedConverterProvider.get();
+		return compareOperatorsValueConverter;
 	}
 	
 	@ValueConverter(rule = "OpOther")
@@ -148,6 +222,11 @@ public class XbaseValueConverterService extends DefaultTerminalConverters {
 	
 	@ValueConverter(rule = "OpUnary")
 	public IValueConverter<String> getOpUnaryConverter() {
+		return keywordBasedConverterProvider.get();
+	}
+	
+	@ValueConverter(rule = "OpPostfix")
+	public IValueConverter<String> getOpPostfixConverter() {
 		return keywordBasedConverterProvider.get();
 	}
 	

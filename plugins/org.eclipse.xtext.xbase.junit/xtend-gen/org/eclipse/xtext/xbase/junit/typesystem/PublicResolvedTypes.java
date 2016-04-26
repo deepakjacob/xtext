@@ -7,10 +7,10 @@
  */
 package org.eclipse.xtext.xbase.junit.typesystem;
 
-import com.google.common.collect.Multimap;
 import java.util.List;
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import java.util.Map;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
+import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.typesystem.internal.DefaultReentrantTypeResolver;
 import org.eclipse.xtext.xbase.typesystem.internal.RootResolvedTypes;
@@ -21,30 +21,29 @@ import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 @SuppressWarnings("all")
 public class PublicResolvedTypes extends RootResolvedTypes {
   public PublicResolvedTypes(final DefaultReentrantTypeResolver resolver) {
-    super(resolver);
+    super(resolver, CancelIndicator.NullImpl);
   }
   
+  @Override
   public UnboundTypeReference createUnboundTypeReference(final XExpression expression, final JvmTypeParameter type) {
-    UnboundTypeReference _createUnboundTypeReference = super.createUnboundTypeReference(expression, type);
-    return _createUnboundTypeReference;
+    return super.createUnboundTypeReference(expression, type);
   }
   
+  @Override
   public UnboundTypeReference getUnboundTypeReference(final Object handle) {
-    UnboundTypeReference _unboundTypeReference = super.getUnboundTypeReference(handle);
-    return _unboundTypeReference;
+    return super.getUnboundTypeReference(handle);
   }
   
+  @Override
   public List<LightweightBoundTypeArgument> getHints(final Object handle) {
-    List<LightweightBoundTypeArgument> _hints = super.getHints(handle);
-    return _hints;
+    return super.getHints(handle);
   }
   
-  public Multimap<XExpression,TypeData> basicGetExpressionTypes() {
-    Multimap<XExpression,TypeData> _basicGetExpressionTypes = super.basicGetExpressionTypes();
-    return _basicGetExpressionTypes;
+  @Override
+  public Map<XExpression, List<TypeData>> basicGetExpressionTypes() {
+    return super.basicGetExpressionTypes();
   }
 }

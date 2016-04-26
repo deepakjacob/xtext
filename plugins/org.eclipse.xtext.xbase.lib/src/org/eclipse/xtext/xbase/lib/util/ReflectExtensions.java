@@ -12,7 +12,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.google.common.annotations.Beta;
-import com.google.common.annotations.GwtCompatible;
 import com.google.common.base.Preconditions;
 
 /**
@@ -22,7 +21,7 @@ import com.google.common.base.Preconditions;
  * @since 2.3
  */
 @Beta
-@GwtCompatible public class ReflectExtensions {
+public class ReflectExtensions {
 
 	/**
 	 * Sets the given value on an the receivers's accessible field with the given name.
@@ -59,7 +58,7 @@ import com.google.common.base.Preconditions;
 	 * @throws IllegalArgumentException see {@link Field#get(Object)}
 	 */
 	@SuppressWarnings("unchecked")
-	/*@Nullable*/
+	/* @Nullable */
 	public <T> T get(Object receiver, String fieldName) throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 		Preconditions.checkNotNull(receiver,"receiver");
 		Preconditions.checkNotNull(fieldName,"fieldName");
@@ -101,8 +100,8 @@ import com.google.common.base.Preconditions;
 	 * @throws IllegalArgumentException see {@link Method#invoke(Object, Object...)}
 	 * @throws InvocationTargetException see {@link Method#invoke(Object, Object...)}
 	 */
-//	@Nullable
-	public Object invoke(Object receiver, String methodName, /*@Nullable*/ Object...args) throws SecurityException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+	/* @Nullable */
+	public Object invoke(Object receiver, String methodName, /* @Nullable */ Object...args) throws SecurityException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 		Preconditions.checkNotNull(receiver,"receiver");
 		Preconditions.checkNotNull(methodName,"methodName");
 		final Object[] arguments = args==null ? new Object[]{null}:args;

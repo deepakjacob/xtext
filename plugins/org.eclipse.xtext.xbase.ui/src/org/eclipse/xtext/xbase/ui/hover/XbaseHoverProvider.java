@@ -11,6 +11,7 @@ import java.net.URL;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaModelException;
@@ -36,11 +37,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.access.TypeResource;
 import org.eclipse.xtext.common.types.access.impl.URIHelperConstants;
 import org.eclipse.xtext.common.types.access.jdt.TypeURIHelper;
 import org.eclipse.xtext.common.types.util.jdt.IJavaElementFinder;
 import org.eclipse.xtext.common.types.xtext.ui.JdtHoverProvider.JavadocHoverWrapper;
 import org.eclipse.xtext.resource.IGlobalServiceProvider;
+import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.XtextUIMessages;
 import org.eclipse.xtext.ui.editor.IURIEditorOpener;
 import org.eclipse.xtext.ui.editor.hover.html.DefaultEObjectHoverProvider;
@@ -50,7 +53,6 @@ import org.eclipse.xtext.ui.editor.hover.html.OpenBrowserUtil;
 import org.eclipse.xtext.ui.editor.hover.html.XtextBrowserInformationControlInput;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
 import org.eclipse.xtext.xbase.XConstructorCall;
-import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XSwitchExpression;
 import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations;
 
@@ -60,6 +62,7 @@ import com.google.inject.Inject;
  * @author Sebastian Zarnekow - Initial contribution and API
  * @author Holger Schill
  */
+@SuppressWarnings("restriction")
 public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 
 	@Inject
@@ -77,8 +80,6 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 	@Inject
 	protected XbaseHoverConfiguration xbaseHoverConfiguration;
 	@Inject
-	protected HoverGenericsResolver hoverGenericsResolver;
-	@Inject
 	protected ILabelProvider labelProvider;
 	@Inject 
 	protected IGlobalServiceProvider serviceProvider;
@@ -87,34 +88,47 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 	protected IInformationControlCreator hoverControlCreator;
 	protected IInformationControlCreator presenterControlCreator;
 	
-	protected static final String LEADING_PADDING = "<div style='position: relative; left: 16;'>";
+	protected static final String LEADING_PADDING = "<div style='position: relative; left: 20;'>";
 	protected static final String TRAILING_PADDING = "</div>";
 
 	@Override
 	protected XtextBrowserInformationControlInput getHoverInfo(EObject element, IRegion hoverRegion,
 			XtextBrowserInformationControlInput previous) {
+		//TODO remove this check when the typesystem works without a java project
+		if (isValidationDisabled(element))
+			return null;
 		EObject objectToView = getObjectToView(element);
 		if(objectToView == null || objectToView.eIsProxy())
 			return null;
-		IJavaElement javaElement = null;
-		if (objectToView != element && objectToView instanceof JvmIdentifiableElement) {
-			javaElement = javaElementFinder.findElementFor((JvmIdentifiableElement) objectToView);
-		}
 		String html = getHoverInfoAsHtml(element, objectToView, hoverRegion);
 		if (html != null) {
 			StringBuffer buffer = new StringBuffer(html);
 			HTMLPrinter.insertPageProlog(buffer, 0, getStyleSheet());
 			HTMLPrinter.addPageEpilog(buffer);
 			html = buffer.toString();
+			IJavaElement javaElement = null;
+			if (objectToView != element && objectToView instanceof JvmIdentifiableElement) {
+				javaElement = javaElementFinder.findElementFor((JvmIdentifiableElement) objectToView);
+			}
 			return new XbaseInformationControlInput(previous, objectToView, javaElement, html, labelProvider);
 		}
 		return null;
+	}
+	
+	private boolean isValidationDisabled(EObject objectToView) {
+		Resource resource = objectToView.eResource();
+		if (resource instanceof XtextResource)
+			return ((XtextResource)resource).isValidationDisabled();
+		// If this is not done links to native java types can be navigated in the hover
+		if(resource instanceof TypeResource)
+			return false;
+		return true; 
 	}
 
 	/**
 	 * @since 2.3
 	 */
-	protected String getHoverInfoAsHtml(EObject call, EObject objectToView, IRegion hoverRegion) {
+	protected String getHoverInfoAsHtml(EObject astElement, EObject objectToView, IRegion hoverRegion) {
 		if(!hasHover(objectToView))
 			return null;
 		StringBuffer buffer = new StringBuffer();
@@ -122,7 +136,7 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 		if(oldSignature != null)
 			buffer.append(oldSignature);
 		else
-			buffer.append(computeSignature(call, objectToView));
+			buffer.append(computeSignature(astElement, objectToView));
 		String documentation = getDocumentation(objectToView);
 		if (documentation != null && documentation.length() > 0) {
 			buffer.append("<p>");
@@ -166,16 +180,16 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 
 	/**
 	 * @since 2.3
-	 * @param call - FeatureCall may be null
 	 */
-	protected String computeSignature(EObject call, EObject o) {
-		String imageTag =  hoverSignatureProvider.getImageTag(o);
-		String signature = hoverSignatureProvider.getSignature(o);
-		if (call != null && (call instanceof XAbstractFeatureCall || call instanceof XConstructorCall))
-			signature = hoverGenericsResolver.replaceGenerics((XExpression) call,
-					hoverSignatureProvider.getSignature(o));
-		if (imageTag != null && signature != null) {
-			return "<div style='position: absolute; left: 0; top: 0;'>" + imageTag + "</div>" + LEADING_PADDING +"<b>"+ HTMLPrinter.convertToHTMLContent(signature) + "</b>" + TRAILING_PADDING;
+	protected String computeSignature(EObject astElement, EObject referencedElement) {
+		String imageTag =  hoverSignatureProvider.getImageTag(referencedElement);
+		String signature = hoverSignatureProvider.getSignature(astElement);
+		if(signature != null) {
+			if (imageTag != null) {
+				return "<div style='position: absolute; left: 0; top: 0;'>" + imageTag + "</div>" + LEADING_PADDING +"<b>"+ HTMLPrinter.convertToHTMLContent(signature) + "</b>" + TRAILING_PADDING;
+			} else {
+				return "<b>"+ HTMLPrinter.convertToHTMLContent(signature) + "</b>" + TRAILING_PADDING;
+			}
 		}
 		return "";
 	}
@@ -194,9 +208,11 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 	protected void addLinkListener(final IXtextBrowserInformationControl control) {
 		control.addLocationListener(elementLinks.createLocationListener(new XbaseElementLinks.IXbaseLinkHandler() {
 
+			@Override
 			public void handleXtextdocViewLink(URI linkTarget) {
 			}
 
+			@Override
 			public void handleInlineXtextdocLink(URI linkTarget) {
 				XtextBrowserInformationControlInput hoverInfo = getHoverInfo(getTarget(linkTarget), null,
 						(XtextBrowserInformationControlInput) control.getInput());
@@ -206,6 +222,7 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 					control.setInput(hoverInfo);
 			}
 
+			@Override
 			public void handleDeclarationLink(URI linkTarget) {
 				control.notifyDelayedInputChange(null);
 				control.dispose();
@@ -234,6 +251,7 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 					uriEditorOpener.open(linkTarget, true);
 			}
 
+			@Override
 			public boolean handleExternalLink(URL url, Display display) {
 				control.notifyDelayedInputChange(null);
 				control.dispose(); //FIXME: should have protocol to hide, rather than dispose
@@ -242,6 +260,7 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 				return true;
 			}
 
+			@Override
 			public void handleTextSet() {
 			}
 
@@ -251,6 +270,7 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 				return rs.getEObject(uri, true);
 			}
 
+			@Override
 			public void handleInlineJavadocLink(IJavaElement target) {
 				String html = getHtmlFromIJavaElement(target);
 				XtextBrowserInformationControlInput hoverInfo = new XbaseInformationControlInput((XtextBrowserInformationControlInput) control.getInput(), null, target, html, labelProvider);
@@ -320,6 +340,7 @@ public class XbaseHoverProvider extends DefaultEObjectHoverProvider {
 			final OpenDeclarationAction openDeclarationAction = new OpenDeclarationAction(control);
 			tbm.add(openDeclarationAction);
 			IInputChangedListener inputChangeListener = new IInputChangedListener() {
+				@Override
 				public void inputChanged(Object newInput) {
 					backAction.update();
 					forwardAction.update();

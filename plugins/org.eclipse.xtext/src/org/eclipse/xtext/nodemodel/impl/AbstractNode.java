@@ -10,7 +10,6 @@ package org.eclipse.xtext.nodemodel.impl;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,10 @@ import org.eclipse.xtext.nodemodel.serialization.SerializationConversionContext;
 import org.eclipse.xtext.nodemodel.serialization.SerializationUtil;
 import org.eclipse.xtext.nodemodel.util.NodeTreeIterator;
 import org.eclipse.xtext.nodemodel.util.ReversedBidiTreeIterable;
-import org.eclipse.xtext.util.Strings;
+import org.eclipse.xtext.util.ITextRegion;
+import org.eclipse.xtext.util.ITextRegionWithLineInformation;
+import org.eclipse.xtext.util.TextRegion;
+import org.eclipse.xtext.util.TextRegionWithLineInformation;
 
 import com.google.common.collect.Iterators;
 
@@ -49,6 +51,60 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 	
 	private Object grammarElementOrArray;
 	
+	/**
+	 * @since 2.5
+	 */
+	@Override
+	public ITextRegion getTextRegion() {
+		int offset = getOffset();
+		int length = getEndOffset() - offset;
+		return new TextRegion(offset, length);
+	}
+	
+	/**
+	 * @since 2.5
+	 */
+	@Override
+	public ITextRegion getTotalTextRegion() {
+		int totalOffset = getTotalOffset();
+		int totalLength = getTotalLength();
+		return new TextRegion(totalOffset, totalLength);
+	}
+	
+	/**
+	 * @since 2.5
+	 */
+	@Override
+	public ITextRegionWithLineInformation getTextRegionWithLineInformation() {
+		int offset = getOffset();
+		int length = getEndOffset() - offset;
+		return getTextRegionWithLineInformation(offset, length);
+	}
+	
+	/**
+	 * @since 2.5
+	 */
+	@Override
+	public ITextRegionWithLineInformation getTotalTextRegionWithLineInformation() {
+		int totalOffset = getTotalOffset();
+		int totalLength = getTotalLength();
+		return getTextRegionWithLineInformation(totalOffset, totalLength);
+	}
+
+	/**
+	 * @since 2.5
+	 */
+	protected ITextRegionWithLineInformation getTextRegionWithLineInformation(int offset, int length) {
+		INode rootNode = getRootNode();
+		if (rootNode != null) {
+			int startLine = basicGetLineOfOffset(rootNode, offset);
+			int endLine = basicGetLineOfOffset(rootNode, offset + length);
+			return new TextRegionWithLineInformation(offset, length, startLine, endLine); 
+		}
+		return new TextRegionWithLineInformation(offset, length, 1, 1);
+	}
+	
+	@Override
 	public ICompositeNode getParent() {
 		if (parent != null)
 			return parent.resolveAsParent();
@@ -63,20 +119,25 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		this.parent = parent;
 	}
 	
+	@Override
 	public BidiTreeIterable<INode> getAsTreeIterable() {
 		return this;
 	}
 	
+	@Override
 	public BidiTreeIterator<INode> iterator() {
 		return new NodeTreeIterator(this);
 	}
 	
+	@Override
 	public BidiTreeIterable<INode> reverse() {
 		return new ReversedBidiTreeIterable<INode>(this);
 	}
 	
+	@Override
 	public Iterable<ILeafNode> getLeafNodes() {
 		return new Iterable<ILeafNode>() {
+			@Override
 			public Iterator<ILeafNode> iterator() {
 				return Iterators.filter(basicIterator(), ILeafNode.class);
 			}
@@ -87,6 +148,7 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return new BasicNodeTreeIterator(this);
 	}
 
+	@Override
 	public String getText() {
 		INode rootNode = getRootNode();
 		if (rootNode != null) {
@@ -97,11 +159,11 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return null;
 	}
 	
+	@Override
 	public int getTotalStartLine() {
 		INode rootNode = getRootNode();
 		if (rootNode != null) {
-			int offset = getTotalOffset();
-			return basicGetLineOfOffset(rootNode, offset);
+			return basicGetLineOfOffset(rootNode, getTotalOffset());
 		}
 		return 1;
 	}
@@ -110,20 +172,10 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 	 * @since 2.0
 	 */
 	protected int basicGetLineOfOffset(INode rootNode, int offset) {
-		if (rootNode instanceof RootNode) {
-			int[] lineBreakOffsets = ((RootNode) rootNode).basicGetLineBreakOffsets();
-			int insertionPoint = Arrays.binarySearch(lineBreakOffsets, offset);
-			if (insertionPoint >= 0) {
-				return insertionPoint + 1;
-			} else {
-				return -insertionPoint;
-			}
-		}
-		String leadingText = rootNode.getText().substring(0, offset);
-		int result = Strings.countLines(leadingText);
-		return result + 1;
+		return InternalNodeModelUtils.getLineAndColumn(rootNode, offset).getLine();
 	}
 	
+	@Override
 	public int getStartLine() {
 		INode rootNode = getRootNode();
 		if (rootNode != null) {
@@ -133,23 +185,26 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return 1;
 	}
 	
+	@Override
 	public int getEndLine() {
-		int offset = getOffset();
-		int length = getLength();
 		INode rootNode = getRootNode();
-		if (rootNode != null)
-			return basicGetLineOfOffset(rootNode, offset + length);
+		if (rootNode != null) {
+			return basicGetLineOfOffset(rootNode, getEndOffset());
+		}
 		return 1;
 	}
 	
+	@Override
 	public int getTotalEndLine() {
-		int offset = getTotalEndOffset();
 		INode rootNode = getRootNode();
-		if (rootNode != null)
+		if (rootNode != null) {
+			int offset = getTotalEndOffset();
 			return basicGetLineOfOffset(rootNode, offset);
+		}
 		return 1;
 	}
 	
+	@Override
 	public int getOffset() {
 		Iterator<ILeafNode> leafIter = Iterators.filter(basicIterator(), ILeafNode.class);
 		int firstLeafOffset = -1;
@@ -166,6 +221,7 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return getTotalOffset();
 	}
 	
+	@Override
 	public int getLength() {
 		BidiIterator<AbstractNode> iter = basicIterator();
 		while(iter.hasPrevious()) {
@@ -178,10 +234,27 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return getTotalLength();
 	}
 	
+	@Override
 	public int getTotalEndOffset() {
 		return getTotalOffset() + getTotalLength();
 	}
+	
+	/**
+	 * @since 2.5
+	 */
+	@Override
+	public int getEndOffset() {
+		BidiIterator<AbstractNode> iter = basicIterator();
+		while(iter.hasPrevious()) {
+			INode prev = iter.previous();
+			if (prev instanceof ILeafNode && !((ILeafNode) prev).isHidden()) {
+				return prev.getTotalEndOffset();
+			}
+		}
+		return getTotalEndOffset();
+	}
 
+	@Override
 	public ICompositeNode getRootNode() {
 		if (parent == null)
 			return null;
@@ -191,6 +264,7 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return candidate.getRootNode();
 	}
 	
+	@Override
 	public EObject getSemanticElement() {
 		if (parent == null)
 			return null;
@@ -201,10 +275,12 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return null;
 	}
 	
+	@Override
 	public boolean hasDirectSemanticElement() {
 		return basicGetSemanticElement() != null;
 	}
 	
+	@Override
 	public EObject getGrammarElement() {
 		return (EObject) grammarElementOrArray;
 	}
@@ -217,10 +293,12 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		this.grammarElementOrArray = grammarElementOrArray;
 	}
 
+	@Override
 	public SyntaxErrorMessage getSyntaxErrorMessage() {
 		return null;
 	}
 	
+	@Override
 	public INode getPreviousSibling() {
 		if (!hasPreviousSibling())
 			return null;
@@ -235,6 +313,7 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		this.prev = prev;
 	}
 	
+	@Override
 	public INode getNextSibling() {
 		if (!hasNextSibling())
 			return null;
@@ -249,6 +328,7 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		this.next = next;
 	}
 	
+	@Override
 	public boolean hasPreviousSibling() {
 		return basicHasPreviousSibling();
 	}
@@ -259,6 +339,7 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return parent.basicGetFirstChild() != this;
 	}
 	
+	@Override
 	public boolean hasNextSibling() {
 		return basicHasNextSibling();
 	}
@@ -269,6 +350,7 @@ public abstract class AbstractNode implements INode, BidiTreeIterable<INode> {
 		return parent.basicGetLastChild() != this;
 	}
 	
+	@Override
 	public boolean hasSiblings() {
 		return basicHasSiblings();
 	}

@@ -26,8 +26,8 @@ import org.eclipse.xtext.resource.IEObjectDescription;
  * {@link org.eclipse.emf.ecore.EObject context object} and a {@link org.eclipse.emf.ecore.EReference cross reference}.</p>
  * 
  * <p>Clients can use several different query operations to select elements from a scope.
- * They are free to filter the result further to a set of valid or interesting depending on the actual use case.
- * A linker may want to create links to invalid objects to provide while content assist should filter these
+ * They are free to filter the result further to a set of valid or interesting elements depending on the actual use case.
+ * A linker may want to create links to invalid objects to provide better error messages while content assist should filter these
  * instances.</p>
  * <ul>
  * <li>Query by {@link QualifiedName name}: Scopes can be queried by name. Implementations should answer this query fast.</li>
@@ -100,22 +100,27 @@ public interface IScope {
 	 */
 	public final static IScope NULLSCOPE = new IScope() {
 
+		@Override
 		public IEObjectDescription getSingleElement(QualifiedName name) {
 			return null;
 		}
 
+		@Override
 		public Iterable<IEObjectDescription> getElements(QualifiedName name) {
 			return Collections.emptyList();
 		}
 
+		@Override
 		public IEObjectDescription getSingleElement(EObject object) {
 			return null;
 		}
 
+		@Override
 		public Iterable<IEObjectDescription> getElements(EObject object) {
 			return Collections.emptyList();
 		}
 
+		@Override
 		public Iterable<IEObjectDescription> getAllElements() {
 			return Collections.emptyList();
 		}

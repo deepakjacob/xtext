@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.sequencertest.impl;
 
@@ -21,12 +18,12 @@ import org.eclipse.xtext.serializer.sequencertest.SequencertestPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.OptionalDoubleImpl#getDouble0 <em>Double0</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.OptionalDoubleImpl#getDouble1 <em>Double1</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.OptionalDoubleImpl#getDouble2 <em>Double2</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

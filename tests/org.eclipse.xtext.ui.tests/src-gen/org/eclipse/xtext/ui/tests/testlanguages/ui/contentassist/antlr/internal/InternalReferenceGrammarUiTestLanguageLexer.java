@@ -47,15 +47,15 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalReferenceGrammarUiTestLanguage.g"; }
 
     // $ANTLR start "T__11"
     public final void mT__11() throws RecognitionException {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:11:7: ( 'ROT' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:11:9: 'ROT'
+            // InternalReferenceGrammarUiTestLanguage.g:11:7: ( 'ROT' )
+            // InternalReferenceGrammarUiTestLanguage.g:11:9: 'ROT'
             {
             match("ROT"); 
 
@@ -75,8 +75,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:12:7: ( 'BLAU' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:12:9: 'BLAU'
+            // InternalReferenceGrammarUiTestLanguage.g:12:7: ( 'BLAU' )
+            // InternalReferenceGrammarUiTestLanguage.g:12:9: 'BLAU'
             {
             match("BLAU"); 
 
@@ -96,8 +96,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:13:7: ( 'GELB' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:13:9: 'GELB'
+            // InternalReferenceGrammarUiTestLanguage.g:13:7: ( 'GELB' )
+            // InternalReferenceGrammarUiTestLanguage.g:13:9: 'GELB'
             {
             match("GELB"); 
 
@@ -117,8 +117,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__14;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:14:7: ( 'GR\\u00DCN' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:14:9: 'GR\\u00DCN'
+            // InternalReferenceGrammarUiTestLanguage.g:14:7: ( 'GR\\u00DCN' )
+            // InternalReferenceGrammarUiTestLanguage.g:14:9: 'GR\\u00DCN'
             {
             match("GR\u00DCN"); 
 
@@ -138,8 +138,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__15;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:15:7: ( 'keyword' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:15:9: 'keyword'
+            // InternalReferenceGrammarUiTestLanguage.g:15:7: ( 'keyword' )
+            // InternalReferenceGrammarUiTestLanguage.g:15:9: 'keyword'
             {
             match("keyword"); 
 
@@ -159,8 +159,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__16;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:16:7: ( 'spielplatz' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:16:9: 'spielplatz'
+            // InternalReferenceGrammarUiTestLanguage.g:16:7: ( 'spielplatz' )
+            // InternalReferenceGrammarUiTestLanguage.g:16:9: 'spielplatz'
             {
             match("spielplatz"); 
 
@@ -180,8 +180,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__17;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:17:7: ( '{' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:17:9: '{'
+            // InternalReferenceGrammarUiTestLanguage.g:17:7: ( '{' )
+            // InternalReferenceGrammarUiTestLanguage.g:17:9: '{'
             {
             match('{'); 
 
@@ -200,8 +200,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__18;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:18:7: ( '}' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:18:9: '}'
+            // InternalReferenceGrammarUiTestLanguage.g:18:7: ( '}' )
+            // InternalReferenceGrammarUiTestLanguage.g:18:9: '}'
             {
             match('}'); 
 
@@ -220,8 +220,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__19;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:19:7: ( 'kind' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:19:9: 'kind'
+            // InternalReferenceGrammarUiTestLanguage.g:19:7: ( 'kind' )
+            // InternalReferenceGrammarUiTestLanguage.g:19:9: 'kind'
             {
             match("kind"); 
 
@@ -241,8 +241,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__20;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:20:7: ( '(' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:20:9: '('
+            // InternalReferenceGrammarUiTestLanguage.g:20:7: ( '(' )
+            // InternalReferenceGrammarUiTestLanguage.g:20:9: '('
             {
             match('('); 
 
@@ -261,8 +261,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__21;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:21:7: ( ')' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:21:9: ')'
+            // InternalReferenceGrammarUiTestLanguage.g:21:7: ( ')' )
+            // InternalReferenceGrammarUiTestLanguage.g:21:9: ')'
             {
             match(')'); 
 
@@ -281,8 +281,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__22;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:22:7: ( 'erwachsener' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:22:9: 'erwachsener'
+            // InternalReferenceGrammarUiTestLanguage.g:22:7: ( 'erwachsener' )
+            // InternalReferenceGrammarUiTestLanguage.g:22:9: 'erwachsener'
             {
             match("erwachsener"); 
 
@@ -302,8 +302,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__23;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:23:7: ( 'spielzeug' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:23:9: 'spielzeug'
+            // InternalReferenceGrammarUiTestLanguage.g:23:7: ( 'spielzeug' )
+            // InternalReferenceGrammarUiTestLanguage.g:23:9: 'spielzeug'
             {
             match("spielzeug"); 
 
@@ -323,8 +323,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__24;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:24:7: ( 'familie' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:24:9: 'familie'
+            // InternalReferenceGrammarUiTestLanguage.g:24:7: ( 'familie' )
+            // InternalReferenceGrammarUiTestLanguage.g:24:9: 'familie'
             {
             match("familie"); 
 
@@ -344,8 +344,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = T__25;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:25:7: ( ',' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:25:9: ','
+            // InternalReferenceGrammarUiTestLanguage.g:25:7: ( ',' )
+            // InternalReferenceGrammarUiTestLanguage.g:25:9: ','
             {
             match(','); 
 
@@ -364,10 +364,10 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1616:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1616:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalReferenceGrammarUiTestLanguage.g:1616:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalReferenceGrammarUiTestLanguage.g:1616:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1616:11: ( '^' )?
+            // InternalReferenceGrammarUiTestLanguage.g:1616:11: ( '^' )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -376,7 +376,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1616:11: '^'
+                    // InternalReferenceGrammarUiTestLanguage.g:1616:11: '^'
                     {
                     match('^'); 
 
@@ -394,7 +394,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1616:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalReferenceGrammarUiTestLanguage.g:1616:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop2:
             do {
                 int alt2=2;
@@ -407,7 +407,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:
+            	    // InternalReferenceGrammarUiTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -443,10 +443,10 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1618:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1618:12: ( '0' .. '9' )+
+            // InternalReferenceGrammarUiTestLanguage.g:1618:10: ( ( '0' .. '9' )+ )
+            // InternalReferenceGrammarUiTestLanguage.g:1618:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1618:12: ( '0' .. '9' )+
+            // InternalReferenceGrammarUiTestLanguage.g:1618:12: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -460,7 +460,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1618:13: '0' .. '9'
+            	    // InternalReferenceGrammarUiTestLanguage.g:1618:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -492,10 +492,10 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalReferenceGrammarUiTestLanguage.g:1620:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalReferenceGrammarUiTestLanguage.g:1620:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalReferenceGrammarUiTestLanguage.g:1620:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -513,10 +513,10 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalReferenceGrammarUiTestLanguage.g:1620:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalReferenceGrammarUiTestLanguage.g:1620:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop4:
                     do {
                         int alt4=3;
@@ -532,23 +532,15 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalReferenceGrammarUiTestLanguage.g:1620:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalReferenceGrammarUiTestLanguage.g:1620:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -573,10 +565,10 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalReferenceGrammarUiTestLanguage.g:1620:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalReferenceGrammarUiTestLanguage.g:1620:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -592,23 +584,15 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalReferenceGrammarUiTestLanguage.g:1620:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1620:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalReferenceGrammarUiTestLanguage.g:1620:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -651,12 +635,12 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1622:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1622:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalReferenceGrammarUiTestLanguage.g:1622:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalReferenceGrammarUiTestLanguage.g:1622:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1622:24: ( options {greedy=false; } : . )*
+            // InternalReferenceGrammarUiTestLanguage.g:1622:24: ( options {greedy=false; } : . )*
             loop7:
             do {
                 int alt7=2;
@@ -681,7 +665,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1622:52: .
+            	    // InternalReferenceGrammarUiTestLanguage.g:1622:52: .
             	    {
             	    matchAny(); 
 
@@ -711,12 +695,12 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1624:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1624:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalReferenceGrammarUiTestLanguage.g:1624:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalReferenceGrammarUiTestLanguage.g:1624:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1624:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalReferenceGrammarUiTestLanguage.g:1624:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop8:
             do {
                 int alt8=2;
@@ -729,7 +713,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1624:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalReferenceGrammarUiTestLanguage.g:1624:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -749,7 +733,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1624:40: ( ( '\\r' )? '\\n' )?
+            // InternalReferenceGrammarUiTestLanguage.g:1624:40: ( ( '\\r' )? '\\n' )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -758,9 +742,9 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
             }
             switch (alt10) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1624:41: ( '\\r' )? '\\n'
+                    // InternalReferenceGrammarUiTestLanguage.g:1624:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1624:41: ( '\\r' )?
+                    // InternalReferenceGrammarUiTestLanguage.g:1624:41: ( '\\r' )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -769,7 +753,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
                     }
                     switch (alt9) {
                         case 1 :
-                            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1624:41: '\\r'
+                            // InternalReferenceGrammarUiTestLanguage.g:1624:41: '\\r'
                             {
                             match('\r'); 
 
@@ -801,10 +785,10 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1626:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1626:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalReferenceGrammarUiTestLanguage.g:1626:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalReferenceGrammarUiTestLanguage.g:1626:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1626:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalReferenceGrammarUiTestLanguage.g:1626:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -818,7 +802,7 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:
+            	    // InternalReferenceGrammarUiTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -858,8 +842,8 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1628:16: ( . )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1628:18: .
+            // InternalReferenceGrammarUiTestLanguage.g:1628:16: ( . )
+            // InternalReferenceGrammarUiTestLanguage.g:1628:18: .
             {
             matchAny(); 
 
@@ -874,159 +858,159 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | T__25 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalReferenceGrammarUiTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | T__14 | T__15 | T__16 | T__17 | T__18 | T__19 | T__20 | T__21 | T__22 | T__23 | T__24 | T__25 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt12=22;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:10: T__11
+                // InternalReferenceGrammarUiTestLanguage.g:1:10: T__11
                 {
                 mT__11(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:16: T__12
+                // InternalReferenceGrammarUiTestLanguage.g:1:16: T__12
                 {
                 mT__12(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:22: T__13
+                // InternalReferenceGrammarUiTestLanguage.g:1:22: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:28: T__14
+                // InternalReferenceGrammarUiTestLanguage.g:1:28: T__14
                 {
                 mT__14(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:34: T__15
+                // InternalReferenceGrammarUiTestLanguage.g:1:34: T__15
                 {
                 mT__15(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:40: T__16
+                // InternalReferenceGrammarUiTestLanguage.g:1:40: T__16
                 {
                 mT__16(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:46: T__17
+                // InternalReferenceGrammarUiTestLanguage.g:1:46: T__17
                 {
                 mT__17(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:52: T__18
+                // InternalReferenceGrammarUiTestLanguage.g:1:52: T__18
                 {
                 mT__18(); 
 
                 }
                 break;
             case 9 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:58: T__19
+                // InternalReferenceGrammarUiTestLanguage.g:1:58: T__19
                 {
                 mT__19(); 
 
                 }
                 break;
             case 10 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:64: T__20
+                // InternalReferenceGrammarUiTestLanguage.g:1:64: T__20
                 {
                 mT__20(); 
 
                 }
                 break;
             case 11 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:70: T__21
+                // InternalReferenceGrammarUiTestLanguage.g:1:70: T__21
                 {
                 mT__21(); 
 
                 }
                 break;
             case 12 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:76: T__22
+                // InternalReferenceGrammarUiTestLanguage.g:1:76: T__22
                 {
                 mT__22(); 
 
                 }
                 break;
             case 13 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:82: T__23
+                // InternalReferenceGrammarUiTestLanguage.g:1:82: T__23
                 {
                 mT__23(); 
 
                 }
                 break;
             case 14 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:88: T__24
+                // InternalReferenceGrammarUiTestLanguage.g:1:88: T__24
                 {
                 mT__24(); 
 
                 }
                 break;
             case 15 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:94: T__25
+                // InternalReferenceGrammarUiTestLanguage.g:1:94: T__25
                 {
                 mT__25(); 
 
                 }
                 break;
             case 16 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:100: RULE_ID
+                // InternalReferenceGrammarUiTestLanguage.g:1:100: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 17 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:108: RULE_INT
+                // InternalReferenceGrammarUiTestLanguage.g:1:108: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 18 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:117: RULE_STRING
+                // InternalReferenceGrammarUiTestLanguage.g:1:117: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 19 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:129: RULE_ML_COMMENT
+                // InternalReferenceGrammarUiTestLanguage.g:1:129: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 20 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:145: RULE_SL_COMMENT
+                // InternalReferenceGrammarUiTestLanguage.g:1:145: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 21 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:161: RULE_WS
+                // InternalReferenceGrammarUiTestLanguage.g:1:161: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 22 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/testlanguages/ui/contentassist/antlr/internal/InternalReferenceGrammarUiTestLanguage.g:1:169: RULE_ANY_OTHER
+                // InternalReferenceGrammarUiTestLanguage.g:1:169: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -1040,44 +1024,19 @@ public class InternalReferenceGrammarUiTestLanguageLexer extends Lexer {
 
     protected DFA12 dfa12 = new DFA12(this);
     static final String DFA12_eotS =
-        "\1\uffff\5\26\4\uffff\2\26\1\uffff\1\24\2\uffff\3\24\2\uffff\1\26"+
-        "\1\uffff\6\26\4\uffff\2\26\6\uffff\1\62\2\26\1\uffff\5\26\1\uffff"+
-        "\1\72\1\73\1\26\1\75\3\26\2\uffff\1\26\1\uffff\10\26\1\113\3\26"+
-        "\1\117\1\uffff\3\26\1\uffff\1\26\1\124\1\26\1\126\1\uffff\1\26\1"+
-        "\uffff\1\130\1\uffff";
+        "\1\uffff\5\26\4\uffff\2\26\1\uffff\1\24\2\uffff\3\24\2\uffff\1\26\1\uffff\6\26\4\uffff\2\26\6\uffff\1\62\2\26\1\uffff\5\26\1\uffff\1\72\1\73\1\26\1\75\3\26\2\uffff\1\26\1\uffff\10\26\1\113\3\26\1\117\1\uffff\3\26\1\uffff\1\26\1\124\1\26\1\126\1\uffff\1\26\1\uffff\1\130\1\uffff";
     static final String DFA12_eofS =
         "\131\uffff";
     static final String DFA12_minS =
-        "\1\0\1\117\1\114\1\105\1\145\1\160\4\uffff\1\162\1\141\1\uffff\1"+
-        "\101\2\uffff\2\0\1\52\2\uffff\1\124\1\uffff\1\101\1\114\1\u00dc"+
-        "\1\171\1\156\1\151\4\uffff\1\167\1\155\6\uffff\1\60\1\125\1\102"+
-        "\1\uffff\1\167\1\144\1\145\1\141\1\151\1\uffff\2\60\1\157\1\60\1"+
-        "\154\1\143\1\154\2\uffff\1\162\1\uffff\1\160\1\150\1\151\1\144\1"+
-        "\154\1\145\1\163\1\145\1\60\1\141\1\165\1\145\1\60\1\uffff\1\164"+
-        "\1\147\1\156\1\uffff\1\172\1\60\1\145\1\60\1\uffff\1\162\1\uffff"+
-        "\1\60\1\uffff";
+        "\1\0\1\117\1\114\1\105\1\145\1\160\4\uffff\1\162\1\141\1\uffff\1\101\2\uffff\2\0\1\52\2\uffff\1\124\1\uffff\1\101\1\114\1\u00dc\1\171\1\156\1\151\4\uffff\1\167\1\155\6\uffff\1\60\1\125\1\102\1\uffff\1\167\1\144\1\145\1\141\1\151\1\uffff\2\60\1\157\1\60\1\154\1\143\1\154\2\uffff\1\162\1\uffff\1\160\1\150\1\151\1\144\1\154\1\145\1\163\1\145\1\60\1\141\1\165\1\145\1\60\1\uffff\1\164\1\147\1\156\1\uffff\1\172\1\60\1\145\1\60\1\uffff\1\162\1\uffff\1\60\1\uffff";
     static final String DFA12_maxS =
-        "\1\uffff\1\117\1\114\1\122\1\151\1\160\4\uffff\1\162\1\141\1\uffff"+
-        "\1\172\2\uffff\2\uffff\1\57\2\uffff\1\124\1\uffff\1\101\1\114\1"+
-        "\u00dc\1\171\1\156\1\151\4\uffff\1\167\1\155\6\uffff\1\172\1\125"+
-        "\1\102\1\uffff\1\167\1\144\1\145\1\141\1\151\1\uffff\2\172\1\157"+
-        "\1\172\1\154\1\143\1\154\2\uffff\1\162\1\uffff\1\172\1\150\1\151"+
-        "\1\144\1\154\1\145\1\163\1\145\1\172\1\141\1\165\1\145\1\172\1\uffff"+
-        "\1\164\1\147\1\156\1\uffff\2\172\1\145\1\172\1\uffff\1\162\1\uffff"+
-        "\1\172\1\uffff";
+        "\1\uffff\1\117\1\114\1\122\1\151\1\160\4\uffff\1\162\1\141\1\uffff\1\172\2\uffff\2\uffff\1\57\2\uffff\1\124\1\uffff\1\101\1\114\1\u00dc\1\171\1\156\1\151\4\uffff\1\167\1\155\6\uffff\1\172\1\125\1\102\1\uffff\1\167\1\144\1\145\1\141\1\151\1\uffff\2\172\1\157\1\172\1\154\1\143\1\154\2\uffff\1\162\1\uffff\1\172\1\150\1\151\1\144\1\154\1\145\1\163\1\145\1\172\1\141\1\165\1\145\1\172\1\uffff\1\164\1\147\1\156\1\uffff\2\172\1\145\1\172\1\uffff\1\162\1\uffff\1\172\1\uffff";
     static final String DFA12_acceptS =
-        "\6\uffff\1\7\1\10\1\12\1\13\2\uffff\1\17\1\uffff\1\20\1\21\3\uffff"+
-        "\1\25\1\26\1\uffff\1\20\6\uffff\1\7\1\10\1\12\1\13\2\uffff\1\17"+
-        "\1\21\1\22\1\23\1\24\1\25\3\uffff\1\4\5\uffff\1\1\7\uffff\1\2\1"+
-        "\3\1\uffff\1\11\15\uffff\1\5\3\uffff\1\16\4\uffff\1\15\1\uffff\1"+
-        "\6\1\uffff\1\14";
+        "\6\uffff\1\7\1\10\1\12\1\13\2\uffff\1\17\1\uffff\1\20\1\21\3\uffff\1\25\1\26\1\uffff\1\20\6\uffff\1\7\1\10\1\12\1\13\2\uffff\1\17\1\21\1\22\1\23\1\24\1\25\3\uffff\1\4\5\uffff\1\1\7\uffff\1\2\1\3\1\uffff\1\11\15\uffff\1\5\3\uffff\1\16\4\uffff\1\15\1\uffff\1\6\1\uffff\1\14";
     static final String DFA12_specialS =
         "\1\2\17\uffff\1\1\1\0\107\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\11\24\2\23\2\24\1\23\22\24\1\23\1\24\1\20\4\24\1\21\1\10\1"+
-            "\11\2\24\1\14\2\24\1\22\12\17\7\24\1\16\1\2\4\16\1\3\12\16\1"+
-            "\1\10\16\3\24\1\15\1\16\1\24\4\16\1\12\1\13\4\16\1\4\7\16\1"+
-            "\5\7\16\1\6\1\24\1\7\uff82\24",
+            "\11\24\2\23\2\24\1\23\22\24\1\23\1\24\1\20\4\24\1\21\1\10\1\11\2\24\1\14\2\24\1\22\12\17\7\24\1\16\1\2\4\16\1\3\12\16\1\1\10\16\3\24\1\15\1\16\1\24\4\16\1\12\1\13\4\16\1\4\7\16\1\5\7\16\1\6\1\24\1\7\uff82\24",
             "\1\25",
             "\1\27",
             "\1\30\14\uffff\1\31",

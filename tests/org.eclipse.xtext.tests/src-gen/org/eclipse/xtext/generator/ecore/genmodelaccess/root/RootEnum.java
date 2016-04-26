@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.generator.ecore.genmodelaccess.root;
 
@@ -71,6 +68,8 @@ public enum RootEnum implements Enumerator
 	 * Returns the '<em><b>Enum</b></em>' literal with the specified literal value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param literal the literal.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static RootEnum get(String literal)
@@ -90,6 +89,8 @@ public enum RootEnum implements Enumerator
 	 * Returns the '<em><b>Enum</b></em>' literal with the specified name.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param name the name.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static RootEnum getByName(String name)
@@ -109,6 +110,8 @@ public enum RootEnum implements Enumerator
 	 * Returns the '<em><b>Enum</b></em>' literal with the specified integer value.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @param value the integer value.
+	 * @return the matching enumerator or <code>null</code>.
 	 * @generated
 	 */
 	public static RootEnum get(int value)

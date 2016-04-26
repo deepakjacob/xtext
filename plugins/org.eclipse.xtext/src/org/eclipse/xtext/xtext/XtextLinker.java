@@ -32,17 +32,20 @@ import org.eclipse.xtext.EnumRule;
 import org.eclipse.xtext.GeneratedMetamodel;
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
+import org.eclipse.xtext.NamedArgument;
+import org.eclipse.xtext.Parameter;
 import org.eclipse.xtext.ParserRule;
+import org.eclipse.xtext.ReferencedMetamodel;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.TypeRef;
 import org.eclipse.xtext.XtextFactory;
 import org.eclipse.xtext.XtextPackage;
 import org.eclipse.xtext.diagnostics.AbstractDiagnosticProducerDecorator;
 import org.eclipse.xtext.diagnostics.DiagnosticMessage;
-import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.diagnostics.ExceptionDiagnostic;
 import org.eclipse.xtext.diagnostics.IDiagnosticConsumer;
 import org.eclipse.xtext.diagnostics.IDiagnosticProducer;
+import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.linking.impl.Linker;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
@@ -131,7 +134,8 @@ public class XtextLinker extends Linker {
 
 	@Override
 	protected boolean canSetDefaultValues(EReference ref) {
-		return super.canSetDefaultValues(ref) || ref == XtextPackage.Literals.CROSS_REFERENCE__TERMINAL;
+		return super.canSetDefaultValues(ref)
+				|| ref == XtextPackage.Literals.CROSS_REFERENCE__TERMINAL;
 	}
 
 	@Override
@@ -153,6 +157,31 @@ public class XtextLinker extends Linker {
 				RuleCall call = XtextFactory.eINSTANCE.createRuleCall();
 				call.setRule(rule);
 				((CrossReference) obj).setTerminal(call);
+			}
+		} else if (XtextPackage.eINSTANCE.getNamedArgument_Parameter() == ref) {
+			final NamedArgument argument = (NamedArgument) obj;
+			if (!argument.isCalledByName()) {
+				RuleCall ruleCall = EcoreUtil2.getContainerOfType(argument, RuleCall.class);
+				AbstractRule calledRule = ruleCall.getRule();
+				if (!(calledRule instanceof ParserRule)) {
+					producer.addDiagnostic(new DiagnosticMessage("Arguments can only be used with parser rules.", Severity.ERROR, null));	
+					return;
+				}
+				if (!calledRule.eIsProxy()) {
+					ParserRule casted = (ParserRule) calledRule;
+					int idx = ruleCall.getArguments().indexOf(argument);
+					if (idx < casted.getParameters().size()) {
+						argument.setParameter(casted.getParameters().get(idx));
+						return;
+					} else if (casted.getParameters().size() == 0) {
+						producer.addDiagnostic(new DiagnosticMessage(
+								"Rule " + calledRule.getName() + " has no arguments.", Severity.ERROR, null));
+					} else {
+						String message = "Invalid number of arguments for rule " + calledRule.getName() + ", expecting "
+								+ casted.getParameters().size() + " but was " + (idx+1);
+						producer.addDiagnostic(new DiagnosticMessage(message, Severity.ERROR, null));
+					}
+				}
 			}
 		} else {
 			super.setDefaultValueImpl(obj, ref, producer);
@@ -176,11 +205,18 @@ public class XtextLinker extends Linker {
 		return transformer;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void beforeModelLinked(EObject model, IDiagnosticConsumer diagnosticsConsumer) {
 		discardGeneratedPackages(model);
+		clearAllReferences(model);
 		super.beforeModelLinked(model, diagnosticsConsumer);
 		cache.getOrCreate(model.eResource()).ignoreNotifications();
+	}
+	
+	@Override
+	protected boolean isClearAllReferencesRequired(Resource resource) {
+		return false;
 	}
 
 	void discardGeneratedPackages(EObject root) {
@@ -188,8 +224,8 @@ public class XtextLinker extends Linker {
 			// unload generated metamodels as they will be recreated during linking 
 			for (AbstractMetamodelDeclaration metamodelDeclaration : ((Grammar) root).getMetamodelDeclarations()) {
 				if (metamodelDeclaration instanceof GeneratedMetamodel) {
-					EPackage ePackage = ((GeneratedMetamodel) metamodelDeclaration).getEPackage();
-					if (ePackage != null) {
+					EPackage ePackage = (EPackage) metamodelDeclaration.eGet(XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE, false);
+					if (ePackage != null && !ePackage.eIsProxy()) {
 						Resource resource = ePackage.eResource();
 						if (resource != null && resource.getResourceSet() != null) {
 							if (unloader != null) {
@@ -268,53 +304,55 @@ public class XtextLinker extends Linker {
 					case Notification.REMOVE:
 					case Notification.SET:
 						Object oldValue = msg.getOldValue();
+						Collection<Resource> resourcesToRemove = Sets.newHashSet();
+						Collection<Resource> resourcesToUnload = Sets.newHashSet();
 						Collection<Resource> referencedResources = Sets.newHashSet(notifyingResource);
-						Collection<Resource> resourcesToRemove = new HashSet<Resource>();
 						if (oldValue instanceof Grammar) {
-							for (AbstractMetamodelDeclaration declaration : ((Grammar) oldValue)
-									.getMetamodelDeclarations()) {
-								EPackage pack = declaration.getEPackage();
-								if (pack != null && pack.eResource() != null) {
-									resourcesToRemove.add(pack.eResource());
-									if (isPackageReferenced(set, pack, ((Grammar) oldValue).getMetamodelDeclarations())) {
-										referencedResources.add(pack.eResource());
-									}
-								}
-							}
+							processMetamodelDeclarations(((Grammar) oldValue).getMetamodelDeclarations(), set, resourcesToRemove,
+									resourcesToUnload, referencedResources);
 						} else if (oldValue instanceof AbstractMetamodelDeclaration) {
-							EPackage pack = ((AbstractMetamodelDeclaration) oldValue).getEPackage();
-							if (pack != null && pack.eResource() != null) {
-								resourcesToRemove.add(pack.eResource());
-								if (isPackageReferenced(set, pack, Collections
-										.singletonList((AbstractMetamodelDeclaration) oldValue))) {
-									referencedResources.add(pack.eResource());
-								}
-							}
+							processMetamodelDeclarations(Collections
+									.singletonList((AbstractMetamodelDeclaration) oldValue), set, resourcesToRemove, resourcesToUnload, referencedResources);
 						} else if (oldValue instanceof Collection<?>) {
 							if (XtextPackage.Literals.GRAMMAR__METAMODEL_DECLARATIONS == msg.getFeature()) {
 								Collection<AbstractMetamodelDeclaration> metamodelDeclarations = (Collection<AbstractMetamodelDeclaration>) oldValue;
-								for (AbstractMetamodelDeclaration declaration : metamodelDeclarations) {
-									EPackage pack = declaration.getEPackage();
-									if (pack != null && pack.eResource() != null) {
-										resourcesToRemove.add(pack.eResource());
-										if (isPackageReferenced(set, pack, metamodelDeclarations)) {
-											referencedResources.add(pack.eResource());
-										}
-									}
-								}
+								processMetamodelDeclarations(metamodelDeclarations, set, resourcesToRemove, resourcesToUnload, referencedResources);
 							}
 						}
 						resourcesToRemove.removeAll(referencedResources);
 						if (unloader != null) {
-							for (Resource resource : resourcesToRemove) {
-								for (EObject content : resource.getContents())
-									unloader.unloadRoot(content);
+							resourcesToUnload.removeAll(referencedResources);
+							for (Resource resource : resourcesToUnload) {
+								if(resource.getResourceSet() == set) {
+									for (EObject content : resource.getContents())
+										unloader.unloadRoot(content);
+								}
 							}
 						}
 						set.getResources().removeAll(resourcesToRemove);
 						break;
 					default:
 						break;
+				}
+			}
+		}
+
+		private void processMetamodelDeclarations(Collection<AbstractMetamodelDeclaration> declarations, ResourceSet resourceSet,
+				Collection<Resource> resourcesToRemove, Collection<Resource> resourcesToUnload,
+				Collection<Resource> referencedResources) {
+			for (AbstractMetamodelDeclaration declaration : declarations) {
+				EPackage pack = (EPackage) declaration.eGet(XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE, false);
+				if (pack != null && !pack.eIsProxy()) {
+					Resource packResource = pack.eResource();
+					if (packResource != null) {
+						resourcesToRemove.add(packResource);
+						if (declaration instanceof ReferencedMetamodel) {
+								resourcesToUnload.add(packResource);
+						}
+						if (isPackageReferenced(resourceSet, pack, declarations)) {
+							referencedResources.add(packResource);
+						}
+					}
 				}
 			}
 		}
@@ -383,10 +421,32 @@ public class XtextLinker extends Linker {
 		}
 		final List<RuleCall> allRuleCalls = EcoreUtil2.getAllContentsOfType(grammar, RuleCall.class);
 		for (RuleCall call : allRuleCalls) {
-			if (call.getRule() != null) {
-				AbstractRule rule = rulePerName.get(call.getRule().getName());
-				if (rule != null)
+			AbstractRule calledRule = call.getRule();
+			if (calledRule != null && !call.isExplicitlyCalled()) {
+				AbstractRule rule = rulePerName.get(calledRule.getName());
+				if (rule != null) {
 					call.setRule(rule);
+					if (!call.getArguments().isEmpty()) {
+						if (calledRule instanceof ParserRule && rule instanceof ParserRule) {
+							updateNamedArguments(
+									call,
+									((ParserRule) calledRule).getParameters(),
+									((ParserRule) rule).getParameters());
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void updateNamedArguments(RuleCall call, List<Parameter> superParams,
+			List<Parameter> overridingParameters) {
+		for(NamedArgument argument: call.getArguments()) {
+			Parameter superParameter = argument.getParameter();
+			for(int i = 0, max = Math.min(superParams.size(), overridingParameters.size()); i <  max ; i++) {
+				if (superParams.get(i) == superParameter) {
+					argument.setParameter(overridingParameters.get(i));
+				}
 			}
 		}
 	}
@@ -415,6 +475,9 @@ public class XtextLinker extends Linker {
 			INode node = NodeModelUtils.getNode((EObject) obj.eGet(ref));
 			if (node == null)
 				obj.eUnset(ref);
+		}
+		if (ref == XtextPackage.Literals.RULE_CALL__RULE) {
+			obj.eUnset(XtextPackage.Literals.RULE_CALL__EXPLICITLY_CALLED);
 		}
 	}
 

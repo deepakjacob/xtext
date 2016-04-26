@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
 package org.eclipse.xtext.xbase.ui.tests.editor
 
 import com.google.inject.Inject
@@ -8,10 +15,11 @@ import org.eclipse.xtext.xbase.ui.hover.XbaseHoverProvider
 import org.eclipse.xtext.xbase.ui.tests.AbstractXbaseUITestCase
 import org.junit.Test
 
-import static org.junit.Assert.*
 import org.eclipse.jface.text.Region
 
-
+/**
+ * @author Holger Schill - Initial contribution and API
+ */
 class Bug379238Test extends AbstractXbaseUITestCase {
 	
 	@Inject
@@ -19,8 +27,6 @@ class Bug379238Test extends AbstractXbaseUITestCase {
 	
 	@Inject
 	TestingXbaseHoverProvider hoverProvider
-	
-	
 	
 	@Test
 	def testXConstructorWithNullConstructorNoException() throws Exception {
@@ -32,6 +38,9 @@ class Bug379238Test extends AbstractXbaseUITestCase {
 	}
 }
 
+/**
+ * @author Holger Schill - Initial contribution and API
+ */
 class TestingXbaseHoverProvider extends XbaseHoverProvider {
 		
    def getHoverInfo(EObject element) {

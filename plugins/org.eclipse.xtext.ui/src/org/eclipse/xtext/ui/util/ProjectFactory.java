@@ -57,6 +57,10 @@ public class ProjectFactory {
 	protected List<String> projectNatures;
 	protected List<String> builderIds;
 	protected List<IWorkingSet> workingSets;
+	/**
+	 * @since 2.4
+	 */
+	protected String defaultCharset;
 
 	private List<IProjectFactoryContributor> contributors;
 
@@ -114,14 +118,20 @@ public class ProjectFactory {
 		}
 		contributors.add(projectFactoryContributor);
 	}
+	
+	/**
+	 * @since 2.4
+	 */
+	public void setProjectDefaultCharset(String encoding) {
+		this.defaultCharset = encoding;
+	}
 
 	public IProject createProject(IProgressMonitor monitor, Shell shell) {
-		IProject project = null;
-		SubMonitor subMonitor = SubMonitor.convert(monitor, 10);
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, 10);
 		try {
 			final IProjectDescription description = createProjectDescription();
 			subMonitor.subTask(Messages.ProjectFactory_0 + description.getName());
-			project = workspace.getRoot().getProject(projectName);
+			final IProject project = workspace.getRoot().getProject(projectName);
 			if (!deleteExistingProject(project, shell, subMonitor)) {
 				return null;
 			}
@@ -129,14 +139,29 @@ public class ProjectFactory {
 			project.create(description, subMonitor.newChild(1));
 			project.open(subMonitor.newChild(1));
 			project.setDescription(description, subMonitor.newChild(1));
+			project.setDefaultCharset(defaultCharset, subMonitor.newChild(1));
 			createFolders(project, subMonitor, shell);
 			enhanceProject(project, subMonitor, shell);
-		} catch (final Exception exception) {
+
+			if (contributors != null) {
+				IFileCreator fileCreator = new IFileCreator() {
+
+					@Override
+					public IFile writeToFile(CharSequence chars, String fileName) {
+						return ProjectFactory.this.writeToFile(chars, fileName, project, subMonitor);
+					}
+				};
+				for (IProjectFactoryContributor contributor : contributors) {
+					contributor.contributeFiles(project, fileCreator);
+				}
+			}
+			return project;
+		} catch (final CoreException exception) {
 			logger.error(exception.getMessage(), exception);
+			return null;
 		} finally {
 			subMonitor.done();
 		}
-		return project;
 	}
 
 	protected void createFolders(IProject project, SubMonitor subMonitor, Shell shell) throws CoreException {
@@ -144,7 +169,7 @@ public class ProjectFactory {
 			for (final String folderName : folders) {
 				final IFolder folder = project.getFolder(folderName);
 				if (!folder.exists()) {
-					folder.create(false, true, subMonitor.newChild(1));
+					createRecursive(folder);
 				}
 			}
 		}
@@ -157,17 +182,6 @@ public class ProjectFactory {
 					workingSets.toArray(new IWorkingSet[workingSets.size()]));
 		}
 
-		if (contributors != null) {
-			IFileCreator fileCreator = new IFileCreator() {
-				
-				public IFile writeToFile(CharSequence chars, String fileName) {
-					return ProjectFactory.this.writeToFile(chars, fileName, project, subMonitor);
-				}
-			};
-			for (IProjectFactoryContributor contributor : contributors) {
-				contributor.contributeFiles(project, fileCreator);
-			}
-		}
 	}
 
 	protected boolean deleteExistingProject(IProject project, final Shell theShell, SubMonitor subMonitor)
@@ -177,6 +191,7 @@ public class ProjectFactory {
 			final boolean[] result = new boolean[1];
 			if (workbench != null && theShell != null) {
 				workbench.getDisplay().syncExec(new Runnable() {
+					@Override
 					public void run() {
 						result[0] = MessageDialog.openQuestion(theShell, Messages.ProjectFactory_1 + projectName,
 								Messages.ProjectFactory_2 + projectName + Messages.ProjectFactory_3);
@@ -229,6 +244,7 @@ public class ProjectFactory {
 		try {
 			final InputStream stream = new ByteArrayInputStream(content.getBytes(file.getCharset()));
 			if (file.exists()) {
+				logger.debug("Overwriting content of '" + file.getFullPath() + "'");
 				file.setContents(stream, true, true, subMonitor.newChild(1));
 			} else {
 				file.create(stream, true, subMonitor.newChild(1));

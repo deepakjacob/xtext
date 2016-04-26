@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.codetemplates.templates.impl;
 
@@ -26,13 +23,13 @@ import org.eclipse.xtext.ui.codetemplates.templates.Variable;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.codetemplates.templates.impl.VariableImpl#getName <em>Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.codetemplates.templates.impl.VariableImpl#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.codetemplates.templates.impl.VariableImpl#isExpectingParameters <em>Expecting Parameters</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.codetemplates.templates.impl.VariableImpl#getParameters <em>Parameters</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

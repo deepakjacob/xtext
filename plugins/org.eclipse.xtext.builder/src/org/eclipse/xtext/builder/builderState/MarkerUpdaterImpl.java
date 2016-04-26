@@ -7,17 +7,20 @@
  *******************************************************************************/
 package org.eclipse.xtext.builder.builderState;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.resource.IResourceDescription.Delta;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.ui.markers.IMarkerContributor;
 import org.eclipse.xtext.ui.resource.IStorage2UriMapper;
 import org.eclipse.xtext.ui.validation.IResourceUIValidatorExtension;
 import org.eclipse.xtext.ui.validation.MarkerEraser;
@@ -29,14 +32,19 @@ import com.google.inject.Inject;
 /**
  * {@link IMarkerUpdater} that handles {@link CheckMode#NORMAL_AND_FAST} marker for all changed resources.
  * 
- * The implementation delegates to the language specific {@link IResourceUIValidatorExtension validator} if
- * available.
+ * The implementation delegates to the language specific {@link IResourceUIValidatorExtension validator} if available.
  * 
  * @author Sven Efftinge - Initial contribution and API
  * @author Michael Clay
  * @author Dennis Huebner
+ * @author Christian Schneider
  */
 public class MarkerUpdaterImpl implements IMarkerUpdater {
+	
+	/** Duplicate of ExternalFoldersManager.EXTERNAL_PROJECT_NAME for avoiding any dependency on that (internal) API. */
+	private static final String EXTERNAL_PROJECT_NAME = ".org.eclipse.jdt.core.external.folders";
+
+	public static final Logger LOG = Logger.getLogger(MarkerUpdaterImpl.class);
 
 	@Inject
 	private IResourceServiceProvider.Registry resourceServiceProviderRegistry;
@@ -47,44 +55,73 @@ public class MarkerUpdaterImpl implements IMarkerUpdater {
 	/**
 	 * {@inheritDoc}
 	 */
-	public void updateMarkers(Delta delta, @Nullable ResourceSet resourceSet, IProgressMonitor monitor) {
-		SubMonitor subMonitor = SubMonitor.convert(monitor, Messages.MarkerUpdaterImpl_ValidateResources, 1);
-		subMonitor.subTask(Messages.MarkerUpdaterImpl_ValidateResources);
-
-		if (subMonitor.isCanceled()) {
+	@Override
+	public void updateMarkers(Delta delta, /* @Nullable */ ResourceSet resourceSet, IProgressMonitor monitor) throws OperationCanceledException {
+		if (monitor.isCanceled()) {
 			throw new OperationCanceledException();
 		}
-		processDelta(delta, resourceSet, subMonitor.newChild(1));
+		processDelta(delta, resourceSet, monitor);
 	}
 
-	private void processDelta(Delta delta, @Nullable ResourceSet resourceSet, SubMonitor childMonitor) {
+	private void processDelta(Delta delta, /* @Nullable */ ResourceSet resourceSet, IProgressMonitor monitor) throws OperationCanceledException {
 		URI uri = delta.getUri();
 		IResourceUIValidatorExtension validatorExtension = getResourceUIValidatorExtension(uri);
+		IMarkerContributor markerContributor = getMarkerContributor(uri);
 		CheckMode normalAndFastMode = CheckMode.NORMAL_AND_FAST;
 
 		for (Pair<IStorage, IProject> pair : mapper.getStorages(uri)) {
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			if (pair.getFirst() instanceof IFile) {
 				IFile file = (IFile) pair.getFirst();
-				if (validatorExtension != null) {
-					if (delta.getNew() != null) {
-						if (resourceSet == null)
-							throw new IllegalArgumentException("resourceSet may not be null for changed resources.");
-						validatorExtension.updateValidationMarkers(file, resourceSet.getResource(uri, true),
-								normalAndFastMode, childMonitor);
-					} else {
-						validatorExtension.deleteValidationMarkers(file, normalAndFastMode, childMonitor);
+				
+				if (EXTERNAL_PROJECT_NAME.equals(file.getProject().getName())) {
+					// if the file is found via the source attachment of a classpath entry, which happens
+					//  in case of running a test IDE with bundles from the workspace of the development IDE
+					//  (the workspace bundles' bin folder is linked to the classpath of bundles in the test IDE),
+					// skip the marker processing of that file, as the user can't react on any markers anyway.
+					continue;
+				}
+				
+				if (delta.getNew() != null) {
+					if (resourceSet == null)
+						throw new IllegalArgumentException("resourceSet may not be null for changed resources.");
+					
+					Resource resource = resourceSet.getResource(uri, true);
+					if (validatorExtension != null) {
+						validatorExtension.updateValidationMarkers(file, resource, normalAndFastMode, monitor);
+					}
+					if (markerContributor != null) {
+						markerContributor.updateMarkers(file, resource, monitor);
 					}
 				} else {
-					// Clean up orphaned marker (no IResourceUIValidatorExtension registered)
-					fallBackDeleteMarker(file, normalAndFastMode, childMonitor);
+					if (validatorExtension != null) {
+						validatorExtension.deleteValidationMarkers(file, normalAndFastMode, monitor);
+					} else {
+						deleteAllValidationMarker(file, normalAndFastMode, monitor);
+					}	
+					if (markerContributor != null) {
+						markerContributor.deleteMarkers(file, monitor);
+					} else {
+						deleteAllContributedMarkers(file, monitor);
+					}
 				}
 			}
 		}
 	}
 
-	private void fallBackDeleteMarker(IFile file, CheckMode checkMode, IProgressMonitor monitor) {
+	private void deleteAllValidationMarker(IFile file, CheckMode checkMode, IProgressMonitor monitor) {
 		MarkerEraser markerEraser = new MarkerEraser();
 		markerEraser.deleteValidationMarkers(file, checkMode, monitor);
+	}
+	
+	private void deleteAllContributedMarkers(IFile file, IProgressMonitor monitor) {
+		try {
+			file.deleteMarkers(IMarkerContributor.MARKER_TYPE, true, IResource.DEPTH_ZERO);
+		} catch (CoreException e) {
+			LOG.error(e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -99,6 +136,14 @@ public class MarkerUpdaterImpl implements IMarkerUpdater {
 		IResourceServiceProvider provider = resourceServiceProviderRegistry.getResourceServiceProvider(uri);
 		if (provider != null) {
 			return provider.get(IResourceUIValidatorExtension.class);
+		}
+		return null;
+	}
+
+	protected IMarkerContributor getMarkerContributor(URI uri) {
+		IResourceServiceProvider provider = resourceServiceProviderRegistry.getResourceServiceProvider(uri);
+		if (provider != null) {
+			return provider.get(IMarkerContributor.class);
 		}
 		return null;
 	}

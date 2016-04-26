@@ -15,12 +15,14 @@ import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
 
 /**
+ * A scope for the statically imported features.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public class StaticImportsScope extends AbstractStaticImportsScope {
 	
 	public StaticImportsScope(IScope parent, IFeatureScopeSession session, XAbstractFeatureCall context) {
-		super(parent, session, context);
+		super(parent, session, context, null);
 	}
 
 	@Override

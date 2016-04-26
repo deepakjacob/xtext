@@ -35,7 +35,7 @@ public class XAnnotationsFactoryImpl extends EFactoryImpl implements XAnnotation
 	{
 		try
 		{
-			XAnnotationsFactory theXAnnotationsFactory = (XAnnotationsFactory)EPackage.Registry.INSTANCE.getEFactory("http://www.eclipse.org/Xtext/Xbase/XAnnotations"); 
+			XAnnotationsFactory theXAnnotationsFactory = (XAnnotationsFactory)EPackage.Registry.INSTANCE.getEFactory(XAnnotationsPackage.eNS_URI);
 			if (theXAnnotationsFactory != null)
 			{
 				return theXAnnotationsFactory;
@@ -71,8 +71,6 @@ public class XAnnotationsFactoryImpl extends EFactoryImpl implements XAnnotation
 		{
 			case XAnnotationsPackage.XANNOTATION: return createXAnnotation();
 			case XAnnotationsPackage.XANNOTATION_ELEMENT_VALUE_PAIR: return createXAnnotationElementValuePair();
-			case XAnnotationsPackage.XANNOTATION_ELEMENT_VALUE_BINARY_OPERATION: return createXAnnotationElementValueBinaryOperation();
-			case XAnnotationsPackage.XANNOTATION_VALUE_ARRAY: return createXAnnotationValueArray();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -105,28 +103,6 @@ public class XAnnotationsFactoryImpl extends EFactoryImpl implements XAnnotation
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public XAnnotationElementValueBinaryOperation createXAnnotationElementValueBinaryOperation()
-	{
-		XAnnotationElementValueBinaryOperationImpl xAnnotationElementValueBinaryOperation = new XAnnotationElementValueBinaryOperationImpl();
-		return xAnnotationElementValueBinaryOperation;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public XAnnotationValueArray createXAnnotationValueArray()
-	{
-		XAnnotationValueArrayImpl xAnnotationValueArray = new XAnnotationValueArrayImpl();
-		return xAnnotationValueArray;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public XAnnotationsPackage getXAnnotationsPackage()
 	{
 		return (XAnnotationsPackage)getEPackage();
@@ -135,6 +111,7 @@ public class XAnnotationsFactoryImpl extends EFactoryImpl implements XAnnotation
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @deprecated
 	 * @generated
 	 */
 	@Deprecated

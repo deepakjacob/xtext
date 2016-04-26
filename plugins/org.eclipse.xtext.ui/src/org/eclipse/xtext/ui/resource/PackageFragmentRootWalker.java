@@ -48,25 +48,34 @@ public abstract class PackageFragmentRootWalker<T> {
 	
 	public T traverse(IPackageFragmentRoot root, boolean stopOnFirstResult) throws JavaModelException {
 		T result = null;
-		TraversalState state = new TraversalState(root);
-		Object[] resources = root.getNonJavaResources();
-		for (Object object : resources) {
-			if (object instanceof IJarEntryResource) {
-				result = traverse((IJarEntryResource) object, stopOnFirstResult, state);
-				if (stopOnFirstResult && result!=null)
-					return result;
+		if (root.exists() && existsPhysically(root)) {
+			Object[] resources = root.getNonJavaResources();
+			TraversalState state = new TraversalState(root);
+			for (Object object : resources) {
+				if (object instanceof IJarEntryResource) {
+					result = traverse((IJarEntryResource) object, stopOnFirstResult, state);
+					if (stopOnFirstResult && result != null)
+						return result;
+				}
 			}
-		}
-		
-		IJavaElement[] children = root.getChildren();
-		for (IJavaElement javaElement : children) {
-			if (javaElement instanceof IPackageFragment) {
-				result = traverse((IPackageFragment) javaElement, stopOnFirstResult, state);
-				if (stopOnFirstResult && result!=null)
-					return result;
+
+			IJavaElement[] children = root.getChildren();
+			for (IJavaElement javaElement : children) {
+				if (javaElement instanceof IPackageFragment) {
+					result = traverse((IPackageFragment) javaElement, stopOnFirstResult, state);
+					if (stopOnFirstResult && result != null)
+						return result;
+				}
 			}
 		}
 		return result;
+	}
+	
+	private boolean existsPhysically(IPackageFragmentRoot root) throws JavaModelException {
+		if(root.isExternal()) 
+			return root.getPath().toFile().exists();
+		else
+			return root.getUnderlyingResource().exists();
 	}
 
 	protected T traverse(IPackageFragment pack, boolean stopOnFirstResult, TraversalState state) throws JavaModelException {

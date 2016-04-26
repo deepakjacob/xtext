@@ -35,6 +35,7 @@ import org.eclipse.xtext.xbase.XbasePackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XAbstractFeatureCallImpl#getFeature <em>Feature</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XAbstractFeatureCallImpl#getTypeArguments <em>Type Arguments</em>}</li>
@@ -43,7 +44,6 @@ import org.eclipse.xtext.xbase.XbasePackage;
  *   <li>{@link org.eclipse.xtext.xbase.impl.XAbstractFeatureCallImpl#isValidFeature <em>Valid Feature</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XAbstractFeatureCallImpl#getImplicitFirstArgument <em>Implicit First Argument</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -414,6 +414,42 @@ public abstract class XAbstractFeatureCallImpl extends XExpressionImpl implement
 	 * @generated
 	 */
 	public boolean isExtension()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isPackageFragment()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isTypeLiteral()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isOperation()
 	{
 		// TODO: implement this method
 		// Ensure that you remove @generated or mark it @generated NOT

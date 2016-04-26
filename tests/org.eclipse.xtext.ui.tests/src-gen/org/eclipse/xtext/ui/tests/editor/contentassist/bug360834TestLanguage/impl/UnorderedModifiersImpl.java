@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl;
 
@@ -16,8 +13,6 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.Uno
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Unordered Modifiers</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

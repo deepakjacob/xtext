@@ -12,16 +12,20 @@ import static org.eclipse.xtext.util.Strings.*;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.xtext.resource.IGlobalServiceProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.editor.XtextEditor;
+import org.eclipse.xtext.ui.refactoring.ILinkedPositionGroupCalculator;
 import org.eclipse.xtext.ui.refactoring.IRenameStrategy;
 import org.eclipse.xtext.ui.refactoring.IRenameStrategy.Provider.NoSuchStrategyException;
 import org.eclipse.xtext.util.Strings;
@@ -32,6 +36,8 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /**
+ * Handles the various UI states of a refactoring, such as linked mode, dialog, and direct refactoring.
+ *  
  * @author Jan Koehnlein - Initial contribution and API
  */
 @Singleton
@@ -52,6 +58,12 @@ public class RenameRefactoringController {
 	@Inject
 	private Provider<LinkedEditingUndoSupport> undoSupportProvider;
 	
+	@Inject
+	private RefactoringPreferences preferences;
+	
+	@Inject
+	private ILinkedPositionGroupCalculator linkedPositionGroupCalculator;
+	
 	private RenameLinkedMode activeLinkedMode;
 
 	private IRenameElementContext renameElementContext;
@@ -70,6 +82,14 @@ public class RenameRefactoringController {
 		}
 		this.renameElementContext = renameElementContext;
 		this.newName = null;
+	}
+	
+	public void startRefactoring(IRenameElementContext renameElementContext) {
+		initialize(renameElementContext);
+		if(preferences.useInlineRefactoring() && getActiveLinkedMode() == null)
+			startRefactoring(RefactoringType.LINKED_EDITING);
+		else 
+			startRefactoring(RefactoringType.REFACTORING_DIALOG);
 	}
 
 	public void startRefactoring(RefactoringType refactoringType) {
@@ -112,19 +132,32 @@ public class RenameRefactoringController {
 		}
 	}
 
-	protected void startLinkedEditing() {
+	protected void startLinkedEditing() throws InterruptedException {
 		if (activeLinkedMode != null) 
 			startRefactoring(RefactoringType.REFACTORING_DIALOG);
 		try {
 			final XtextEditor xtextEditor = getXtextEditor();
 			if (xtextEditor != null) {
-				workbench.getProgressService().run(false, true, new IRunnableWithProgress() {
-					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-						RenameLinkedMode newLinkedMode = renameLinkedModeProvider.get();
-						if (newLinkedMode.start(renameElementContext, monitor)) {
-							activeLinkedMode = newLinkedMode;
-							undoSupport = undoSupportProvider.get();
-							undoSupport.startRecording(xtextEditor);
+				workbench.getProgressService().run(true, true, new IRunnableWithProgress() {
+					@Override
+					public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+						try {
+							final Provider<LinkedPositionGroup> provider = linkedPositionGroupCalculator.getLinkedPositionGroup(renameElementContext, monitor);
+							Display display = workbench.getDisplay();
+							display.syncExec(new Runnable() {
+								
+								@Override
+								public void run() {
+									RenameLinkedMode newLinkedMode = renameLinkedModeProvider.get();
+									if (newLinkedMode.start(renameElementContext, provider, monitor)) {
+										activeLinkedMode = newLinkedMode;
+										undoSupport = undoSupportProvider.get();
+										undoSupport.startRecording(xtextEditor);
+									}
+								}
+							});
+						} catch(OperationCanceledException e) {
+							throw new InterruptedException();
 						}
 					}
 				});
@@ -132,6 +165,8 @@ public class RenameRefactoringController {
 					startRefactoring(RefactoringType.REFACTORING_DIALOG);
 				}
 			}
+		} catch (InterruptedException e) {
+			throw e;
 		} catch (Exception exc) {
 			// unwrap invocation target exceptions
 			if (exc.getCause() instanceof RuntimeException)
@@ -184,10 +219,14 @@ public class RenameRefactoringController {
 
 	protected String getOriginalName(final XtextEditor xtextEditor) {
 		return xtextEditor.getDocument().readOnly(new IUnitOfWork<String, XtextResource>() {
+			@Override
 			public String exec(XtextResource state) throws Exception {
 				try {
 					EObject targetElement = state.getResourceSet().getEObject(renameElementContext.getTargetElementURI(),
 						false);
+					if (targetElement == null) {
+						return null;
+					}
 					IRenameStrategy.Provider strategyProvider = globalServiceProvider.findService(targetElement,
 							IRenameStrategy.Provider.class);
 					if (strategyProvider != null) {

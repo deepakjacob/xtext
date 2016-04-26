@@ -12,10 +12,11 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.InternalEObject;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.generator.trace.ILocationData;
+import org.eclipse.xtext.generator.trace.ITraceURIConverter;
+import org.eclipse.xtext.linking.lazy.LazyLinkingResource;
 import org.eclipse.xtext.linking.lazy.LazyURIEncoder;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
@@ -27,29 +28,33 @@ import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations;
  * 
  * @author Jan Koehnlein - Initial contribution and API
  */
-@NonNullByDefault
 public class ErrorTreeAppendable extends TreeAppendable {
-	
-	private EObject context;
 	
 	private LazyURIEncoder encoder;
 
 	public ErrorTreeAppendable(SharedAppendableState state, 
+			ITraceURIConverter converter,
 			ILocationInFileProvider locationProvider,
 			IJvmModelAssociations jvmModelAssociations,
 			Set<ILocationData> sourceLocations, 
-			boolean useForDebugging,
-			EObject context) {
-		super(state, locationProvider, jvmModelAssociations, sourceLocations, useForDebugging);
-		this.context = context;
-		encoder = new LazyURIEncoder();
+			boolean useForDebugging) {
+		super(state, converter, locationProvider, jvmModelAssociations, sourceLocations, useForDebugging);
+		encoder = getOrCreateURIEncoder();
+	}
+	
+	protected LazyURIEncoder getOrCreateURIEncoder() {
+		Resource resource = getState().getResource();
+		if (resource instanceof LazyLinkingResource) {
+			return ((LazyLinkingResource) resource).getEncoder();
+		}
+		return new LazyURIEncoder();
 	}
 	
 	@Override
 	public TreeAppendable append(JvmType type) {
 		if(type.eIsProxy()) {
 			String fragment = ((InternalEObject)type).eProxyURI().fragment();
-			Triple<EObject, EReference, INode> unresolvedLink = encoder.decode(context.eResource(), fragment);
+			Triple<EObject, EReference, INode> unresolvedLink = encoder.decode(getState().getResource(), fragment);
 			if(unresolvedLink != null) {
 				INode linkNode = unresolvedLink.getThird();
 				if(linkNode != null) {

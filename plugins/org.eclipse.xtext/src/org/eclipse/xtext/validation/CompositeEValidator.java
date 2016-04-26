@@ -21,7 +21,10 @@ import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EValidator;
 import org.eclipse.emf.ecore.util.EObjectValidator;
+import org.eclipse.xtext.service.OperationCanceledError;
+import org.eclipse.xtext.service.OperationCanceledManager;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -45,6 +48,9 @@ public class CompositeEValidator implements EValidator {
 	@Inject
 	private Provider<EValidatorEqualitySupport> equalitySupportProvider;
 	
+	@Inject
+	private OperationCanceledManager operationCanceledManager;
+	
 	public static class EValidatorEqualitySupport {
 		private EValidator delegate;
 
@@ -52,7 +58,22 @@ public class CompositeEValidator implements EValidator {
 		public boolean equals(Object obj) {
 			if (!(obj instanceof EValidatorEqualitySupport))
 				return false;
-			return ((EValidatorEqualitySupport) obj).getDelegate().getClass().equals(getDelegate().getClass());
+			EValidator otherDelegate = ((EValidatorEqualitySupport) obj).getDelegate();
+			if (otherDelegate.getClass().equals(getDelegate().getClass())) {
+				if (delegate instanceof AbstractInjectableValidator) {
+					AbstractInjectableValidator casted = (AbstractInjectableValidator) getDelegate();
+					AbstractInjectableValidator otherCasted = (AbstractInjectableValidator) otherDelegate;
+					if (casted.isLanguageSpecific() == otherCasted.isLanguageSpecific()) {
+						if (casted.isLanguageSpecific()) {
+							return Objects.equal(casted.getLanguageName(), otherCasted.getLanguageName());
+						}
+						return true;
+					}
+					return false;
+				}
+				return true;
+			}
+			return false;
 		}
 
 		@Override
@@ -104,14 +125,16 @@ public class CompositeEValidator implements EValidator {
 		}
 	}
 
-	public boolean validate(EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) {
+	@Override
+	public boolean validate(EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) throws OperationCanceledError {
 		boolean result = true;
 		for (int i = 0; i < getContents().size(); i++) {
 			EValidatorEqualitySupport val = getContents().get(i);
 			try {
-				result = result && val.getDelegate().validate(eObject, diagnostics, context);
+				result &= val.getDelegate().validate(eObject, diagnostics, context);
 			}
-			catch (Exception e) {
+			catch (Throwable e) {
+				operationCanceledManager.propagateAsErrorIfCancelException(e);
 				logger.error("Error executing EValidator", e);
 				diagnostics.add(createExceptionDiagnostic("Error executing EValidator", eObject, e));
 			}
@@ -119,14 +142,16 @@ public class CompositeEValidator implements EValidator {
 		return result;
 	}
 
-	public boolean validate(EClass eClass, EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) {
+	@Override
+	public boolean validate(EClass eClass, EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) throws OperationCanceledError {
 		boolean result = true;
 		for (int i = 0; i < getContents().size(); i++) {
 			EValidatorEqualitySupport val = getContents().get(i);
 			try {
-				result = result && val.getDelegate().validate(eClass, eObject, diagnostics, context);
+				result &= val.getDelegate().validate(eClass, eObject, diagnostics, context);
 			}
-			catch (Exception e) {
+			catch (Throwable e) {
+				operationCanceledManager.propagateAsErrorIfCancelException(e);
 				logger.error("Error executing EValidator", e);
 				diagnostics.add(createExceptionDiagnostic("Error executing EValidator", eClass, e));
 			}
@@ -134,14 +159,16 @@ public class CompositeEValidator implements EValidator {
 		return result;
 	}
 
-	public boolean validate(EDataType eDataType, Object value, DiagnosticChain diagnostics, Map<Object, Object> context) {
+	@Override
+	public boolean validate(EDataType eDataType, Object value, DiagnosticChain diagnostics, Map<Object, Object> context) throws OperationCanceledError {
 		boolean result = true;
 		for (int i = 0; i < getContents().size(); i++) {
 			EValidatorEqualitySupport val = getContents().get(i);
 			try {
-				result = result && val.getDelegate().validate(eDataType, value, diagnostics, context);
+				result &= val.getDelegate().validate(eDataType, value, diagnostics, context);
 			}
-			catch (Exception e) {
+			catch (Throwable e) {
+				operationCanceledManager.propagateAsErrorIfCancelException(e);
 				logger.error("Error executing EValidator", e);
 				diagnostics.add(createExceptionDiagnostic("Error executing EValidator", eDataType, e));
 			}
@@ -188,6 +215,7 @@ public class CompositeEValidator implements EValidator {
 		CompositeEValidator result = new CompositeEValidator();
 		result.equalitySupportProvider = this.equalitySupportProvider;
 		result.useEObjectValidator = this.useEObjectValidator;
+		result.operationCanceledManager = this.operationCanceledManager;
 		if (this.contents != null) {
 			result.contents = Lists.newArrayList(this.contents);
 			this.contents = null;

@@ -9,23 +9,24 @@ package org.eclipse.xtext.xbase.typesystem.references;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmArrayType;
 import org.eclipse.xtext.common.types.JvmComponentType;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeConstraint;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
+import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.common.types.JvmUpperBound;
 import org.eclipse.xtext.common.types.TypesFactory;
-import org.eclipse.xtext.common.types.access.impl.ClassURIHelper;
+import org.eclipse.xtext.common.types.access.impl.URIHelperConstants;
 import org.eclipse.xtext.xbase.typesystem.conformance.IRawTypeHelper;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -33,23 +34,18 @@ import com.google.inject.Singleton;
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 @Singleton
-@NonNullByDefault
 public class RawTypeHelper implements IRawTypeHelper {
 
-	private final RawTypeImplementation typeImplementation;
-	private final RawTypeReferenceImplementation typeReferenceImplementation;
-
 	@Inject
-	public RawTypeHelper(RawTypeImplementation typeImplementation, RawTypeReferenceImplementation typeReferenceImplementation) {
-		this.typeImplementation = typeImplementation;
-		this.typeReferenceImplementation = typeReferenceImplementation;
-	}
+	private TypesFactory factory;
 	
 	// TODO change to accumulating parameter where Object is added iff the list is empty
-	public static class RawTypeImplementation extends TypeReferenceVisitorWithParameterAndNonNullResult<ResourceSet, List<JvmType>> {
+	public static class RawTypeImplementation extends TypeReferenceVisitorWithParameterAndResult<ResourceSet, List<JvmType>> {
 
 		private final TypesFactory factory;
 
+		private Set<JvmType> visited = Sets.newHashSetWithExpectedSize(2);
+		
 		@Inject
 		public RawTypeImplementation(TypesFactory factory) {
 			this.factory = factory;
@@ -71,6 +67,14 @@ public class RawTypeHelper implements IRawTypeHelper {
 			if (components.isEmpty())
 				throw new IllegalStateException("Components may not be empty");
 			return collectRawTypes(components, resourceSet);
+		}
+		
+		@Override
+		protected List<JvmType> doVisitSynonymTypeReference(CompoundTypeReference reference, ResourceSet resourceSet) {
+			List<LightweightTypeReference> components = reference.getMultiTypeComponents();
+			if (components.isEmpty())
+				throw new IllegalStateException("Components may not be empty");
+			return components.get(components.size() - 1).accept(this, resourceSet);
 		}
 
 		protected List<JvmType> collectRawTypes(List<LightweightTypeReference> references, ResourceSet resourceSet) {
@@ -109,7 +113,7 @@ public class RawTypeHelper implements IRawTypeHelper {
 			JvmType type = reference.getType();
 			if (!type.eIsProxy()) {
 				if (type instanceof JvmTypeParameter) {
-					return getRawTypesFromConstraints(reference.getOwner(), ((JvmTypeParameter) type).getConstraints(), resourceSet);
+					return getRawTypesFromConstraints(reference.getOwner(), (JvmTypeParameter) type, resourceSet);
 				}
 				return Collections.singletonList(type);
 			}
@@ -118,6 +122,9 @@ public class RawTypeHelper implements IRawTypeHelper {
 		
 		@Override
 		protected List<JvmType> doVisitWildcardTypeReference(WildcardTypeReference reference, ResourceSet resourceSet) {
+			if (reference.isUnbounded()) {
+				return createObjectReference(resourceSet);
+			}
 			List<LightweightTypeReference> upperBounds = reference.getUpperBounds();
 			if (upperBounds.isEmpty()) {
 				throw new IllegalStateException("UpperBounds may not be empty");
@@ -136,39 +143,43 @@ public class RawTypeHelper implements IRawTypeHelper {
 				}
 			}
 			JvmTypeParameter typeParameter = reference.getTypeParameter();
-			return getRawTypesFromConstraints(reference.getOwner(), typeParameter.getConstraints(), resourceSet);
+			return getRawTypesFromConstraints(reference.getOwner(), typeParameter, resourceSet);
 		}
 
-		protected List<JvmType> getRawTypesFromConstraints(ITypeReferenceOwner owner, List<JvmTypeConstraint> constraints, ResourceSet resourceSet) {
-			if (!constraints.isEmpty()) {
-				List<JvmType> result = Lists.newArrayList();
-				OwnedConverter converter = new OwnedConverter(owner);
-				for(JvmTypeConstraint constraint: constraints) {
-					if (constraint instanceof JvmUpperBound) {
-						result.addAll(converter.toLightweightReference(constraint.getTypeReference()).accept(this, resourceSet));
+		protected List<JvmType> getRawTypesFromConstraints(ITypeReferenceOwner owner, JvmTypeParameter typeParameter, ResourceSet resourceSet) {
+			if (visited.add(typeParameter)) {
+				List<JvmTypeConstraint> constraints = typeParameter.getConstraints();
+				if (!constraints.isEmpty()) {
+					List<JvmType> result = Lists.newArrayList();
+					for(JvmTypeConstraint constraint: constraints) {
+						if (constraint instanceof JvmUpperBound && constraint.getTypeReference() != null) {
+							result.addAll(owner.toLightweightTypeReference(constraint.getTypeReference()).accept(this, resourceSet));
+						}
 					}
+					if (!result.isEmpty())
+						return result;
 				}
-				if (!result.isEmpty())
-					return result;
 			}
 			return createObjectReference(resourceSet);
 		}
 
 		protected List<JvmType> createObjectReference(ResourceSet resourceSet) {
 			// no upper bound found - seems to be an invalid - assume object as upper bound
-			URI objectURI = new ClassURIHelper().getFullURI(Object.class);
 			JvmType objectType = factory.createJvmGenericType();
-			((InternalEObject)objectType).eSetProxyURI(objectURI);
+			String objectClassName = Object.class.getName();
+			((InternalEObject) objectType).eSetProxyURI(URIHelperConstants.OBJECTS_URI.appendSegment(objectClassName).appendFragment(objectClassName));
 			objectType = (JvmType) EcoreUtil.resolve(objectType, resourceSet);
 			return Collections.singletonList(objectType);
 		}
 	}
 	
 	// TODO avoid deeply nested compound references iff possible
-	public static class RawTypeReferenceImplementation extends TypeReferenceVisitorWithParameterAndNonNullResult<ResourceSet, LightweightTypeReference> {
+	public static class RawTypeReferenceImplementation extends TypeReferenceVisitorWithParameterAndResult<ResourceSet, LightweightTypeReference> {
 
 		private final TypesFactory factory;
 
+		private Set<JvmType> visited = Sets.newHashSetWithExpectedSize(2);
+		
 		@Inject
 		public RawTypeReferenceImplementation(TypesFactory factory) {
 			this.factory = factory;
@@ -180,17 +191,25 @@ public class RawTypeHelper implements IRawTypeHelper {
 		}
 		
 		@Override
-		public LightweightTypeReference doVisitTypeReference(LightweightTypeReference reference, ResourceSet resourceSet) {
+		protected LightweightTypeReference doVisitTypeReference(LightweightTypeReference reference, ResourceSet resourceSet) {
 			return reference;
 		}
 		
 		@Override
-		public LightweightTypeReference doVisitCompoundTypeReference(CompoundTypeReference reference, ResourceSet resourceSet) {
+		protected LightweightTypeReference doVisitCompoundTypeReference(CompoundTypeReference reference, ResourceSet resourceSet) {
 			if (reference.isRawType())
 				return reference;
-			CompoundTypeReference result = new CompoundTypeReference(reference.getOwner(), reference.isSynonym());
+			CompoundTypeReference result = reference.getOwner().newCompoundTypeReference(reference.isSynonym());
 			enhanceCompoundReference(reference.getMultiTypeComponents(), result, resourceSet);
 			return result;
+		}
+		
+		@Override
+		protected LightweightTypeReference doVisitSynonymTypeReference(CompoundTypeReference reference, ResourceSet resourceSet) {
+			if (reference.isRawType())
+				return reference;
+			List<LightweightTypeReference> components = reference.getMultiTypeComponents();
+			return components.get(components.size() - 1).accept(this, resourceSet);
 		}
 
 		protected void enhanceCompoundReference(List<LightweightTypeReference> references,
@@ -204,64 +223,84 @@ public class RawTypeHelper implements IRawTypeHelper {
 		}
 		
 		@Override
-		public ArrayTypeReference doVisitArrayTypeReference(ArrayTypeReference reference, ResourceSet resourceSet) {
+		protected ArrayTypeReference doVisitArrayTypeReference(ArrayTypeReference reference, ResourceSet resourceSet) {
 			if (reference.isRawType())
 				return reference;
 			LightweightTypeReference componentType = reference.getComponentType();
 			LightweightTypeReference rawComponentType = componentType.accept(this, resourceSet);
-			return new ArrayTypeReference(reference.getOwner(), rawComponentType);
+			return reference.getOwner().newArrayTypeReference(rawComponentType);
 		}
 		
 		@Override
-		public LightweightTypeReference doVisitParameterizedTypeReference(ParameterizedTypeReference reference, ResourceSet resourceSet) {
-			if (reference.isRawType())
-				return reference;
+		protected LightweightTypeReference doVisitParameterizedTypeReference(ParameterizedTypeReference reference, ResourceSet resourceSet) {
 			JvmType type = reference.getType();
+			if (reference.isRawType() && !(type instanceof JvmTypeParameter)) {
+				return reference;
+			}
 			if (type instanceof JvmTypeParameter) {
 				return getRawTypeFromConstraints(reference.getOwner(), (JvmTypeParameter) type, resourceSet);
 			} 
-			return new ParameterizedTypeReference(reference.getOwner(), type);
+			return reference.getOwner().toPlainTypeReference(type);
 		}
 		
 		@Override
-		public LightweightTypeReference doVisitWildcardTypeReference(WildcardTypeReference reference, ResourceSet resourceSet) {
-			CompoundTypeReference result = new CompoundTypeReference(reference.getOwner(), false);
+		protected LightweightTypeReference doVisitWildcardTypeReference(WildcardTypeReference reference, ResourceSet resourceSet) {
+			if (reference.isUnbounded()) {
+				return reference.getUpperBoundSubstitute();
+			}
+			if (reference.getUpperBounds().size() == 1) {
+				return reference.getUpperBoundSubstitute().accept(this, resourceSet);
+			}
+			CompoundTypeReference result = reference.getOwner().newCompoundTypeReference(false);
 			enhanceCompoundReference(reference.getUpperBounds(), result, resourceSet);
 			return result;
 		}
 
 		protected LightweightTypeReference getRawTypeFromConstraints(ITypeReferenceOwner owner, JvmTypeParameter typeParameter, ResourceSet resourceSet) {
-			List<JvmTypeConstraint> constraints = typeParameter.getConstraints();
-			if (!constraints.isEmpty()) {
-				CompoundTypeReference result = new CompoundTypeReference(owner, false);
-				OwnedConverter converter = new OwnedConverter(owner);
-				for(JvmTypeConstraint constraint: constraints) {
-					if (constraint instanceof JvmUpperBound) {
-						result.addComponent(converter.toLightweightReference(constraint.getTypeReference()).accept(this, resourceSet));
+			if (visited.add(typeParameter)) {
+				List<JvmTypeConstraint> constraints = typeParameter.getConstraints();
+				if (!constraints.isEmpty()) {
+					if (constraints.size() > 1) {
+						CompoundTypeReference result = owner.newCompoundTypeReference(false);
+						for(JvmTypeConstraint constraint: constraints) {
+							if (constraint instanceof JvmUpperBound) {
+								JvmTypeReference typeReference = constraint.getTypeReference();
+								if (typeReference != null)
+									result.addComponent(owner.toLightweightTypeReference(typeReference).accept(this, resourceSet));
+							}
+						}
+						return result;
+					} else {
+						JvmTypeReference typeReference = constraints.get(0).getTypeReference();
+						if (typeReference != null) {
+							LightweightTypeReference result = owner.toLightweightTypeReference(typeReference).accept(this, resourceSet);
+							return result;
+						}
 					}
 				}
-				return result;
 			}
 			return createObjectReference(owner, resourceSet);
 		}
 
 		protected LightweightTypeReference createObjectReference(ITypeReferenceOwner owner, ResourceSet resourceSet) {
 			// no upper bound found - seems to be an invalid - assume object as upper bound
-			URI objectURI = new ClassURIHelper().getFullURI(Object.class);
 			JvmType objectType = factory.createJvmGenericType();
-			((InternalEObject)objectType).eSetProxyURI(objectURI);
+			String objectClassName = Object.class.getName();
+			((InternalEObject) objectType).eSetProxyURI(URIHelperConstants.OBJECTS_URI.appendSegment(objectClassName).appendFragment(objectClassName));
 			objectType = (JvmType) EcoreUtil.resolve(objectType, resourceSet);
-			return new ParameterizedTypeReference(owner, objectType);
+			return owner.newParameterizedTypeReference(objectType);
 		}
 	}
 	
+	@Override
 	public List<JvmType> getAllRawTypes(LightweightTypeReference reference, ResourceSet resourceSet) {
-		List<JvmType> result = typeImplementation.getAllRawTypes(reference, resourceSet);
+		List<JvmType> result = new RawTypeImplementation(factory).getAllRawTypes(reference, resourceSet);
 		return result;
 	}
 
+	@Override
 	public LightweightTypeReference getRawTypeReference(LightweightTypeReference reference, ResourceSet resourceSet) {
-		LightweightTypeReference result = typeReferenceImplementation.getRawTypeReference(reference, resourceSet);
+		LightweightTypeReference result = new RawTypeReferenceImplementation(factory).getRawTypeReference(reference, resourceSet);
 		return result;
 	}
 }

@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: NegatedTokenImpl.java,v 1.3 2010/04/06 14:09:58 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -15,8 +11,6 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Negated Token</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

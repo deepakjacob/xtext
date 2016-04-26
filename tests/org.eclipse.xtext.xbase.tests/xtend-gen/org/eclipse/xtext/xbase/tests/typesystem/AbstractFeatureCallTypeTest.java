@@ -14,12 +14,13 @@ import java.util.List;
 import java.util.Set;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
 import org.eclipse.xtext.xbase.XExpression;
-import org.eclipse.xtext.xbase.XbasePackage.Literals;
+import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
@@ -29,7 +30,6 @@ import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -58,20 +58,31 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
       TreeIterator<EObject> _eAll = EcoreUtil2.eAll(xExpression);
       Iterator<XAbstractFeatureCall> _filter = Iterators.<XAbstractFeatureCall>filter(_eAll, XAbstractFeatureCall.class);
       final List<XAbstractFeatureCall> featureCalls = IteratorExtensions.<XAbstractFeatureCall>toList(_filter);
-      final Function1<XAbstractFeatureCall,Integer> _function = new Function1<XAbstractFeatureCall,Integer>() {
-          public Integer apply(final XAbstractFeatureCall it) {
-            List<INode> _findNodesForFeature = NodeModelUtils.findNodesForFeature(it, Literals.XABSTRACT_FEATURE_CALL__FEATURE);
-            INode _head = IterableExtensions.<INode>head(_findNodesForFeature);
-            int _offset = _head.getOffset();
-            return Integer.valueOf(_offset);
-          }
-        };
+      final Function1<XAbstractFeatureCall, Integer> _function = new Function1<XAbstractFeatureCall, Integer>() {
+        @Override
+        public Integer apply(final XAbstractFeatureCall it) {
+          List<INode> _findNodesForFeature = NodeModelUtils.findNodesForFeature(it, XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE);
+          INode _head = IterableExtensions.<INode>head(_findNodesForFeature);
+          return Integer.valueOf(_head.getOffset());
+        }
+      };
       return IterableExtensions.<XAbstractFeatureCall, Integer>sortBy(featureCalls, _function);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
   
+  protected Iterable<XAbstractFeatureCall> filterTypeLiteralsAndPackageFragments(final Iterable<XAbstractFeatureCall> featureCalls) {
+    final Function1<XAbstractFeatureCall, Boolean> _function = new Function1<XAbstractFeatureCall, Boolean>() {
+      @Override
+      public Boolean apply(final XAbstractFeatureCall it) {
+        return Boolean.valueOf(((!it.isPackageFragment()) && (!it.isTypeLiteral())));
+      }
+    };
+    return IterableExtensions.<XAbstractFeatureCall>filter(featureCalls, _function);
+  }
+  
+  @Override
   protected XExpression expression(final CharSequence expression, final boolean resolve) throws Exception {
     XExpression _xblockexpression = null;
     {
@@ -79,13 +90,77 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
       boolean _add = AbstractFeatureCallTypeTest.seenExpressions.add(string);
       boolean _not = (!_add);
       if (_not) {
-        String _plus = ("Duplicate expression under test: " + expression);
-        Assert.fail(_plus);
+        Assert.fail(("Duplicate expression under test: " + expression));
       }
-      XExpression _expression = super.expression(expression, resolve);
-      _xblockexpression = (_expression);
+      _xblockexpression = super.expression(expression, resolve);
     }
     return _xblockexpression;
+  }
+  
+  @Test
+  public void testJEP101Example_01() throws Exception {
+    this.resolvesFeatureCallsTo("{ val foo.JEP101List<String> ls = foo::JEP101List::nil }", "JEP101List<String>");
+  }
+  
+  @Test
+  public void testJEP101Example_02() throws Exception {
+    this.resolvesFeatureCallsTo("foo::JEP101List::cons(42, foo::JEP101List::nil)", "JEP101List<Integer>", "JEP101List<Integer>");
+  }
+  
+  @Test
+  public void testJEP101Example_03() throws Exception {
+    this.resolvesFeatureCallsTo("{ val String s = foo::JEP101List::nil.head }", "JEP101List<String>", "String");
+  }
+  
+  @Test
+  public void testElvisWithEmptyListInLambda() throws Exception {
+    this.resolvesFeatureCallsTo("[ String s |\n\t\t\tval result = <Integer>newArrayList\n\t\t\tval (String)=>Iterable<Integer> fun = []\n\t\t\tresult += fun.apply(s) ?: emptyList\n\t\t\tresult\n\t\t]", 
+      "ArrayList<Integer>", 
+      "ArrayList<Integer>", 
+      "boolean", 
+      "(String)=>Iterable<Integer>", 
+      "Iterable<Integer>", 
+      "String", 
+      "Iterable<Integer>", 
+      "List<Integer>", 
+      "ArrayList<Integer>");
+  }
+  
+  @Test
+  public void testElvisWithEmptyList() throws Exception {
+    this.resolvesFeatureCallsTo("{ \n\t\t\tval java.util.List<Integer> list = null\n\t\t\tval fun = [| list ]\n\t\t\tlist += fun.apply ?: emptyList\n         }", 
+      "List<Integer>", 
+      "List<Integer>", 
+      "boolean", 
+      "()=>List<Integer>", 
+      "List<Integer>", 
+      "List<Integer>", 
+      "List<Integer>");
+  }
+  
+  @Test
+  public void testRawType_01() throws Exception {
+    this.resolvesFeatureCallsTo("{ val java.util.Set set = newHashSet() set }", "HashSet", "Set");
+  }
+  
+  @Test
+  public void testRawType_02() throws Exception {
+    this.resolvesFeatureCallsTo("{ val java.util.Set set = newHashSet set.head }", "HashSet", "Set", "Object");
+  }
+  
+  @Test
+  public void testRawType_03() throws Exception {
+    this.resolvesFeatureCallsTo("(null as java.util.Set<java.util.Set>).head", "Set");
+  }
+  
+  @Test
+  public void testRawType_04() throws Exception {
+    this.resolvesFeatureCallsTo("{ val java.util.Set<java.util.Set> set = newHashSet set.head }", "HashSet<Set>", "Set<Set>", "Set");
+  }
+  
+  @Test
+  public void testRawType_05() throws Exception {
+    this.resolvesFeatureCallsTo("{ val java.util.Set<java.util.Set> set = newHashSet(newHashSet) set.head }", "HashSet<Set>", "HashSet", "Set<Set>", "Set");
   }
   
   @Test
@@ -188,6 +263,42 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
   }
   
   @Test
+  public void testBasicForExpression_01() {
+    this.resolvesFeatureCallsTo("for(val x = new Object; x instanceof String;) { val y = x }", "Object", "String");
+  }
+  
+  @Test
+  public void testBasicForExpression_02() {
+    this.resolvesFeatureCallsTo("for(val x = new Object; x instanceof String && true;) { val y = x }", "Object", "boolean", "Object");
+  }
+  
+  @Test
+  public void testBasicForExpression_03() {
+    StringConcatenation _builder = new StringConcatenation();
+    _builder.append("{");
+    _builder.newLine();
+    _builder.append("\t");
+    _builder.append("var Object y = null");
+    _builder.newLine();
+    _builder.append("\t");
+    _builder.append("for(var x = new Object; x instanceof String; y = x) { ");
+    _builder.newLine();
+    _builder.append("\t\t");
+    _builder.append("y = x");
+    _builder.newLine();
+    _builder.append("\t\t");
+    _builder.append("x = new Object");
+    _builder.newLine();
+    _builder.append("\t");
+    _builder.append("}");
+    _builder.newLine();
+    _builder.append("}");
+    _builder.newLine();
+    String _string = _builder.toString();
+    this.resolvesFeatureCallsTo(_string, "Object", "Object", "Object", "Object", "String", "Object");
+  }
+  
+  @Test
   public void testMethodTypeParamInference_01() throws Exception {
     this.resolvesFeatureCallsTo("new java.util.ArrayList<String>().findFirst(e|e == \'foo\')", "String", "String", "boolean");
   }
@@ -258,7 +369,6 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
   }
   
   @Test
-  @Ignore(value = "Investigate why this fails for nested arrays")
   public void testArray_09() throws Exception {
     this.resolvesFeatureCallsTo("{ val x = new testdata.ArrayClient().swap(null) val Integer[] y = x.head }", "Integer[][]", "Integer[][]", "Integer[]");
   }
@@ -274,25 +384,29 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
   }
   
   @Test
+  public void testClosure_02() throws Exception {
+    this.resolvesFeatureCallsTo("{ var com.google.common.collect.AbstractIterator<String> iter = [| return self.endOfData ] }", "AbstractIterator<String>", "String");
+  }
+  
+  @Test
   public void testClosure_03() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  list.map(e|e)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesFeatureCallsTo(_plus_2, "List<? super String>", "List<Object>", "Object");
+    this.resolvesFeatureCallsTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  list.map(e|e)\n") + 
+      "}"), "List<? super String>", "List<Object>", "Object");
   }
   
   @Test
   public void testClosure_04() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  list.map(e|false)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesFeatureCallsTo(_plus_2, "List<? super String>", "List<Boolean>");
+    this.resolvesFeatureCallsTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  list.map(e|false)\n") + 
+      "}"), "List<? super String>", "List<Boolean>");
+  }
+  
+  @Test
+  public void testClosure_05() throws Exception {
+    this.resolvesFeatureCallsTo("{ \n\t\t\tvar com.google.common.collect.AbstractIterator<java.util.Iterator<String>> iter = [|\n\t\t\t\tif (true) {\n\t\t\t\t\tval com.google.common.collect.AbstractIterator<String> result = [|\n\t\t\t\t\t\treturn self.endOfData\n\t\t\t\t\t]\n\t\t\t\t\treturn result\n\t\t\t\t}\n\t\t\t\treturn self.endOfData\n\t\t\t]\n\t\t}", "AbstractIterator<String>", "String", "AbstractIterator<String>", "AbstractIterator<Iterator<String>>", "Iterator<String>");
   }
   
   @Test
@@ -347,13 +461,30 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
   
   @Test
   public void testClosure_31() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  $$ListExtensions::map(list) [e|e]\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesFeatureCallsTo(_plus_2, "List<Object>", "List<? super String>", "Object");
+    this.resolvesFeatureCallsTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  $$ListExtensions::map(list) [e|e]\n") + 
+      "}"), "List<Object>", "List<? super String>", "Object");
+  }
+  
+  @Test
+  public void testClosure_59() throws Exception {
+    this.resolvesFeatureCallsTo("{ \n\t\t\tval java.util.List<CharSequence> res = null\n\t\t\tval Iterable<? extends Object> obj = null\n\t\t\tres += obj.map[\"\"]\n\t\t}", "List<CharSequence>", "boolean", "Iterable<?>", "Iterable<String>");
+  }
+  
+  @Test
+  public void testIfExpression_01() throws Exception {
+    this.resolvesFeatureCallsTo("if(true) #{\'f\'} else emptySet", "Set<String>");
+  }
+  
+  @Test
+  public void testIfExpression_02() throws Exception {
+    this.resolvesFeatureCallsTo("if(true) emptySet else #{\'f\'}", "Set<String>");
+  }
+  
+  @Test
+  public void testIfExpression_03() throws Exception {
+    this.resolvesFeatureCallsTo("{ \n\t\t\tval Iterable<Object> branch = \n\t\t\t  if (true) \n\t\t\t    [|<Object>newArrayList().iterator]\n\t\t\t  else\n\t\t\t    newArrayList(\'a\').toArray\n\t\t}", "ArrayList<Object>", "Iterator<Object>", "ArrayList<String>", "Object[]");
   }
   
   @Test
@@ -374,6 +505,11 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
   @Test
   public void testSwitchExpression_6() throws Exception {
     this.resolvesFeatureCallsTo("{\n\t\t\tval Comparable<Object> c = null\n\t\t\tswitch c {\n\t            CharSequence: switch(c) {\n                    Appendable: {\n                        c.compareTo(null)\n                    }\n                }\n        \t}\n\t\t}", "Comparable<Object>", "Comparable<Object> & CharSequence", "Comparable<Object> & CharSequence & Appendable", "int");
+  }
+  
+  @Test
+  public void testSwitchExpression_7() throws Exception {
+    this.resolvesFeatureCallsTo("switch x : \'foo\' as CharSequence {\n\t\t\tComparable : x.compareTo(\'\')\n\t\t}", "CharSequence & Comparable", "int");
   }
   
   @Test
@@ -678,10 +814,14 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
     this.resolvesFeatureCallsTo("{\n\t\t\tval CharSequence s = null\n\t\t\ts.^class.declaredFields.toMap[name].mapValues[get(s)]\n\t\t}", "CharSequence", "Class<? extends CharSequence>", "Field[]", "Map<String, Field>", "String", "Map<String, Object>", "Object", "CharSequence");
   }
   
-  @Ignore(value = "TODO this should work")
   @Test
   public void testBug_391758() throws Exception {
     this.resolvesFeatureCallsTo("{\n\t\t\tval iterable = newArrayList\n\t\t\titerable.fold(newArrayList) [ list , elem | null as java.util.List<String> ]\n\t\t}", "ArrayList<Object>", "ArrayList<Object>", "List<String>", "ArrayList<String>");
+  }
+  
+  @Test
+  public void testBug_406425_01() throws Exception {
+    this.resolvesFeatureCallsTo("(null as StringBuilder) => [\n            newArrayList(it, new Long(0))\n        ]", "StringBuilder", "ArrayList<Serializable>", "StringBuilder");
   }
   
   @Test
@@ -1087,6 +1227,14 @@ public abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase 
   @Test
   public void testFeatureCallWithOperatorOverloading_5() throws Exception {
     this.resolvesFeatureCallsTo("new java.util.ArrayList<Byte>() += \'x\'.getBytes()", "boolean", "byte[]");
+  }
+  
+  @Test
+  public void testFeatureCallWithOperatorOverloading_6() throws Exception {
+    this.resolvesFeatureCallsTo("newHashMap( 5 -> \'\', \'\' -> 5 )", 
+      "HashMap<Comparable<?> & Serializable, Comparable<?> & Serializable>", 
+      "Pair<Integer, String>", 
+      "Pair<String, Integer>");
   }
   
   @Test

@@ -13,13 +13,19 @@ package org.eclipse.xtext.xbase;
  * A representation of the model object '<em><b>XAbstract While Expression</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <!-- begin-model-doc -->
+ * @since 2.7
+ * @noextend This interface is not intended to be extended by clients.
+ * @noimplement This interface is not intended to be implemented by clients.
+ * <!-- end-model-doc -->
+ *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.XAbstractWhileExpression#getPredicate <em>Predicate</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.XAbstractWhileExpression#getBody <em>Body</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.xbase.XbasePackage#getXAbstractWhileExpression()
  * @model abstract="true"

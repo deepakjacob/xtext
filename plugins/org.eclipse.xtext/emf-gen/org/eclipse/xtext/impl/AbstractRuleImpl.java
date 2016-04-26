@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: AbstractRuleImpl.java,v 1.18 2010/04/06 14:09:56 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -26,12 +22,12 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.impl.AbstractRuleImpl#getName <em>Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.AbstractRuleImpl#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.AbstractRuleImpl#getAlternatives <em>Alternatives</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

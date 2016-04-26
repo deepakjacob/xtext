@@ -11,12 +11,17 @@ import org.eclipse.xtext.xbase.formatting.IBasicFormatter
 import org.eclipse.xtext.xbase.formatting.TextReplacement
 import org.junit.Assert
 import org.eclipse.xtext.xbase.formatting.FormattingPreferenceValues
+import org.eclipse.xtend.lib.annotations.Accessors
 
-@SuppressWarnings("restriction")
+/**
+ * @deprecated use org.eclipse.xtext.junit4.formatter.FormatterTester
+ */
+@Deprecated
 class FormatterTester {
 	@Inject extension ParseHelper<EObject>
 	@Inject IBasicFormatter formatter
 
+	@SuppressWarnings("unchecked")
 	def assertFormatted((AssertingFormatterData)=>void init) {
 		val data = new AssertingFormatterData
 		data.config = new MapBasedPreferenceValues(newHashMap)
@@ -28,8 +33,8 @@ class FormatterTester {
 		val fullToBeParsed = (prefix + toBeFormatted + postfix)
 		val parsed = fullToBeParsed.parse
 		if (!allowErrors)
-			Assert::assertEquals(parsed.eResource.errors.join("\n"), 0, parsed.eResource.errors.size)
-		val oldDocument = (parsed.eResource as XtextResource).parseResult.rootNode.text
+			Assert.assertEquals(parsed.eResource.errors.join("\n"), 0, parsed.eResource.errors.size)
+		val oldDocument = (parsed.eResource as XtextResource).parseResult?.rootNode?.text
 
 		switch formatter { AbstractFormatter: formatter.allowIdentityEdits = true }
 
@@ -38,11 +43,12 @@ class FormatterTester {
 		val length = toBeFormatted.length
 		val edits = <TextReplacement>newLinkedHashSet
 		edits += formatter.format(parsed.eResource as XtextResource, start, length, cfg)
+		switch formatter { AbstractFormatter: if(formatter.conflictOccurred) throw new RuntimeException("There are conflicting text edits, see console for details.") }
 		if (!allowErrors)
 			edits += createMissingEditReplacements(parsed.eResource as XtextResource, edits, start, length)
 		val newDocument = oldDocument.applyEdits(edits)
 		try {
-			Assert::assertEquals((prefix + expectation + postfix).toString, newDocument.toString)
+			Assert.assertEquals((prefix + expectation + postfix).toString, newDocument.toString)
 		} catch (AssertionError e) {
 			println(oldDocument.applyDebugEdits(edits))
 			println()
@@ -54,11 +60,11 @@ class FormatterTester {
 			formatter.format(parsed.eResource as XtextResource, 0, fullToBeParsed.length, cfg))
 		val parsed2 = parsed2Doc.parse
 		if (!allowErrors)
-			Assert::assertEquals(0, parsed2.eResource.errors.size)
+			Assert.assertEquals(0, parsed2.eResource.errors.size)
 		val edits2 = formatter.format(parsed2.eResource as XtextResource, 0, parsed2Doc.length, cfg)
 		val newDocument2 = parsed2Doc.applyEdits(edits2)
 		try {
-			Assert::assertEquals(parsed2Doc, newDocument2.toString)
+			Assert.assertEquals(parsed2Doc, newDocument2.toString)
 		} catch (AssertionError e) {
 			println(newDocument.applyDebugEdits(edits2))
 			println()
@@ -95,24 +101,26 @@ class FormatterTester {
 		val offsets = edits.map[it.offset].toSet
 		val result = <TextReplacement>newArrayList
 		var lastOffset = 0
-		for (leaf : res.parseResult.rootNode.leafNodes)
+		for (leaf : res.parseResult?.rootNode?.leafNodes?:emptyList)
 			if (!leaf.hidden || !leaf.text.trim.nullOrEmpty) {
-				if ((lastOffset >= offset) && (leaf.offset <= offset + length) && !offsets.contains(lastOffset))
-					result += new TextReplacement(lastOffset, leaf.offset - lastOffset, "!!")
-				lastOffset = leaf.offset + leaf.length
+				val leafRegion = leaf.textRegion
+				if ((lastOffset >= offset) && (leafRegion.offset <= offset + length) && !offsets.contains(lastOffset))
+					result += new TextReplacement(lastOffset, leafRegion.offset - lastOffset, "!!")
+				lastOffset = leafRegion.offset + leafRegion.length
 			}
 		result
 	}
 }
 
+@Accessors
 class AssertingFormatterData {
-	@Property MapBasedPreferenceValues config
+	MapBasedPreferenceValues config
 	def getCfg() {
 		return new FormattingPreferenceValues(config);
 	}
-	@Property CharSequence expectation
-	@Property CharSequence toBeFormatted
-	@Property String prefix
-	@Property String postfix
-	@Property boolean allowErrors
+	CharSequence expectation
+	CharSequence toBeFormatted
+	String prefix
+	String postfix
+	boolean allowErrors
 }

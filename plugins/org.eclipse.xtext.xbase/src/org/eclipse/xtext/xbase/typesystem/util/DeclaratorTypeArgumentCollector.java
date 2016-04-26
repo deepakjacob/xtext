@@ -10,30 +10,32 @@ package org.eclipse.xtext.xbase.typesystem.util;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmDeclaredType;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeConstraint;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.common.types.JvmTypeParameterDeclarator;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.common.types.JvmUpperBound;
 import org.eclipse.xtext.xbase.typesystem.references.ArrayTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.CompoundTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
+import org.eclipse.xtext.xbase.typesystem.references.InnerFunctionTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.InnerTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTraversalData;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReferenceFactory;
 import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.TypeReferenceVisitorWithParameterAndResult;
 import org.eclipse.xtext.xbase.typesystem.references.WildcardTypeReference;
 
+import com.google.common.collect.Lists;
+
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
- * TODO implement as member function of ParameterizedTypeReference
  */
-@NonNullByDefault
 public class DeclaratorTypeArgumentCollector extends TypeReferenceVisitorWithParameterAndResult<LightweightTraversalData, Boolean> {
 	
 	@Override
@@ -43,7 +45,7 @@ public class DeclaratorTypeArgumentCollector extends TypeReferenceVisitorWithPar
 
 	@Override
 	public Boolean doVisitCompoundTypeReference(CompoundTypeReference reference, LightweightTraversalData data) {
-		// TODO error message, cannot extend compound reference
+		// TODO error message, cannot extend compound reference - error handling does not belong here
 		boolean result = true;
 		for(LightweightTypeReference component: reference.getMultiTypeComponents()) {
 			Boolean componentsDone = component.accept(this, data);
@@ -54,13 +56,12 @@ public class DeclaratorTypeArgumentCollector extends TypeReferenceVisitorWithPar
 
 	@Override
 	public Boolean doVisitArrayTypeReference(ArrayTypeReference reference, LightweightTraversalData data) {
-		// TODO error message, cannot extend array type
 		return Boolean.FALSE;
 	}
 	
 	@Override
 	public Boolean doVisitWildcardTypeReference(WildcardTypeReference reference, LightweightTraversalData data) {
-		// TODO error message, cannot extend wildcard type
+		// TODO error message, cannot extend wildcard type - error handling does not belong here
 		return Boolean.FALSE;
 	}
 
@@ -77,11 +78,68 @@ public class DeclaratorTypeArgumentCollector extends TypeReferenceVisitorWithPar
 		}
 		return Boolean.FALSE;
 	}
+	
+	@Override
+	protected Boolean doVisitInnerTypeReference(InnerTypeReference reference, LightweightTraversalData data) {
+		if (!reference.getOuter().accept(this, data)) {
+			return super.doVisitInnerTypeReference(reference, data);
+		}
+		return Boolean.TRUE;
+	}
+	
+	@Override
+	protected Boolean doVisitInnerFunctionTypeReference(InnerFunctionTypeReference reference, LightweightTraversalData data) {
+		if (!reference.getOuter().accept(this, data)) {
+			return super.doVisitInnerFunctionTypeReference(reference, data);
+		}
+		return Boolean.TRUE;
+	}
+	
+	protected Boolean addConstraintMapping(final JvmTypeParameter typeParameter, ITypeReferenceOwner owner, LightweightTraversalData data) {
+		List<JvmTypeConstraint> constraints = typeParameter.getConstraints();
+		List<LightweightTypeReference> upperBounds = Lists.newArrayList();
+		LightweightTypeReferenceFactory factory = new LightweightTypeReferenceFactory(owner) {
+			@Override
+			protected JvmType getType(JvmTypeReference reference) {
+				// guard against raw type references where the declarator is recursively defined, e.g.
+				// E extends Enum<E> with Class<? extends Enum/* raw */>
+				JvmType type = reference.getType();
+				if (type == typeParameter) {
+					return getObjectType();
+				}
+				return type;
+			}
+		};
+		for(JvmTypeConstraint constraint: constraints) {
+			if (constraint instanceof JvmUpperBound && constraint.getTypeReference() != null) {
+				LightweightTypeReference upperBound = factory.toLightweightReference(constraint.getTypeReference());
+				upperBound.accept(this, data);
+				upperBounds.add(upperBound);
+			}
+		}
+		if (upperBounds.size() > 1) {
+			CompoundTypeReference result = owner.newCompoundTypeReference(false);
+			for(LightweightTypeReference upperBound: upperBounds) {
+				result.addComponent(upperBound);
+			}
+			data.getTypeParameterMapping().put(typeParameter, new LightweightMergedBoundTypeArgument(result, VarianceInfo.INVARIANT));
+		} else if (upperBounds.size() == 1) {
+			data.getTypeParameterMapping().put(typeParameter, new LightweightMergedBoundTypeArgument(upperBounds.get(0), VarianceInfo.INVARIANT));
+		}
+		return Boolean.FALSE;
+	}
 
 	protected Boolean doVisitParameterizedTypeReference(ParameterizedTypeReference reference, JvmType type,
 			LightweightTraversalData data) {
-		// TODO check constraints, add validation messages if necessary
-		if (type instanceof JvmTypeParameterDeclarator) {
+		// TODO check constraints, add validation messages if necessary - error handling does not belong here
+		if (reference.isRawType()) {
+			if (type instanceof JvmTypeParameterDeclarator) {
+				List<JvmTypeParameter> typeParameters = ((JvmTypeParameterDeclarator) type).getTypeParameters();
+				for(JvmTypeParameter typeParameter: typeParameters) {
+					addConstraintMapping(typeParameter, reference.getOwner(), data);
+				}
+			}
+		} else if (type instanceof JvmTypeParameterDeclarator) {
 			List<JvmTypeParameter> typeParameters = ((JvmTypeParameterDeclarator) type).getTypeParameters();
 			List<LightweightTypeReference> typeArguments = reference.getTypeArguments();
 			int size = Math.min(typeArguments.size(), typeParameters.size());
@@ -95,10 +153,9 @@ public class DeclaratorTypeArgumentCollector extends TypeReferenceVisitorWithPar
 		}
 		if (type instanceof JvmDeclaredType) {
 			ITypeReferenceOwner owner = reference.getOwner();
-			OwnedConverter converter = new OwnedConverter(owner);
 			List<JvmTypeReference> superTypes = ((JvmDeclaredType) type).getSuperTypes();
 			for(JvmTypeReference superType: superTypes) {
-				LightweightTypeReference lightweightSuperType = converter.toLightweightReference(superType);
+				LightweightTypeReference lightweightSuperType = owner.toLightweightTypeReference(superType);
 				Boolean recursion = lightweightSuperType.accept(this, data);
 				if (recursion != null && recursion.booleanValue()) {
 					return Boolean.TRUE;
@@ -106,14 +163,15 @@ public class DeclaratorTypeArgumentCollector extends TypeReferenceVisitorWithPar
 			}
 		} else if (type instanceof JvmTypeParameter) {
 			ITypeReferenceOwner owner = reference.getOwner();
-			OwnedConverter converter = new OwnedConverter(owner);
 			List<JvmTypeConstraint> constraints = ((JvmTypeParameter) type).getConstraints();
 			for(JvmTypeConstraint constraint: constraints) {
 				JvmTypeReference constraintReference = constraint.getTypeReference();
-				LightweightTypeReference lightweightSuperType = converter.toLightweightReference(constraintReference);
-				Boolean recursion = lightweightSuperType.accept(this, data);
-				if (recursion != null && recursion.booleanValue()) {
-					return Boolean.TRUE;
+				if (constraintReference != null) {
+					LightweightTypeReference lightweightSuperType = owner.toLightweightTypeReference(constraintReference);
+					Boolean recursion = lightweightSuperType.accept(this, data);
+					if (recursion != null && recursion.booleanValue()) {
+						return Boolean.TRUE;
+					}
 				}
 			}
 		}

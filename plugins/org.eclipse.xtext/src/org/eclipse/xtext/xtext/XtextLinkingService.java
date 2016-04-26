@@ -51,6 +51,7 @@ import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IResourceDescriptions;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider;
 import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 import org.eclipse.xtext.scoping.IScope;
@@ -123,7 +124,13 @@ public class XtextLinkingService extends DefaultLinkingService {
 				}
 				URI classpathURI = URI.createURI(
 						ClasspathUriUtil.CLASSPATH_SCHEME + ":/" + grammarName.replace('.', '/') + "." + fileExtension);
-				URI normalizedURI = resourceSet.getURIConverter().normalize(classpathURI);
+				URI normalizedURI = null;
+				if (resourceSet instanceof XtextResourceSet) {
+					XtextResourceSet set = (XtextResourceSet) resourceSet;
+					normalizedURI = set.getClasspathUriResolver().resolve(set.getClasspathURIContext(), classpathURI);
+				} else {
+					normalizedURI = resourceSet.getURIConverter().normalize(classpathURI);
+				}
 				final Resource resource = resourceSet.getResource(normalizedURI, true);
 				if (!resource.getContents().isEmpty()) {
 					final Grammar usedGrammar = (Grammar) resource.getContents().get(0);
@@ -168,6 +175,7 @@ public class XtextLinkingService extends DefaultLinkingService {
 	
 	private EPackage findPackageInScope(EObject context, QualifiedName packageNsURI) {
 		IScope scopedPackages = scopeProvider.getScope(context.eResource(), XtextPackage.Literals.ABSTRACT_METAMODEL_DECLARATION__EPACKAGE, new Predicate<IEObjectDescription>() {
+			@Override
 			public boolean apply(IEObjectDescription input) {
 				return isNsUriIndexEntry(input);
 			}
@@ -271,9 +279,10 @@ public class XtextLinkingService extends DefaultLinkingService {
 		generatedEPackage.setNsPrefix(generatedMetamodel.getName());
 		generatedEPackage.setNsURI(nsURI);
 		final Resource generatedPackageResource = new EcoreResourceFactoryImpl().createResource(uri);
-		try {
+		XtextResourceSet resourceSet = (XtextResourceSet) generatedMetamodel.eResource().getResourceSet();
+		if (!resourceSet.getURIResourceMap().containsKey(generatedPackageResource.getURI())) {
 			generatedMetamodel.eResource().getResourceSet().getResources().add(generatedPackageResource);
-		} catch (IllegalStateException exception) {
+		} else {
 			generatedPackageResource.setURI(URI.createURI(nsURI+"_"+generatedMetamodel.hashCode()));
 			generatedMetamodel.eResource().getResourceSet().getResources().add(generatedPackageResource);
 		}

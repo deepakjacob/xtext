@@ -52,11 +52,13 @@ public class OutlineWithEditorLinker implements IPropertyChangeListener {
 	private OutlineNodeElementOpener elementOpener;
 	
 	protected class TreeListener implements ISelectionChangedListener, IDoubleClickListener {
+		@Override
 		public void selectionChanged(SelectionChangedEvent event) {
 			if (isLinkingEnabled && isOutlineViewActive())
 				selectInTextEditor(event.getSelection());
 		}
 
+		@Override
 		public void doubleClick(DoubleClickEvent event) {
 			selectInTextEditor(event.getSelection());
 			textViewer.getTextWidget().setFocus();
@@ -64,6 +66,7 @@ public class OutlineWithEditorLinker implements IPropertyChangeListener {
 	}
 
 	protected class TextListener implements ISelectionChangedListener {
+		@Override
 		public void selectionChanged(SelectionChangedEvent event) {
 			if (isLinkingEnabled && !isOutlineViewActive())
 				selectInTreeView(event.getSelection());
@@ -122,9 +125,13 @@ public class OutlineWithEditorLinker implements IPropertyChangeListener {
 			ITextRegion selectedTextRegion = new TextRegion(textSelection.getOffset(), textSelection.getLength());
 			Object input = treeViewer.getInput();
 			if (input instanceof IOutlineNode) {
-				IOutlineNode nodeToBeSelected = findBestNode((IOutlineNode) input, selectedTextRegion);
-				if (nodeToBeSelected != null)
-					treeViewer.setSelection(new StructuredSelection(nodeToBeSelected));
+				try {
+					IOutlineNode nodeToBeSelected = findBestNode((IOutlineNode) input, selectedTextRegion);
+					if (nodeToBeSelected != null)
+						treeViewer.setSelection(new StructuredSelection(nodeToBeSelected));
+				} catch(Exception exc) {
+					// ignore, editor can have a different state than the tree
+				}
 			}
 		}
 	}
@@ -160,6 +167,7 @@ public class OutlineWithEditorLinker implements IPropertyChangeListener {
 		return activePart instanceof ContentOutline;
 	}
 
+	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if(LinkWithEditorOutlineContribution.PREFERENCE_KEY.equals(event.getProperty())) {
 			setLinkingEnabled(Boolean.parseBoolean(event.getNewValue().toString()));

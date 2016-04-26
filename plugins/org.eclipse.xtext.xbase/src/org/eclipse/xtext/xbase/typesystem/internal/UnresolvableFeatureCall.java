@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
@@ -20,41 +18,50 @@ import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.typesystem.computation.IFeatureLinkingCandidate;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.util.FeatureLinkHelper;
 
 import com.google.common.collect.Lists;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
-public class UnresolvableFeatureCall extends AbstractUnresolvableFeature implements IFeatureLinkingCandidate {
+public class UnresolvableFeatureCall extends AbstractUnresolvableReferenceWithNode implements IFeatureLinkingCandidate {
 
 	public UnresolvableFeatureCall(XAbstractFeatureCall featureCall, INode node, String text, ExpressionTypeComputationState state) {
 		super(featureCall, node, text, state);
 	}
 
+	@Override
 	public XAbstractFeatureCall getFeatureCall() {
 		return (XAbstractFeatureCall) getExpression();
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	protected List<XExpression> getArguments() {
 		return getFeatureCall().getExplicitArguments();
 	}
 
+	@Override
 	public boolean isStatic() {
 		return false;
 	}
 
+	@Override
 	public boolean isExtension() {
 		return false;
 	}
 	
+	@Override
+	public boolean isTypeLiteral() {
+		return false;
+	}
+	
+	@Override
 	public EReference getReference() {
 		return XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE;
 	}
 
+	@Override
 	public List<LightweightTypeReference> getTypeArguments() {
 		XAbstractFeatureCall featureCall = getFeatureCall();
 		List<JvmTypeReference> typeArguments = featureCall.getTypeArguments();
@@ -62,12 +69,12 @@ public class UnresolvableFeatureCall extends AbstractUnresolvableFeature impleme
 			return Collections.emptyList();
 		List<LightweightTypeReference> result = Lists.newArrayList();
 		for(JvmTypeReference typeArgument: typeArguments) {
-			result.add(getConverter().toLightweightReference(typeArgument));
+			result.add(getState().getReferenceOwner().toLightweightTypeReference(typeArgument));
 		}
 		return result;
 	}
 	
-	@Nullable
+	/* @Nullable */
 	protected XExpression getSyntacticReceiver() {
 		return new FeatureLinkHelper().getSyntacticReceiver(getFeatureCall());
 	}

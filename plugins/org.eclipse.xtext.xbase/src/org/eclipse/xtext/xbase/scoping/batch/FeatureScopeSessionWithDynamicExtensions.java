@@ -10,8 +10,8 @@ package org.eclipse.xtext.xbase.scoping.batch;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.typesystem.override.IResolvedFeatures;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 import com.google.common.collect.Lists;
@@ -19,20 +19,22 @@ import com.google.common.collect.Lists;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class FeatureScopeSessionWithDynamicExtensions extends AbstractNestedFeatureScopeSession {
 
 	private final Map<XExpression, LightweightTypeReference> extensionProviders;
+	private final IResolvedFeatures.Provider resolvedFeaturesProvider;
 
 	public FeatureScopeSessionWithDynamicExtensions(AbstractFeatureScopeSession parent,
-			Map<XExpression, LightweightTypeReference> extensionProviders) {
+			Map<XExpression, LightweightTypeReference> extensionProviders,
+			IResolvedFeatures.Provider resolvedFeaturesProvider) {
 		super(parent);
 		this.extensionProviders = extensionProviders;
+		this.resolvedFeaturesProvider = resolvedFeaturesProvider;
 	}
 	
 	@Override
 	protected void addExtensionProviders(List<ExpressionBucket> result) {
-		ExpressionBucket bucket = new ExpressionBucket(getId(), extensionProviders);
+		ExpressionBucket bucket = new ExpressionBucket(getId(), extensionProviders, resolvedFeaturesProvider);
 		result.add(bucket);
 		super.addExtensionProviders(result);
 	}

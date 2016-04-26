@@ -5,12 +5,11 @@ package org.eclipse.xtext.ui.codetemplates.ui;
 
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.eclipse.xtext.generator.trace.ITraceInformation;
+import org.eclipse.xtext.ide.LexerIdeBindings;
 import org.eclipse.xtext.parser.antlr.ITokenDefProvider;
 import org.eclipse.xtext.resource.containers.IAllContainersState;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.service.SingletonBinding;
-import org.eclipse.xtext.ui.LexerUIBindings;
 import org.eclipse.xtext.ui.codetemplates.ui.contentassist.SingleCodetemplateProposalProvider;
 import org.eclipse.xtext.ui.codetemplates.ui.contentassist.SingleTemplateProposalConflictHelper;
 import org.eclipse.xtext.ui.codetemplates.ui.highlighting.SemanticHighlighter;
@@ -30,8 +29,9 @@ import org.eclipse.xtext.ui.editor.model.ResourceForIEditorInputFactory;
 import org.eclipse.xtext.ui.editor.preferences.IPreferenceStoreAccess;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.AbstractAntlrTokenToAttributeIdMapper;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration;
-import org.eclipse.xtext.ui.editor.syntaxcoloring.ISemanticHighlightingCalculator;
+import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.PreferenceStoreAccessor;
+import org.eclipse.xtext.ui.generator.trace.ITraceForStorageProvider;
 import org.eclipse.xtext.ui.resource.IResourceSetProvider;
 import org.eclipse.xtext.ui.resource.SimpleResourceSetProvider;
 import org.eclipse.xtext.ui.shared.Access;
@@ -51,7 +51,7 @@ public class SingleCodetemplateUiModule extends org.eclipse.xtext.ui.codetemplat
 	
 	@Override
 	public void configureHighlightingTokenDefProvider(Binder binder) {
-		binder.bind(ITokenDefProvider.class).annotatedWith(Names.named(LexerUIBindings.HIGHLIGHTING)).to(SingleTemplateTokenDefProvider.class);
+		binder.bind(ITokenDefProvider.class).annotatedWith(Names.named(LexerIdeBindings.HIGHLIGHTING)).to(SingleTemplateTokenDefProvider.class);
 	}
 	
 	public Class<? extends AbstractAntlrTokenToAttributeIdMapper> bindAbstractAntlrTokenToAttributeIdMapper() {
@@ -66,7 +66,7 @@ public class SingleCodetemplateUiModule extends org.eclipse.xtext.ui.codetemplat
 		return SyntheticResourceAwareScopeProvider.class;
 	}
 	
-	public Class<? extends ISemanticHighlightingCalculator> bindSemanticHighlightingCalculator() {
+	public Class<? extends ISemanticHighlightingCalculator> bindISemanticHighlightingCalculator() {
 		return SemanticHighlighter.class;
 	}
 	
@@ -99,8 +99,8 @@ public class SingleCodetemplateUiModule extends org.eclipse.xtext.ui.codetemplat
 		return SimpleResourceSetProvider.class;
 	}
 	
-	public Class<? extends ITraceInformation> bindITraceInformation() {
-		return ITraceInformation.Null.class;
+	public Class<? extends ITraceForStorageProvider> bindITraceInformation() {
+		return ITraceForStorageProvider.Null.class;
 	}
 
 	@Override

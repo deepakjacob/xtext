@@ -13,9 +13,10 @@ import static org.eclipse.emf.ecore.util.EcoreUtil.*;
 import static org.eclipse.xtext.EcoreUtil2.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +41,9 @@ import org.eclipse.xtext.xtext.CurrentTypeFinder;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * @author Jan Koehnlein
@@ -52,23 +56,47 @@ public class GrammarUtil {
 	public static String getClasspathRelativePathToXmi(Grammar grammar) {
 		return getLanguageId(grammar).replace('.', '/') + ".xmi";
 	}
+	
+	/**
+	 * @since 2.4
+	 */
+	public static String getClasspathRelativePathToBinGrammar(Grammar grammar) {
+		return getLanguageId(grammar).replace('.', '/') + ".xtextbin";
+	}
 
 	public static String getLanguageId(Grammar g) {
 		return g.getName();
 	}
-
-	public static String getName(Grammar g) {
-		if (Strings.isEmpty(g.getName()))
+	
+	/**
+	 * @since 2.9
+	 */
+	public static String getSimpleName(Grammar g) {
+		String fullName = g.getName();
+		if (Strings.isEmpty(fullName))
 			return null;
-		String[] splitted = g.getName().split("\\.");
-		return splitted[splitted.length - 1];
+		int nameIndex = fullName.lastIndexOf('.');
+		return fullName.substring(nameIndex + 1);
+		
+	}
+
+	/**
+	 * @deprecated replaced by {@link #getSimpleName(Grammar)} for more clarity
+	 */
+	@Deprecated
+	public static String getName(Grammar g) {
+		return getSimpleName(g);
 	}
 
 	public static String getNamespace(Grammar g) {
-		if (Strings.isEmpty(g.getName()))
+		String fullName = g.getName();
+		if (Strings.isEmpty(fullName))
 			return null;
-		String[] splitted = g.getName().split("\\.");
-		return Strings.concat(".", Arrays.asList(splitted), 1);
+		int nameIndex = fullName.lastIndexOf('.');
+		if (nameIndex < 0)
+			return "";
+		else
+			return fullName.substring(0, nameIndex);
 	}
 
 	public static Grammar getGrammar(EObject grammarElement) {
@@ -168,8 +196,7 @@ public class GrammarUtil {
 	public static boolean isEObjectRuleCall(EObject grammarElement) {
 		if (grammarElement instanceof RuleCall) {
 			AbstractRule calledRule = ((RuleCall) grammarElement).getRule();
-			return calledRule != null && calledRule instanceof ParserRule
-					&& calledRule.getType().getClassifier() instanceof EClass;
+			return isEObjectRule(calledRule);
 		}
 		return false;
 	}
@@ -178,8 +205,15 @@ public class GrammarUtil {
 	 * @since 2.0
 	 */
 	public static boolean isEObjectRule(EObject grammarElement) {
-		return grammarElement instanceof ParserRule
-				&& ((ParserRule) grammarElement).getType().getClassifier() instanceof EClass;
+		if (grammarElement instanceof ParserRule) {
+			ParserRule rule = (ParserRule) grammarElement;
+			if (rule.isWildcard()) {
+				return true;
+			}
+			TypeRef type = rule.getType();
+			return type != null && type.getClassifier() instanceof EClass;
+		}
+		return false;
 	}
 	
 	/**
@@ -201,6 +235,24 @@ public class GrammarUtil {
 	}
 	
 	/**
+	 * @since 2.9
+	 */
+	public static boolean isEObjectFragmentRuleCall(EObject ele) {
+		if (ele instanceof RuleCall) {
+			AbstractRule rule = ((RuleCall) ele).getRule();
+			return isEObjectFragmentRule(rule);
+		}
+		return false;
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public static boolean isEObjectFragmentRule(AbstractRule rule) {
+		return rule instanceof ParserRule && ((ParserRule) rule).isFragment();
+	}
+	
+	/**
 	 * @since 2.0
 	 */
 	public static boolean isAssignedEObjectRuleCall(EObject ele) {
@@ -213,7 +265,7 @@ public class GrammarUtil {
 		if (grammarElement instanceof RuleCall) {
 			AbstractRule calledRule = ((RuleCall) grammarElement).getRule();
 			return calledRule != null && calledRule instanceof ParserRule
-					&& calledRule.getType().getClassifier() instanceof EDataType;
+					&& calledRule.getType() != null && calledRule.getType().getClassifier() instanceof EDataType;
 		}
 		return false;
 	}
@@ -237,51 +289,102 @@ public class GrammarUtil {
 		return false;
 	}
 
+	/**
+	 * @param ruleName
+	 *            the name of the rule that should be found. May be a qualified name with a dot as a delimiter.
+	 */
 	public static AbstractRule findRuleForName(Grammar grammar, String ruleName) {
 		if (ruleName == null)
 			return null;
-		List<AbstractRule> rules = allRules(grammar);
-		for (AbstractRule abstractRule : rules) {
-			if (ruleName.equals(abstractRule.getName())) {
-				return abstractRule;
+		int lastIndex = ruleName.lastIndexOf('.');
+		if (lastIndex == -1) {
+			return findRuleForNameRecursively(grammar, null, ruleName, Sets.<Grammar>newHashSet());
+		} else {
+			return findRuleForNameRecursively(grammar, ruleName.substring(0, lastIndex), ruleName.substring(lastIndex + 1), Sets.<Grammar>newHashSet());
+		}
+	}
+
+	private static AbstractRule findRuleForNameRecursively(Grammar grammar, String langName, String ruleName, Set<Grammar> visited) {
+		if (visited.add(grammar)) {
+			if (langName == null || langName.equals(grammar.getName())) {
+				for (AbstractRule rule : grammar.getRules()) {
+					if (ruleName.equals(rule.getName())) {
+						return rule;
+					}
+				}
+				if (langName != null) {
+					return null;
+				}
+			}
+			for (Grammar usedGrammar : grammar.getUsedGrammars()) {
+				AbstractRule rule = findRuleForNameRecursively(usedGrammar, langName, ruleName, visited);
+				if (rule != null) {
+					return rule;
+				}
 			}
 		}
 		return null;
 	}
 
 	public static List<Grammar> allUsedGrammars(Grammar grammar) {
-		List<Grammar> grammars = new ArrayList<Grammar>();
-		collectAllUsedGrammars(grammars, grammar);
-		return grammars;
+		Collection<Grammar> visitedGrammars = new LinkedHashSet<Grammar>();
+		for(Grammar used: grammar.getUsedGrammars())
+			collectAllUsedGrammars(used, grammar, visitedGrammars);
+		return new ArrayList<Grammar>(visitedGrammars);
 	}
-
-	private static void collectAllUsedGrammars(List<Grammar> grammars, Grammar grammar) {
-		grammars.addAll(grammar.getUsedGrammars());
-		for (Grammar g : grammar.getUsedGrammars())
-			collectAllUsedGrammars(grammars, g);
+	
+	private static void collectAllUsedGrammars(Grammar grammar, Grammar start, Collection<Grammar> result) {
+		if (grammar == start || !result.add(grammar))
+			return;
+		for(Grammar usedGrammar: grammar.getUsedGrammars()) {
+			collectAllUsedGrammars(usedGrammar, start, result);
+		}
 	}
 
 	public static List<AbstractRule> allRules(Grammar grammar) {
-		final List<AbstractRule> result = new ArrayList<AbstractRule>();
-		final Set<String> names = new HashSet<String>();
-		final Set<Grammar> grammars = new HashSet<Grammar>();
-		collectAllRules(grammar, result, grammars, names);
-		return result;
+		final Set<AbstractRule> result = Sets.newLinkedHashSet();
+		final Set<AbstractRule> explicitlyCalled = Sets.newHashSet();
+		final Set<String> seenNames = Sets.newHashSet();
+		final Set<Grammar> seenGrammars = Sets.newHashSet();
+		collectAllRules(grammar, result, explicitlyCalled, seenNames, seenGrammars);
+		return Lists.newArrayList(result);
 	}
 
-	private static void collectAllRules(Grammar grammar, List<AbstractRule> result, Set<Grammar> visitedGrammars,
-			Set<String> knownRulenames) {
-		if (!visitedGrammars.add(grammar))
+	private static void collectAllRules(
+			Grammar grammar,
+			Set<AbstractRule> result,
+			Set<AbstractRule> explicitlyCalled,
+			Set<String> seenNames,
+			Set<Grammar> seenGrammars) {
+		if (!seenGrammars.add(grammar))
 			return;
-
 		for (AbstractRule rule : grammar.getRules()) {
-			if (knownRulenames.add(rule.getName())) {
+			// we need to iterate the rules twice in case an explicit call to a
+			// rule is made from a rule defined later
+			// this explicitly called rule needs to be added
+			// to the set of all rules even though it may 
+			// have been specialized in the sub grammar
+			if (!seenNames.contains(rule.getName()) || explicitlyCalled.contains(rule)) {
+				AbstractElement body = rule.getAlternatives();
+				if (body != null) {
+					Iterator<EObject> contents = eAll(body);
+					while(contents.hasNext()) {
+						EObject content = contents.next();
+						if (content instanceof RuleCall) {
+							AbstractRule calledRule = ((RuleCall) content).getRule();
+							explicitlyCalled.add(calledRule);
+						}
+					}
+				}
+			}
+		}
+		for (AbstractRule rule : grammar.getRules()) {
+			if (seenNames.add(rule.getName()) || explicitlyCalled.contains(rule)) {
 				result.add(rule);
 			}
 		}
-
 		for (Grammar usedGrammar : grammar.getUsedGrammars()) {
-			collectAllRules(usedGrammar, result, visitedGrammars, knownRulenames);
+			collectAllRules(usedGrammar, result, explicitlyCalled, seenNames, seenGrammars);
 		}
 	}
 
@@ -295,6 +398,61 @@ public class GrammarUtil {
 
 	public static List<TerminalRule> allTerminalRules(Grammar _this) {
 		return typeSelect(allRules(_this), TerminalRule.class);
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public static Collection<? extends AbstractElement> getAllAlternatives(Grammar g) {
+		return getAllElementsByType(g, Alternatives.class);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public static Collection<? extends AbstractElement> getAllGroups(Grammar g) {
+		return getAllElementsByType(g, Group.class);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public static Collection<? extends AbstractElement> getAllUnorderedGroups(Grammar g) {
+		return getAllElementsByType(g, UnorderedGroup.class);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public static Collection<? extends AbstractElement> getAllAssignments(Grammar g) {
+		return getAllElementsByType(g, Assignment.class);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public static Collection<? extends AbstractElement> getAllPredicatedElements(Grammar g) {
+		Collection<AbstractElement> unfiltered = getAllElementsByType(g, AbstractElement.class);
+		Collection<AbstractElement> result = Collections2.filter(unfiltered, new Predicate<AbstractElement>() {
+			@Override
+			public boolean apply(AbstractElement input) {
+				return input.isPredicated() || input.isFirstSetPredicated();
+			}
+		});
+		return result;
+	}
+	
+	private static <T extends AbstractElement> Collection<T> getAllElementsByType(Grammar g, Class<T> type) {
+		Collection<ParserRule> allParserRules = GrammarUtil.allParserRules(g);
+		List<T> result = new ArrayList<T>(30);
+		for (ParserRule rule : allParserRules) {
+			result.addAll(EcoreUtil2.getAllContentsOfType(rule, type));
+		}
+		Collection<EnumRule> allEnumRules = GrammarUtil.allEnumRules(g);
+		for (EnumRule rule : allEnumRules) {
+			result.addAll(EcoreUtil2.getAllContentsOfType(rule, type));
+		}
+		return result;
 	}
 
 	public static List<AbstractMetamodelDeclaration> allMetamodelDeclarations(Grammar grammar) {
@@ -333,8 +491,13 @@ public class GrammarUtil {
 			final BidiIterator<INode> leafNodes = node.getAsTreeIterable().iterator();
 			while (leafNodes.hasPrevious()) {
 				INode previous = leafNodes.previous();
-				if (previous instanceof ILeafNode && !((ILeafNode) previous).isHidden())
-					return previous.getText();
+				if (previous instanceof ILeafNode && !((ILeafNode) previous).isHidden()) {
+					String result = previous.getText();
+					if (result != null && result.startsWith("^")) {
+						result = result.substring(1);
+					}
+					return result;
+				}
 			}
 		}
 		return null;
@@ -434,15 +597,18 @@ public class GrammarUtil {
 
 	public static Collection<EPackage> allEPackagesToValidate(final Grammar _this) {
 		Iterable<TypeRef> allTypeRefs = concat(transform(allParserRules(_this), new Function<ParserRule, Iterable<TypeRef>>() {
+			@Override
 			public Iterable<TypeRef> apply(ParserRule from) {
 				return EcoreUtil2.eAllOfType(from, TypeRef.class);
 			}
 		}));
 		return newLinkedHashSet(transform(filter(allTypeRefs, new Predicate<TypeRef>() {
+			@Override
 			public boolean apply(TypeRef input) {
 				return !(input.eContainer() instanceof CrossReference) && input.getClassifier() instanceof EClass;
 			}
 		}), new Function<TypeRef, EPackage>() {
+			@Override
 			public EPackage apply(TypeRef from) {
 				return from.getClassifier().getEPackage();
 			}
@@ -472,7 +638,7 @@ public class GrammarUtil {
 	}
 	
 	/**
-	 * Find the datatype for EBoolean which is referable from the given grammar.
+	 * Find the class for EObject which is referable from the given grammar.
 	 * @since 2.1
 	 */
 	public static EClass findEObject(Grammar grammar) {

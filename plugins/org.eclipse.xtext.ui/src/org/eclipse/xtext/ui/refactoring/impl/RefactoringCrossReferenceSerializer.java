@@ -9,6 +9,7 @@ package org.eclipse.xtext.ui.refactoring.impl;
 
 import static org.eclipse.ltk.core.refactoring.RefactoringStatus.*;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -18,11 +19,11 @@ import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.linking.impl.LinkingHelper;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
-import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.parsetree.reconstr.impl.CrossReferenceSerializer;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding;
 import org.eclipse.xtext.util.ITextRegion;
 
 import com.google.inject.Inject;
@@ -39,7 +40,10 @@ import com.google.inject.Inject;
  */
 public class RefactoringCrossReferenceSerializer {
 
+	private static final Logger log = Logger.getLogger(RefactoringCrossReferenceSerializer.class);
+	
 	@Inject
+	@SerializerScopeProviderBinding
 	private IScopeProvider scopeProvider;
 
 	@Inject
@@ -47,9 +51,6 @@ public class RefactoringCrossReferenceSerializer {
 
 	@Inject
 	private LinkingHelper linkingHelper;
-
-	@Inject
-	private IQualifiedNameProvider qualifiedNameProvider;
 
 	@Inject
 	private IQualifiedNameConverter qualifiedNameConverter;
@@ -77,11 +78,10 @@ public class RefactoringCrossReferenceSerializer {
 							"Missconfigured language: New reference text has invalid syntax.", owner, linkTextRegion);
 				}
 			}
-			if (bestRefText == null)
-				status.add(RefactoringStatus.ERROR, "Refactoring introduces a name conflict.", owner, linkTextRegion);
 			return bestRefText;
 
 		} catch (Exception exc) {
+			log.error(exc.getMessage(), exc);
 			status.add(ERROR, exc.getMessage(), owner, linkTextRegion);
 			return null;
 		}

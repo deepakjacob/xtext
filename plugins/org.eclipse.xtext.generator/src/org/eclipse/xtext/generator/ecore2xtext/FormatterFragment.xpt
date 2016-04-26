@@ -35,9 +35,7 @@
 
 «DEFINE javaFormatter FOR Grammar»
 «FILE formatterName().asPath()+".java" SRC-»
-/*
- «fileHeader()»
- */
+«fileHeader()»
 package «formatterName().toJavaPackage()»;
 
 import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
@@ -46,10 +44,10 @@ import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.util.Pair;
 
 /**
- * This class contains custom formatting description.
+ * This class contains custom formatting declarations.
  * 
- * see : http://www.eclipse.org/Xtext/documentation/latest/xtext.html#formatting
- * on how and when to use it 
+ * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#formatting
+ * on how and when to use it.
  * 
  * Also see {@link org.eclipse.xtext.xtext.XtextFormattingTokenSerializer} as an example
  */
@@ -79,9 +77,7 @@ public class «formatterName().toSimpleName()» extends AbstractDeclarativeFormatt
 
 «DEFINE xtendFormatter FOR Grammar»
 «FILE formatterName().asPath()+".xtend" SRC-»
-/*
- «fileHeader()»
- */
+«fileHeader()»
 package «formatterName().toJavaPackage()»
 
 import com.google.inject.Inject
@@ -90,10 +86,10 @@ import org.eclipse.xtext.formatting.impl.FormattingConfig
 import «gaFQName()»
 
 /**
- * This class contains custom formatting description.
+ * This class contains custom formatting declarations.
  * 
- * see : http://www.eclipse.org/Xtext/documentation/latest/xtext.html#formatting
- * on how and when to use it 
+ * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#formatting
+ * on how and when to use it.
  * 
  * Also see {@link org.eclipse.xtext.xtext.XtextFormattingTokenSerializer} as an example
  */

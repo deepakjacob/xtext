@@ -11,6 +11,7 @@ import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
 import static com.google.common.collect.Maps.*;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,6 @@ import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.ui.refactoring.JdtRenameRefactoringProcessorFactory;
 import org.eclipse.xtext.common.types.ui.refactoring.participant.JdtRenameParticipant;
-import org.eclipse.xtext.common.types.ui.refactoring.participant.TextChangeCombiner;
 import org.eclipse.xtext.ui.refactoring.impl.RenameElementProcessor;
 import org.eclipse.xtext.ui.refactoring.ui.IRenameElementContext;
 
@@ -41,20 +41,17 @@ import com.google.inject.Inject;
 
 /**
  * Bundles multiple {@link JavaRenameProcessor}s and combines their results.
- * Unfortunately {@link
- * org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor.setRefactoring(ProcessorBasedRefactoring)} is
+ * Unfortunately {@link org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor#setRefactoring(org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring)} is
  * package private. So we have to set the refactoring from the other side. Note that this requires a refactoring
  * that is aware of that fact, e.g. {@link ChangeCombiningRenameRefactoring}.
  *  
  * @author Jan Koehnlein - Initial contribution and API
  */
+@SuppressWarnings({ "restriction", "javadoc" })
 public class CombinedJvmJdtRenameProcessor extends RenameElementProcessor {
 
 	@Inject
 	private JdtRenameRefactoringProcessorFactory jdtRefactoringFactory;
-
-	@Inject
-	private TextChangeCombiner textChangeCombiner;
 
 	private Map<URI, JavaRenameProcessor> jvmElements2jdtProcessors;
 	
@@ -113,6 +110,9 @@ public class CombinedJvmJdtRenameProcessor extends RenameElementProcessor {
 		SubMonitor monitor = SubMonitor.convert(pm, jvmElements2jdtProcessors.size() + 1);
 		RefactoringStatus status = super.checkInitialConditions(monitor.newChild(1));
 		for (JavaRenameProcessor processor : jvmElements2jdtProcessors.values()) {
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			status.merge(processor.checkInitialConditions(monitor.newChild(1)));
 		}
 		return status;
@@ -125,15 +125,25 @@ public class CombinedJvmJdtRenameProcessor extends RenameElementProcessor {
 		RefactoringStatus status = super.checkFinalConditions(monitor.newChild(1), context);
 		ResourceSet resourceSet = getResourceSet(getRenameElementContext());
 		getRenameArguments().getRenameStrategy().applyDeclarationChange(getNewName(), resourceSet);
-		for (Map.Entry<URI, JavaRenameProcessor> jvmElement2jdtRefactoring : jvmElements2jdtProcessors.entrySet()) {
+		for (Iterator<Map.Entry<URI, JavaRenameProcessor>> entryIterator = jvmElements2jdtProcessors.entrySet().iterator();
+				entryIterator.hasNext();) {
+			Map.Entry<URI, JavaRenameProcessor> jvmElement2jdtRefactoring = entryIterator.next();
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			URI renamedJvmElementURI = getRenameArguments().getNewElementURI(jvmElement2jdtRefactoring.getKey());
 			EObject renamedJvmElement = resourceSet.getEObject(renamedJvmElementURI, false);
 			if (!(renamedJvmElement instanceof JvmIdentifiableElement) || renamedJvmElement.eIsProxy()) {
 				status.addError("Cannot find inferred JVM element after refactoring.");
 			} else {
 				JavaRenameProcessor jdtRefactoring = jvmElement2jdtRefactoring.getValue();
-				jdtRefactoring.setNewElementName(((JvmIdentifiableElement) renamedJvmElement).getSimpleName());
-				status.merge(jdtRefactoring.checkFinalConditions(monitor.newChild(1), context));
+				String newName = ((JvmIdentifiableElement) renamedJvmElement).getSimpleName();
+				if(jdtRefactoring.getCurrentElementName().equals(newName)) {
+					entryIterator.remove();
+				} else {
+					jdtRefactoring.setNewElementName(newName);
+					status.merge(jdtRefactoring.checkFinalConditions(monitor.newChild(1), context));
+				}
 			}
 		}
 		getRenameArguments().getRenameStrategy().revertDeclarationChange(resourceSet);
@@ -145,8 +155,12 @@ public class CombinedJvmJdtRenameProcessor extends RenameElementProcessor {
 		SubMonitor monitor = SubMonitor.convert(pm, jvmElements2jdtProcessors.size() + 1);
 		CompositeChange compositeChange = new CompositeChange(getProcessorName());
 		compositeChange.add(super.createChange(monitor.newChild(1)));
-		for (JavaRenameProcessor processor : jvmElements2jdtProcessors.values())
+		for (JavaRenameProcessor processor : jvmElements2jdtProcessors.values()) {
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			compositeChange.add(processor.createChange(monitor.newChild(1)));
+		}
 		return compositeChange;
 	}
 

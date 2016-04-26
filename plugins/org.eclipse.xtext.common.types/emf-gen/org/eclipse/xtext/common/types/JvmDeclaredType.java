@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types;
 
@@ -44,7 +46,7 @@ public interface JvmDeclaredType extends JvmMember, JvmComponentType
 	 * <!-- end-user-doc -->
 	 * @return the value of the '<em>Super Types</em>' containment reference list.
 	 * @see org.eclipse.xtext.common.types.TypesPackage#getJvmDeclaredType_SuperTypes()
-	 * @model containment="true" resolveProxies="true"
+	 * @model containment="true"
 	 * @generated
 	 */
 	EList<JvmTypeReference> getSuperTypes();
@@ -62,7 +64,7 @@ public interface JvmDeclaredType extends JvmMember, JvmComponentType
 	 * @return the value of the '<em>Members</em>' containment reference list.
 	 * @see org.eclipse.xtext.common.types.TypesPackage#getJvmDeclaredType_Members()
 	 * @see org.eclipse.xtext.common.types.JvmMember#getDeclaringType
-	 * @model opposite="declaringType" containment="true" resolveProxies="true"
+	 * @model opposite="declaringType" containment="true"
 	 * @generated
 	 */
 	EList<JvmMember> getMembers();
@@ -192,7 +194,7 @@ public interface JvmDeclaredType extends JvmMember, JvmComponentType
 	 * <!-- end-user-doc -->
 	 * <!-- begin-model-doc -->
 	 * <p>Returns all the fields and operations with the given simple name.</p>
-	 * <p>Overridden features will not be returned.</p>
+	 * <p>Inherited features will be returend, but overridden features are not contained in the result.</p>
 	 * <!-- end-model-doc -->
 	 * @model dataType="org.eclipse.xtext.common.types.Iterable<org.eclipse.xtext.common.types.JvmFeature>" required="true"
 	 * @generated
@@ -205,12 +207,83 @@ public interface JvmDeclaredType extends JvmMember, JvmComponentType
 	 * <!-- end-user-doc -->
 	 * <!-- begin-model-doc -->
 	 * <p>Returns all the fields and operations of this type.</p>
-	 * <p>Overridden features will not be returned.</p>
+	 * <p>Inherited features are included, but overridden features will not be returned.</p>
 	 * <!-- end-model-doc -->
 	 * @model kind="operation" dataType="org.eclipse.xtext.common.types.Iterable<org.eclipse.xtext.common.types.JvmFeature>" required="true"
 	 * @generated
 	 * @since 2.1
 	 */
 	Iterable<JvmFeature> getAllFeatures();
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation" dataType="org.eclipse.xtext.common.types.Iterable<org.eclipse.xtext.common.types.JvmTypeReference>"
+	 * @generated
+	 * @since 2.6
+	 */
+	Iterable<JvmTypeReference> getExtendedInterfaces();
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation"
+	 * @generated
+	 * @since 2.6
+	 */
+	JvmTypeReference getExtendedClass();
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation"
+	 * @generated
+	 * @since 2.6
+	 */
+	boolean isInstantiateable();
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * <p>Returns all the nested types with the given simple name.</p>
+	 * <p>Inherited types will be returned, too.</p>
+	 * <!-- end-model-doc -->
+	 * @model dataType="org.eclipse.xtext.common.types.Iterable<org.eclipse.xtext.common.types.JvmDeclaredType>"
+	 * @generated
+	 * @since 2.6
+	 */
+	Iterable<JvmDeclaredType> findAllNestedTypesByName(String simpleName);
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation"
+	 * @generated
+	 * @since 2.6
+	 */
+	boolean isLocal();
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @model kind="operation" dataType="org.eclipse.xtext.common.types.Iterable<org.eclipse.xtext.common.types.JvmConstructor>" required="true"
+	 * @generated
+	 * @since 2.6
+	 */
+	Iterable<JvmConstructor> getDeclaredConstructors();
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * <!-- begin-model-doc -->
+	 * <p>Returns all the nested types of this type.</p>
+	 * <p>Inherited types will also be returned.</p>
+	 * <!-- end-model-doc -->
+	 * @model kind="operation" dataType="org.eclipse.xtext.common.types.Iterable<org.eclipse.xtext.common.types.JvmDeclaredType>" required="true"
+	 * @generated
+	 * @since 2.6
+	 */
+	Iterable<JvmDeclaredType> getAllNestedTypes();
 
 } // JvmDeclaredType

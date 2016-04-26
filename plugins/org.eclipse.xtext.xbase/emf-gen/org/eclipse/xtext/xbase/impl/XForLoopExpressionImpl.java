@@ -27,12 +27,12 @@ import org.eclipse.xtext.xbase.XbasePackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XForLoopExpressionImpl#getForExpression <em>For Expression</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XForLoopExpressionImpl#getEachExpression <em>Each Expression</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XForLoopExpressionImpl#getDeclaredParam <em>Declared Param</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

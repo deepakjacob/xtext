@@ -7,7 +7,7 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.preferences;
 
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IProject;
@@ -21,10 +21,7 @@ import org.eclipse.xtext.preferences.IPreferenceValuesProvider;
 import org.eclipse.xtext.preferences.PreferenceKey;
 import org.eclipse.xtext.ui.editor.preferences.IPreferenceStoreAccess;
 
-import com.google.common.base.Function;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 /**
@@ -35,25 +32,27 @@ public class EclipsePreferencesProvider implements IPreferenceValuesProvider {
 	private final static Logger log = Logger.getLogger(EclipsePreferencesProvider.class);
 	@Inject IPreferenceStoreAccess access;
 	
+	@Override
 	public IPreferenceValues getPreferenceValues(Resource context) {
 		final IProject project = getProject(context);
 		final IPreferenceStore store = project != null ?
 			access.getContextPreferenceStore(project) :
 			access.getPreferenceStore();
-		
-		final Cache<String, String> computingMap = CacheBuilder.newBuilder().build(CacheLoader.from(
-				new Function<String, String>() {
-					public String apply(String input) {
-						return store.getString(input);
-					}
-				}));
+			
+		final Map<String, String> preferenceCache = Maps.newHashMap();
 		
 		return new IPreferenceValues() {
+			@Override
 			public String getPreference(PreferenceKey key) {
 				try {
-					final String string = computingMap.get(key.getId());
+					String id = key.getId();
+					String string = preferenceCache.get(id);
+					if (string == null) {
+						string = store.getString(id);
+						preferenceCache.put(id, string);
+					}
 					return org.eclipse.jface.preference.IPreferenceStore.STRING_DEFAULT_DEFAULT.equals(string) ? key.getDefaultValue() : string;
-				} catch (ExecutionException e) {
+				} catch (Exception e) {
 					log.error("Error getting preference for key '"+key.getId()+"'.", e);
 					return key.getDefaultValue();
 				}

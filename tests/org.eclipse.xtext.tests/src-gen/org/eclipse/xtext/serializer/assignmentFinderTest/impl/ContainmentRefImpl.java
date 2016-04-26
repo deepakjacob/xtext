@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.assignmentFinderTest.impl;
 
@@ -24,10 +21,10 @@ import org.eclipse.xtext.serializer.assignmentFinderTest.ContainmentRefN;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.assignmentFinderTest.impl.ContainmentRefImpl#getCtx <em>Ctx</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -9,12 +9,12 @@ import org.eclipse.xtext.ui.editor.model.edit.IssueModificationContext;
 public class TestIssueModificationContext extends IssueModificationContext {
   private IXtextDocument doc;
   
+  @Override
   public IXtextDocument getXtextDocument() {
     return this.doc;
   }
   
   public IXtextDocument setDocument(final IXtextDocument doc) {
-    IXtextDocument _doc = this.doc = doc;
-    return _doc;
+    return this.doc = doc;
   }
 }

@@ -16,13 +16,14 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.xtext.builder.internal.Activator;
-import org.eclipse.xtext.generator.IDerivedResourceMarkers;
 import org.eclipse.xtext.ui.XtextProjectHelper;
+import org.eclipse.xtext.ui.generator.IDerivedResourceMarkers;
 
 import com.google.inject.Inject;
 
@@ -85,12 +86,13 @@ public class DerivedResourceCleanerJob extends Job {
 				Activator.log(e);
 			}
 		} catch (InterruptedException e) {
-			Activator.log(e);
+			// cancelled is ok
+			return Status.CANCEL_STATUS;
 		}
 		return Status.OK_STATUS;
 	}
 
-	protected IStatus cleanUpDerivedResources(IProgressMonitor monitor, IProject project) throws CoreException {
+	protected IStatus cleanUpDerivedResources(IProgressMonitor monitor, IProject project) throws CoreException, OperationCanceledException {
 		if (monitor.isCanceled()) {
 			return Status.CANCEL_STATUS;
 		}
@@ -100,7 +102,6 @@ public class DerivedResourceCleanerJob extends Job {
 				container = container.getFolder(new Path(folderNameToClean));
 			for (IFile derivedFile : derivedResourceMarkers.findDerivedResources(container, null)) {
 				derivedFile.delete(true, monitor);
-//				deleteEmptyParent(monitor, derivedFile.getParent());
 				if (monitor.isCanceled()) {
 					return Status.CANCEL_STATUS;
 				}
@@ -118,7 +119,7 @@ public class DerivedResourceCleanerJob extends Job {
 	}
 
 	protected boolean shouldBeProcessed(IProject project) {
-		return XtextProjectHelper.hasNature(project) && (folderNameToClean == null || project.getFolder(folderNameToClean).exists());
+		return XtextProjectHelper.hasNature(project) && XtextProjectHelper.hasBuilder(project) && (folderNameToClean == null || project.getFolder(folderNameToClean).exists());
 	}
 
 }

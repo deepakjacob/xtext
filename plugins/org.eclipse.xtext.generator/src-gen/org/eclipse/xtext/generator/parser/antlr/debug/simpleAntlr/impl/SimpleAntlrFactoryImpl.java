@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl;
 
@@ -33,7 +30,7 @@ public class SimpleAntlrFactoryImpl extends EFactoryImpl implements SimpleAntlrF
   {
     try
     {
-      SimpleAntlrFactory theSimpleAntlrFactory = (SimpleAntlrFactory)EPackage.Registry.INSTANCE.getEFactory("http://www.eclipse.org/xtext/generator/parser/antlr/simpleAntlr"); 
+      SimpleAntlrFactory theSimpleAntlrFactory = (SimpleAntlrFactory)EPackage.Registry.INSTANCE.getEFactory(SimpleAntlrPackage.eNS_URI);
       if (theSimpleAntlrFactory != null)
       {
         return theSimpleAntlrFactory;
@@ -71,7 +68,10 @@ public class SimpleAntlrFactoryImpl extends EFactoryImpl implements SimpleAntlrF
       case SimpleAntlrPackage.OPTIONS: return createOptions();
       case SimpleAntlrPackage.OPTION_VALUE: return createOptionValue();
       case SimpleAntlrPackage.RULE: return createRule();
+      case SimpleAntlrPackage.PARAMETER: return createParameter();
       case SimpleAntlrPackage.RULE_ELEMENT: return createRuleElement();
+      case SimpleAntlrPackage.EXPRESSION: return createExpression();
+      case SimpleAntlrPackage.REFERENCE_OR_LITERAL: return createReferenceOrLiteral();
       case SimpleAntlrPackage.PREDICATED: return createPredicated();
       case SimpleAntlrPackage.RULE_OPTIONS: return createRuleOptions();
       case SimpleAntlrPackage.RULE_CALL: return createRuleCall();
@@ -82,6 +82,9 @@ public class SimpleAntlrFactoryImpl extends EFactoryImpl implements SimpleAntlrF
       case SimpleAntlrPackage.ELEMENT_WITH_CARDINALITY: return createElementWithCardinality();
       case SimpleAntlrPackage.NEGATED_ELEMENT: return createNegatedElement();
       case SimpleAntlrPackage.UNTIL_ELEMENT: return createUntilElement();
+      case SimpleAntlrPackage.OR_EXPRESSION: return createOrExpression();
+      case SimpleAntlrPackage.AND_EXPRESSION: return createAndExpression();
+      case SimpleAntlrPackage.NOT_EXPRESSION: return createNotExpression();
       case SimpleAntlrPackage.SKIP: return createSkip();
       default:
         throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
@@ -137,10 +140,43 @@ public class SimpleAntlrFactoryImpl extends EFactoryImpl implements SimpleAntlrF
    * <!-- end-user-doc -->
    * @generated
    */
+  public Parameter createParameter()
+  {
+    ParameterImpl parameter = new ParameterImpl();
+    return parameter;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public RuleElement createRuleElement()
   {
     RuleElementImpl ruleElement = new RuleElementImpl();
     return ruleElement;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public Expression createExpression()
+  {
+    ExpressionImpl expression = new ExpressionImpl();
+    return expression;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public ReferenceOrLiteral createReferenceOrLiteral()
+  {
+    ReferenceOrLiteralImpl referenceOrLiteral = new ReferenceOrLiteralImpl();
+    return referenceOrLiteral;
   }
 
   /**
@@ -251,6 +287,39 @@ public class SimpleAntlrFactoryImpl extends EFactoryImpl implements SimpleAntlrF
   {
     UntilElementImpl untilElement = new UntilElementImpl();
     return untilElement;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public OrExpression createOrExpression()
+  {
+    OrExpressionImpl orExpression = new OrExpressionImpl();
+    return orExpression;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public AndExpression createAndExpression()
+  {
+    AndExpressionImpl andExpression = new AndExpressionImpl();
+    return andExpression;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NotExpression createNotExpression()
+  {
+    NotExpressionImpl notExpression = new NotExpressionImpl();
+    return notExpression;
   }
 
   /**

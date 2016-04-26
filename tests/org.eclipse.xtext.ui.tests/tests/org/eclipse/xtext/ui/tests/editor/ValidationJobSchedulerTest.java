@@ -7,11 +7,13 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.tests.editor;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
@@ -20,11 +22,15 @@ import org.eclipse.xtext.builder.builderState.impl.ReferenceDescriptionImpl;
 import org.eclipse.xtext.junit4.AbstractXtextTests;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.DescriptionUtils;
+import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IReferenceDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescriptions;
+import org.eclipse.xtext.resource.OutdatedStateManager;
 import org.eclipse.xtext.resource.impl.AbstractResourceDescription;
+import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionManager;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.ui.editor.DirtyStateManager;
 import org.eclipse.xtext.ui.editor.IDirtyResource;
 import org.eclipse.xtext.ui.editor.ValidationJobScheduler;
@@ -33,6 +39,8 @@ import org.eclipse.xtext.ui.editor.model.XtextDocument;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.inject.util.Providers;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -45,10 +53,14 @@ public class ValidationJobSchedulerTest extends AbstractXtextTests implements IR
 	private XtextDocument document;
 	private boolean validationScheduled;
 	private URI documentURI;
-	private IResourceDescription documentResource;
+	private TestableDocumentResource documentResource;
 	private boolean noDocumentDescription;
 	private URI targetURI;
 	private IResourceDescription targetResource;
+	@Inject
+	private OutdatedStateManager outdatedStateManager;
+	@Inject
+	private OperationCanceledManager operationCanceledManager;
 
 	@Override
 	public void setUp() throws Exception {
@@ -59,13 +71,14 @@ public class ValidationJobSchedulerTest extends AbstractXtextTests implements IR
 		testMe.setDirtyStateManager(dirtyStateManager);
 		testMe.setDescriptionUtils(new DescriptionUtils());
 		testMe.setResourceDescriptions(this);
+		testMe.setResourceDescriptionManager(new DefaultResourceDescriptionManager());
 		DocumentTokenSource nullSource = new DocumentTokenSource() {
 			@Override
 			protected IRegion computeDamageRegion(DocumentEvent e) {
 				return new Region(0, 0);
 			}
 		};
-		document = new XtextDocument(nullSource, null) {
+		document = new XtextDocument(nullSource, null, outdatedStateManager, operationCanceledManager) {
 
 			@Override
 			public URI getResourceURI() {
@@ -77,42 +90,29 @@ public class ValidationJobSchedulerTest extends AbstractXtextTests implements IR
 				validationScheduled = true;
 			}
 		};
-		documentResource = new AbstractResourceDescription() {
-			
-			public URI getURI() {
-				return documentURI;
-			}
-			
-			public Iterable<IReferenceDescription> getReferenceDescriptions() {
-				return referenceDescriptions;
-			}
-			
-			public Iterable<QualifiedName> getImportedNames() {
-				throw new UnsupportedOperationException();
-			}
-			
-			@Override
-			protected List<IEObjectDescription> computeExportedObjects() {
-				throw new UnsupportedOperationException();
-			}
-		};
+		documentResource = new TestableDocumentResource();
 		targetResource = new AbstractResourceDescription() {
 			
+			@Override
 			public URI getURI() {
 				return targetURI;
 			}
 			
+			@Override
 			public Iterable<IReferenceDescription> getReferenceDescriptions() {
 				throw new UnsupportedOperationException();
 			}
 			
+			@Override
 			public Iterable<QualifiedName> getImportedNames() {
 				throw new UnsupportedOperationException();
 			}
 			
 			@Override
 			protected List<IEObjectDescription> computeExportedObjects() {
-				throw new UnsupportedOperationException();
+				if (documentResource.importedName == null)
+					throw new UnsupportedOperationException();
+				return Collections.emptyList();
 			}
 		};
 	}
@@ -170,37 +170,78 @@ public class ValidationJobSchedulerTest extends AbstractXtextTests implements IR
 		reference.setTargetEObjectUri(targetURI);
 		referenceDescriptions.add(reference);
 		noDocumentDescription = false;
-		dirtyStateManager.announceDirtyStateChanged(this);
+		announceDirtyStateChanged();
 		validationScheduled = false;
 		testMe.scheduleInitialValidation(document);
 		assertTrue(validationScheduled);
 	}
+
+	private void announceDirtyStateChanged() {
+		assertTrue(dirtyStateManager.manageDirtyState(this));
+		dirtyStateManager.announceDirtyStateChanged(this);
+	}
 	
-	@Test public void testOutgoingReferencesToAnotherResource() {
+	@Test public void testOutgoingReferencesToAnotherResourceNoBuilderState() {
 		documentURI = URI.createURI("document");
 		targetURI = URI.createURI("target");
 		ReferenceDescriptionImpl reference = (ReferenceDescriptionImpl) BuilderStateFactory.eINSTANCE.createReferenceDescription();
 		reference.setTargetEObjectUri(URI.createURI("anothertarget"));
 		referenceDescriptions.add(reference);
 		noDocumentDescription = false;
-		dirtyStateManager.announceDirtyStateChanged(this);
+		announceDirtyStateChanged();
 		validationScheduled = false;
 		testMe.scheduleInitialValidation(document);
 		assertFalse(validationScheduled);
 	}
 
+	@Test public void testOutgoingReferencesToAnotherResourceWithBuilderState() {
+		String exportedName = "exportedName";
+		testMe.setBuilderStateProvider(Providers.<IResourceDescriptions>of(new MyBuilderState(exportedName)));
+		documentResource.importedName = exportedName;
+		documentURI = URI.createURI("document");
+		targetURI = URI.createURI("target");
+		ReferenceDescriptionImpl reference = (ReferenceDescriptionImpl) BuilderStateFactory.eINSTANCE.createReferenceDescription();
+		reference.setTargetEObjectUri(URI.createURI("anothertarget"));
+		referenceDescriptions.add(reference);
+		noDocumentDescription = false;
+		announceDirtyStateChanged();
+		validationScheduled = false;
+		testMe.scheduleInitialValidation(document);
+		assertTrue(validationScheduled);
+	}
+	
+	@Test public void testOutgoingReferencesToAnotherResourceWithBuilderStateNoAffection() {
+		String exportedName = "exportedName";
+		String importedName = "importedName";
+		testMe.setBuilderStateProvider(Providers.<IResourceDescriptions>of(new MyBuilderState(exportedName)));
+		documentResource.importedName = importedName;
+		documentURI = URI.createURI("document");
+		targetURI = URI.createURI("target");
+		ReferenceDescriptionImpl reference = (ReferenceDescriptionImpl) BuilderStateFactory.eINSTANCE.createReferenceDescription();
+		reference.setTargetEObjectUri(URI.createURI("anothertarget"));
+		referenceDescriptions.add(reference);
+		noDocumentDescription = false;
+		announceDirtyStateChanged();
+		validationScheduled = false;
+		testMe.scheduleInitialValidation(document);
+		assertFalse(validationScheduled);
+	}
+	
 	public Iterable<IReferenceDescription> getReferenceDescriptions() {
 		return referenceDescriptions;
 	}
 
+	@Override
 	public IResourceDescription getDescription() {
 		return targetResource;
 	}
 
+	@Override
 	public URI getURI() {
 		return targetURI;
 	}
 
+	@Override
 	public IResourceDescription getResourceDescription(URI normalizedURI) {
 		if (noDocumentDescription)
 			return null;
@@ -209,22 +250,27 @@ public class ValidationJobSchedulerTest extends AbstractXtextTests implements IR
 		throw new UnsupportedOperationException();
 	}
 	
+	@Override
 	public boolean isEmpty() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IEObjectDescription> getExportedObjects() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IEObjectDescription> getExportedObjects(EClass type, QualifiedName name, boolean ignoreCase) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IEObjectDescription> getExportedObjectsByType(EClass type) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IEObjectDescription> getExportedObjectsByObject(EObject object) {
 		throw new UnsupportedOperationException();
 	}
@@ -233,16 +279,113 @@ public class ValidationJobSchedulerTest extends AbstractXtextTests implements IR
 		throw new UnsupportedOperationException();
 	}
 	
+	@Override
 	public String getContents() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public String getActualContents() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IResourceDescription> getAllResourceDescriptions() {
 		throw new UnsupportedOperationException();
+	}
+	
+	private class TestableDocumentResource extends AbstractResourceDescription {
+		
+		private String importedName;
+		
+		@Override
+		public URI getURI() {
+			return documentURI;
+		}
+
+		@Override
+		public Iterable<IReferenceDescription> getReferenceDescriptions() {
+			return referenceDescriptions;
+		}
+
+		@Override
+		public Iterable<QualifiedName> getImportedNames() {
+			if (importedName == null)
+				throw new UnsupportedOperationException();
+			return Collections.singleton(QualifiedName.create(importedName).toLowerCase());
+		}
+
+		@Override
+		protected List<IEObjectDescription> computeExportedObjects() {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	public static class MyBuilderState implements IResourceDescriptions {
+
+		private final String exportedName;
+		
+		public MyBuilderState(String exportedName) {
+			this.exportedName = exportedName;
+		}
+		
+		@Override
+		public boolean isEmpty() {
+			return false;
+		}
+
+		@Override
+		public Iterable<IEObjectDescription> getExportedObjects() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Iterable<IEObjectDescription> getExportedObjects(EClass type, QualifiedName name, boolean ignoreCase) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Iterable<IEObjectDescription> getExportedObjectsByType(EClass type) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Iterable<IEObjectDescription> getExportedObjectsByObject(EObject object) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Iterable<IResourceDescription> getAllResourceDescriptions() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public IResourceDescription getResourceDescription(final URI uri) {
+			return new AbstractResourceDescription() {
+
+				@Override
+				public Iterable<QualifiedName> getImportedNames() {
+					return Collections.emptyList();
+				}
+
+				@Override
+				public Iterable<IReferenceDescription> getReferenceDescriptions() {
+					return Collections.emptyList();
+				}
+
+				@Override
+				public URI getURI() {
+					return uri;
+				}
+
+				@Override
+				protected List<IEObjectDescription> computeExportedObjects() {
+					return Collections.singletonList(EObjectDescription.create(exportedName, EcoreFactory.eINSTANCE.createEObject()));
+				}
+				
+			};
+		}
+		
 	}
 
 }

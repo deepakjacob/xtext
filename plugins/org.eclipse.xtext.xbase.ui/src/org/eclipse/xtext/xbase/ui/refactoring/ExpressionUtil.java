@@ -22,39 +22,66 @@ import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.parser.IParseResult;
+import org.eclipse.xtext.resource.ILocationInFileProvider;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.xbase.XBlockExpression;
 import org.eclipse.xtext.xbase.XExpression;
+
+import com.google.inject.Inject;
 
 /**
  * @author Jan Koehnlein - Initial contribution and API
  */
 public class ExpressionUtil {
+	
+	@Inject
+	protected ILocationInFileProvider locationInFileProvider;
 
 	/**
-	 * @returns the smallest single expression containing the selection.  
+	 * @return the smallest single expression containing the selection.  
 	 */
 	public XExpression findSelectedExpression(XtextResource resource, ITextSelection selection) {
 		IParseResult parseResult = resource.getParseResult();
 		if (parseResult != null) {
-			INode node = NodeModelUtils.findLeafNodeAtOffset(parseResult.getRootNode(), selection.getOffset());
-			if (node != null &&
-					(((ILeafNode) node).isHidden() || isBeginOfASymbol(node, selection))) {
-				node = NodeModelUtils.findLeafNodeAtOffset(parseResult.getRootNode(),
-						selection.getOffset() - node.getLength());
+			ICompositeNode rootNode = parseResult.getRootNode();
+			INode node = NodeModelUtils.findLeafNodeAtOffset(rootNode, selection.getOffset());
+			if (node == null) {
+				return null;
 			}
-			while (node != null
-					&& (!nodeContainsSelection(node, selection) || node.getSemanticElement() == null || !(node
-							.getSemanticElement() instanceof XExpression)))
-				node = node.getParent();
-			if (node != null && node.getSemanticElement() != null)
-				return (XExpression) node.getSemanticElement();
+			if (isHidden(node)) {
+				if (selection.getLength() > node.getLength()) {
+					node = NodeModelUtils.findLeafNodeAtOffset(rootNode, node.getEndOffset());
+				} else {
+					node = NodeModelUtils.findLeafNodeAtOffset(rootNode, selection.getOffset() - 1);
+				}
+			} else if (node.getOffset() == selection.getOffset() && !isBeginOfExpression(node)) { 
+				node = NodeModelUtils.findLeafNodeAtOffset(rootNode, selection.getOffset() - 1);
+			}
+			if(node != null) {
+				EObject currentSemanticElement = NodeModelUtils.findActualSemanticObjectFor(node);
+				while (!(contains(currentSemanticElement, node, selection) && currentSemanticElement instanceof XExpression)) {
+					node = nextNodeForFindSelectedExpression(currentSemanticElement, node, selection);
+					if(node == null)
+						return null;
+					currentSemanticElement = NodeModelUtils.findActualSemanticObjectFor(node);
+				}
+				return (XExpression) currentSemanticElement;
+			}
 		}
 		return null;
 	}
 
+	protected INode nextNodeForFindSelectedExpression(EObject element, INode node, ITextSelection selection) {
+		return node.getParent();
+	}
+	
+	private boolean isHidden(INode node) {
+		return node instanceof ILeafNode && ((ILeafNode)node).isHidden();
+	}
+
 	/**
-	 * @returns the list of sibling expressions containing the selection.  
+	 * @return the list of sibling expressions (expressions in the same block expression) containing the selection.  
 	 */
 	public List<XExpression> findSelectedSiblingExpressions(XtextResource resource, ITextSelection selection) {
 		ITextSelection trimmedSelection = trimSelection(resource, selection);
@@ -62,8 +89,8 @@ public class ExpressionUtil {
 		if(selectedExpression instanceof XBlockExpression) {
 			List<XExpression> selectedExpressions = newArrayList();
 			for(XExpression subExpression: ((XBlockExpression) selectedExpression).getExpressions()) {
-				ICompositeNode node = NodeModelUtils.findActualNodeFor(subExpression);
-				if(node != null && nodeIntersectsWithSelection(trimmedSelection, node)) {
+				ITextRegion textRegion = getTextRegion(subExpression);
+				if(intersects(textRegion, trimmedSelection)) {
 					selectedExpressions.add(subExpression);
 				}
 			}
@@ -85,21 +112,55 @@ public class ExpressionUtil {
 		return null;
 	}
 	
-	protected boolean isBeginOfASymbol(INode node, ITextSelection selection) {
-		return node.getOffset() == selection.getOffset() 
-				&& node.getLength() > 0 
-				&& !Character.isLetterOrDigit(node.getText().charAt(0))
-				&& node.getText().charAt(0) != '[';
+	/**
+	 * @return whether the given selection is zero length
+	 */
+	protected boolean isBeginOfExpression(INode node) {
+		ITextRegion textRegion = node.getTextRegion();
+		if (textRegion.getLength() == 0)
+			return false;
+		char firstChar = node.getText().charAt(0);
+		return Character.isLetterOrDigit(firstChar)
+				|| firstChar == '\''
+				|| firstChar == '"'
+				|| firstChar == '['
+				|| firstChar == '('
+				|| firstChar == '{'
+				|| firstChar == '#'
+				|| firstChar == '@'
+				;
 	}
 
-	protected boolean nodeContainsSelection(INode node, ITextSelection selection) {
-		return node.getOffset() <= selection.getOffset()
-				&& node.getOffset() + node.getLength() >= selection.getOffset() + selection.getLength();
+	protected boolean contains(EObject element, INode node, ITextSelection selection) {
+		if (element == null) {
+			return false;
+		}
+		ITextRegion textRegion = getTotalTextRegion(element, node);
+		return contains(textRegion, selection);
 	}
 
-	protected boolean nodeIntersectsWithSelection(ITextSelection trimmedSelection, ICompositeNode node) {
-		return node.getOffset() <= trimmedSelection.getOffset() + trimmedSelection.getLength()
-				&& node.getOffset() + node.getLength() >= trimmedSelection.getOffset();
+	protected boolean contains(ITextRegion textRegion, ITextSelection selection) {
+		return textRegion.getOffset() <= selection.getOffset()
+				&& textRegion.getOffset() + textRegion.getLength() >= selection.getOffset() + selection.getLength();
+	}
+
+	protected boolean intersects(ITextRegion textRegion, ITextSelection trimmedSelection) {
+		if (textRegion.getOffset() == trimmedSelection.getOffset() + trimmedSelection.getLength()) {
+			return false;
+		}
+		if (textRegion.getOffset() + textRegion.getLength() == trimmedSelection.getOffset()) {
+			return false;
+		}
+		return textRegion.getOffset() <= trimmedSelection.getOffset() + trimmedSelection.getLength()
+				&& textRegion.getOffset() + textRegion.getLength() >= trimmedSelection.getOffset();
+	}
+	
+	protected ITextRegion getTotalTextRegion(EObject element, INode node) {
+		return node.getTotalTextRegion();
+	}
+
+	public ITextRegion getTextRegion(EObject element) {
+		return locationInFileProvider.getFullTextRegion(element);
 	}
 	
 	public XExpression findSuccessorExpressionForVariableDeclaration(EObject expression) {

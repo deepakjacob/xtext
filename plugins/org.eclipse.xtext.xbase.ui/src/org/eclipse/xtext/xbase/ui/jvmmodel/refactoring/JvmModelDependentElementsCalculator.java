@@ -12,6 +12,7 @@ import static com.google.common.collect.Iterables.*;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -35,6 +36,9 @@ public class JvmModelDependentElementsCalculator extends DefaultDependentElement
 		List<URI> dependentElementURIs = super.getDependentElementURIs(baseElement, monitor);
 		addURIsIfNotNull(dependentElementURIs, jvmModelAssociations.getJvmElements(baseElement));
 		addJvmConstructorURIs(dependentElementURIs, baseElement);
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 		return dependentElementURIs;
 	}
 
@@ -42,7 +46,7 @@ public class JvmModelDependentElementsCalculator extends DefaultDependentElement
 		for (EObject dependentElement : dependentElements) {
 			addJvmConstructorURIs(dependentElementURIs, dependentElement);
 			URI elementURI = EcoreUtil.getURI(dependentElement);
-			if (elementURI != null && !dependentElementURIs.contains(elementURI))
+			if (elementURI != null && !elementURI.isRelative() && !dependentElementURIs.contains(elementURI))
 				dependentElementURIs.add(elementURI);
 		}
 	}

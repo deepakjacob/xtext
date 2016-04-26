@@ -12,6 +12,8 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.xtext.parser.antlr.AntlrTokenDefProvider;
 import org.eclipse.xtext.parser.antlr.Lexer;
 import org.eclipse.xtext.parser.antlr.XtextAntlrTokenFileProvider;
+import org.eclipse.xtext.resource.OutdatedStateManager;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.ui.editor.model.DocumentPartitioner;
 import org.eclipse.xtext.ui.editor.model.DocumentTokenSource;
 import org.eclipse.xtext.ui.editor.model.PartitionTokenScanner;
@@ -52,7 +54,35 @@ public class DocumentPartitionerTest extends Assert {
 		assertEquals(8, partition.getOffset());
 		assertEquals(11, partition.getLength());
 		assertEquals(TerminalsTokenTypeToPartitionMapper.COMMENT_PARTITION, partition.getType());
-		
+	}
+	
+	@Test public void testBug401433() throws Exception {
+		XtextDocument document = getDocument("     /* */ ");
+		document.replace(10, 1, "");
+		ITypedRegion partition = document.getPartition(9);
+		assertEquals(5, partition.getOffset());
+		assertEquals(5, partition.getLength());
+		assertEquals(TerminalsTokenTypeToPartitionMapper.COMMENT_PARTITION, partition.getType());
+		document.replace(9, 1, "");
+		partition = document.getPartition(8);
+		assertEquals(5, partition.getOffset());
+		assertEquals(4, partition.getLength());
+		assertEquals(IDocument.DEFAULT_CONTENT_TYPE, partition.getType());
+		document.replace(8, 1, "");
+		partition = document.getPartition(7);
+		assertEquals(5, partition.getOffset());
+		assertEquals(3, partition.getLength());
+		assertEquals(IDocument.DEFAULT_CONTENT_TYPE, partition.getType());
+		document.replace(7, 1, "");
+		partition = document.getPartition(6);
+		assertEquals(5, partition.getOffset());
+		assertEquals(2, partition.getLength());
+		assertEquals(IDocument.DEFAULT_CONTENT_TYPE, partition.getType());
+		document.replace(6, 1, "");
+		partition = document.getPartition(5);
+		assertEquals(5, partition.getOffset());
+		assertEquals(1, partition.getLength());
+		assertEquals(IDocument.DEFAULT_CONTENT_TYPE, partition.getType());
 	}
 
 	public XtextDocument getDocument(String s) {
@@ -68,11 +98,12 @@ public class DocumentPartitionerTest extends Assert {
 		DocumentPartitioner partitioner = new DocumentPartitioner(scanner, mapper);
 		DocumentTokenSource tokenSource = new DocumentTokenSource();
 		tokenSource.setLexer(new Provider<Lexer>() {
+			@Override
 			public Lexer get() {
 				return new org.eclipse.xtext.parser.antlr.internal.InternalXtextLexer();
 			}
 		});
-		XtextDocument document = new XtextDocument(tokenSource, null);
+		XtextDocument document = new XtextDocument(tokenSource, null, new OutdatedStateManager(), new OperationCanceledManager());
 		document.setDocumentPartitioner(partitioner);
 		partitioner.connect(document);
 		document.set(s);

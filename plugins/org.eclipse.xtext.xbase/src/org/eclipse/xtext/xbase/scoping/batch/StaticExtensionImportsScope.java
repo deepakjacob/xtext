@@ -7,9 +7,13 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.scoping.batch;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.eclipse.xtext.common.types.JvmDeclaredType;
 import org.eclipse.xtext.common.types.JvmFeature;
+import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
@@ -19,11 +23,13 @@ import org.eclipse.xtext.xbase.scoping.featurecalls.OperatorMapping;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
+ * A scope that contains static extension features, which are features that are contributed statically via an import.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public class StaticExtensionImportsScope extends AbstractStaticImportsScope {
 
-	private final OperatorMapping operatorMapping;
+	private final ExtensionScopeHelper helper;
 	private final XExpression receiver;
 	private final LightweightTypeReference receiverType;
 	private final boolean implicit;
@@ -31,11 +37,11 @@ public class StaticExtensionImportsScope extends AbstractStaticImportsScope {
 	public StaticExtensionImportsScope(IScope parent, IFeatureScopeSession session, 
 			XExpression receiver, LightweightTypeReference receiverType, boolean implicit,
 			XAbstractFeatureCall context, OperatorMapping operatorMapping) {
-		super(parent, session, context);
+		super(parent, session, context, operatorMapping);
 		this.receiver = receiver;
 		this.receiverType = receiverType;
 		this.implicit = implicit;
-		this.operatorMapping = operatorMapping;
+		this.helper = new ExtensionScopeHelper(receiverType);
 	}
 
 	@Override
@@ -44,31 +50,92 @@ public class StaticExtensionImportsScope extends AbstractStaticImportsScope {
 	}
 	
 	@Override
-	protected void processFeatureNames(QualifiedName name, NameAcceptor acceptor) {
-		QualifiedName methodName = operatorMapping.getMethodName(name);
-		if (methodName != null) {
-			acceptor.accept(methodName.toString(), 2);
-		} else {
-			super.processFeatureNames(name, acceptor);
+	protected List<IEObjectDescription> getAllLocalElements() {
+		if (receiverType != null && !helper.isResolvedReceiverType()) {
+			return Collections.emptyList();
+		}
+		return super.getAllLocalElements();
+	}
+
+	@Override
+	protected void getAllLocalElements(TypeBucket bucket, JvmDeclaredType type, List<IEObjectDescription> result) {
+		Iterable<JvmFeature> features = type.getAllFeatures();
+		for(JvmFeature feature: features) {
+			if (feature.isStatic() && helper.isPossibleExtension(feature) && helper.isMatchingFirstParameterDeepCheck((JvmOperation) feature)) {
+				fastAddDescriptions(feature, bucket, result);
+			}
+		}
+	}
+
+	@Override
+	protected void getAllLocalElements(TypeBucket bucket, JvmDeclaredType type, Set<String> restrictedNames, List<IEObjectDescription> result) {
+		Iterable<JvmFeature> features = type.getAllFeatures();
+		for(JvmFeature feature: features) {
+			if (feature.isStatic() && restrictedNames.contains(feature.getSimpleName())
+					&& helper.isPossibleExtension(feature) && helper.isMatchingFirstParameterDeepCheck((JvmOperation) feature)) {
+				fastAddDescriptions(feature, bucket, result);
+			}
 		}
 	}
 	
 	@Override
 	protected BucketedEObjectDescription createDescription(QualifiedName name, JvmFeature feature,
 			TypeBucket bucket) {
+		if (!helper.isPossibleExtension(feature)) {
+			return null;
+		}
+		if (!helper.isMatchingFirstParameter((JvmOperation) feature)) {
+			return null;
+		}
+		return doCreateDescription(name, feature, bucket);
+	}
+
+	protected BucketedEObjectDescription doCreateDescription(QualifiedName name, JvmFeature feature, TypeBucket bucket) {
 		if (implicit) {
 			return new StaticExtensionFeatureDescriptionWithImplicitFirstArgument(name, feature, receiver, receiverType, bucket.getId(), getSession().isVisible(feature));
 		}
 		return new StaticExtensionFeatureDescription(name, feature, receiver, receiverType, bucket.getId(), getSession().isVisible(feature));
 	}
+
+	protected void fastAddDescriptions(JvmFeature feature, TypeBucket bucket, List<IEObjectDescription> result) {
+		String simpleName = feature.getSimpleName();
+		QualifiedName featureName = QualifiedName.create(simpleName);
+		BucketedEObjectDescription description = doCreateDescription(featureName, feature, bucket);
+		addToList(description, result);
+		String propertyName = toProperty(simpleName, feature);
+		if (propertyName != null) {
+			addToList(doCreateDescription(QualifiedName.create(propertyName), feature, bucket), result);
+		}
+		if (!implicit) {
+			QualifiedName operator = getOperatorMapping().getOperator(featureName);
+			if (operator != null) {
+				addToList(doCreateDescription(operator, feature, bucket), result);
+			}
+		}
+	}
 	
 	@Override
 	protected void addDescriptions(JvmFeature feature, TypeBucket bucket, List<IEObjectDescription> result) {
-		QualifiedName featureName = QualifiedName.create(feature.getSimpleName());
-		result.add(createDescription(featureName, feature, bucket));
-		QualifiedName operator = operatorMapping.getOperator(featureName);
-		if (operator != null) {
-			result.add(createDescription(operator, feature, bucket));
+		String simpleName = feature.getSimpleName();
+		QualifiedName featureName = QualifiedName.create(simpleName);
+		BucketedEObjectDescription description = createDescription(featureName, feature, bucket);
+		if (description != null) {
+			addToList(description, result);
+			String propertyName = toProperty(simpleName, feature);
+			if (propertyName != null) {
+				addToList(doCreateDescription(QualifiedName.create(propertyName), feature, bucket), result);
+			}
+			if (!implicit) {
+				QualifiedName operator = getOperatorMapping().getOperator(featureName);
+				if (operator != null) {
+					addToList(doCreateDescription(operator, feature, bucket), result);
+				}
+			}
 		}
+	}
+	
+	@Override
+	protected String toProperty(String methodName, JvmFeature feature) {
+		return toProperty(methodName, feature, 1, 2);
 	}
 }

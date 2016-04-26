@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.sequencertest.impl;
 
@@ -21,12 +18,12 @@ import org.eclipse.xtext.serializer.sequencertest.UnorderedGroupBoolean;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.UnorderedGroupBooleanImpl#isVal1 <em>Val1</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.UnorderedGroupBooleanImpl#isVal2 <em>Val2</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.UnorderedGroupBooleanImpl#isVal3 <em>Val3</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

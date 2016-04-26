@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: TypeRef.java,v 1.16 2010/04/06 14:10:14 sefftinge Exp $
  */
 package org.eclipse.xtext;
 
@@ -16,11 +12,11 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.TypeRef#getMetamodel <em>Metamodel</em>}</li>
  *   <li>{@link org.eclipse.xtext.TypeRef#getClassifier <em>Classifier</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.XtextPackage#getTypeRef()
  * @model

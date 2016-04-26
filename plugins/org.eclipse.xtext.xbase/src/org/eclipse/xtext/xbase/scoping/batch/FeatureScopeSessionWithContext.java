@@ -7,56 +7,80 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.scoping.batch;
 
-import java.util.Set;
-
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmDeclaredType;
-import org.eclipse.xtext.common.types.JvmFeature;
+import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmVisibility;
-import org.eclipse.xtext.common.types.util.SuperTypeCollector;
 import org.eclipse.xtext.util.Strings;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
+import org.eclipse.xtext.xbase.typesystem.util.ContextualVisibilityHelper;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class FeatureScopeSessionWithContext extends AbstractNestedFeatureScopeSession {
 
-	private JvmType contextType;
-	private Set<String> superTypeNames;
+	private ContextualVisibilityHelper visibilityHelper;
 
-	public FeatureScopeSessionWithContext(AbstractFeatureScopeSession parent, JvmType contextType) {
+	public FeatureScopeSessionWithContext(AbstractFeatureScopeSession parent, LightweightTypeReference contextType) {
 		super(parent);
-		this.contextType = contextType;
-		SuperTypeCollector superTypeCollector = getFeatureScopes().getSuperTypeCollector();
-		superTypeNames = superTypeCollector.collectSuperTypeNames(contextType);
+		this.visibilityHelper = new ContextualVisibilityHelper(parent, contextType);
+	}
+	
+	public FeatureScopeSessionWithContext(AbstractFeatureScopeSession parent, LightweightTypeReference contextType, String packageName) {
+		super(parent);
+		this.visibilityHelper = new ContextualVisibilityHelper(parent, contextType, packageName);
 	}
 	
 	@Override
-	public boolean isVisible(JvmFeature feature) {
-		JvmVisibility visibility = feature.getVisibility();
-		if (visibility == JvmVisibility.PUBLIC) {
-			return true;
-		}
-		JvmDeclaredType type = feature.getDeclaringType();
-		if (type == contextType) {
-			return true;
-		}
-		if (type != null && superTypeNames.contains(type.getIdentifier())) {
-			if (visibility == JvmVisibility.PROTECTED) {
-				return true;
+	public boolean isVisible(JvmMember member) {
+		return visibilityHelper.isVisible(member);
+	}
+	
+	@Override
+	public boolean isVisible(JvmMember member, /* @Nullable */ LightweightTypeReference receiverType, /* @Nullable */ JvmIdentifiableElement receiverFeature) {
+		boolean result = isVisible(member);
+		if (result && JvmVisibility.PROTECTED == member.getVisibility()) {
+			if (receiverFeature != null) {
+				// We bypass this check for qualified.this and qualified.super in the scope provider
+				// they are considered to be always visible
+				/*
+				 * class A {
+				 *   class B {
+				 *     {
+				 *       A.super.toString
+				 *     }
+				 *   }
+				 * }
+				 */
+				if (isThisSuperOrTypeLiteral(receiverFeature)) {
+					if (receiverType == null || !receiverType.isType(Class.class)) {
+						return true;
+					}
+				}
 			}
-		}
-		if (type != null && contextType instanceof JvmDeclaredType) {
-			String packageName = ((JvmDeclaredType) contextType).getPackageName();
-			if (Strings.isEmpty(packageName) && Strings.isEmpty(type.getPackageName())
-					|| (packageName != null && packageName.equals(type.getPackageName()))) {
-				if (visibility == JvmVisibility.DEFAULT || visibility == JvmVisibility.PROTECTED)
+			JvmType contextType = visibilityHelper.getRawContextType();
+			if (contextType instanceof JvmDeclaredType) {
+				String packageName = visibilityHelper.getPackageName();
+				JvmDeclaredType declaringType = member.getDeclaringType();
+				String memberPackageName = declaringType.getPackageName();
+				if (Strings.equal(packageName, memberPackageName)) {
 					return true;
+				}
 			}
+			if (receiverType != null) {
+				if (receiverType.isSubtypeOf(contextType)) {
+					return true;
+				}
+			}
+			return false;
 		}
-		return super.isVisible(feature);
+		return result;
+	}
+	
+	protected boolean isThisSuperOrTypeLiteral(JvmIdentifiableElement receiverFeature) {
+		return receiverFeature instanceof JvmType;
 	}
 
 }

@@ -1,15 +1,22 @@
 package org.eclipse.xtext.xbase.formatting;
 
+import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
 import org.eclipse.xtext.preferences.PreferenceKey;
-import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
 
+/**
+ * @deprecated use {@link IHiddenRegionFormatter}
+ */
+@Deprecated
 @SuppressWarnings("all")
 public class FormattingDataInit {
   public String space = null;
   
-  public int newLines = 0;
+  public Integer newLines = null;
   
-  public int indentationChange = 0;
+  public int increaseIndentationChange = 0;
+  
+  public int decreaseIndentationChange = 0;
   
   public PreferenceKey key = null;
   
@@ -18,7 +25,7 @@ public class FormattingDataInit {
   }
   
   public void newLine() {
-    this.newLines = 1;
+    this.newLines = Integer.valueOf(1);
   }
   
   public void noSpace() {
@@ -30,18 +37,17 @@ public class FormattingDataInit {
   }
   
   public void increaseIndentation() {
-    int _plus = (this.indentationChange + 1);
-    this.indentationChange = _plus;
+    this.increaseIndentationChange = (this.increaseIndentationChange + 1);
   }
   
   public void decreaseIndentation() {
-    int _minus = (this.indentationChange - 1);
-    this.indentationChange = _minus;
+    this.decreaseIndentationChange = (this.decreaseIndentationChange - 1);
   }
   
+  @Override
   public String toString() {
-    ToStringHelper _toStringHelper = new ToStringHelper();
-    String _string = _toStringHelper.toString(this);
-    return _string;
+    ToStringBuilder _toStringBuilder = new ToStringBuilder(this);
+    ToStringBuilder _addAllFields = _toStringBuilder.addAllFields();
+    return _addAllFields.toString();
   }
 }

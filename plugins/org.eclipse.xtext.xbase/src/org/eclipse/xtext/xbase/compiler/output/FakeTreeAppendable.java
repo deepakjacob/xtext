@@ -9,19 +9,18 @@ package org.eclipse.xtext.xbase.compiler.output;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.generator.trace.AbstractTraceRegion;
 import org.eclipse.xtext.generator.trace.ILocationData;
 import org.eclipse.xtext.xbase.compiler.ImportManager;
 import org.eclipse.xtext.xbase.compiler.StringBuilderBasedAppendable;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class FakeTreeAppendable extends StringBuilderBasedAppendable implements ITreeAppendable {
-
+	
 	public FakeTreeAppendable() {
 		super();
 	}
@@ -41,8 +40,20 @@ public class FakeTreeAppendable extends StringBuilderBasedAppendable implements 
 	}
 	
 	@Override
+	public ITreeAppendable append(Class<?> type) {
+		super.append(type);
+		return this;
+	}
+	
+	@Override
 	public ITreeAppendable append(CharSequence string) {
 		super.append(string);
+		return this;
+	}
+	
+	@Override
+	public ITreeAppendable append(LightweightTypeReference typeRef) {
+		super.append(typeRef);
 		return this;
 	}
 	
@@ -64,35 +75,43 @@ public class FakeTreeAppendable extends StringBuilderBasedAppendable implements 
 		return this;
 	}
 	
+	@Override
 	public AbstractTraceRegion getTraceRegion() {
 		throw new UnsupportedOperationException("FakeTreeAppendable cannot provide trace information");
 	}
 
+	@Override
 	public ITreeAppendable trace(EObject object, boolean useForDebugging) {
 		return this;
 	}
 	
+	@Override
 	public ITreeAppendable trace(ILocationData location) {
 		return this;
 	}
 	
+	@Override
 	public ITreeAppendable trace(ILocationData location, boolean useForDebugging) {
 		return this;
 	}
 
+	@Override
 	public ITreeAppendable trace(Iterable<? extends EObject> objects) {
 		return this;
 	}
 	
+	@Override
 	public ITreeAppendable trace(EObject object, EStructuralFeature feature, int indexInList) {
 		return this;
 	}
 
+	@Override
 	public ITreeAppendable trace(EObject object) {
 		return this;
 	}
 
-	public ErrorTreeAppendable errorChild(EObject context) {
+	@Override
+	public ErrorTreeAppendable errorChild() {
 		throw new UnsupportedOperationException();
 	}
 

@@ -7,61 +7,41 @@
  */
 package org.eclipse.xtext.xbase.typesystem.references;
 
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.eclipse.xtend.lib.Data;
+import org.eclipse.xtend.lib.annotations.Data;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
-import org.eclipse.xtext.xbase.lib.Functions.Function0;
-import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
+import org.eclipse.xtext.xbase.lib.Pure;
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 
 /**
+ * Small utility data structure to carry around in the type reference visitors.
+ * May help to guard against infinite recursion and to collect type parameter data.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
- * TODO JavaDoc
  */
 @Data
 @SuppressWarnings("all")
 public class LightweightTraversalData {
-  private final Set<JvmType> _visited = new Function0<Set<JvmType>>() {
-    public Set<JvmType> apply() {
-      HashSet<JvmType> _newHashSet = CollectionLiterals.<JvmType>newHashSet();
-      return _newHashSet;
-    }
-  }.apply();
+  private final Set<JvmType> visited = CollectionLiterals.<JvmType>newHashSet();
   
-  public Set<JvmType> getVisited() {
-    return this._visited;
-  }
-  
-  private final Map<JvmTypeParameter,LightweightMergedBoundTypeArgument> _typeParameterMapping = new Function0<Map<JvmTypeParameter,LightweightMergedBoundTypeArgument>>() {
-    public Map<JvmTypeParameter,LightweightMergedBoundTypeArgument> apply() {
-      LinkedHashMap<JvmTypeParameter,LightweightMergedBoundTypeArgument> _newLinkedHashMap = CollectionLiterals.<JvmTypeParameter, LightweightMergedBoundTypeArgument>newLinkedHashMap();
-      return _newLinkedHashMap;
-    }
-  }.apply();
-  
-  public Map<JvmTypeParameter,LightweightMergedBoundTypeArgument> getTypeParameterMapping() {
-    return this._typeParameterMapping;
-  }
-  
-  public LightweightTraversalData() {
-    super();
-  }
+  private final Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping = CollectionLiterals.<JvmTypeParameter, LightweightMergedBoundTypeArgument>newLinkedHashMap();
   
   @Override
+  @Pure
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_visited== null) ? 0 : _visited.hashCode());
-    result = prime * result + ((_typeParameterMapping== null) ? 0 : _typeParameterMapping.hashCode());
+    result = prime * result + ((this.visited== null) ? 0 : this.visited.hashCode());
+    result = prime * result + ((this.typeParameterMapping== null) ? 0 : this.typeParameterMapping.hashCode());
     return result;
   }
   
   @Override
+  @Pure
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
@@ -70,22 +50,35 @@ public class LightweightTraversalData {
     if (getClass() != obj.getClass())
       return false;
     LightweightTraversalData other = (LightweightTraversalData) obj;
-    if (_visited == null) {
-      if (other._visited != null)
+    if (this.visited == null) {
+      if (other.visited != null)
         return false;
-    } else if (!_visited.equals(other._visited))
+    } else if (!this.visited.equals(other.visited))
       return false;
-    if (_typeParameterMapping == null) {
-      if (other._typeParameterMapping != null)
+    if (this.typeParameterMapping == null) {
+      if (other.typeParameterMapping != null)
         return false;
-    } else if (!_typeParameterMapping.equals(other._typeParameterMapping))
+    } else if (!this.typeParameterMapping.equals(other.typeParameterMapping))
       return false;
     return true;
   }
   
   @Override
+  @Pure
   public String toString() {
-    String result = new ToStringHelper().toString(this);
-    return result;
+    ToStringBuilder b = new ToStringBuilder(this);
+    b.add("visited", this.visited);
+    b.add("typeParameterMapping", this.typeParameterMapping);
+    return b.toString();
+  }
+  
+  @Pure
+  public Set<JvmType> getVisited() {
+    return this.visited;
+  }
+  
+  @Pure
+  public Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getTypeParameterMapping() {
+    return this.typeParameterMapping;
   }
 }

@@ -15,19 +15,6 @@
             uriExtension="___xbase">
         </resourceServiceProvider>
     </extension>
-    <extension
-		point="org.eclipse.ui.commands">
-		<command
-			description="%OpenTypeHierarchyCommand_description"
-			id="org.eclipse.xtext.xbase.ui.hierarchy.OpenTypeHierarchy"
-			name="%OpenTypeHierarchyCommand_name">
-		</command>
-		<command
-			description="%OpenCallHierarchyCommand_description"
-			id="org.eclipse.xtext.xbase.ui.hierarchy.OpenCallHierarchy"
-			name="%OpenCallHierarchyCommand_name">
-		</command>
-	</extension>
 	<extension
 		point="org.eclipse.ui.bindings">
 		<key
@@ -49,6 +36,7 @@
 			commandId="org.eclipse.xtext.xbase.ui.hierarchy.OpenCallHierarchy">
 		</key>
 	</extension>
+	
 	<extension point="org.eclipse.search.searchResultViewPages">
     	<viewPage
           class="org.eclipse.jdt.internal.ui.search.JavaSearchResultPage"
@@ -58,16 +46,47 @@
     	</viewPage>
  	</extension>
  	
-   <!-- extract local variable refactoring -->
    <extension point="org.eclipse.ui.commands">
+    <command
+			description="%OpenTypeHierarchyCommand_description"
+			id="org.eclipse.xtext.xbase.ui.hierarchy.OpenTypeHierarchy"
+			name="%OpenTypeHierarchyCommand_name">
+		</command>
+		<command
+			description="%OpenCallHierarchyCommand_description"
+			id="org.eclipse.xtext.xbase.ui.hierarchy.OpenCallHierarchy"
+			name="%OpenCallHierarchyCommand_name">
+		</command>
+   <!-- extract local variable refactoring -->
       <command
               id="org.eclipse.xtext.xbase.ui.refactoring.ExtractLocalVariable"
               name="%ExtractLocalVariableRefactoring_name"
               description="%ExtractLocalVariableRefactoring_description">
       </command>
+      <command
+            id="org.eclipse.xtext.xbase.ui.organizeImports"
+            name="Organize Imports">
+            description="Organize Imports"
+      </command>
+      <command
+            categoryId="org.eclipse.jdt.ui.category.source"
+            id="org.eclipse.xtext.xbase.ui.multiOrganizeImports"
+            name="Organize All Imports">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.window"
+            description="%OpenImplementation_description"
+            id="org.eclipse.xtext.xbase.ui.OpenImplementationCommand"
+            name="%OpenImplementation_name">
+      </command>
    </extension>
     
    <extension point="org.eclipse.ui.bindings">
+        <key
+            contextId="org.eclipse.xtext.ui.XtextEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+O"
+            commandId="org.eclipse.xtext.xbase.ui.organizeImports"/>
         <key 
             sequence="M2+M3+L"
             commandId="org.eclipse.xtext.xbase.ui.refactoring.ExtractLocalVariable"
@@ -110,5 +129,82 @@
             contextId="org.eclipse.xtext.ui.XtextEditorScope"
             platform="gtk"/>
     </extension>
-	
+    <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.eclipse.xtext.xbase.ui.debug.XbaseBreakpointPropertyTester"
+            id="org.eclipse.xtext.xbase.ui.debug.XbaseBreakpointPropertyTester"
+            namespace="org.eclipse.xtext.xbase.ui.debug"
+            properties="isXbaseBreakPoint"
+            type="java.lang.Object">
+    </propertyTester>
+   </extension>
+   <extension
+            point="org.eclipse.ui.propertyPages">
+        <page
+            name="Condition"
+            class="org.eclipse.xtext.xbase.ui.XbaseExecutableExtensionFactory:org.eclipse.xtext.xbase.ui.debug.ConditionPage"
+            id="org.eclipse.xtext.xbase.ui.propertypages.BreakpointCondition">
+         <enabledWhen>
+            <test
+                  forcePluginActivation="true"
+                  property="org.eclipse.xtext.xbase.ui.debug.isXbaseBreakPoint">
+            </test>
+         </enabledWhen>
+      </page>
+    </extension>
+    <extension
+       point="org.eclipse.debug.ui.detailPaneFactories">
+      <detailFactories
+          class="org.eclipse.xtext.xbase.ui.XbaseExecutableExtensionFactory:org.eclipse.xtext.xbase.ui.debug.XbaseBreakpointDetailPaneFactory"
+          id="org.eclipse.xtext.xbase.ui.breakpoint.detailFactories">
+       <enablement>
+          <with
+                variable="selection">
+             <count
+                   value="1">
+             </count>
+             <iterate>
+                <test
+                      forcePluginActivation="true"
+                      property="org.eclipse.xtext.xbase.ui.debug.isXbaseBreakPoint">
+                </test>
+             </iterate>
+          </with>
+        </enablement>
+      </detailFactories>
+    </extension>
+    
+    <extension
+         point="org.eclipse.debug.core.breakpoints">
+      <breakpoint
+            markerType="org.eclipse.xtext.xbase.ui.xbaseLineBreakpointMarker"
+            class="org.eclipse.xtext.builder.smap.XbaseLineBreakpoint"
+            id="xbaseLineBreakpointMarker"
+            name="Xbase Breakpoint">
+      </breakpoint>
+   </extension>
+   <extension
+         id="xbaseLineBreakpointMarker"
+         name="Xbase Breakpoint"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.jdt.debug.javaStratumLineBreakpointMarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+       point="org.eclipse.ui.ide.markerSupport">
+    <markerAttributeGrouping
+          defaultGroupingEntry="org.eclipse.jdt.ui.category.buildpath"
+          markerType="org.eclipse.jdt.launching.jreContainerMarker"/>
+    <markerTypeCategory
+          name="Java Line Breakpoints">
+       <markerTypeReference
+             id="org.eclipse.xtext.xbase.ui.xbaseLineBreakpointMarker">
+       </markerTypeReference>
+    </markerTypeCategory>
+ </extension>
 </plugin>

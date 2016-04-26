@@ -44,6 +44,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
+import com.google.common.base.Joiner;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -226,6 +227,7 @@ public abstract class AbstractXtextTests extends Assert implements ResourceLoadH
 		return instance.split(",")[0];
 	}
 	
+	@Override
 	public final XtextResource getResourceFor(InputStream stream) {
 		try {
 			return getResourceAndExpect(stream, AbstractXtextTests.UNKNOWN_EXPECTATION);
@@ -237,7 +239,14 @@ public abstract class AbstractXtextTests extends Assert implements ResourceLoadH
 	}
 	
 	public final XtextResource getResourceAndExpect(InputStream in, int errors) throws Exception {
-		return getResourceAndExpect(in, URI.createURI("mytestmodel."+getCurrentFileExtension()), errors);
+		return getResourceAndExpect(in, getTestModelURI(), errors);
+	}
+
+	/**
+	 * @since 2.8
+	 */
+	protected URI getTestModelURI() {
+		return URI.createURI("mytestmodel."+getCurrentFileExtension());
 	}
 
 	public final XtextResource getResource(InputStream in, URI uri) throws Exception {
@@ -253,25 +262,20 @@ public abstract class AbstractXtextTests extends Assert implements ResourceLoadH
 		checkNodeModel(resource);
 		if (expectedErrors != UNKNOWN_EXPECTATION) {
 			if (expectedErrors == EXPECT_ERRORS)
-				assertFalse(resource.getErrors().toString(), resource.getErrors().isEmpty());
+				assertFalse(Joiner.on('\n').join(resource.getErrors()), resource.getErrors().isEmpty());
 			else
-				assertEquals(resource.getErrors().toString(), expectedErrors, resource.getErrors().size());
+				assertEquals(Joiner.on('\n').join(resource.getErrors()), expectedErrors, resource.getErrors().size());
 		}
 		for(Diagnostic d: resource.getErrors()) {
 			if (d instanceof ExceptionDiagnostic)
 				fail(d.getMessage());
 		}
-
-		for(Diagnostic d: resource.getWarnings())
-			System.out.println("Resource Warning: "+d);
-				
 		if (expectedErrors == 0 && resource.getContents().size() > 0 && shouldTestSerializer(resource)) {
 			SerializerTester tester = get(SerializerTester.class);
 			EObject obj = resource.getContents().get(0);
 			tester.assertSerializeWithNodeModel(obj);
 			tester.assertSerializeWithoutNodeModel(obj);
 		}
-
 		return resource;
 	}
 

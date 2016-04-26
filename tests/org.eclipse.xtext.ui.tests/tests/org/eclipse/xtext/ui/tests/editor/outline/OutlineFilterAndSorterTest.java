@@ -9,6 +9,7 @@ package org.eclipse.xtext.ui.tests.editor.outline;
 
 import java.util.List;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.xtext.ISetup;
 import org.eclipse.xtext.junit4.AbstractXtextTests;
 import org.eclipse.xtext.ui.editor.outline.IOutlineNode;
@@ -38,15 +39,16 @@ public class OutlineFilterAndSorterTest extends AbstractXtextTests {
 		super.setUp();
 		final Injector injector = Activator.getInstance().getInjector("org.eclipse.xtext.ui.tests.editor.outline.OutlineTestLanguage");
 		with(new ISetup() {
+			@Override
 			public Injector createInjectorAndDoEMFRegistration() {
 				return injector;
 			}
 		});
 		Model model = OutlineTestFactory.eINSTANCE.createModel();
 		nodes = Lists.newArrayList();
-		nodes.add(new EObjectNode(model, null, null, "one", true));
-		nodes.add(new EObjectNode(model, null, null, "two", true));
-		nodes.add(new EObjectNode(model, null, null, "three", true));
+		nodes.add(new EObjectNode(model, null, (ImageDescriptor) null, "one", true));
+		nodes.add(new EObjectNode(model, null, (ImageDescriptor) null, "two", true));
+		nodes.add(new EObjectNode(model, null, (ImageDescriptor) null, "three", true));
 		filterAndSorter = new OutlineFilterAndSorter();
 	}
 
@@ -112,10 +114,12 @@ public class OutlineFilterAndSorterTest extends AbstractXtextTests {
 			this.rejected = rejected;
 		}
 		
+		@Override
 		public boolean apply(IOutlineNode input) {
 			return !rejected.equals(input.getText().toString());
 		}
 
+		@Override
 		public boolean isEnabled() {
 			return isEnabled;
 		}
@@ -129,10 +133,12 @@ public class OutlineFilterAndSorterTest extends AbstractXtextTests {
 
 		private boolean isEnabled = false;
 
+		@Override
 		public int compare(IOutlineNode o1, IOutlineNode o2) {
 			return o2.getText().toString().compareTo(o1.getText().toString());
 		}
 
+		@Override
 		public boolean isEnabled() {
 			return isEnabled;
 		}

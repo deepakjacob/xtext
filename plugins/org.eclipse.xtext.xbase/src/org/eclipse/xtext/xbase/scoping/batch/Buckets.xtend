@@ -8,14 +8,16 @@
 package org.eclipse.xtext.xbase.scoping.batch
 
 import java.util.List
-import java.util.Set
-import org.eclipse.xtend.lib.Data
+import java.util.Map
 import org.eclipse.xtext.common.types.JvmType
 import org.eclipse.xtext.common.types.JvmTypeReference
 import org.eclipse.xtext.xbase.XExpression
-import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint
-import java.util.Map
+import org.eclipse.xtext.xbase.typesystem.^override.IResolvedFeatures
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference
+import java.util.Set
+import java.util.ArrayList
+import org.eclipse.xtend.lib.annotations.Data
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags
 
 /**
  * A type bucket collects a number of types that originate in the 
@@ -28,7 +30,38 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference
 @Data
 class TypeBucket {
 	int id
-	List<JvmType> types
+	List<? extends JvmType> types
+	IResolvedFeatures.Provider resolvedFeaturesProvider
+	def getFlags() {
+		return ConformanceFlags.CHECKED_SUCCESS
+	}
+	def Map<? extends JvmType, ? extends Set<String>> getTypesToNames() {
+		return emptyMap
+	}
+	def boolean isRestrictingNames() {
+		return false;
+	}
+}
+
+/**
+ * A type bucket that 'exports' only a subset of all named features of 
+ * the contained types.
+ * 
+ * @author Sebastian Zarnekow - Initial contribution and API
+ */
+@Data
+class TypeWithRestrictedNamesBucket extends TypeBucket {
+	Map<? extends JvmType, ? extends Set<String>> typesToNames
+	new(int id, Map<? extends JvmType, ? extends Set<String>> types, IResolvedFeatures.Provider resolvedFeaturesProvider) {
+		super(id, null, resolvedFeaturesProvider)
+		this.typesToNames = types
+	}
+	override isRestrictingNames() {
+		return true
+	}
+	override getTypes() {
+		return new ArrayList(typesToNames.keySet)
+	}
 }
 
 /**
@@ -43,17 +76,18 @@ class TypeBucket {
 class ExpressionBucket {
     int id
     Map<XExpression, LightweightTypeReference> extensionProviders
+    IResolvedFeatures.Provider resolvedFeaturesProvider
 }
 
 /**
  * A type bucket that was produced from the synonym of a type.
- * It tracks the conformance hints for a synonym, e.g. boxing or unboxing information.
+ * It tracks the conformance flags for a synonym, e.g. boxing or unboxing information.
  * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 @Data
 class SynonymTypeBucket extends TypeBucket {
-	Set<ConformanceHint> hints
+	int flags
 }
 
 /**

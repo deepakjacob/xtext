@@ -19,14 +19,18 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.AbstractElement;
 import org.eclipse.xtext.Action;
+import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.acceptor.SequenceFeeder;
-import org.eclipse.xtext.serializer.analysis.ISemanticSequencerNfaProvider;
+import org.eclipse.xtext.serializer.analysis.IGrammarConstraintProvider;
+import org.eclipse.xtext.serializer.analysis.IGrammarConstraintProvider.IConstraint;
 import org.eclipse.xtext.serializer.analysis.ISemanticSequencerNfaProvider.ISemState;
+import org.eclipse.xtext.serializer.analysis.SerializationContext;
 import org.eclipse.xtext.serializer.sequencer.ISemanticNodeProvider.INodesForEObjectProvider;
 import org.eclipse.xtext.util.EmfFormatter;
 import org.eclipse.xtext.util.Pair;
@@ -36,9 +40,10 @@ import org.eclipse.xtext.util.formallang.Nfa;
 import org.eclipse.xtext.util.formallang.NfaUtil;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 
 /**
@@ -46,7 +51,7 @@ import com.google.inject.Inject;
  */
 public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 
-	protected static class FollowerSorter implements Comparator<ISemState> {
+	public static class FollowerSorter implements Comparator<ISemState> {
 
 		protected EObject nodeModelEle;
 
@@ -58,6 +63,7 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 			this.nodeModelEle = nodeModelEle;
 		}
 
+		@Override
 		public int compare(ISemState o1, ISemState o2) {
 			if (nodeModelEle != null) {
 				if (o1.getAssignedGrammarElement() == nodeModelEle)
@@ -91,16 +97,18 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 	}
 
 	public class SerializableObject {
-		protected EObject eObject;
+		protected final EObject eObject;
+		protected final ISerializationContext context;
 		protected List<INode>[] nodes;
 		protected boolean[] optional;
 		protected Map<Pair<AbstractElement, Integer>, Boolean> valid = Maps.newHashMap();
 		protected Object[] values;
 
 		@SuppressWarnings("unchecked")
-		public SerializableObject(EObject eObject, INodesForEObjectProvider nodeProvider) {
+		public SerializableObject(ISerializationContext context, EObject eObject, INodesForEObjectProvider nodeProvider) {
 			super();
 			this.eObject = eObject;
+			this.context = context;
 			EClass clazz = eObject.eClass();
 			values = new Object[clazz.getFeatureCount()];
 			nodes = new List[clazz.getFeatureCount()];
@@ -132,6 +140,7 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 							nodes[featureID] = nodes2;
 							break;
 						case YES:
+							values[featureID] = INVALID;
 					}
 				else
 					switch (transientValues.isValueTransient(eObject, feature)) {
@@ -139,16 +148,17 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 							optional[featureID] = true;
 							Object value1 = eObject.eGet(feature);
 							values[featureID] = value1;
-							nodes[featureID] = Collections.singletonList(nodeProvider.getNodeForSingelValue(feature,
-									value1));
+							nodes[featureID] = Collections
+									.singletonList(nodeProvider.getNodeForSingelValue(feature, value1));
 							break;
 						case NO:
 							Object value2 = eObject.eGet(feature);
 							values[featureID] = value2;
-							nodes[featureID] = Collections.singletonList(nodeProvider.getNodeForSingelValue(feature,
-									value2));
+							nodes[featureID] = Collections
+									.singletonList(nodeProvider.getNodeForSingelValue(feature, value2));
 							break;
 						case YES:
+							values[featureID] = INVALID;
 					}
 			}
 		}
@@ -169,17 +179,30 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 			if (value instanceof List<?>)
 				value = ((List<?>) value).get(index);
 			if (!isValueValid(state, index, value))
-				return null;
+				return INVALID;
 			return value;
 		}
 
 		public int getValueCount(int featureID) {
 			Object v = values[featureID];
-			if (v == null)
+			if (v == INVALID)
 				return 0;
 			else if (v instanceof List<?>)
 				return ((List<?>) v).size();
 			return 1;
+		}
+
+		public String getValuesString() {
+			List<String> items = Lists.newArrayList();
+			for (int i = 0; i < values.length; i++) {
+				int count = getValueCount(i);
+				if (count > 0) {
+					EStructuralFeature feature = eObject.eClass().getEStructuralFeature(i);
+					String cnt = this.optional[i] ? "0-" + count : String.valueOf(count);
+					items.add(feature.getName() + "(" + cnt + ")");
+				}
+			}
+			return "Values: " + Joiner.on(", ").join(items);
 		}
 
 		public boolean isList(int featureID) {
@@ -191,16 +214,20 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 		}
 
 		protected boolean isValueValid(ISemState state, int index, Object value) {
-			if (state.getToBeValidatedAssignedElements().isEmpty())
+			List<AbstractElement> candidates = state.getToBeValidatedAssignedElements();
+			if (candidates.isEmpty())
 				return true;
 
 			Pair<AbstractElement, Integer> key = Tuples.create(state.getAssignedGrammarElement(), index);
 			if (valid.get(key) == Boolean.TRUE)
 				return true;
 
-			Set<AbstractElement> validAssignments = Sets.newHashSet(assignmentFinder.findAssignmentsByValue(eObject,
-					state.getToBeValidatedAssignedElements(), value, getNode(state.getFeatureID(), index)));
-			boolean result = validAssignments.contains(state.getAssignedGrammarElement());
+			INode node = getNode(state.getFeatureID(), index);
+			Multimap<AbstractElement, ISerializationContext> assignments = ArrayListMultimap.create();
+			for (AbstractElement ele : candidates)
+				assignments.put(ele, context);
+			Set<AbstractElement> found = assignmentFinder.findAssignmentsByValue(eObject, assignments, value, node);
+			boolean result = found.contains(state.getAssignedGrammarElement());
 			valid.put(key, result);
 			return result;
 		}
@@ -225,19 +252,6 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 			return result.toString();
 		}
 
-		public String getValuesString() {
-			List<String> items = Lists.newArrayList();
-			for (int i = 0; i < values.length; i++) {
-				int count = getValueCount(i);
-				if (count > 0) {
-					EStructuralFeature feature = eObject.eClass().getEStructuralFeature(i);
-					String cnt = this.optional[i] ? "0-" + count : String.valueOf(count);
-					items.add(feature.getName() + "(" + cnt + ")");
-				}
-			}
-			return "Values: " + Joiner.on(", ").join(items);
-		}
-
 	}
 
 	protected static class TraceItem {
@@ -259,6 +273,22 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 			this.nextIndex = unconsumed;
 		}
 
+		public boolean canEnter(ISemState state) {
+			if (state.isBooleanAssignment() && !Boolean.TRUE.equals(obj.getValue(state, state.getFeatureID())))
+				return false;
+			for (int i = 0; i < nextIndex.length; i++)
+				if (i != state.getFeatureID()) {
+					int count = nextIndex[i];
+					if (count < obj.getValueCount(i)) {
+						if (count == 0 && obj.isOptional(i))
+							continue;
+						if (!state.getAllFollowerFeatures().get(i))
+							return false;
+					}
+				}
+			return true;
+		}
+
 		public TraceItem clone(ISemState state) {
 			TraceItem result = new TraceItem(obj, nextIndex);
 			result.parent = this;
@@ -274,7 +304,7 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 			if (index >= obj.getValueCount(state.getFeatureID()))
 				return null;
 			Object value = obj.getValue(state, index);
-			if (value == null)
+			if (value == INVALID)
 				return null;
 			int[] unconsumedCopy = new int[nextIndex.length];
 			System.arraycopy(nextIndex, 0, unconsumedCopy, 0, nextIndex.length);
@@ -286,20 +316,6 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 			result.index = index;
 			result.node = obj.getNode(state.getFeatureID(), index);
 			return result;
-		}
-
-		public boolean canEnter(ISemState state) {
-			for (int i = 0; i < nextIndex.length; i++)
-				if (i != state.getFeatureID()) {
-					int count = nextIndex[i];
-					if (count < obj.getValueCount(i)) {
-						if (count == 0 && obj.isOptional(i))
-							continue;
-						if (!state.getAllFollowerFeatures().get(i))
-							return false;
-					}
-				}
-			return true;
 		}
 
 		public int getIndex() {
@@ -378,11 +394,13 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 
 	}
 
+	protected static final Object INVALID = new Object();
+
 	@Inject
 	protected IAssignmentFinder assignmentFinder;
 
 	@Inject
-	protected ISemanticSequencerNfaProvider nfaProvider;
+	private IGrammarConstraintProvider constraintProvider;
 
 	@Inject
 	protected TransientValueUtil transientValueUtil;
@@ -406,12 +424,31 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 		}
 	}
 
+	protected Comparator<ISemState> createFollowerSorter(SerializableObject obj, AbstractElement nodeModelEle) {
+		return new FollowerSorter(obj, nodeModelEle);
+	}
+
+	@Override
+	@Deprecated
 	public void createSequence(EObject context, final EObject obj) {
+		createSequence(SerializationContext.fromEObject(context, obj), obj);
+	}
+
+	@Inject
+	private IGrammarAccess grammar;
+
+	@Override
+	public void createSequence(ISerializationContext context, EObject obj) {
 		INodesForEObjectProvider nodes = nodeProvider.getNodesForSemanticObject(obj, null);
-		Nfa<ISemState> nfa = nfaProvider.getNFA(context, obj.eClass());
-		final SerializableObject object = new SerializableObject(obj, nodes);
+		Map<ISerializationContext, IConstraint> constraints = constraintProvider.getConstraints(grammar.getGrammar());
+		IConstraint constraint = constraints.get(context);
+		if (constraint == null)
+			throw new IllegalStateException("Invalid context: " + context);
+		Nfa<ISemState> nfa = constraint.getNfa();
+		final SerializableObject object = new SerializableObject(context, obj, nodes);
 		TraceItem co = new TraceItem(object);
 		List<TraceItem> trace = new NfaUtil().backtrack(nfa, co, new NfaUtil.BacktrackHandler<ISemState, TraceItem>() {
+			@Override
 			public TraceItem handle(ISemState state, TraceItem previous) {
 				if (!previous.canEnter(state))
 					return null;
@@ -421,24 +458,26 @@ public class BacktrackingSemanticSequencer extends AbstractSemanticSequencer {
 					return previous.clone(state);
 			}
 
+			@Override
 			public boolean isSolution(TraceItem result) {
 				return result.isConsumed();
 			}
 
+			@Override
 			public Iterable<ISemState> sortFollowers(TraceItem result, Iterable<ISemState> followers) {
 				AbstractElement next = result.getNextGrammarElement();
 				List<ISemState> r = Lists.newArrayList(followers);
-				Collections.sort(r, new FollowerSorter(object, next));
+				Collections.sort(r, createFollowerSorter(object, next));
 				return r;
 			}
 		});
-		SequenceFeeder feeder = feederProvider.create(obj, nodes, masterSequencer, sequenceAcceptor, errorAcceptor);
+		SequenceFeeder feeder = feederProvider.create(context, obj, nodes, masterSequencer, sequenceAcceptor, errorAcceptor);
 		if (trace != null) {
 			for (TraceItem ti : trace)
 				if (ti.getState() != null && ti.getState().getFeature() != null)
 					accept(ti, feeder);
 		} else if (errorAcceptor != null)
-			errorAcceptor.accept(diagnosticProvider.createBacktrackingFailedDiagnostic(object, context, nfa));
+			errorAcceptor.accept(diagnosticProvider.createBacktrackingFailedDiagnostic(object, context, constraint));
 		feeder.finish();
 	}
 

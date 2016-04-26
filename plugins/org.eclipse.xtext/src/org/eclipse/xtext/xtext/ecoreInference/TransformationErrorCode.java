@@ -21,7 +21,10 @@ public enum TransformationErrorCode {
 	UnknownMetaModelAlias, 
 	InvalidDatatypeRule, 
 	InvalidSupertype, 
-	InvalidFeature;
+	InvalidFeature,
+	InvalidFragmentOverride,
+	InvalidFragmentCall,
+	InvalidRuleOverride;
 
 	public String getFullyQualifiedCode() {
 		return getClass().getCanonicalName() + "." + name();

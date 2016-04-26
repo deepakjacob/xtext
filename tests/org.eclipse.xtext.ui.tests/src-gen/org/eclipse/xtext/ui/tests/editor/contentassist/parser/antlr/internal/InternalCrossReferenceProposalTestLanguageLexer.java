@@ -35,15 +35,15 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalCrossReferenceProposalTestLanguage.g"; }
 
     // $ANTLR start "T__11"
     public final void mT__11() throws RecognitionException {
         try {
             int _type = T__11;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:11:7: ( '<-' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:11:9: '<-'
+            // InternalCrossReferenceProposalTestLanguage.g:11:7: ( '<-' )
+            // InternalCrossReferenceProposalTestLanguage.g:11:9: '<-'
             {
             match("<-"); 
 
@@ -63,8 +63,8 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:12:7: ( '{' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:12:9: '{'
+            // InternalCrossReferenceProposalTestLanguage.g:12:7: ( '{' )
+            // InternalCrossReferenceProposalTestLanguage.g:12:9: '{'
             {
             match('{'); 
 
@@ -83,8 +83,8 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:13:7: ( '}' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:13:9: '}'
+            // InternalCrossReferenceProposalTestLanguage.g:13:7: ( '}' )
+            // InternalCrossReferenceProposalTestLanguage.g:13:9: '}'
             {
             match('}'); 
 
@@ -103,10 +103,10 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:169:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:169:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalCrossReferenceProposalTestLanguage.g:169:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalCrossReferenceProposalTestLanguage.g:169:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:169:11: ( '^' )?
+            // InternalCrossReferenceProposalTestLanguage.g:169:11: ( '^' )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
@@ -115,7 +115,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:169:11: '^'
+                    // InternalCrossReferenceProposalTestLanguage.g:169:11: '^'
                     {
                     match('^'); 
 
@@ -133,7 +133,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:169:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalCrossReferenceProposalTestLanguage.g:169:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop2:
             do {
                 int alt2=2;
@@ -146,7 +146,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:
+            	    // InternalCrossReferenceProposalTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -182,10 +182,10 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:171:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:171:12: ( '0' .. '9' )+
+            // InternalCrossReferenceProposalTestLanguage.g:171:10: ( ( '0' .. '9' )+ )
+            // InternalCrossReferenceProposalTestLanguage.g:171:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:171:12: ( '0' .. '9' )+
+            // InternalCrossReferenceProposalTestLanguage.g:171:12: ( '0' .. '9' )+
             int cnt3=0;
             loop3:
             do {
@@ -199,7 +199,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:171:13: '0' .. '9'
+            	    // InternalCrossReferenceProposalTestLanguage.g:171:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -231,10 +231,10 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalCrossReferenceProposalTestLanguage.g:173:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalCrossReferenceProposalTestLanguage.g:173:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalCrossReferenceProposalTestLanguage.g:173:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -252,10 +252,10 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalCrossReferenceProposalTestLanguage.g:173:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalCrossReferenceProposalTestLanguage.g:173:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop4:
                     do {
                         int alt4=3;
@@ -271,23 +271,15 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
 
                         switch (alt4) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalCrossReferenceProposalTestLanguage.g:173:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalCrossReferenceProposalTestLanguage.g:173:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -312,10 +304,10 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalCrossReferenceProposalTestLanguage.g:173:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalCrossReferenceProposalTestLanguage.g:173:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -331,23 +323,15 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalCrossReferenceProposalTestLanguage.g:173:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:173:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalCrossReferenceProposalTestLanguage.g:173:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -390,12 +374,12 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:175:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:175:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalCrossReferenceProposalTestLanguage.g:175:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalCrossReferenceProposalTestLanguage.g:175:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:175:24: ( options {greedy=false; } : . )*
+            // InternalCrossReferenceProposalTestLanguage.g:175:24: ( options {greedy=false; } : . )*
             loop7:
             do {
                 int alt7=2;
@@ -420,7 +404,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:175:52: .
+            	    // InternalCrossReferenceProposalTestLanguage.g:175:52: .
             	    {
             	    matchAny(); 
 
@@ -450,12 +434,12 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:177:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:177:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalCrossReferenceProposalTestLanguage.g:177:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalCrossReferenceProposalTestLanguage.g:177:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:177:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalCrossReferenceProposalTestLanguage.g:177:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop8:
             do {
                 int alt8=2;
@@ -468,7 +452,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:177:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalCrossReferenceProposalTestLanguage.g:177:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -488,7 +472,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:177:40: ( ( '\\r' )? '\\n' )?
+            // InternalCrossReferenceProposalTestLanguage.g:177:40: ( ( '\\r' )? '\\n' )?
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -497,9 +481,9 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
             }
             switch (alt10) {
                 case 1 :
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:177:41: ( '\\r' )? '\\n'
+                    // InternalCrossReferenceProposalTestLanguage.g:177:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:177:41: ( '\\r' )?
+                    // InternalCrossReferenceProposalTestLanguage.g:177:41: ( '\\r' )?
                     int alt9=2;
                     int LA9_0 = input.LA(1);
 
@@ -508,7 +492,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
                     }
                     switch (alt9) {
                         case 1 :
-                            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:177:41: '\\r'
+                            // InternalCrossReferenceProposalTestLanguage.g:177:41: '\\r'
                             {
                             match('\r'); 
 
@@ -540,10 +524,10 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:179:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:179:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalCrossReferenceProposalTestLanguage.g:179:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalCrossReferenceProposalTestLanguage.g:179:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:179:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalCrossReferenceProposalTestLanguage.g:179:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt11=0;
             loop11:
             do {
@@ -557,7 +541,7 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
 
                 switch (alt11) {
             	case 1 :
-            	    // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:
+            	    // InternalCrossReferenceProposalTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -597,8 +581,8 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:181:16: ( . )
-            // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:181:18: .
+            // InternalCrossReferenceProposalTestLanguage.g:181:16: ( . )
+            // InternalCrossReferenceProposalTestLanguage.g:181:18: .
             {
             matchAny(); 
 
@@ -613,75 +597,75 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalCrossReferenceProposalTestLanguage.g:1:8: ( T__11 | T__12 | T__13 | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt12=10;
         alt12 = dfa12.predict(input);
         switch (alt12) {
             case 1 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:10: T__11
+                // InternalCrossReferenceProposalTestLanguage.g:1:10: T__11
                 {
                 mT__11(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:16: T__12
+                // InternalCrossReferenceProposalTestLanguage.g:1:16: T__12
                 {
                 mT__12(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:22: T__13
+                // InternalCrossReferenceProposalTestLanguage.g:1:22: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:28: RULE_ID
+                // InternalCrossReferenceProposalTestLanguage.g:1:28: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:36: RULE_INT
+                // InternalCrossReferenceProposalTestLanguage.g:1:36: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:45: RULE_STRING
+                // InternalCrossReferenceProposalTestLanguage.g:1:45: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:57: RULE_ML_COMMENT
+                // InternalCrossReferenceProposalTestLanguage.g:1:57: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:73: RULE_SL_COMMENT
+                // InternalCrossReferenceProposalTestLanguage.g:1:73: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 9 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:89: RULE_WS
+                // InternalCrossReferenceProposalTestLanguage.g:1:89: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 10 :
-                // ../org.eclipse.xtext.ui.tests/src-gen/org/eclipse/xtext/ui/tests/editor/contentassist/parser/antlr/internal/InternalCrossReferenceProposalTestLanguage.g:1:97: RULE_ANY_OTHER
+                // InternalCrossReferenceProposalTestLanguage.g:1:97: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -703,14 +687,11 @@ public class InternalCrossReferenceProposalTestLanguageLexer extends Lexer {
     static final String DFA12_maxS =
         "\1\uffff\1\55\2\uffff\1\172\2\uffff\2\uffff\1\57\13\uffff";
     static final String DFA12_acceptS =
-        "\2\uffff\1\2\1\3\1\uffff\1\4\1\5\3\uffff\1\11\1\12\1\1\1\2\1\3\1"+
-        "\4\1\5\1\6\1\7\1\10\1\11";
+        "\2\uffff\1\2\1\3\1\uffff\1\4\1\5\3\uffff\1\11\1\12\1\1\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11";
     static final String DFA12_specialS =
         "\1\1\6\uffff\1\2\1\0\14\uffff}>";
     static final String[] DFA12_transitionS = {
-            "\11\13\2\12\2\13\1\12\22\13\1\12\1\13\1\7\4\13\1\10\7\13\1\11"+
-            "\12\6\2\13\1\1\4\13\32\5\3\13\1\4\1\5\1\13\32\5\1\2\1\13\1\3"+
-            "\uff82\13",
+            "\11\13\2\12\2\13\1\12\22\13\1\12\1\13\1\7\4\13\1\10\7\13\1\11\12\6\2\13\1\1\4\13\32\5\3\13\1\4\1\5\1\13\32\5\1\2\1\13\1\3\uff82\13",
             "\1\14",
             "",
             "",

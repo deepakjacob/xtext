@@ -169,7 +169,7 @@ public class JdtVariableCompletions {
 		List<INode> nodes = NodeModelUtils.findNodesForFeature(ctx, refToTypeRef);
 		StringBuilder sb = new StringBuilder();
 		for (INode n : nodes) {
-			sb.append(n.getText().trim());
+			sb.append(NodeModelUtils.getTokenText(n));
 		}
 		return sb.toString();
 	}

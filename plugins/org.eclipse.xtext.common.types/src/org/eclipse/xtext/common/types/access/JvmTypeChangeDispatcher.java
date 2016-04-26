@@ -10,6 +10,7 @@ package org.eclipse.xtext.common.types.access;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
@@ -25,6 +26,8 @@ import com.google.common.collect.Lists;
  */
 public class JvmTypeChangeDispatcher extends AdapterImpl {
 
+	private static final Logger LOG = Logger.getLogger(JvmTypeChangeDispatcher.class);
+	
 	public static JvmTypeChangeDispatcher findResourceChangeDispatcher(Notifier notifier) {
 		JvmTypeChangeDispatcher result = (JvmTypeChangeDispatcher) EcoreUtil.getAdapter(
 				notifier.eAdapters(), JvmTypeChangeDispatcher.class);
@@ -55,13 +58,39 @@ public class JvmTypeChangeDispatcher extends AdapterImpl {
 		@Override
 		public void notifyChanged(Notification notification) {
 			super.notifyChanged(notification);
-			if (listeners.isEmpty() || (notification.isTouch() && !isRemoveThis(notification))) 
+			if (notification.isTouch() && !isRemoveThis(notification)) 
 				return;
-			Iterator<Runnable> iterator = listeners.iterator();
-			while(iterator.hasNext()) {
-				iterator.next().run();
-				iterator.remove();
+			List<Runnable> localListeners = null;
+			synchronized (listenerLock) {
+				localListeners = listeners;
+				if (localListeners.isEmpty()) {
+					return;
+				}
+				listeners = Lists.newLinkedList();
 			}
+			Iterator<Runnable> iterator = localListeners.iterator();
+			while(iterator.hasNext()) {
+				Runnable runnable = iterator.next();
+				if (runnable != null) {
+					try {
+						runnable.run();
+					} catch(Exception e) {
+						LOG.error(e.getMessage(), e);
+					}
+				}
+			}
+		}
+		
+		@Override
+		protected void addAdapter(Notifier notifier) {
+			if (notifier instanceof TypeResource) {
+				IMirror mirror = ((TypeResource) notifier).getMirror();
+				if (mirror instanceof IMirrorExtension) {
+					if (((IMirrorExtension) mirror).isSealed())
+						return;
+				}
+			}
+			notifier.eAdapters().add(this);
 		}
 
 		protected boolean isRemoveThis(Notification notification) {
@@ -79,6 +108,8 @@ public class JvmTypeChangeDispatcher extends AdapterImpl {
 	
 	private List<Runnable> listeners;
 	
+	private final Object listenerLock = new Object();
+	
 	public JvmTypeChangeDispatcher() {
 		listeners = Lists.newLinkedList();
 	}
@@ -90,7 +121,9 @@ public class JvmTypeChangeDispatcher extends AdapterImpl {
 			result = new NotificationDispatcher(notifier);
 			notifier.eAdapters().add(result);
 		}
-		listeners.add(runnable);
+		synchronized (listeners) {
+			listeners.add(runnable);
+		}
 	}
 	
 	@Override

@@ -13,8 +13,9 @@ import org.eclipse.xtext.formatting.IFormatter;
 import org.eclipse.xtext.linking.ILinker;
 import org.eclipse.xtext.linking.ILinkingDiagnosticMessageProvider;
 import org.eclipse.xtext.linking.ILinkingService;
-import org.eclipse.xtext.naming.IQualifiedNameConverter;
+import org.eclipse.xtext.parser.DefaultEcoreElementFactory;
 import org.eclipse.xtext.parser.antlr.IReferableElementsUnloader;
+import org.eclipse.xtext.parser.antlr.SyntaxErrorMessageProvider;
 import org.eclipse.xtext.parsetree.reconstr.ITokenSerializer.ICrossReferenceSerializer;
 import org.eclipse.xtext.parsetree.reconstr.ITransientValueService;
 import org.eclipse.xtext.resource.DerivedStateAwareResourceDescriptionManager;
@@ -27,8 +28,13 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.scoping.IGlobalScopeProvider;
 import org.eclipse.xtext.scoping.IScopeProvider;
 import org.eclipse.xtext.scoping.impl.DefaultGlobalScopeProvider;
+import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.serializer.impl.Serializer;
+import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
+import org.eclipse.xtext.validation.ConfigurableIssueCodesProvider;
 import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.xtext.GrammarResource;
+import org.eclipse.xtext.xtext.XtextConfigurableIssueCodes;
 import org.eclipse.xtext.xtext.XtextCrossReferenceSerializer;
 import org.eclipse.xtext.xtext.XtextDiagnosticConverter;
 import org.eclipse.xtext.xtext.XtextFormatter;
@@ -36,7 +42,6 @@ import org.eclipse.xtext.xtext.XtextFragmentProvider;
 import org.eclipse.xtext.xtext.XtextLinkingDiagnosticMessageProvider;
 import org.eclipse.xtext.xtext.XtextLinkingService;
 import org.eclipse.xtext.xtext.XtextLocationInFileProvider;
-import org.eclipse.xtext.xtext.XtextQualifiedNameConverter;
 import org.eclipse.xtext.xtext.XtextReferableElementsUnloader;
 import org.eclipse.xtext.xtext.XtextResourceDescriptionStrategy;
 import org.eclipse.xtext.xtext.XtextScopeProvider;
@@ -44,8 +49,11 @@ import org.eclipse.xtext.xtext.XtextTransientValueService;
 import org.eclipse.xtext.xtext.XtextTransientValueService2;
 import org.eclipse.xtext.xtext.XtextValidator;
 import org.eclipse.xtext.xtext.XtextValueConverters;
+import org.eclipse.xtext.xtext.CardinalityAwareSyntacticSequencer;
 import org.eclipse.xtext.xtext.ecoreInference.IXtext2EcorePostProcessor;
 import org.eclipse.xtext.xtext.ecoreInference.XtendXtext2EcorePostProcessor;
+import org.eclipse.xtext.xtext.parser.CardinalityAwareEcoreFactory;
+import org.eclipse.xtext.xtext.parser.CardinalityAwareSyntaxErrorMessageProvider;
 
 import com.google.inject.Binder;
 
@@ -83,7 +91,7 @@ public class XtextRuntimeModule extends AbstractXtextRuntimeModule {
 	public Class<? extends ITransientValueService> bindITransientValueService() {
 		return XtextTransientValueService.class;
 	}
-	
+
 	public Class<? extends org.eclipse.xtext.serializer.sequencer.ITransientValueService> bindITransientValueService2() {
 		return XtextTransientValueService2.class;
 	}
@@ -98,61 +106,98 @@ public class XtextRuntimeModule extends AbstractXtextRuntimeModule {
 		return XtextValueConverters.class;
 	}
 
-	public Class<? extends IXtext2EcorePostProcessor> bindIXtext2EcorePostProcessor() {
-		return XtendXtext2EcorePostProcessor.class;
+	/**
+	 * @since 2.9
+	 */
+	public void configureIXtext2EcorePostProcessor(Binder binder) {
+		try {
+			Class.forName("org.eclipse.xtend.expression.ExecutionContext");
+			binder.bind(IXtext2EcorePostProcessor.class).to(XtendXtext2EcorePostProcessor.class);
+		} catch (ClassNotFoundException e) {
+		}
 	}
-	
+
 	@Override
 	public Class<? extends IFragmentProvider> bindIFragmentProvider() {
 		return XtextFragmentProvider.class;
 	}
-	
+
 	public Class<? extends IReferableElementsUnloader> bindIReferableElementsUnloader() {
 		return XtextReferableElementsUnloader.class;
 	}
-	
-	public Class<? extends IQualifiedNameConverter> bindIQualifiedNameConverter() {
-		return XtextQualifiedNameConverter.class;
-	}
-	
+
 	public Class<? extends IDiagnosticConverter> bindIDiagnosticConverter() {
 		return XtextDiagnosticConverter.class;
 	}
-	
+
 	public Class<? extends IDefaultResourceDescriptionStrategy> bindIDefaultResourceDescriptionStrategy() {
 		return XtextResourceDescriptionStrategy.class;
 	}
-	
+
 	public Class<? extends ILinkingDiagnosticMessageProvider.Extended> bindILinkingDiagnosticMessageProvider() {
 		return XtextLinkingDiagnosticMessageProvider.class;
 	}
-	
+
 	@Override
 	public Class<? extends ILocationInFileProvider> bindILocationInFileProvider() {
 		return XtextLocationInFileProvider.class;
 	}
-	
+
 	@Override
 	public Class<? extends IGlobalScopeProvider> bindIGlobalScopeProvider() {
 		return DefaultGlobalScopeProvider.class;
 	}
-	
+
 	@Override
 	public Class<? extends XtextResource> bindXtextResource() {
 		return GrammarResource.class;
 	}
-	
+
 	/**
 	 * @since 2.2
 	 */
 	public Class<? extends IDerivedStateComputer> bindIDerivedStateComputer() {
 		return GrammarResource.LinkingTrigger.class;
 	}
-	
+
 	/**
 	 * @since 2.2
 	 */
 	public Class<? extends IResourceDescription.Manager> bindIResourceDescriptionManager() {
 		return DerivedStateAwareResourceDescriptionManager.class;
+	}
+
+	/**
+	 * @since 2.8
+	 */
+	public Class<? extends ConfigurableIssueCodesProvider> bindConfigurableIssueCodesProvider() {
+		return XtextConfigurableIssueCodes.class;
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public Class<? extends DefaultEcoreElementFactory> bindCardinalityAwareFactory() {
+		return CardinalityAwareEcoreFactory.class;
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public Class<? extends SyntaxErrorMessageProvider> bindSyntaxErrorMessageProvider() {
+		return CardinalityAwareSyntaxErrorMessageProvider.class;
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public Class<? extends ISerializer> bindISerializer() {
+		return Serializer.class;
+	}
+
+	@Override
+	public Class<? extends ISyntacticSequencer> bindISyntacticSequencer() {
+		return CardinalityAwareSyntacticSequencer.class;
 	}
 }

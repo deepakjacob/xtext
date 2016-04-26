@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.sequencertest.impl;
 
@@ -31,13 +28,13 @@ import org.eclipse.xtext.serializer.sequencertest.UnorderedAlternativeValDelegat
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.UnorderedAlternativeImpl#getVal1 <em>Val1</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.UnorderedAlternativeImpl#getVal2 <em>Val2</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.UnorderedAlternativeImpl#getVal3 <em>Val3</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.impl.UnorderedAlternativeImpl#getVal4 <em>Val4</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

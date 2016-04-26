@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.provider;
 
@@ -11,17 +13,9 @@ import java.util.List;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EStructuralFeature;
-
-import org.eclipse.emf.edit.provider.IEditingDomainItemProvider;
-import org.eclipse.emf.edit.provider.IItemLabelProvider;
 import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
-import org.eclipse.emf.edit.provider.IItemPropertySource;
-import org.eclipse.emf.edit.provider.IStructuredItemContentProvider;
-import org.eclipse.emf.edit.provider.ITreeItemContentProvider;
 import org.eclipse.emf.edit.provider.ViewerNotification;
-
 import org.eclipse.xtext.common.types.JvmSpecializedTypeReference;
 import org.eclipse.xtext.common.types.TypesFactory;
 import org.eclipse.xtext.common.types.TypesPackage;
@@ -31,16 +25,8 @@ import org.eclipse.xtext.common.types.TypesPackage;
  * <!-- begin-user-doc -->
  * <!-- end-user-doc -->
  * @generated
- * @since 2.1
  */
-public class JvmSpecializedTypeReferenceItemProvider
-	extends JvmTypeReferenceItemProvider
-	implements
-		IEditingDomainItemProvider,
-		IStructuredItemContentProvider,
-		ITreeItemContentProvider,
-		IItemLabelProvider,
-		IItemPropertySource
+public class JvmSpecializedTypeReferenceItemProvider extends JvmTypeReferenceItemProvider
 {
 	/**
 	 * This constructs an instance from a factory and a notifier.
@@ -114,6 +100,7 @@ public class JvmSpecializedTypeReferenceItemProvider
 	{
 		return getString("_UI_JvmSpecializedTypeReference_type");
 	}
+	
 
 	/**
 	 * This handles model notifications by calling {@link #updateChildren} to update any cached
@@ -187,6 +174,11 @@ public class JvmSpecializedTypeReferenceItemProvider
 			(createChildParameter
 				(TypesPackage.Literals.JVM_SPECIALIZED_TYPE_REFERENCE__EQUIVALENT,
 				 TypesFactory.eINSTANCE.createJvmUnknownTypeReference()));
+
+		newChildDescriptors.add
+			(createChildParameter
+				(TypesPackage.Literals.JVM_SPECIALIZED_TYPE_REFERENCE__EQUIVALENT,
+				 TypesFactory.eINSTANCE.createJvmInnerTypeReference()));
 	}
 
 }

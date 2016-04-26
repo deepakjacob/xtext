@@ -21,24 +21,58 @@ public class XImportDeclarationImplCustom extends XImportDeclarationImpl {
 
 	@Override
 	public boolean isWildcard() {
-		return isStatic(); // static imports only work with wildcards atm
+		if (isStatic()) 
+			return super.isWildcard();
+		if (importedNamespace == null)
+			return false;
+		return importedNamespace.endsWith("*");
+	}
+	
+	@Override
+	public String getImportedName() {
+		String memberName = getMemberName();
+		String importedTypeName = getImportedTypeName();
+		if (memberName == null) {
+			return importedTypeName;
+		}
+		if (importedTypeName == null) {
+			return memberName;
+		}
+		return importedTypeName + '.' + memberName;
 	}
 
 	@Override
 	public String getImportedTypeName() {
-		if (this.eIsSet(XtypePackage.Literals.XIMPORT_DECLARATION__IMPORTED_TYPE)) {
-			JvmType unresolvedType = (JvmType) this.eGet(XtypePackage.Literals.XIMPORT_DECLARATION__IMPORTED_TYPE, false);
-			if(!unresolvedType.eIsProxy())
-				return unresolvedType.getIdentifier();
-			List<INode> list = NodeModelUtils.findNodesForFeature(this,
-					XtypePackage.Literals.XIMPORT_DECLARATION__IMPORTED_TYPE);
-			StringBuilder sb = new StringBuilder();
-			for (INode iNode : list) {
-				sb.append(NodeModelUtils.getTokenText(iNode).replace("^", ""));
+		String result = getImportedNamespace();
+		if (result == null) {
+			if (this.eIsSet(XtypePackage.Literals.XIMPORT_DECLARATION__IMPORTED_TYPE)) {
+				JvmType unresolvedType = (JvmType) this.eGet(XtypePackage.Literals.XIMPORT_DECLARATION__IMPORTED_TYPE, false);
+				if(!unresolvedType.eIsProxy())
+					return unresolvedType.getIdentifier();
+				List<INode> list = NodeModelUtils.findNodesForFeature(this,
+						XtypePackage.Literals.XIMPORT_DECLARATION__IMPORTED_TYPE);
+				StringBuilder sb = new StringBuilder();
+				for (INode iNode : list) {
+					sb.append(NodeModelUtils.getTokenText(iNode).replace("^", ""));
+				}
+				result = sb.toString().replace(" ", "");
+				if (isStatic()) {
+					return trim(result, 1);
+				}
+				return result;
 			}
-			return sb.toString().replace(" ", "");
+			return null;
+		}
+		if (isWildcard()) {
+			return trim(result, 2);
+		}
+		return result;
+	}
+
+	private String trim(String result, int length) {
+		if (result.length() > length) {
+			return result.substring(0, result.length() - length);
 		}
 		return null;
 	}
-
 }

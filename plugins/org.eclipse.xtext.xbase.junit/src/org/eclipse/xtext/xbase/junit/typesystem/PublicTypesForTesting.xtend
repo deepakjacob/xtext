@@ -7,7 +7,6 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.junit.typesystem
 
-import org.eclipse.jdt.annotation.NonNullByDefault
 import org.eclipse.xtext.common.types.JvmTypeParameter
 import org.eclipse.xtext.xbase.XExpression
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputer
@@ -16,14 +15,14 @@ import org.eclipse.xtext.xbase.typesystem.internal.ResolvedTypes
 import org.eclipse.xtext.xbase.typesystem.internal.RootResolvedTypes
 import org.eclipse.xtext.xbase.typesystem.internal.StackedResolvedTypes
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference
+import org.eclipse.xtext.util.CancelIndicator
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 class PublicResolvedTypes extends RootResolvedTypes {
 	new(DefaultReentrantTypeResolver resolver) {
-		super(resolver)
+		super(resolver, CancelIndicator.NullImpl)
 	}
 	
 	override public UnboundTypeReference createUnboundTypeReference(XExpression expression, JvmTypeParameter type) {
@@ -47,7 +46,6 @@ class PublicResolvedTypes extends RootResolvedTypes {
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 class PublicStackedResolvedTypes extends StackedResolvedTypes {
 	new(ResolvedTypes parent) {
 		super(parent)
@@ -57,7 +55,6 @@ class PublicStackedResolvedTypes extends StackedResolvedTypes {
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 class PublicReentrantTypeResolver extends DefaultReentrantTypeResolver {
 	
 	override public setTypeComputer(ITypeComputer typeComputer) {

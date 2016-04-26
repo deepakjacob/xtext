@@ -10,11 +10,10 @@ package org.eclipse.xtext.xbase.typesystem.references;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmCompoundTypeReference;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.xbase.typesystem.util.IVisibilityHelper;
 import org.eclipse.xtext.xbase.typesystem.util.TypeParameterSubstitutor;
 
 import com.google.common.base.Function;
@@ -25,7 +24,6 @@ import com.google.common.collect.Lists;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class CompoundTypeReference extends LightweightTypeReference {
 
 	private boolean synonym;
@@ -36,6 +34,14 @@ public class CompoundTypeReference extends LightweightTypeReference {
 		super(owner);
 		this.synonym = synonym;
 		this.resolved = true;
+	}
+	
+	/**
+	 * Subclasses <em>must</em> override this method.
+	 */
+	@Override
+	public int getKind() {
+		return KIND_COMPOUND_TYPE_REFERENCE;
 	}
 	
 	@Override
@@ -50,12 +56,42 @@ public class CompoundTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
-	public JvmTypeReference toJavaCompliantTypeReference() {
-		LightweightTypeReference type = getServices().getTypeConformanceComputer().getCommonSuperType(components);
-		if (type == null) {
-			return getOwner().getServices().getTypeReferences().getTypeForName(Object.class, getOwner().getContextResourceSet());
+	public boolean isVisible(IVisibilityHelper visibilityHelper) {
+		if (components != null && !components.isEmpty()) {
+			for(LightweightTypeReference component: components) {
+				if (!component.isVisible(visibilityHelper)) {
+					return false;
+				}
+			}
 		}
-		return type.toJavaCompliantTypeReference();
+		return true;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * If this is a multi-type rather than a {@link #isSynonym() synonym}, the Java compliant
+	 * type reference is determined from the common super type of all participating, non-interface types.
+	 * If there is no such type or this is a synonym, all the component types are used to compute
+	 * the common super type and use that one as the type.
+	 */
+	@Override
+	public JvmTypeReference toJavaCompliantTypeReference(IVisibilityHelper visibilityHelper) {
+		if (!isSynonym()) {
+			List<LightweightTypeReference> nonInterfaceTypes = getNonInterfaceTypes(components);
+			if (nonInterfaceTypes != null) {
+				return toJavaCompliantTypeReference(nonInterfaceTypes, visibilityHelper);
+			}
+		}
+		return toJavaCompliantTypeReference(components, visibilityHelper);
+	}
+
+	@Override
+	public List<LightweightTypeReference> getTypeArguments() {
+		if (components != null && components.size() == 1)
+			return components.get(0).getTypeArguments();
+		// TODO common type?
+		return super.getTypeArguments();
 	}
 	
 	@Override
@@ -65,6 +101,102 @@ public class CompoundTypeReference extends LightweightTypeReference {
 				return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean isArray() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (component.isArray())
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean isAny() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (component.isAny())
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean isPrimitive() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (component.isPrimitive())
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean isAnonymous() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (component.isAnonymous())
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean isWrapper() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (component.isWrapper())
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean isPrimitiveVoid() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (component.isPrimitiveVoid())
+				return true;
+		}
+		return false;
+	}
+
+	@Override
+	public FunctionTypeKind getFunctionTypeKind() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (component.isFunctionType()) {
+				FunctionTypeKind kind = getFunctionTypeKind();
+				if (kind != FunctionTypeKind.NONE) {
+					return kind;
+				}
+			}
+		}
+		return FunctionTypeKind.NONE;
+	}
+	
+	@Override
+	public boolean isInterfaceType() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (component.isInterfaceType())
+				return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public LightweightTypeReference getRawTypeReference() {
+		if (isAllRawType()) {
+			return this;
+		}
+		CompoundTypeReference result = getOwner().newCompoundTypeReference(isSynonym());
+		for(LightweightTypeReference component: expose(components)) {
+			result.addComponent(component.getRawTypeReference());
+		}
+		return result;
+	}
+	
+	private boolean isAllRawType() {
+		for(LightweightTypeReference component: expose(components)) {
+			if (!component.isRawType())
+				return false;
+		}
+		return true;
 	}
 	
 	@Override
@@ -81,7 +213,7 @@ public class CompoundTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public JvmType getType() {
 		if (components != null && components.size() == 1)
 			return components.get(0).getType();
@@ -104,7 +236,35 @@ public class CompoundTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
+	/* @Nullable */
+	public LightweightTypeReference getSuperType(JvmType rawType) {
+		if (components == null || components.isEmpty())
+			return null;
+		for(LightweightTypeReference component: components) {
+			LightweightTypeReference result = component.getSuperType(rawType);
+			if (result != null)
+				return result;
+		}
+		return null;
+	}
+	
+	@Override
+	/* @Nullable */
+	public LightweightTypeReference getSuperType(Class<?> rawType) {
+		if (components == null || components.isEmpty())
+			return null;
+		for(LightweightTypeReference component: components) {
+			LightweightTypeReference result = component.getSuperType(rawType);
+			if (result != null)
+				return result;
+		}
+		return null;
+	}
+	
+	@Override
 	public boolean isType(Class<?> clazz) {
+		if (components == null)
+			return false;
 		if (isSynonym()) {
 			for(LightweightTypeReference component: components) {
 				if (component.isType(clazz))
@@ -122,7 +282,7 @@ public class CompoundTypeReference extends LightweightTypeReference {
 	
 	@Override
 	protected LightweightTypeReference doCopyInto(ITypeReferenceOwner owner) {
-		CompoundTypeReference result = new CompoundTypeReference(owner, synonym);
+		CompoundTypeReference result = owner.newCompoundTypeReference(synonym);
 		if (components != null && !components.isEmpty()) {
 			for(LightweightTypeReference typeArgument: components) {
 				result.addComponent(typeArgument.copyInto(owner));
@@ -136,6 +296,7 @@ public class CompoundTypeReference extends LightweightTypeReference {
 		return resolved;
 	}
 	
+	@Override
 	public boolean isSynonym() {
 		return synonym;
 	}
@@ -155,12 +316,22 @@ public class CompoundTypeReference extends LightweightTypeReference {
 	
 	@Override
 	public String getSimpleName() {
-		return getAsString(new SimpleNameFunction());
+		return getAsString(SimpleNameFunction.INSTANCE);
 	}
 	
 	@Override
 	public String getIdentifier() {
-		return getAsString(new IdentifierFunction());
+		return getAsString(IdentifierFunction.INSTANCE);
+	}
+
+	@Override
+	public String getUniqueIdentifier() {
+		return getAsString(UniqueIdentifierFunction.INSTANCE);
+	}
+	
+	@Override
+	public String getJavaIdentifier() {
+		return toJavaType().getJavaIdentifier();
 	}
 	
 	private String getAsString(Function<? super LightweightTypeReference, ? extends String> format) {
@@ -184,7 +355,7 @@ public class CompoundTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public <Result> Result accept(TypeReferenceVisitorWithResult<Result> visitor) {
 		if (isSynonym())
 			return visitor.doVisitSynonymTypeReference(this);
@@ -193,28 +364,12 @@ public class CompoundTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public <Param, Result> Result accept(TypeReferenceVisitorWithParameterAndResult<Param, Result> visitor, Param param) {
 		if (isSynonym())
 			return visitor.doVisitSynonymTypeReference(this, param);
 		else
 			return visitor.doVisitMultiTypeReference(this, param);
-	}
-	
-	@Override
-	public CompoundTypeReference toMultiType(LightweightTypeReference reference) {
-		if (!isSynonym()) {
-			if (reference == null) {
-				throw new NullPointerException("reference may not be null");
-			}
-			CompoundTypeReference result = new CompoundTypeReference(getOwner(), false);
-			for(LightweightTypeReference component: getMultiTypeComponents()) {
-				result.addComponent(component);
-			}
-			result.addComponent(reference);
-			return result;
-		}
-		return super.toMultiType(reference);
 	}
 	
 	@Override
@@ -224,7 +379,22 @@ public class CompoundTypeReference extends LightweightTypeReference {
 	
 	@Override
 	public LightweightTypeReference toJavaType() {
-		LightweightTypeReference result = getServices().getTypeConformanceComputer().getCommonSuperType(getMultiTypeComponents());
+		if (isMultiType()) {
+			LightweightTypeReference result = null;
+			for(LightweightTypeReference component: getMultiTypeComponents()) {
+				if (!component.isInterfaceType()) {
+					if (result != null) {
+						result = null;
+						break;
+					}
+					result = component;
+				}
+			}
+			if (result != null) {
+				return result;
+			}
+		}
+		LightweightTypeReference result = getServices().getTypeConformanceComputer().getCommonSuperType(getMultiTypeComponents(), getOwner());
 		if (result == null) {
 			throw new IllegalStateException("Cannot expression " + this + " as Java type reference");
 		}

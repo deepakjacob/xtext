@@ -10,18 +10,26 @@ package org.eclipse.xtext.purexbase.test;
 import com.google.inject.Inject;
 import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.junit4.InjectWith;
+import org.eclipse.xtext.junit4.TemporaryFolder;
 import org.eclipse.xtext.junit4.XtextRunner;
 import org.eclipse.xtext.purexbase.test.RuntimeInjectorProvider;
 import org.eclipse.xtext.xbase.compiler.CompilationTestHelper;
 import org.eclipse.xtext.xbase.lib.Exceptions;
+import org.eclipse.xtext.xbase.lib.Extension;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(value = XtextRunner.class)
-@InjectWith(value = RuntimeInjectorProvider.class)
+@RunWith(XtextRunner.class)
+@InjectWith(RuntimeInjectorProvider.class)
 @SuppressWarnings("all")
 public class CompilerTest {
+  @Rule
   @Inject
+  public TemporaryFolder temporaryFolder;
+  
+  @Inject
+  @Extension
   private CompilationTestHelper _compilationTestHelper;
   
   @Test
@@ -102,13 +110,15 @@ public class CompilerTest {
       _builder_1.append("import org.eclipse.xtext.xbase.lib.Pair;");
       _builder_1.newLine();
       _builder_1.newLine();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public BigDecimal myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("BigDecimal _specialblockexpression = null;");
+      _builder_1.append("BigDecimal _xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
@@ -141,13 +151,13 @@ public class CompilerTest {
       _builder_1.append("/* CollectionLiterals.<String>newHashSet(\"foo\", \"bar\", \"baz\"); */");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("Pair<Integer,String> _mappedTo = Pair.<Integer, String>of(Integer.valueOf(1), \"one\");");
+      _builder_1.append("Pair<Integer, String> _mappedTo = Pair.<Integer, String>of(Integer.valueOf(1), \"one\");");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("Pair<Integer,String> _mappedTo_1 = Pair.<Integer, String>of(Integer.valueOf(2), \"two\");");
+      _builder_1.append("Pair<Integer, String> _mappedTo_1 = Pair.<Integer, String>of(Integer.valueOf(2), \"two\");");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("Pair<Integer,String> _mappedTo_2 = Pair.<Integer, String>of(Integer.valueOf(3), \"three\");");
+      _builder_1.append("Pair<Integer, String> _mappedTo_2 = Pair.<Integer, String>of(Integer.valueOf(3), \"three\");");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("/* CollectionLiterals.<Integer, String>newHashMap(_mappedTo, _mappedTo_1, _mappedTo_2); */");
@@ -156,13 +166,13 @@ public class CompilerTest {
       _builder_1.append("/* new BigInteger(\"beefbeefbeefbeefbeef\", 16) */");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (new BigDecimal(\"0.123456789123456789123456789123456789e4242\"));");
+      _builder_1.append("_xblockexpression = new BigDecimal(\"0.123456789123456789123456789123456789e4242\");");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -170,7 +180,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -179,7 +189,7 @@ public class CompilerTest {
   public void featureCalls() {
     try {
       StringConcatenation _builder = new StringConcatenation();
-      _builder.append("import org.eclipse.xtext.purexbase.test.data.*");
+      _builder.append("import org.eclipse.xtext.purexbase.test.data.Person");
       _builder.newLine();
       _builder.append("/*");
       _builder.newLine();
@@ -224,16 +234,15 @@ public class CompilerTest {
       _builder_1.append("import org.eclipse.xtext.purexbase.test.data.Person;");
       _builder_1.newLine();
       _builder_1.newLine();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public void myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("Person _person = new Person();");
-      _builder_1.newLine();
-      _builder_1.append("    ");
-      _builder_1.append("final Person person = _person;");
+      _builder_1.append("final Person person = new Person();");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("person.setForename(\"Jimi\");");
@@ -265,7 +274,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -370,13 +379,15 @@ public class CompilerTest {
       _builder.append("// foo (String)");
       _builder.newLine();
       StringConcatenation _builder_1 = new StringConcatenation();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public String myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("String _specialblockexpression = null;");
+      _builder_1.append("String _xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
@@ -394,7 +405,7 @@ public class CompilerTest {
       _builder_1.append("final String s = \"my String\";");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("String _xblockexpression = null;");
+      _builder_1.append("String _xblockexpression_1 = null;");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("{");
@@ -403,22 +414,19 @@ public class CompilerTest {
       _builder_1.append("final String s1 = \"foo\";");
       _builder_1.newLine();
       _builder_1.append("        ");
-      _builder_1.append("String _plus = (s + s1);");
-      _builder_1.newLine();
-      _builder_1.append("        ");
-      _builder_1.append("_xblockexpression = (_plus);");
+      _builder_1.append("_xblockexpression_1 = (s + s1);");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (_xblockexpression);");
+      _builder_1.append("_xblockexpression = _xblockexpression_1;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -426,7 +434,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -471,13 +479,15 @@ public class CompilerTest {
       _builder.append("// 3 (int)");
       _builder.newLine();
       StringConcatenation _builder_1 = new StringConcatenation();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public int myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("int _specialblockexpression = (int) 0;");
+      _builder_1.append("int _xblockexpression = (int) 0;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
@@ -486,16 +496,13 @@ public class CompilerTest {
       _builder_1.append("final CharSequence s = \"foo\";");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("int _length = ((String) s).length();");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (_length);");
+      _builder_1.append("_xblockexpression = ((String) s).length();");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -503,7 +510,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -587,13 +594,15 @@ public class CompilerTest {
       _builder_1.append("import org.eclipse.xtext.xbase.lib.ListExtensions;");
       _builder_1.newLine();
       _builder_1.newLine();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public String myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("String _specialblockexpression = null;");
+      _builder_1.append("String _xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
@@ -602,25 +611,22 @@ public class CompilerTest {
       _builder_1.append("final String x = \"Hello \";");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("final Function1<String,String> _function = new Function1<String,String>() {");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("public String apply(final String e) {");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("String _plus = (x + e);");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("return _plus;");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("}");
+      _builder_1.append("final Function1<String, String> _function = new Function1<String, String>() {");
       _builder_1.newLine();
       _builder_1.append("        ");
+      _builder_1.append("public String apply(final String e) {");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("return (x + e);");
+      _builder_1.newLine();
+      _builder_1.append("        ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("      ");
       _builder_1.append("};");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("final Function1<String,String> f = _function;");
+      _builder_1.append("final Function1<String, String> f = _function;");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("f.apply(\"World!\");");
@@ -629,58 +635,49 @@ public class CompilerTest {
       _builder_1.append("final ArrayList<String> list = CollectionLiterals.<String>newArrayList(\"a\", \"b\", \"c\");");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("final Function1<String,String> _function_1 = new Function1<String,String>() {");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("public String apply(final String e) {");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("String _upperCase = e.toUpperCase();");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("return _upperCase;");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("}");
+      _builder_1.append("final Function1<String, String> _function_1 = new Function1<String, String>() {");
       _builder_1.newLine();
       _builder_1.append("        ");
+      _builder_1.append("public String apply(final String e) {");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("return e.toUpperCase();");
+      _builder_1.newLine();
+      _builder_1.append("        ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("      ");
       _builder_1.append("};");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("/* ListExtensions.<String, String>map(list, _function_1); */");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("final Function1<String,String> _function_2 = new Function1<String,String>() {");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("public String apply(final String e) {");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("String _upperCase = e.toUpperCase();");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("return _upperCase;");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("}");
+      _builder_1.append("final Function1<String, String> _function_2 = new Function1<String, String>() {");
       _builder_1.newLine();
       _builder_1.append("        ");
+      _builder_1.append("public String apply(final String e) {");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("return e.toUpperCase();");
+      _builder_1.newLine();
+      _builder_1.append("        ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("      ");
       _builder_1.append("};");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("final Function1<? super String,? extends String> f2 = _function_2;");
+      _builder_1.append("final Function1<? super String, ? extends String> f2 = _function_2;");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("String _apply = f2.apply(\"simsalabim\");");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (_apply);");
+      _builder_1.append("_xblockexpression = f2.apply(\"simsalabim\");");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -688,7 +685,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -772,13 +769,15 @@ public class CompilerTest {
       _builder.append("}");
       _builder.newLine();
       StringConcatenation _builder_1 = new StringConcatenation();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public String myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("String _specialblockexpression = null;");
+      _builder_1.append("String _xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
@@ -856,13 +855,13 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (_xifexpression);");
+      _builder_1.append("_xblockexpression = _xifexpression;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -870,7 +869,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -879,7 +878,7 @@ public class CompilerTest {
   public void operators() {
     try {
       StringConcatenation _builder = new StringConcatenation();
-      _builder.append("import org.eclipse.xtext.purexbase.test.data.*");
+      _builder.append("import org.eclipse.xtext.purexbase.test.data.Amount");
       _builder.newLine();
       _builder.append("/*");
       _builder.newLine();
@@ -911,43 +910,36 @@ public class CompilerTest {
       _builder_1.append("import org.eclipse.xtext.purexbase.test.data.Amount;");
       _builder_1.newLine();
       _builder_1.newLine();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public Amount myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("Amount _specialblockexpression = null;");
+      _builder_1.append("Amount _xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("Amount _amount = new Amount(\"12.80\");");
+      _builder_1.append("final Amount a = new Amount(\"12.80\");");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("final Amount a = _amount;");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("Amount _amount_1 = new Amount(\"0.20\");");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("final Amount b = _amount_1;");
+      _builder_1.append("final Amount b = new Amount(\"0.20\");");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("Amount _multiply = b.operator_multiply(3);");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("Amount _plus = a.operator_plus(_multiply);");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (_plus);");
+      _builder_1.append("_xblockexpression = a.operator_plus(_multiply);");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -955,7 +947,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -1024,13 +1016,15 @@ public class CompilerTest {
       _builder_1.append("import org.eclipse.xtext.xbase.lib.ListExtensions;");
       _builder_1.newLine();
       _builder_1.newLine();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public ArrayList<String> myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("ArrayList<String> _specialblockexpression = null;");
+      _builder_1.append("ArrayList<String> _xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
@@ -1039,10 +1033,7 @@ public class CompilerTest {
       _builder_1.append("final ArrayList<String> list = CollectionLiterals.<String>newArrayList(\"foo\", \"bar\", \"baz\");");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("ArrayList<String> _arrayList = new ArrayList<String>();");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("final ArrayList<String> result = _arrayList;");
+      _builder_1.append("final ArrayList<String> result = new ArrayList<String>();");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("List<String> _reverse = ListExtensions.<String>reverse(list);");
@@ -1066,16 +1057,7 @@ public class CompilerTest {
       _builder_1.append("int i = 0;");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("int _size = list.size();");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("boolean _lessThan = (i < _size);");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("boolean _while = _lessThan;");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("while (_while) {");
+      _builder_1.append("while ((i < list.size())) {");
       _builder_1.newLine();
       _builder_1.append("        ");
       _builder_1.append("{");
@@ -1090,34 +1072,22 @@ public class CompilerTest {
       _builder_1.append("result.add(_plus);");
       _builder_1.newLine();
       _builder_1.append("          ");
-      _builder_1.append("int _plus_1 = (i + 1);");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("i = _plus_1;");
+      _builder_1.append("i = (i + 1);");
       _builder_1.newLine();
       _builder_1.append("        ");
       _builder_1.append("}");
-      _builder_1.newLine();
-      _builder_1.append("        ");
-      _builder_1.append("int _size_1 = list.size();");
-      _builder_1.newLine();
-      _builder_1.append("        ");
-      _builder_1.append("boolean _lessThan_1 = (i < _size_1);");
-      _builder_1.newLine();
-      _builder_1.append("        ");
-      _builder_1.append("_while = _lessThan_1;");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (result);");
+      _builder_1.append("_xblockexpression = result;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -1125,7 +1095,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -1193,13 +1163,15 @@ public class CompilerTest {
       _builder_1.append("import org.eclipse.xtext.xbase.lib.Exceptions;");
       _builder_1.newLine();
       _builder_1.newLine();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public Object myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("Object _specialblockexpression = null;");
+      _builder_1.append("Object _xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
@@ -1220,10 +1192,7 @@ public class CompilerTest {
       _builder_1.append("final NullPointerException e = (NullPointerException)_t;");
       _builder_1.newLine();
       _builder_1.append("          ");
-      _builder_1.append("RuntimeException _runtimeException = new RuntimeException(e);");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("throw _runtimeException;");
+      _builder_1.append("throw new RuntimeException(e);");
       _builder_1.newLine();
       _builder_1.append("        ");
       _builder_1.append("} else {");
@@ -1241,13 +1210,13 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (null);");
+      _builder_1.append("_xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -1255,7 +1224,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -1264,7 +1233,9 @@ public class CompilerTest {
   public void switchExpression() {
     try {
       StringConcatenation _builder = new StringConcatenation();
-      _builder.append("import org.eclipse.xtext.purexbase.test.data.*");
+      _builder.append("import org.eclipse.xtext.purexbase.test.data.Circle");
+      _builder.newLine();
+      _builder.append("import org.eclipse.xtext.purexbase.test.data.Rectangle");
       _builder.newLine();
       _builder.append("/*");
       _builder.newLine();
@@ -1376,13 +1347,15 @@ public class CompilerTest {
       _builder_1.append("import org.eclipse.xtext.xbase.lib.ListExtensions;");
       _builder_1.newLine();
       _builder_1.newLine();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("public List<String> myMethod() throws Throwable {");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("List<String> _specialblockexpression = null;");
+      _builder_1.append("List<String> _xblockexpression = null;");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("{");
@@ -1394,25 +1367,16 @@ public class CompilerTest {
       _builder_1.append("String _head = IterableExtensions.<String>head(list);");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("final String _switchValue = _head;");
-      _builder_1.newLine();
-      _builder_1.append("      ");
       _builder_1.append("boolean _matched = false;");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("if (!_matched) {");
+      _builder_1.append("if (Objects.equal(_head, \"foo\")) {");
       _builder_1.newLine();
       _builder_1.append("        ");
-      _builder_1.append("if (Objects.equal(_switchValue,\"foo\")) {");
-      _builder_1.newLine();
-      _builder_1.append("          ");
       _builder_1.append("_matched=true;");
       _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("/* \"it\\\'s foo\" */");
-      _builder_1.newLine();
       _builder_1.append("        ");
-      _builder_1.append("}");
+      _builder_1.append("/* \"it\\\'s foo\" */");
       _builder_1.newLine();
       _builder_1.append("      ");
       _builder_1.append("}");
@@ -1421,7 +1385,7 @@ public class CompilerTest {
       _builder_1.append("if (!_matched) {");
       _builder_1.newLine();
       _builder_1.append("        ");
-      _builder_1.append("if (Objects.equal(_switchValue,\"bar\")) {");
+      _builder_1.append("if (Objects.equal(_head, \"bar\")) {");
       _builder_1.newLine();
       _builder_1.append("          ");
       _builder_1.append("_matched=true;");
@@ -1457,124 +1421,88 @@ public class CompilerTest {
       _builder_1.append("final ArrayList<Shape> list2 = CollectionLiterals.<Shape>newArrayList(_rectangle, _circle, _rectangle_1);");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("final Function1<Shape,String> _function = new Function1<Shape,String>() {");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("public String apply(final Shape shape) {");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("String _switchResult = null;");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("boolean _matched = false;");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("if (!_matched) {");
-      _builder_1.newLine();
-      _builder_1.append("              ");
-      _builder_1.append("if (shape instanceof Circle) {");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("final Circle _circle = (Circle)shape;");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("_matched=true;");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("String _plus = (\"a circle : diameter=\" + Integer.valueOf(_circle.diameter));");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("_switchResult = _plus;");
-      _builder_1.newLine();
-      _builder_1.append("              ");
-      _builder_1.append("}");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("}");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("if (!_matched) {");
-      _builder_1.newLine();
-      _builder_1.append("              ");
-      _builder_1.append("if (shape instanceof Rectangle) {");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("final Rectangle _rectangle = (Rectangle)shape;");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("boolean _equals = (_rectangle.height == _rectangle.width);");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("if (_equals) {");
-      _builder_1.newLine();
-      _builder_1.append("                  ");
-      _builder_1.append("_matched=true;");
-      _builder_1.newLine();
-      _builder_1.append("                  ");
-      _builder_1.append("String _plus = (\"a square : size=\" + Integer.valueOf(_rectangle.width));");
-      _builder_1.newLine();
-      _builder_1.append("                  ");
-      _builder_1.append("_switchResult = _plus;");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("}");
-      _builder_1.newLine();
-      _builder_1.append("              ");
-      _builder_1.append("}");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("}");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("if (!_matched) {");
-      _builder_1.newLine();
-      _builder_1.append("              ");
-      _builder_1.append("if (shape instanceof Rectangle) {");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("final Rectangle _rectangle = (Rectangle)shape;");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("_matched=true;");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("String _plus = (\"a rectangle : width=\" + Integer.valueOf(_rectangle.width));");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("String _plus_1 = (_plus + \", height=\");");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("String _plus_2 = (_plus_1 + Integer.valueOf(_rectangle.height));");
-      _builder_1.newLine();
-      _builder_1.append("                ");
-      _builder_1.append("_switchResult = _plus_2;");
-      _builder_1.newLine();
-      _builder_1.append("              ");
-      _builder_1.append("}");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("}");
-      _builder_1.newLine();
-      _builder_1.append("            ");
-      _builder_1.append("return _switchResult;");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("}");
+      _builder_1.append("final Function1<Shape, String> _function = new Function1<Shape, String>() {");
       _builder_1.newLine();
       _builder_1.append("        ");
+      _builder_1.append("public String apply(final Shape shape) {");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("String _switchResult = null;");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("boolean _matched = false;");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("if (shape instanceof Circle) {");
+      _builder_1.newLine();
+      _builder_1.append("            ");
+      _builder_1.append("_matched=true;");
+      _builder_1.newLine();
+      _builder_1.append("            ");
+      _builder_1.append("_switchResult = (\"a circle : diameter=\" + Integer.valueOf(((Circle)shape).diameter));");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("if (!_matched) {");
+      _builder_1.newLine();
+      _builder_1.append("            ");
+      _builder_1.append("if (shape instanceof Rectangle) {");
+      _builder_1.newLine();
+      _builder_1.append("              ");
+      _builder_1.append("if ((((Rectangle)shape).height == ((Rectangle)shape).width)) {");
+      _builder_1.newLine();
+      _builder_1.append("                ");
+      _builder_1.append("_matched=true;");
+      _builder_1.newLine();
+      _builder_1.append("                ");
+      _builder_1.append("_switchResult = (\"a square : size=\" + Integer.valueOf(((Rectangle)shape).width));");
+      _builder_1.newLine();
+      _builder_1.append("              ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("            ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("if (!_matched) {");
+      _builder_1.newLine();
+      _builder_1.append("            ");
+      _builder_1.append("if (shape instanceof Rectangle) {");
+      _builder_1.newLine();
+      _builder_1.append("              ");
+      _builder_1.append("_matched=true;");
+      _builder_1.newLine();
+      _builder_1.append("              ");
+      _builder_1.append("_switchResult = (((\"a rectangle : width=\" + Integer.valueOf(((Rectangle)shape).width)) + \", height=\") + Integer.valueOf(((Rectangle)shape).height));");
+      _builder_1.newLine();
+      _builder_1.append("            ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("          ");
+      _builder_1.append("return _switchResult;");
+      _builder_1.newLine();
+      _builder_1.append("        ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("      ");
       _builder_1.append("};");
       _builder_1.newLine();
       _builder_1.append("      ");
-      _builder_1.append("List<String> _map = ListExtensions.<Shape, String>map(list2, _function);");
-      _builder_1.newLine();
-      _builder_1.append("      ");
-      _builder_1.append("_specialblockexpression = (_map);");
+      _builder_1.append("_xblockexpression = ListExtensions.<Shape, String>map(list2, _function);");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("}");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("return _specialblockexpression;");
+      _builder_1.append("return _xblockexpression;");
       _builder_1.newLine();
       _builder_1.append("  ");
       _builder_1.append("}");
@@ -1582,7 +1510,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -1691,6 +1619,8 @@ public class CompilerTest {
       _builder_1.append("import org.eclipse.xtext.xbase.lib.Conversions;");
       _builder_1.newLine();
       _builder_1.newLine();
+      _builder_1.append("@SuppressWarnings(\"all\")");
+      _builder_1.newLine();
       _builder_1.append("public class MyFile {");
       _builder_1.newLine();
       _builder_1.append("  ");
@@ -1715,36 +1645,33 @@ public class CompilerTest {
       _builder_1.append("\"string\".toCharArray();");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("final List<Character> l = ((List<Character>)Conversions.doWrapArray(\"string\".toCharArray()));");
+      _builder_1.append("final List<Character> l = (List<Character>)Conversions.doWrapArray(\"string\".toCharArray());");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("char[] _charArray = \"string\".toCharArray();");
       _builder_1.newLine();
       _builder_1.append("    ");
-      _builder_1.append("((List<Character>)Conversions.doWrapArray(_charArray)).get(3);");
+      _builder_1.append("/* _charArray[3]; */");
       _builder_1.newLine();
       _builder_1.append("    ");
       _builder_1.append("final Comparator<String> _function = new Comparator<String>() {");
       _builder_1.newLine();
-      _builder_1.append("        ");
+      _builder_1.append("      ");
       _builder_1.append("public int compare(final String a, final String b) {");
       _builder_1.newLine();
-      _builder_1.append("          ");
+      _builder_1.append("        ");
       _builder_1.append("int _length = a.length();");
       _builder_1.newLine();
-      _builder_1.append("          ");
+      _builder_1.append("        ");
       _builder_1.append("int _length_1 = b.length();");
       _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("int _compareTo = Integer.valueOf(_length).compareTo(Integer.valueOf(_length_1));");
-      _builder_1.newLine();
-      _builder_1.append("          ");
-      _builder_1.append("return _compareTo;");
-      _builder_1.newLine();
       _builder_1.append("        ");
-      _builder_1.append("}");
+      _builder_1.append("return Integer.valueOf(_length).compareTo(Integer.valueOf(_length_1));");
       _builder_1.newLine();
       _builder_1.append("      ");
+      _builder_1.append("}");
+      _builder_1.newLine();
+      _builder_1.append("    ");
       _builder_1.append("};");
       _builder_1.newLine();
       _builder_1.append("    ");
@@ -1756,7 +1683,7 @@ public class CompilerTest {
       _builder_1.append("}");
       _builder_1.newLine();
       this._compilationTestHelper.assertCompilesTo(_builder, _builder_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }

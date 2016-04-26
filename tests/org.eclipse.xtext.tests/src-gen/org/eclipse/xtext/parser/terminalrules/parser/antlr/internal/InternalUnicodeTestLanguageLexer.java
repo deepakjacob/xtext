@@ -33,17 +33,17 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalUnicodeTestLanguage.g"; }
 
     // $ANTLR start "RULE_GERMAN_STRING"
     public final void mRULE_GERMAN_STRING() throws RecognitionException {
         try {
             int _type = RULE_GERMAN_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:223:20: ( ( 'A' .. 'Z' | 'a' .. 'z' | '\\u00C4' | '\\u00D6' | '\\u00DC' | '\\u00E4' | '\\u00F6' | '\\u00FC' | '\\u1E9E' )* )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:223:22: ( 'A' .. 'Z' | 'a' .. 'z' | '\\u00C4' | '\\u00D6' | '\\u00DC' | '\\u00E4' | '\\u00F6' | '\\u00FC' | '\\u1E9E' )*
+            // InternalUnicodeTestLanguage.g:223:20: ( ( 'A' .. 'Z' | 'a' .. 'z' | '\\u00C4' | '\\u00D6' | '\\u00DC' | '\\u00E4' | '\\u00F6' | '\\u00FC' | '\\u1E9E' )* )
+            // InternalUnicodeTestLanguage.g:223:22: ( 'A' .. 'Z' | 'a' .. 'z' | '\\u00C4' | '\\u00D6' | '\\u00DC' | '\\u00E4' | '\\u00F6' | '\\u00FC' | '\\u1E9E' )*
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:223:22: ( 'A' .. 'Z' | 'a' .. 'z' | '\\u00C4' | '\\u00D6' | '\\u00DC' | '\\u00E4' | '\\u00F6' | '\\u00FC' | '\\u1E9E' )*
+            // InternalUnicodeTestLanguage.g:223:22: ( 'A' .. 'Z' | 'a' .. 'z' | '\\u00C4' | '\\u00D6' | '\\u00DC' | '\\u00E4' | '\\u00F6' | '\\u00FC' | '\\u1E9E' )*
             loop1:
             do {
                 int alt1=2;
@@ -56,7 +56,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
 
                 switch (alt1) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:
+            	    // InternalUnicodeTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='A' && input.LA(1)<='Z')||(input.LA(1)>='a' && input.LA(1)<='z')||input.LA(1)=='\u00C4'||input.LA(1)=='\u00D6'||input.LA(1)=='\u00DC'||input.LA(1)=='\u00E4'||input.LA(1)=='\u00F6'||input.LA(1)=='\u00FC'||input.LA(1)=='\u1E9E' ) {
             	        input.consume();
@@ -92,10 +92,10 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:225:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:225:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalUnicodeTestLanguage.g:225:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalUnicodeTestLanguage.g:225:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:225:11: ( '^' )?
+            // InternalUnicodeTestLanguage.g:225:11: ( '^' )?
             int alt2=2;
             int LA2_0 = input.LA(1);
 
@@ -104,7 +104,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
             }
             switch (alt2) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:225:11: '^'
+                    // InternalUnicodeTestLanguage.g:225:11: '^'
                     {
                     match('^'); 
 
@@ -122,7 +122,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:225:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalUnicodeTestLanguage.g:225:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop3:
             do {
                 int alt3=2;
@@ -135,7 +135,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:
+            	    // InternalUnicodeTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -171,10 +171,10 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:227:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:227:12: ( '0' .. '9' )+
+            // InternalUnicodeTestLanguage.g:227:10: ( ( '0' .. '9' )+ )
+            // InternalUnicodeTestLanguage.g:227:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:227:12: ( '0' .. '9' )+
+            // InternalUnicodeTestLanguage.g:227:12: ( '0' .. '9' )+
             int cnt4=0;
             loop4:
             do {
@@ -188,7 +188,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
 
                 switch (alt4) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:227:13: '0' .. '9'
+            	    // InternalUnicodeTestLanguage.g:227:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -220,10 +220,10 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalUnicodeTestLanguage.g:229:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalUnicodeTestLanguage.g:229:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalUnicodeTestLanguage.g:229:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt7=2;
             int LA7_0 = input.LA(1);
 
@@ -241,10 +241,10 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
             }
             switch (alt7) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalUnicodeTestLanguage.g:229:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalUnicodeTestLanguage.g:229:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop5:
                     do {
                         int alt5=3;
@@ -260,23 +260,15 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
 
                         switch (alt5) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalUnicodeTestLanguage.g:229:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalUnicodeTestLanguage.g:229:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -301,10 +293,10 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalUnicodeTestLanguage.g:229:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalUnicodeTestLanguage.g:229:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop6:
                     do {
                         int alt6=3;
@@ -320,23 +312,15 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
 
                         switch (alt6) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalUnicodeTestLanguage.g:229:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:229:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalUnicodeTestLanguage.g:229:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -379,12 +363,12 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:231:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:231:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalUnicodeTestLanguage.g:231:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalUnicodeTestLanguage.g:231:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:231:24: ( options {greedy=false; } : . )*
+            // InternalUnicodeTestLanguage.g:231:24: ( options {greedy=false; } : . )*
             loop8:
             do {
                 int alt8=2;
@@ -409,7 +393,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:231:52: .
+            	    // InternalUnicodeTestLanguage.g:231:52: .
             	    {
             	    matchAny(); 
 
@@ -439,12 +423,12 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:233:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:233:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalUnicodeTestLanguage.g:233:17: ( '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalUnicodeTestLanguage.g:233:19: '//' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match("//"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:233:24: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalUnicodeTestLanguage.g:233:24: (~ ( ( '\\n' | '\\r' ) ) )*
             loop9:
             do {
                 int alt9=2;
@@ -457,7 +441,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
 
                 switch (alt9) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:233:24: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalUnicodeTestLanguage.g:233:24: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -477,7 +461,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:233:40: ( ( '\\r' )? '\\n' )?
+            // InternalUnicodeTestLanguage.g:233:40: ( ( '\\r' )? '\\n' )?
             int alt11=2;
             int LA11_0 = input.LA(1);
 
@@ -486,9 +470,9 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
             }
             switch (alt11) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:233:41: ( '\\r' )? '\\n'
+                    // InternalUnicodeTestLanguage.g:233:41: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:233:41: ( '\\r' )?
+                    // InternalUnicodeTestLanguage.g:233:41: ( '\\r' )?
                     int alt10=2;
                     int LA10_0 = input.LA(1);
 
@@ -497,7 +481,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
                     }
                     switch (alt10) {
                         case 1 :
-                            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:233:41: '\\r'
+                            // InternalUnicodeTestLanguage.g:233:41: '\\r'
                             {
                             match('\r'); 
 
@@ -529,10 +513,10 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:235:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:235:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalUnicodeTestLanguage.g:235:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalUnicodeTestLanguage.g:235:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:235:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalUnicodeTestLanguage.g:235:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt12=0;
             loop12:
             do {
@@ -546,7 +530,7 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
 
                 switch (alt12) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:
+            	    // InternalUnicodeTestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -586,8 +570,8 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:237:16: ( . )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:237:18: .
+            // InternalUnicodeTestLanguage.g:237:16: ( . )
+            // InternalUnicodeTestLanguage.g:237:18: .
             {
             matchAny(); 
 
@@ -602,61 +586,61 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:8: ( RULE_GERMAN_STRING | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalUnicodeTestLanguage.g:1:8: ( RULE_GERMAN_STRING | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_SL_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt13=8;
         alt13 = dfa13.predict(input);
         switch (alt13) {
             case 1 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:10: RULE_GERMAN_STRING
+                // InternalUnicodeTestLanguage.g:1:10: RULE_GERMAN_STRING
                 {
                 mRULE_GERMAN_STRING(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:29: RULE_ID
+                // InternalUnicodeTestLanguage.g:1:29: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:37: RULE_INT
+                // InternalUnicodeTestLanguage.g:1:37: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:46: RULE_STRING
+                // InternalUnicodeTestLanguage.g:1:46: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:58: RULE_ML_COMMENT
+                // InternalUnicodeTestLanguage.g:1:58: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:74: RULE_SL_COMMENT
+                // InternalUnicodeTestLanguage.g:1:74: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:90: RULE_WS
+                // InternalUnicodeTestLanguage.g:1:90: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parser/terminalrules/parser/antlr/internal/InternalUnicodeTestLanguage.g:1:98: RULE_ANY_OTHER
+                // InternalUnicodeTestLanguage.g:1:98: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -676,17 +660,13 @@ public class InternalUnicodeTestLanguageLexer extends Lexer {
     static final String DFA13_minS =
         "\1\0\1\60\1\uffff\1\101\3\uffff\2\0\1\52\2\uffff\1\60\6\uffff";
     static final String DFA13_maxS =
-        "\1\uffff\1\172\1\uffff\1\172\3\uffff\2\uffff\1\57\2\uffff\1\172"+
-        "\6\uffff";
+        "\1\uffff\1\172\1\uffff\1\172\3\uffff\2\uffff\1\57\2\uffff\1\172\6\uffff";
     static final String DFA13_acceptS =
-        "\2\uffff\1\1\1\uffff\1\1\1\2\1\3\3\uffff\1\7\1\10\1\uffff\1\2\1"+
-        "\3\1\4\1\5\1\6\1\7";
+        "\2\uffff\1\1\1\uffff\1\1\1\2\1\3\3\uffff\1\7\1\10\1\uffff\1\2\1\3\1\4\1\5\1\6\1\7";
     static final String DFA13_specialS =
         "\1\1\6\uffff\1\0\1\2\12\uffff}>";
     static final String[] DFA13_transitionS = {
-            "\11\13\2\12\2\13\1\12\22\13\1\12\1\13\1\7\4\13\1\10\7\13\1\11"+
-            "\12\6\7\13\32\1\3\13\1\3\1\5\1\13\32\1\111\13\1\4\21\13\1\4"+
-            "\5\13\1\4\7\13\1\4\21\13\1\4\5\13\1\4\u1da1\13\1\4\ue161\13",
+            "\11\13\2\12\2\13\1\12\22\13\1\12\1\13\1\7\4\13\1\10\7\13\1\11\12\6\7\13\32\1\3\13\1\3\1\5\1\13\32\1\111\13\1\4\21\13\1\4\5\13\1\4\7\13\1\4\21\13\1\4\5\13\1\4\u1da1\13\1\4\ue161\13",
             "\12\15\7\uffff\32\14\4\uffff\1\15\1\uffff\32\14",
             "",
             "\32\15\4\uffff\1\15\1\uffff\32\15",

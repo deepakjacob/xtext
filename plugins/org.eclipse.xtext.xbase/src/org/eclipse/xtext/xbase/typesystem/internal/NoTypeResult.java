@@ -10,13 +10,10 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 import java.util.EnumSet;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputationResult;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
 import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
-import org.eclipse.xtext.xbase.typesystem.references.AnyTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
@@ -24,40 +21,64 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class NoTypeResult implements ITypeComputationResult {
 
 	private EObject context;
 	private ITypeReferenceOwner owner;
 
-	public NoTypeResult(@Nullable EObject context, ITypeReferenceOwner owner) {
+	public NoTypeResult(/* @Nullable */ EObject context, ITypeReferenceOwner owner) {
 		this.context = context;
 		this.owner = owner;
 	}
 	
+	@Override
 	public LightweightTypeReference getReturnType() {
-		return new AnyTypeReference(owner);
+		return owner.newAnyTypeReference();
 	}
 	
-	@Nullable
+	/* @Nullable */
+	@Override
 	public XExpression getExpression() {
 		return null;
 	}
 	
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getActualExpressionType() {
-		throw new UnsupportedOperationException("TODO implement me");
+		return null;
 	}
 	
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getExpectedExpressionType() {
 		throw new UnsupportedOperationException("TODO implement me");
 	}
-
-	public LightweightTypeReference getActualType(@Nullable JvmIdentifiableElement element) {
+	
+	@Override
+	public LightweightTypeReference getExpectedReturnType() {
 		throw new UnsupportedOperationException("TODO implement me");
 	}
 	
+	/* @NonNull */
+	@Override
 	public EnumSet<ConformanceHint> getConformanceHints() {
-		throw new UnsupportedOperationException("TODO implement me");
+		return EnumSet.noneOf(ConformanceHint.class);
+	}
+	
+	@Override
+	public int getConformanceFlags() {
+		return ConformanceFlags.NONE;
+	}
+	
+	/* @NonNull */
+	@Override
+	public EnumSet<ConformanceHint> getCheckedConformanceHints() {
+		return EnumSet.noneOf(ConformanceHint.class);
+	}
+	
+	@Override
+	public int getCheckedConformanceFlags() {
+		return ConformanceFlags.NONE;
 	}
 	
 	@Override

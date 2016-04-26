@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.common.types.xtext.ui.refactoringTestLanguage.impl;
 
@@ -29,10 +26,10 @@ import org.eclipse.xtext.common.types.xtext.ui.refactoringTestLanguage.Reference
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.common.types.xtext.ui.refactoringTestLanguage.impl.ModelImpl#getReferenceHolder <em>Reference Holder</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

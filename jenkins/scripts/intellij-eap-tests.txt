@@ -1,0 +1,2 @@
+tasks = clean check  -PideaEAP
+buildFile = intellij/build.gradle

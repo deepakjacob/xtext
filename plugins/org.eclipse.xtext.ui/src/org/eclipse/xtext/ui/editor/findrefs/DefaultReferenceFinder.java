@@ -9,215 +9,263 @@ package org.eclipse.xtext.ui.editor.findrefs;
 
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Maps.*;
-import static com.google.common.collect.Sets.*;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.findReferences.IReferenceFinder;
+import org.eclipse.xtext.findReferences.ReferenceFinder;
+import org.eclipse.xtext.findReferences.TargetURIs;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IReferenceDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescriptions;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
-import org.eclipse.xtext.resource.impl.DefaultReferenceDescription;
 import org.eclipse.xtext.util.IAcceptor;
 import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ForwardingMap;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 /**
+ * Maintained for backwards compatibility reasons. Most methods delegate to the runtime implementation which in turn is
+ * specialized to call methods of this class where appropriate. Most overriding scenarios should still work.
+ * 
+ * Clients are encouraged to drop this implementation in favor of the {@link DelegatingReferenceFinder}. 
+ * Customizing should be applied to the {@link ReferenceFinder} instead.
+ * 
+ * 
  * @author Jan Koehnlein - Initial contribution and API
  * @since 2.3
+ * @deprecated use {@link DelegatingReferenceFinder} instead.
  */
-public class DefaultReferenceFinder implements IReferenceFinder {
-
-	private static final Logger LOG = Logger.getLogger(DefaultReferenceFinder.class);
+@Deprecated
+public class DefaultReferenceFinder extends ReferenceFinder implements org.eclipse.xtext.ui.editor.findrefs.IReferenceFinder, IReferenceFinderExtension1 {
 
 	private IResourceDescriptions indexData;
 
-	private IResourceServiceProvider.Registry serviceProviderRegistry;
-
+	@Inject
+	private TargetURIConverter converter;
+	
 	@Inject
 	public DefaultReferenceFinder(IResourceDescriptions indexData,
 			IResourceServiceProvider.Registry serviceProviderRegistry) {
-		super();
+		this(indexData, serviceProviderRegistry, new TargetURIConverter());
+	}
+	
+	public DefaultReferenceFinder(IResourceDescriptions indexData,
+			IResourceServiceProvider.Registry serviceProviderRegistry, 
+			TargetURIConverter converter) {
+		super(serviceProviderRegistry);
 		this.indexData = indexData;
-		this.serviceProviderRegistry = serviceProviderRegistry;
+		this.converter = converter;
+	}
+	
+	protected IResourceDescriptions getIndexData() {
+		return indexData;
+	}
+	
+	protected static class MyReferenceAcceptor extends ReferenceAcceptor implements IAcceptor<IReferenceDescription> {
+
+		protected MyReferenceAcceptor(IAcceptor<IReferenceDescription> delegate, IResourceServiceProvider.Registry serviceProviderRegistry) {
+			super(delegate, serviceProviderRegistry);
+		}
+	}
+	
+	protected MyReferenceAcceptor toAcceptor(IAcceptor<IReferenceDescription> acceptor) {
+		if (acceptor instanceof MyReferenceAcceptor)
+			return (MyReferenceAcceptor) acceptor;
+		return new MyReferenceAcceptor(acceptor, getServiceProviderRegistry());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void findReferences(TargetURIs targetURIs, IResourceDescription resourceDescription,
+			IResourceAccess resourceAccess, Acceptor acceptor, IProgressMonitor monitor) {
+		findReferences(targetURIs.asSet(), resourceDescription, (IAcceptor<IReferenceDescription>) acceptor, monitor, (ILocalResourceAccess) resourceAccess);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void findReferences(Predicate<URI> targetURIs, Resource resource, Acceptor acceptor, IProgressMonitor monitor) {
+		findLocalReferencesInResource(targetURIs, resource, (IAcceptor<IReferenceDescription>) acceptor);
+	}
+	
+	@Override
+	protected IReferenceFinder getLanguageSpecificReferenceFinder(URI candidate) {
+		// bogus old implementation did not dispatch properly for all candidates
+		return this;
 	}
 
+	@Override
 	public void findReferences(Iterable<URI> targetURIs, final Iterable<URI> sourceResourceURIs,
 			ILocalResourceAccess localResourceAccess, IAcceptor<IReferenceDescription> referenceAcceptor,
 			IProgressMonitor monitor) {
-		SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
-		if (!isEmpty(targetURIs) && !isEmpty(sourceResourceURIs)) {
-			if (localResourceAccess != null) {
-				Iterable<URI> localTargetURIs = filter(targetURIs, new Predicate<URI>() {
-					public boolean apply(URI input) {
-						return contains(sourceResourceURIs, input.trimFragment());
-					}
-				});
-				findLocalReferences(localTargetURIs, localResourceAccess, referenceAcceptor, subMonitor.newChild(1));
-			}
-			Set<URI> targetURIsAsSet = newLinkedHashSet(targetURIs);
-			subMonitor.setWorkRemaining(targetURIsAsSet.size());
-			for (URI sourceResourceURI : sourceResourceURIs) {
-				IResourceDescription resourceDescription = indexData.getResourceDescription(sourceResourceURI);
-				if (resourceDescription != null)
-					findIndexedReferences(targetURIsAsSet, resourceDescription, referenceAcceptor,
-							subMonitor.newChild(1));
-			}
+		TargetURIs converted = converter.fromIterable(targetURIs);
+		HashSet<URI> sourceResourcesAsSet = Sets.newHashSet(sourceResourceURIs);
+		super.findReferences(converted, sourceResourcesAsSet, localResourceAccess, indexData, toAcceptor(referenceAcceptor), monitor);
+		if (localResourceAccess != null && !converted.isEmpty() && getClass() != DefaultReferenceFinder.class) {
+			// All the references have already been collected, but if this method was overridden,
+			// we have to call it again from here
+			findLocalReferences(converted, localResourceAccess, referenceAcceptor, monitor);
 		}
 	}
-
-	public void findAllReferences(Iterable<URI> targetURIs, ILocalResourceAccess localResourceAccess,
-			IAcceptor<IReferenceDescription> referenceAcceptor, IProgressMonitor monitor) {
-		SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
-		if (!isEmpty(targetURIs)) {
-			if (localResourceAccess != null) {
-				findLocalReferences(targetURIs, localResourceAccess, referenceAcceptor, subMonitor.newChild(1));
+	
+	@Override
+	public void findAllReferences(
+			Iterable<URI> targetURIs,
+			ILocalResourceAccess localResourceAccess,
+			IAcceptor<IReferenceDescription> referenceAcceptor,
+			IProgressMonitor monitor) {
+		TargetURIs converted = converter.fromIterable(targetURIs);
+		if (!converted.isEmpty()) {
+			findAllIndexedReferences(referenceAcceptor, SubMonitor.convert(monitor, 1), converted.asSet(), localResourceAccess);
+			if (localResourceAccess != null && !converted.isEmpty() && getClass() != DefaultReferenceFinder.class) {
+				// All the references have already been collected, but if this method was overridden,
+				// we have to call it again from here
+				findLocalReferences(converted, localResourceAccess, referenceAcceptor, monitor);
 			}
-			Set<URI> targetURIsAsSet = newLinkedHashSet(targetURIs);
-			findAllIndexedReferences(referenceAcceptor, subMonitor, targetURIsAsSet);
 		}
+		
 	}
 
+	/**
+	 * @deprecated use {@link #findAllIndexedReferences(IAcceptor, SubMonitor, Set, org.eclipse.xtext.ui.editor.findrefs.IReferenceFinder.ILocalResourceAccess)}
+	 */
+	@Deprecated
 	protected void findAllIndexedReferences(IAcceptor<IReferenceDescription> referenceAcceptor, SubMonitor subMonitor,
 			Set<URI> targetURIsAsSet) {
-		subMonitor.setWorkRemaining(size(indexData.getAllResourceDescriptions()));
-		for (IResourceDescription resourceDescription : indexData.getAllResourceDescriptions()) {
-			findIndexedReferences(targetURIsAsSet, resourceDescription, referenceAcceptor, subMonitor.newChild(1));
+		findAllIndexedReferences(referenceAcceptor, subMonitor, targetURIsAsSet, null);
+	}
+	
+	/**
+	 * @since 2.4
+	 */
+	protected void findAllIndexedReferences(
+			IAcceptor<IReferenceDescription> referenceAcceptor,
+			SubMonitor subMonitor,
+			Set<URI> targetURIsAsSet,
+			ILocalResourceAccess localResourceAccess) {
+		TargetURIs targetURIs = converter.fromIterable(targetURIsAsSet);
+		if (!targetURIs.isEmpty()) {
+			subMonitor.setWorkRemaining(size(indexData.getAllResourceDescriptions()) / MONITOR_CHUNK_SIZE + 1);
+			int i = 0;
+			IProgressMonitor useMe = subMonitor.newChild(1);
+			for (IResourceDescription resourceDescription : indexData.getAllResourceDescriptions()) {
+				IResourceServiceProvider serviceProvider = getServiceProviderRegistry().getResourceServiceProvider(resourceDescription.getURI());
+				if (serviceProvider != null) {
+					IReferenceFinder referenceFinder = serviceProvider.get(IReferenceFinder.class);
+					if (referenceFinder instanceof IReferenceFinderExtension1) {
+						IReferenceFinderExtension1 extension1 = (IReferenceFinderExtension1) referenceFinder;
+						extension1.findReferences(targetURIsAsSet, resourceDescription, referenceAcceptor, useMe, localResourceAccess);
+					} else {
+						// don't use the language specific reference finder here for backwards compatibility reasons
+						findReferences(targetURIsAsSet, resourceDescription, referenceAcceptor, useMe, localResourceAccess);
+					}
+				}
+				i++;
+				if (i % MONITOR_CHUNK_SIZE == 0) {
+					useMe = subMonitor.newChild(1);
+				}
+			}
 		}
 	}
+	
+	private static final int MONITOR_FIND_LOCAL_CHUNK_SIZE = 10;
 
-	protected void findLocalReferences(Iterable<URI> localTargets, ILocalResourceAccess localResourceAccess,
-			final IAcceptor<IReferenceDescription> acceptor, IProgressMonitor monitor) {
+	protected void findLocalReferences(
+			Iterable<URI> localTargets,
+			ILocalResourceAccess localResourceAccess,
+			final IAcceptor<IReferenceDescription> acceptor,
+			IProgressMonitor monitor) {
 		if ((monitor != null && monitor.isCanceled()))
-			return;
-		final Multimap<URI, URI> resource2target = LinkedHashMultimap.create();
-		for (URI targetURI : localTargets) {
-			resource2target.put(targetURI.trimFragment(), targetURI);
-		}
-		final SubMonitor subMonitor = SubMonitor.convert(monitor, resource2target.keySet().size());
-		for (final URI resourceURI : resource2target.keySet()) {
+			throw new OperationCanceledException();
+
+		final TargetURIs targetURIs = converter.fromIterable(localTargets);
+		Collection<URI> resourceURIs = targetURIs.getTargetResourceURIs();
+		final SubMonitor subMonitor = SubMonitor.convert(monitor, resourceURIs.size() / MONITOR_FIND_LOCAL_CHUNK_SIZE + 1);
+		int i = 0;
+		for(final URI resourceURI: resourceURIs) {
 			if (subMonitor.isCanceled())
-				return;
+				throw new OperationCanceledException();
 			localResourceAccess.readOnly(resourceURI, new IUnitOfWork.Void<ResourceSet>() {
 				@Override
 				public void process(ResourceSet resourceSet) throws Exception {
 					Resource resource = resourceSet.getResource(resourceURI, true);
-					findLocalReferencesInResource(resource2target.get(resourceURI), resource, acceptor);
+					DefaultReferenceFinder.super.findReferences(targetURIs, resource, toAcceptor(acceptor), subMonitor);
 				}
 			});
-			subMonitor.worked(1);
+			i++;
+			if (i % MONITOR_FIND_LOCAL_CHUNK_SIZE == 0)
+				subMonitor.worked(1);
 		}
 	}
 
-	protected void findLocalReferencesInResource(final Iterable<URI> targetURIs, Resource resource,
+	protected void findLocalReferencesInResource(final Predicate<URI> targetURIs, Resource resource,
 			final IAcceptor<IReferenceDescription> acceptor) {
-		Set<URI> targetURISet = ImmutableSet.copyOf(targetURIs);
 		Map<EObject, URI> exportedElementsMap = createExportedElementsMap(resource);
 		for(EObject content: resource.getContents()) {
-			findLocalReferencesFromElement(targetURISet, content, resource, acceptor, null, exportedElementsMap);
+			findLocalReferencesFromElement(targetURIs, content, resource, acceptor, null, exportedElementsMap);
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	protected void findLocalReferencesFromElement(final Set<URI> targetURISet, EObject sourceCandidate,
+	protected void findLocalReferencesFromElement(
+			final Predicate<URI> targetURIs, 
+			EObject sourceCandidate,
 			Resource localResource,
-			final IAcceptor<IReferenceDescription> acceptor, URI currentExportedContainerURI, 
+			final IAcceptor<IReferenceDescription> acceptor, 
+			URI currentExportedContainerURI, 
 			Map<EObject, URI> exportedElementsMap) {
-		URI sourceURI = null; 
-		if(exportedElementsMap.containsKey(sourceCandidate)) { 
-			currentExportedContainerURI = exportedElementsMap.get(sourceCandidate);
-			sourceURI = currentExportedContainerURI;
-		}
-		for(EReference ref: sourceCandidate.eClass().getEAllReferences()) {
-			if(sourceCandidate.eIsSet(ref)) {
-				if(ref.isContainment()) {
-					Object content = sourceCandidate.eGet(ref, false);
-					if(ref.isMany()) {
-						InternalEList<EObject> contentList = (InternalEList<EObject>) content;
-						for(int i=0; i<contentList.size(); ++i) {
-							EObject childElement = contentList.basicGet(i);
-							if(!childElement.eIsProxy())
-								findLocalReferencesFromElement(targetURISet, childElement, localResource, acceptor, currentExportedContainerURI, exportedElementsMap);
-						}
-					} else {
-						EObject childElement = (EObject) content;
-						if(!childElement.eIsProxy())
-							findLocalReferencesFromElement(targetURISet, childElement, localResource, acceptor, currentExportedContainerURI, exportedElementsMap);
-					}
-				} else if (!ref.isContainer()) {
-					Object value = sourceCandidate.eGet(ref, false);
-					if(ref.isMany()) {
-						InternalEList<EObject> values = (InternalEList<EObject>) value;
-						for(int i=0; i< values.size(); ++i) {
-							EObject refElement = resolveInternalProxy(values.basicGet(i), localResource);
-							URI refURI= EcoreUtil2.getNormalizedURI(refElement);
-							if(targetURISet.contains(refURI)) {
-								sourceURI = (sourceURI == null) ? EcoreUtil2.getNormalizedURI(sourceCandidate) : sourceURI;
-								acceptor.accept(new DefaultReferenceDescription(
-										sourceURI, refURI, ref, i, currentExportedContainerURI));
-							}
-						}
-					} else {
-						EObject refElement = resolveInternalProxy((EObject) value, localResource);
-						URI refURI= EcoreUtil2.getNormalizedURI(refElement);
-						if(targetURISet.contains(refURI)) {
-							sourceURI = (sourceURI == null) ? EcoreUtil2.getNormalizedURI(sourceCandidate) : sourceURI;
-							acceptor.accept(new DefaultReferenceDescription(
-									sourceURI, refURI, ref, -1, currentExportedContainerURI));
-						}
+		super.findLocalReferencesFromElement(targetURIs, sourceCandidate, localResource, toAcceptor(acceptor));
+	}
+	
+	@Deprecated
+	protected Map<EObject, URI> createExportedElementsMap(final Resource resource) {
+		return new ForwardingMap<EObject, URI>() {
+
+			private Map<EObject, URI> delegate;
+			
+			@Override
+			protected Map<EObject, URI> delegate() {
+				if (delegate != null) {
+					return delegate;
+				}
+				URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(resource);
+				IResourceServiceProvider resourceServiceProvider = getServiceProviderRegistry().getResourceServiceProvider(uri);
+				if (resourceServiceProvider == null) {
+					return delegate = Collections.emptyMap();
+				}
+				IResourceDescription.Manager resourceDescriptionManager = resourceServiceProvider.getResourceDescriptionManager();
+				if (resourceDescriptionManager == null) {
+					return delegate = Collections.emptyMap();
+				}
+				IResourceDescription resourceDescription = resourceDescriptionManager.getResourceDescription(resource);
+				Map<EObject, URI> exportedElementMap = newIdentityHashMap();
+				if (resourceDescription != null) {
+					for (IEObjectDescription exportedEObjectDescription : resourceDescription.getExportedObjects()) {
+						EObject eObject = resource.getEObject(exportedEObjectDescription.getEObjectURI().fragment());
+						if (eObject != null)
+							exportedElementMap.put(eObject, exportedEObjectDescription.getEObjectURI());
 					}
 				}
+				return delegate = exportedElementMap;
 			}
-		}
-	}
-	
-	protected EObject resolveInternalProxy(EObject elementOrProxy, Resource resource) {
-		if(elementOrProxy.eIsProxy() && ((InternalEObject) elementOrProxy).eProxyURI().trimFragment().equals(resource.getURI()))
-			return EcoreUtil.resolve(elementOrProxy, resource);
-		else
-			return elementOrProxy;
-	}
-	
-	protected Map<EObject, URI> createExportedElementsMap(Resource resource) {
-		URI uri = EcoreUtil2.getNormalizedURI(resource);
-		IResourceServiceProvider resourceServiceProvider = serviceProviderRegistry.getResourceServiceProvider(uri);
-		if (resourceServiceProvider == null) {
-			return Collections.emptyMap();
-		}
-		IResourceDescription.Manager resourceDescriptionManager = resourceServiceProvider.getResourceDescriptionManager();
-		if (resourceDescriptionManager == null) {
-			return Collections.emptyMap();
-		}
-		IResourceDescription resourceDescription = resourceDescriptionManager.getResourceDescription(resource);
-		Map<EObject, URI> exportedElementMap = newIdentityHashMap();
-		if (resourceDescription != null) {
-			for (IEObjectDescription exportedEObjectDescription : resourceDescription.getExportedObjects()) {
-				EObject eObject = resource.getEObject(exportedEObjectDescription.getEObjectURI().fragment());
-				if (eObject != null)
-					exportedElementMap.put(eObject, exportedEObjectDescription.getEObjectURI());
-			}
-		}
-		return exportedElementMap;
+
+			
+		};
 	}
 
 	/**
@@ -235,12 +283,19 @@ public class DefaultReferenceFinder implements IReferenceFinder {
 		return null;
 	}
 
-	protected void findIndexedReferences(Set<URI> targetURIs, IResourceDescription resourceDescription,
-			IAcceptor<IReferenceDescription> acceptor, IProgressMonitor monitor) {
-		for (IReferenceDescription referenceDescription : resourceDescription.getReferenceDescriptions()) {
-			if (targetURIs.contains(referenceDescription.getTargetEObjectUri())) {
-				acceptor.accept(referenceDescription);
-			}
-		}
+	/**
+	 * @deprecated use {@link #findReferences(Set, IResourceDescription, IAcceptor, IProgressMonitor, org.eclipse.xtext.ui.editor.findrefs.IReferenceFinder.ILocalResourceAccess)}
+	 */
+	@Deprecated
+	protected void findIndexedReferences(Set<URI> targetURIs, IResourceDescription resourceDescription, IAcceptor<IReferenceDescription> acceptor, IProgressMonitor monitor) {
+		findReferences(targetURIs, resourceDescription, acceptor, monitor, null);
+	}
+	
+	/**
+	 * @since 2.4
+	 */
+	@Override
+	public void findReferences(Set<URI> targetURIs, IResourceDescription resourceDescription, IAcceptor<IReferenceDescription> acceptor, IProgressMonitor monitor, ILocalResourceAccess localResourceAccess) {
+		super.findReferences(converter.fromIterable(targetURIs), resourceDescription, localResourceAccess, toAcceptor(acceptor), monitor);
 	}
 }

@@ -7,17 +7,14 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import java.util.Collection;
+import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
 
 /**
- * @author Sebastian Zarnekow - Initial contribution and API
- * TODO Javadoc
+ * @author Sebastian Zarnekow - Initial contribution and API TODO Javadoc
  */
-@NonNullByDefault
 public class ExpressionAwareStackedResolvedTypes extends StackedResolvedTypes {
 
 	private final XExpression expression;
@@ -29,13 +26,13 @@ public class ExpressionAwareStackedResolvedTypes extends StackedResolvedTypes {
 
 	@Override
 	protected void prepareMergeIntoParent() {
-		for(UnboundTypeReference unbound: basicGetTypeParameters().values()) {
-			if (unbound.getExpression() == expression) {
-				unbound.tryResolve();
-			}
-		}
-		Collection<TypeData> result = basicGetExpressionTypes().get(expression);
-		if (!result.isEmpty()) {
+		tryResolveUnboundReferences();
+		mergeLocalTypes();
+	}
+
+	protected void mergeLocalTypes() {
+		List<TypeData> result = basicGetExpressionTypes().get(expression);
+		if (result != null && !result.isEmpty()) {
 			TypeData returnTypeData = mergeTypeData(expression, result, true, true);
 			TypeData actualTypeData = mergeTypeData(expression, result, false, true);
 			result.clear();
@@ -45,5 +42,17 @@ public class ExpressionAwareStackedResolvedTypes extends StackedResolvedTypes {
 				result.add(actualTypeData);
 		}
 	}
-	
+
+	protected void tryResolveUnboundReferences() {
+		for (UnboundTypeReference unbound : basicGetTypeParameters().values()) {
+			if (unbound.getExpression() == expression) {
+				// resolve all type parameters of the expression that
+				// have already been annotated with significant hints
+				// the type constraints themselves are not considered to
+				// be significant 'enough'
+				unbound.tryResolve(false);
+			}
+		}
+	}
+
 }

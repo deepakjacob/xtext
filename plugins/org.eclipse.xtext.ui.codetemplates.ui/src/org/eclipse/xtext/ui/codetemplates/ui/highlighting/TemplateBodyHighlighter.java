@@ -9,11 +9,11 @@ package org.eclipse.xtext.ui.codetemplates.ui.highlighting;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.Token;
+import org.eclipse.xtext.ide.LexerIdeBindings;
 import org.eclipse.xtext.parser.antlr.Lexer;
 import org.eclipse.xtext.parser.antlr.TokenTool;
-import org.eclipse.xtext.ui.LexerUIBindings;
-import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightedPositionAcceptor;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.AbstractAntlrTokenToAttributeIdMapper;
+import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightedPositionAcceptor;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -21,16 +21,26 @@ import com.google.inject.name.Named;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
+@SuppressWarnings("deprecation")
 public class TemplateBodyHighlighter {
 
 	@Inject
-	@Named(LexerUIBindings.HIGHLIGHTING)
+	@Named(LexerIdeBindings.HIGHLIGHTING)
 	private Lexer lexer;
 
 	@Inject
 	private AbstractAntlrTokenToAttributeIdMapper tokenIdMapper;
 	
+	@Deprecated
 	public void provideHighlightingFor(String body, IHighlightedPositionAcceptor acceptor) {
+		doProvideHighlightingFor(body, IHighlightedPositionAcceptor.DeprecationHelper.upcast(acceptor));
+	}
+	
+	public void provideHighlightingFor(String body, org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor acceptor) {
+		provideHighlightingFor(body, IHighlightedPositionAcceptor.DeprecationHelper.cast(acceptor));
+	}
+	
+	protected void doProvideHighlightingFor(String body, org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor acceptor) {
 		lexer.setCharStream(new ANTLRStringStream(body));
 		Token token = lexer.nextToken();
 		while(token != Token.EOF_TOKEN) {

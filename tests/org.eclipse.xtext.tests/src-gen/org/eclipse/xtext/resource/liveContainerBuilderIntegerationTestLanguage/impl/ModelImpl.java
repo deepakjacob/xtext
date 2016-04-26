@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.resource.liveContainerBuilderIntegerationTestLanguage.impl;
 
@@ -21,10 +18,10 @@ import org.eclipse.xtext.resource.liveContainerBuilderIntegerationTestLanguage.M
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.resource.liveContainerBuilderIntegerationTestLanguage.impl.ModelImpl#getName <em>Name</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

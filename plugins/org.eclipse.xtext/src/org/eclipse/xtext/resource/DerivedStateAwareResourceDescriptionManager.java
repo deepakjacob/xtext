@@ -7,16 +7,18 @@
  *******************************************************************************/
 package org.eclipse.xtext.resource;
 
-import static com.google.common.collect.Lists.*;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescription;
-import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionManager;
 import org.eclipse.xtext.resource.impl.EObjectDescriptionLookUp;
+import org.eclipse.xtext.resource.persistence.StorageAwareResourceDescriptionManager;
 import org.eclipse.xtext.util.IResourceScopeCache;
+import org.eclipse.xtext.util.RuntimeIOException;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * 
@@ -25,7 +27,8 @@ import com.google.inject.Inject;
  * @author Sven Efftinge - Initial contribution and API
  * @since 2.1
  */
-public class DerivedStateAwareResourceDescriptionManager extends DefaultResourceDescriptionManager {
+@Singleton
+public class DerivedStateAwareResourceDescriptionManager extends StorageAwareResourceDescriptionManager {
 	
 	private final static Logger log = Logger.getLogger(DerivedStateAwareResourceDescriptionManager.class);
 	
@@ -35,28 +38,41 @@ public class DerivedStateAwareResourceDescriptionManager extends DefaultResource
 	@Override
 	protected IResourceDescription internalGetResourceDescription(final Resource resource,
 			IDefaultResourceDescriptionStrategy strategy) {
-		DerivedStateAwareResource res = (DerivedStateAwareResource) resource;
-		boolean isInitialized = res.fullyInitialized || res.isInitializing;
-		try {
-			if (!isInitialized) {
-				res.eSetDeliver(false);
-				res.installDerivedState(true);
-			}
-			IResourceDescription description = createResourceDescription(resource, strategy);
-			if (!isInitialized) {
-				// eager initialize
-				for (IEObjectDescription desc : description.getExportedObjects()) {
-					desc.getEObjectURI();
+		if (resource instanceof DerivedStateAwareResource) {
+			DerivedStateAwareResource res = (DerivedStateAwareResource) resource;
+			if (!res.isLoaded()) {
+				try {
+					res.load(res.getResourceSet().getLoadOptions());
+				} catch (IOException e) {
+					throw new RuntimeIOException(e);
 				}
 			}
-			return description;
-		} finally {
-			if (!isInitialized) {
-				if (log.isInfoEnabled())
-					log.info("Discarding inferred state for "+resource.getURI());
-				res.discardDerivedState();
-				res.eSetDeliver(true);
+			boolean isInitialized = res.fullyInitialized || res.isInitializing;
+			try {
+				if (!isInitialized) {
+					res.eSetDeliver(false);
+					res.installDerivedState(true);
+				}
+				IResourceDescription description = createResourceDescription(resource, strategy);
+				if (!isInitialized) {
+					// eager initialize
+					for (IEObjectDescription desc : description.getExportedObjects()) {
+						desc.getEObjectURI();
+					}
+				}
+				return description;
+			} finally {
+				if (!isInitialized) {
+					if (log.isDebugEnabled())
+						log.debug("Discarding inferred state for "+resource.getURI());
+					res.discardDerivedState();
+					res.eSetDeliver(true);
+				}
 			}
+		} else {
+			if (log.isDebugEnabled())
+				log.debug("Invalid configuration. DerivedStateAwareResourceDescriptionManager was registered, but resource was a " + resource.getClass().getName());
+			return super.internalGetResourceDescription(resource, strategy);
 		}
 	}
 	

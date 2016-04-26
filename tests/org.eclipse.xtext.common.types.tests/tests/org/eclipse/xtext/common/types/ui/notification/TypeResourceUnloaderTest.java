@@ -8,16 +8,22 @@
 package org.eclipse.xtext.common.types.ui.notification;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
+import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.xtext.common.types.access.jdt.MockJavaProjectProvider;
@@ -25,12 +31,15 @@ import org.eclipse.xtext.common.types.tests.AbstractActivator;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.ui.notification.IStateChangeEventBroker;
+import org.eclipse.xtext.xbase.lib.Procedures;
+import org.eclipse.xtext.xbase.lib.Procedures.Procedure0;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -50,13 +59,14 @@ public class TypeResourceUnloaderTest extends Assert implements IResourceDescrip
 	private IStateChangeEventBroker eventBroker;
 
 	private volatile IResourceDescription.Event event;
+	private List<IResourceDescription.Event> subsequentEvents;
 
 	private ICompilationUnit compilationUnit;
 
 	private IDocument document;
 
 	private String originalContent;
-
+	
 	@BeforeClass public static void createMockJavaProject() throws Exception {
 		MockJavaProjectProvider.setUp();
 	}
@@ -70,10 +80,19 @@ public class TypeResourceUnloaderTest extends Assert implements IResourceDescrip
 		type = project.findType(NESTED_TYPES);
 		compilationUnit = type.getCompilationUnit();
 		compilationUnit.becomeWorkingCopy(null);
-		editor = JavaUI.openInEditor(compilationUnit);
+		
+		// wait until the BackgroundThread for the reconciler was started
+		editor = waitForElementChangedEvent(new Callable<IEditorPart>() {
+			@Override
+			public IEditorPart call() throws Exception {
+				return JavaUI.openInEditor(compilationUnit);
+			}
+		}, true);
+		
 		eventBroker.addListener(this);
 		document = getDocument();
 		originalContent = document.get();
+		subsequentEvents = Lists.newArrayList();
 	}
 	
 	@After
@@ -84,122 +103,357 @@ public class TypeResourceUnloaderTest extends Assert implements IResourceDescrip
 		eventBroker.removeListener(this);
 		eventBroker = null;
 		projectProvider = null;
+		compilationUnit.discardWorkingCopy();
 		compilationUnit = null;
 		editor = null;
 		type = null;
 		project = null;
 		event = null;
+		subsequentEvents = null;
 	}
 	
 	@Test public void testNullChange() throws BadLocationException, InterruptedException {
-		int lastBrace = document.get().lastIndexOf("}");
-		document.replace(lastBrace, 0, " ");
-		waitForEvent();
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				try {
+					int lastBrace = document.get().lastIndexOf("}");
+					document.replace(lastBrace, 0, " ");
+				} catch (BadLocationException e) {
+					Assert.fail(e.getMessage());
+				}
+			}
+
+		});
 		assertNull(event);
 	}
 	
-	@Test public void testRemoveMethod() throws BadLocationException, JavaModelException, InterruptedException {
-		String lookup = "abstract boolean method();";
-		int idx = document.get().lastIndexOf(lookup);
-		document.replace(idx, lookup.length(), "");
-		waitForEvent();
+	@Test public void testCloseEditor() throws InterruptedException {
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				((ITextEditor) editor).close(false);
+			}
+
+		}, false);
+		assertNull(event);
+	}
+	
+	@Test public void testCloseEditorAndDiscardWorkingCopy() throws InterruptedException {
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				try {
+					compilationUnit.discardWorkingCopy();
+					((ITextEditor) editor).close(false);
+				} catch (JavaModelException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+		}, false);
+		assertNull(event);
+	}
+	
+	@Test public void testCloseAndReopenEditor() throws InterruptedException, PartInitException, JavaModelException {
+		waitForEvent(new Procedure0() {
+			
+			@Override
+			public void apply() {
+				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeEditor(editor, false);
+				try {
+					editor = JavaUI.openInEditor(compilationUnit);
+				} catch (PartInitException e) {
+					fail(e.getMessage());
+				} catch (JavaModelException e) {
+					fail(e.getMessage());
+				}		
+			}
+		});
+		assertNull(event);
+	}
+	
+	@Test
+	public void testNonStructuralChange() throws BadLocationException, InterruptedException {
+		waitForEvent(new Procedure0() {
+			
+			@Override
+			public void apply() {
+				int methodBody = document.get().indexOf("{}") + 1;
+				assertNull("event is null before the document was modified", event);
+				try {
+					document.replace(methodBody, 0, "ignored.toString();");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+				
+			}
+		});
+		assertNull(event);
+	}
+	
+	@Test public void testTypeParameterAdded() throws BadLocationException, JavaModelException, InterruptedException {
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				String lookup = "NestedTypes";
+				int idx = document.get().indexOf(lookup) + "NestedTypes".length();
+				assertNull("event is null before the document was modified", event);
+				try {
+					document.replace(idx, 0, "<Abc>");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+			}
+
+		});
 		assertNotNull(event);
-		assertEquals(1, event.getDeltas().size());
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 3, event.getDeltas().size());
 		IResourceDescription.Delta delta = event.getDeltas().get(0);
 		assertNotNull(delta.getNew());
 		assertNotNull(delta.getOld());
 		assertEquals("java:/Objects/" + NESTED_TYPES, delta.getUri().toString());
-		Collection<String> allNames = getNames(delta);
+		Collection<String> allNames = getNames(event.getDeltas());
 		assertOriginalValues(allNames);
-		assertEquals(6, allNames.size());
+		assertEquals("" + allNames, 3, allNames.size());
+	}
+	
+	@Test public void testRemoveMethod() throws BadLocationException, JavaModelException, InterruptedException {
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				String lookup = "abstract boolean method();";
+				int idx = document.get().lastIndexOf(lookup);
+				assertNull("event is null before the document was modified", event);
+				try {
+					document.replace(idx, lookup.length(), "");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+			}
+
+		});
+		assertNotNull(event);
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 3, event.getDeltas().size());
+		IResourceDescription.Delta delta = event.getDeltas().get(0);
+		assertNotNull(delta.getNew());
+		assertNotNull(delta.getOld());
+		assertEquals("java:/Objects/" + NESTED_TYPES, delta.getUri().toString());
+		Collection<String> allNames = getNames(event.getDeltas());
+		assertOriginalValues(allNames);
+		assertEquals("" + allNames, 3, allNames.size());
 	}
 
 	protected void assertOriginalValues(Collection<String> allNames) {
-		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES + ".method"));
-		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES + "$Outer.method"));
-		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES + "$Outer$Inner.method"));
 		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES));
 		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES + "$Outer"));
 		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES + "$Outer$Inner"));
 	}
 	
 	@Test public void testAddParam() throws BadLocationException, JavaModelException, InterruptedException {
-		int idx = document.get().lastIndexOf("(");
-		document.replace(idx + 1, 0, "int foobar");
-		waitForEvent();
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				int idx = document.get().lastIndexOf("(");
+				assertNull("event is null before the document was modified", event);
+				try {
+					document.replace(idx + 1, 0, "int foobar");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+			}
+
+		});
 		assertNotNull(event);
-		assertEquals(1, event.getDeltas().size());
-		IResourceDescription.Delta delta = event.getDeltas().get(0);
-		Collection<String> allNames = getNames(delta);
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 3, event.getDeltas().size());
+		Collection<String> allNames = getNames(event.getDeltas());
 		assertOriginalValues(allNames);
-		assertEquals(6, allNames.size());
+		assertEquals("" + allNames, 3, allNames.size());
 	}
 	
 	@Test public void testAddMethod() throws BadLocationException, JavaModelException, InterruptedException {
-		String lookup = "abstract boolean method();";
-		int idx = document.get().lastIndexOf(lookup);
-		document.replace(idx + lookup.length(), 0, "abstract int foobar();");
-		waitForEvent();
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				String lookup = "abstract boolean method();";
+				int idx = document.get().lastIndexOf(lookup);
+				assertNull("event is null before the document was modified", event);
+				try {
+					document.replace(idx + lookup.length(), 0, "abstract int foobar();");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+			}
+
+		});
 		assertNotNull(event);
-		assertEquals(1, event.getDeltas().size());
-		IResourceDescription.Delta delta = event.getDeltas().get(0);
-		Collection<String> allNames = getNames(delta);
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 3, event.getDeltas().size());
+		Collection<String> allNames = getNames(event.getDeltas());
 		assertOriginalValues(allNames);
-		assertTrue(allNames.contains(NESTED_TYPES + ".foobar"));
-		assertEquals(7, allNames.size());
+		assertEquals("" + allNames, 3, allNames.size());
 	}
 	
 	@Test public void testRenameMethod() throws BadLocationException, JavaModelException, InterruptedException {
-		int idx = document.get().lastIndexOf("method(");
-		document.replace(idx + "method".length(), 0, "2");
-		waitForEvent();
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				int idx = document.get().lastIndexOf("method(");
+				assertNull("event is null before the document was modified", event);
+				try {
+					document.replace(idx + "method".length(), 0, "2");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+			}
+
+		});
 		assertNotNull(event);
-		assertEquals(1, event.getDeltas().size());
-		IResourceDescription.Delta delta = event.getDeltas().get(0);
-		Collection<String> allNames = getNames(delta);
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 3, event.getDeltas().size());
+		Collection<String> allNames = getNames(event.getDeltas());
 		assertOriginalValues(allNames);
-		assertTrue(allNames.contains(NESTED_TYPES + ".method2"));
-		assertEquals(7, allNames.size());
+		assertEquals("" + allNames, 3, allNames.size());
 	}
 	
 	@Test public void testRenameInnerMethod() throws BadLocationException, JavaModelException, InterruptedException {
-		int idx = document.get().indexOf("method(");
-		document.replace(idx + "method".length(), 0, "2");
-		waitForEvent();
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				int idx = document.get().indexOf("method(");
+				assertNull("event is null before the document was modified", event);
+				try {
+					document.replace(idx + "method".length(), 0, "2");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+			}
+
+		});
 		assertNotNull(event);
-		assertEquals(1, event.getDeltas().size());
-		IResourceDescription.Delta delta = event.getDeltas().get(0);
-		Collection<String> allNames = getNames(delta);
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 3, event.getDeltas().size());
+		Collection<String> allNames = getNames(event.getDeltas());
 		assertOriginalValues(allNames);
-		assertTrue(allNames.contains(NESTED_TYPES + "$Outer$Inner.method2"));
-		assertEquals(7, allNames.size());
+		assertEquals("" + allNames, 3, allNames.size());
 	}
 	
 	@Test public void testRenameClass() throws BadLocationException, JavaModelException, InterruptedException {
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				int idx = document.get().indexOf("NestedTypes");
+				assertNull("event is null before the document was modified", event);
+				try {
+					document.replace(idx, "NestedTypes".length(), "FooBar");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+			}
+
+		});
 		String foobar = "org.eclipse.xtext.common.types.testSetups.FooBar";
-		int idx = document.get().indexOf("NestedTypes");
-		document.replace(idx, "NestedTypes".length(), "FooBar");
-		waitForEvent();
 		assertNotNull(event);
-		assertEquals(2, event.getDeltas().size());
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 6, event.getDeltas().size());
 		IResourceDescription.Delta delta = event.getDeltas().get(0);
-		
-		Set<String> expectedURIs = Sets.newHashSet("java:/Objects/" + NESTED_TYPES, "java:/Objects/" + foobar);
-		assertTrue(expectedURIs.remove(delta.getUri().toString()));
-		assertTrue(expectedURIs.remove(event.getDeltas().get(1).getUri().toString()));
-		assertTrue(expectedURIs.isEmpty());
+
+		assertEquals("java:/Objects/" + foobar, event.getDeltas().get(0).getUri().toString());
+		assertEquals("java:/Objects/" + foobar, event.getDeltas().get(1).getUri().toString());
+		assertEquals("java:/Objects/" + foobar, event.getDeltas().get(2).getUri().toString());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(3).getUri().toString());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(4).getUri().toString());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(5).getUri().toString());
 		
 		Collection<String> allNames = getNames(delta);
-		addNames(event.getDeltas().get(1).getOld(), allNames);
-		addNames(event.getDeltas().get(1).getNew(), allNames);
-		assertTrue(allNames.toString(), allNames.contains(foobar + ".method"));
-		assertTrue(allNames.toString(), allNames.contains(foobar + "$Outer.method"));
-		assertTrue(allNames.toString(), allNames.contains(foobar + "$Outer$Inner.method"));
+		addNames(event.getDeltas().get(0).getNew(), allNames); //FooBar
+		addNames(event.getDeltas().get(1).getNew(), allNames); //FooBar$Outer
+		addNames(event.getDeltas().get(2).getNew(), allNames); //FooBar$Outer$Inner
+		addNames(event.getDeltas().get(3).getOld(), allNames); //NestedTypes
+		addNames(event.getDeltas().get(4).getOld(), allNames); //NestedTypes$Outer
+		addNames(event.getDeltas().get(5).getOld(), allNames); //NestedTypes$Outer$Inner
 		assertTrue(allNames.toString(), allNames.contains(foobar));
 		assertTrue(allNames.toString(), allNames.contains(foobar + "$Outer"));
 		assertTrue(allNames.toString(), allNames.contains(foobar + "$Outer$Inner"));
-		assertTrue(allNames.contains(NESTED_TYPES));
-		assertEquals(7, allNames.size());
+		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES));
+		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES + "$Outer"));
+		assertTrue(allNames.toString(), allNames.contains(NESTED_TYPES + "$Outer$Inner"));
+		assertEquals("" + allNames, 6, allNames.size());
+	}
+	
+	@Test public void testRemoveNestedClass() throws BadLocationException, JavaModelException, InterruptedException {
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				int idx = document.get().indexOf("public abstract class Inner");
+				assertNull("event is null before the document was modified", event);
+				try {
+					int closing = document.get().substring(idx).indexOf("\t}");
+					document.replace(idx, closing + 2, "");
+				} catch (BadLocationException e) {
+					fail(e.getMessage());
+				}
+			}
+
+		});
+		assertNotNull(event);
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 3, event.getDeltas().size());
+		assertNull(event.getDeltas().get(2).getNew());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(0).getUri().toString());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(1).getUri().toString());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(2).getUri().toString());
+		
+	}
+	
+	@Test public void testAddNestedClass() throws BadLocationException, JavaModelException, InterruptedException {
+		waitForEvent(new Procedure0() {
+
+			@Override
+			public void apply() {
+				int idx = document.get().indexOf("public abstract class Inner");
+				assertNull("event is null before the document was modified", event);
+				try {
+						int closing = document.get().substring(idx).indexOf("\t}");
+						document.replace(idx + closing, 0, " public abstract class InnerSibling {} ");
+					} catch (BadLocationException e) {
+						fail(e.getMessage());
+					}
+			}
+
+		});
+		assertNotNull(event);
+		assertTrue(subsequentEvents.toString(), subsequentEvents.isEmpty());
+		assertEquals("" + event.getDeltas(), 4, event.getDeltas().size());
+		assertNull(event.getDeltas().get(3).getOld());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(0).getUri().toString());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(1).getUri().toString());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(2).getUri().toString());
+		assertEquals("java:/Objects/" + NESTED_TYPES, event.getDeltas().get(3).getUri().toString());
+		
+	}
+	
+	protected Collection<String> getNames(List<IResourceDescription.Delta> deltas) {
+		Set<String> result = Sets.newHashSet();
+		for (IResourceDescription.Delta delta : deltas) {
+			addNames(delta.getNew(), result);
+			addNames(delta.getOld(), result);
+		}
+		return result;
 	}
 	
 	protected Collection<String> getNames(IResourceDescription.Delta delta) {
@@ -218,16 +472,67 @@ public class TypeResourceUnloaderTest extends Assert implements IResourceDescrip
 		}
 	}
 	
-	protected void waitForEvent() throws InterruptedException {
-		int counter = 5000;
-		while(event == null && counter > 0) {
-			counter--;
-			Thread.sleep(15);
+	/**
+	 * Same as {@code waitForEvent(procedure, true} which is that an {@link ElementChangedEvent} is expected.
+	 * @see #waitForEvent(Procedure0, boolean)
+	 */
+	protected void waitForEvent(final Procedures.Procedure0 procedure) throws InterruptedException {
+		waitForEvent(procedure, true);
+	}
+	
+	protected void waitForEvent(final Procedures.Procedure0 procedure, boolean expectEvent) throws InterruptedException {
+		try {
+			waitForElementChangedEvent(new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					procedure.apply();
+					return null;
+				}
+			}, expectEvent);
+		} catch(InterruptedException e) {
+			throw e;
+		} catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Wait explicitly for an {@link ElementChangedEvent} that is propagated when the given Callable is executed.
+	 * May also be used to assert that no such event occurred. 
+	 */
+	protected <T> T waitForElementChangedEvent(Callable<T> callMe, boolean expectEvent) throws Exception {
+		class Listener implements IElementChangedListener {
+			private volatile boolean eventSeen = false;
+			@Override
+			public void elementChanged(ElementChangedEvent event) {
+				eventSeen = true;
+				JavaCore.removeElementChangedListener(this);
+			}
+		}
+		Listener listener = new Listener();
+		JavaCore.addElementChangedListener(listener);
+		try {
+			return callMe.call();
+		} finally {
+			// usually a counter of 100 is way more than enough, but on the CI server we see a longer
+			// delay, maybe the threading model on linux is slightly different. Anyway, the overall runtime
+			// on dev boxes is not affected but the test is green on the server
+			long before = System.currentTimeMillis();
+			int counter = expectEvent ? 350 : 150;
+			while(!listener.eventSeen && counter > 0) {
+				counter--;
+				Thread.sleep(15);
+			}
+			long timeWaited = System.currentTimeMillis() - before;
+			assertEquals("Waited "+timeWaited+"ms.", expectEvent, listener.eventSeen);
 		}
 	}
 	
+	@Override
 	public void descriptionsChanged(IResourceDescription.Event event) {
-		assertNull("given event has to be the first and only event", this.event);
+		if (this.event != null && subsequentEvents != null) {
+			subsequentEvents.add(event);
+		}
 		this.event = event;
 	}
 

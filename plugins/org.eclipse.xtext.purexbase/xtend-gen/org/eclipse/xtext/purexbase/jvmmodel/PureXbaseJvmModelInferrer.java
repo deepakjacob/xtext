@@ -6,7 +6,6 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.xtext.common.types.JvmGenericType;
 import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmOperation;
@@ -15,8 +14,8 @@ import org.eclipse.xtext.purexbase.pureXbase.Model;
 import org.eclipse.xtext.xbase.XBlockExpression;
 import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer;
 import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor;
-import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor.IPostIndexingInitializing;
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder;
+import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 /**
@@ -26,36 +25,38 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
  * which is generated from the source model.
  * Other Xtend models link against the JVM model rather than the source model. The JVM
  * model elements should be associated with their source element by means of the
- * {@link IJvmModelAssociator}.</p>
+ * {@link org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociator}.</p>
  */
 @SuppressWarnings("all")
 public class PureXbaseJvmModelInferrer extends AbstractModelInferrer {
   @Inject
+  @Extension
   private JvmTypesBuilder _jvmTypesBuilder;
   
-  protected void _infer(final Model m, @NonNull final IJvmDeclaredTypeAcceptor acceptor, final boolean prelinkingPhase) {
+  protected void _infer(final Model m, final IJvmDeclaredTypeAcceptor acceptor, final boolean prelinkingPhase) {
     final XBlockExpression e = m.getBlock();
     Resource _eResource = e.eResource();
     String _name = this.name(_eResource);
     JvmGenericType _class = this._jvmTypesBuilder.toClass(e, _name);
-    IPostIndexingInitializing<JvmGenericType> _accept = acceptor.<JvmGenericType>accept(_class);
     final Procedure1<JvmGenericType> _function = new Procedure1<JvmGenericType>() {
-        public void apply(final JvmGenericType it) {
-          EList<JvmMember> _members = it.getMembers();
-          JvmTypeReference _inferredType = PureXbaseJvmModelInferrer.this._jvmTypesBuilder.inferredType();
-          final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
-              public void apply(final JvmOperation it) {
-                EList<JvmTypeReference> _exceptions = it.getExceptions();
-                JvmTypeReference _newTypeRef = PureXbaseJvmModelInferrer.this._jvmTypesBuilder.newTypeRef(e, Throwable.class);
-                PureXbaseJvmModelInferrer.this._jvmTypesBuilder.<JvmTypeReference>operator_add(_exceptions, _newTypeRef);
-                PureXbaseJvmModelInferrer.this._jvmTypesBuilder.setBody(it, e);
-              }
-            };
-          JvmOperation _method = PureXbaseJvmModelInferrer.this._jvmTypesBuilder.toMethod(e, "myMethod", _inferredType, _function);
-          PureXbaseJvmModelInferrer.this._jvmTypesBuilder.<JvmOperation>operator_add(_members, _method);
-        }
-      };
-    _accept.initializeLater(_function);
+      @Override
+      public void apply(final JvmGenericType it) {
+        EList<JvmMember> _members = it.getMembers();
+        JvmTypeReference _inferredType = PureXbaseJvmModelInferrer.this._jvmTypesBuilder.inferredType();
+        final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
+          @Override
+          public void apply(final JvmOperation it) {
+            EList<JvmTypeReference> _exceptions = it.getExceptions();
+            JvmTypeReference _typeRef = PureXbaseJvmModelInferrer.this._typeReferenceBuilder.typeRef(Throwable.class);
+            PureXbaseJvmModelInferrer.this._jvmTypesBuilder.<JvmTypeReference>operator_add(_exceptions, _typeRef);
+            PureXbaseJvmModelInferrer.this._jvmTypesBuilder.setBody(it, e);
+          }
+        };
+        JvmOperation _method = PureXbaseJvmModelInferrer.this._jvmTypesBuilder.toMethod(e, "myMethod", _inferredType, _function);
+        PureXbaseJvmModelInferrer.this._jvmTypesBuilder.<JvmOperation>operator_add(_members, _method);
+      }
+    };
+    acceptor.<JvmGenericType>accept(_class, _function);
   }
   
   public String name(final Resource res) {

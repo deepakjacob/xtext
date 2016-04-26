@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.nodemodel.INode;
@@ -26,17 +25,23 @@ import com.google.common.collect.Lists;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
-public class UnresolvableConstructorCall extends AbstractUnresolvableFeature implements IConstructorLinkingCandidate {
+public class UnresolvableConstructorCall extends AbstractUnresolvableReferenceWithNode implements IConstructorLinkingCandidate {
 
 	public UnresolvableConstructorCall(XConstructorCall constructorCall, INode node, String text, ExpressionTypeComputationState state) {
 		super(constructorCall, node, text, state);
 	}
 	
+	@Override
 	public JvmConstructor getConstructor() {
 		throw new UnsupportedOperationException("TODO return some error feature that is compatible to everything");
 	}
 	
+	@Override
+	public boolean isAnonymousClassConstructorCall() {
+		return false;
+	}
+	
+	@Override
 	public XConstructorCall getConstructorCall() {
 		return (XConstructorCall) getExpression();
 	}
@@ -46,10 +51,12 @@ public class UnresolvableConstructorCall extends AbstractUnresolvableFeature imp
 		return getConstructorCall().getArguments();
 	}
 	
+	@Override
 	public EReference getReference() {
 		return XbasePackage.Literals.XCONSTRUCTOR_CALL__CONSTRUCTOR;
 	}
 	
+	@Override
 	public List<LightweightTypeReference> getTypeArguments() {
 		XConstructorCall constructorCall = getConstructorCall();
 		List<JvmTypeReference> typeArguments = constructorCall.getTypeArguments();
@@ -57,7 +64,7 @@ public class UnresolvableConstructorCall extends AbstractUnresolvableFeature imp
 			return Collections.emptyList();
 		List<LightweightTypeReference> result = Lists.newArrayList();
 		for(JvmTypeReference typeArgument: typeArguments) {
-			result.add(getConverter().toLightweightReference(typeArgument));
+			result.add(getState().getReferenceOwner().toLightweightTypeReference(typeArgument));
 		}
 		return result;
 	}

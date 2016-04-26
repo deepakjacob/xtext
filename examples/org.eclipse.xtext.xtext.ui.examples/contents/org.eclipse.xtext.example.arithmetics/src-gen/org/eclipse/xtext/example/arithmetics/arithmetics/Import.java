@@ -1,7 +1,11 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * ******************************************************************************
+ * Copyright (c) 2015 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *  ******************************************************************************
  */
 package org.eclipse.xtext.example.arithmetics.arithmetics;
 
@@ -14,10 +18,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
- * <ul>
- *   <li>{@link org.eclipse.xtext.example.arithmetics.arithmetics.Import#getImportedNamespace <em>Imported Namespace</em>}</li>
- * </ul>
  * </p>
+ * <ul>
+ *   <li>{@link org.eclipse.xtext.example.arithmetics.arithmetics.Import#getModule <em>Module</em>}</li>
+ * </ul>
  *
  * @see org.eclipse.xtext.example.arithmetics.arithmetics.ArithmeticsPackage#getImport()
  * @model
@@ -26,29 +30,29 @@ import org.eclipse.emf.ecore.EObject;
 public interface Import extends EObject
 {
   /**
-   * Returns the value of the '<em><b>Imported Namespace</b></em>' attribute.
+   * Returns the value of the '<em><b>Module</b></em>' reference.
    * <!-- begin-user-doc -->
    * <p>
-   * If the meaning of the '<em>Imported Namespace</em>' attribute isn't clear,
+   * If the meaning of the '<em>Module</em>' reference isn't clear,
    * there really should be more of a description here...
    * </p>
    * <!-- end-user-doc -->
-   * @return the value of the '<em>Imported Namespace</em>' attribute.
-   * @see #setImportedNamespace(String)
-   * @see org.eclipse.xtext.example.arithmetics.arithmetics.ArithmeticsPackage#getImport_ImportedNamespace()
+   * @return the value of the '<em>Module</em>' reference.
+   * @see #setModule(Module)
+   * @see org.eclipse.xtext.example.arithmetics.arithmetics.ArithmeticsPackage#getImport_Module()
    * @model
    * @generated
    */
-  String getImportedNamespace();
+  Module getModule();
 
   /**
-   * Sets the value of the '{@link org.eclipse.xtext.example.arithmetics.arithmetics.Import#getImportedNamespace <em>Imported Namespace</em>}' attribute.
+   * Sets the value of the '{@link org.eclipse.xtext.example.arithmetics.arithmetics.Import#getModule <em>Module</em>}' reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Imported Namespace</em>' attribute.
-   * @see #getImportedNamespace()
+   * @param value the new value of the '<em>Module</em>' reference.
+   * @see #getModule()
    * @generated
    */
-  void setImportedNamespace(String value);
+  void setModule(Module value);
 
 } // Import

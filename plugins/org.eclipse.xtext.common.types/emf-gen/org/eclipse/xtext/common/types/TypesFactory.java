@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types;
 
@@ -353,6 +355,16 @@ public interface TypesFactory extends EFactory
 	 * @since 2.1
 	 */
 	JvmCustomAnnotationValue createJvmCustomAnnotationValue();
+
+	/**
+	 * Returns a new object of class '<em>Jvm Inner Type Reference</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>Jvm Inner Type Reference</em>'.
+	 * @generated
+	 * @since 2.7
+	 */
+	JvmInnerTypeReference createJvmInnerTypeReference();
 
 	/**
 	 * Returns the package supported by this factory.

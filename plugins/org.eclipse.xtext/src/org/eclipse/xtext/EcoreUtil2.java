@@ -22,11 +22,14 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.notify.Notifier;
+import org.eclipse.emf.common.util.AbstractTreeIterator;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
@@ -38,16 +41,24 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.impl.EClassImpl;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EContentsEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.xtext.linking.lazy.LazyLinkingResource;
 import org.eclipse.xtext.resource.ClassloaderClasspathUriResolver;
+import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.Strings;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -99,11 +110,11 @@ public class EcoreUtil2 extends EcoreUtil {
 	 * an instance of the requested type, then the object itself will be returned. If no container object is of the
 	 * requested type, then {@code null} will be returned.
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T extends EObject> T getContainerOfType(EObject ele, Class<T> type) {
+	/* @Nullable */
+	public static <T extends EObject> T getContainerOfType(/* @Nullable */ EObject ele, /* @NonNull */ Class<T> type) {
 		for (EObject e = ele; e != null; e = e.eContainer())
 			if (type.isInstance(e))
-				return (T) e;
+				return type.cast(e);
 
 		return null;
 	}
@@ -123,10 +134,11 @@ public class EcoreUtil2 extends EcoreUtil {
 	/**
 	 * A generified facade to {@link EcoreUtil#copy(EObject)}.
 	 * Note that since EMF 2.6 {@link EcoreUtil#copy(EObject)} is already generic.
+	 * @deprecated use {@link EcoreUtil#copy(EObject)} instead.
 	 */
-	@SuppressWarnings("unchecked")
+	@Deprecated
 	public static <T extends EObject> T clone(T eObject) {
-		return (T) EcoreUtil.copy(eObject);
+		return EcoreUtil.copy(eObject);
 	}
 	
 	/**
@@ -158,34 +170,24 @@ public class EcoreUtil2 extends EcoreUtil {
 		EList<Resource> resources = source.getResources();
 		EcoreUtil.Copier copier = new EcoreUtil.Copier();
 		for (Resource resource : resources) {
-			Resource resource2 = target.createResource(resource.getURI());
-			resource2.getContents().addAll(copier.copyAll(resource.getContents()));
+			Resource targetResource = target.createResource(resource.getURI());
+			targetResource.getContents().addAll(copier.copyAll(resource.getContents()));
+			// mark all resources as fully initialized
+			if (resource instanceof DerivedStateAwareResource && targetResource instanceof DerivedStateAwareResource) {
+				((DerivedStateAwareResource) targetResource).setFullyInitialized(((DerivedStateAwareResource) resource)
+						.isFullyInitialized());
+			}
 		}
 		copier.copyReferences();
 		return target;
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T extends EObject> List<T> getAllContentsOfType(EObject ele, Class<T> type) {
-		List<T> result = new ArrayList<T>();
-		TreeIterator<EObject> allContents = ele.eAllContents();
-		while (allContents.hasNext()) {
-			EObject object = allContents.next();
-			if (type.isAssignableFrom(object.getClass())) {
-				result.add((T) object);
-			}
-		}
-		return result;
+		return Lists.newArrayList(Iterators.filter(ele.eAllContents(), type));
 	}
 
 	public static <T> List<T> typeSelect(List<?> elements, Class<T> clazz) {
-		List<T> result = new ArrayList<T>();
-		for (Object ele : elements) {
-			if (ele != null && clazz.isAssignableFrom(ele.getClass())) {
-				result.add(clazz.cast(ele));
-			}
-		}
-		return result;
+		return Lists.newArrayList(Iterables.filter(elements, clazz));
 	}
 
 	public static <T> List<T> collect(Collection<? extends EObject> instances, int featureId, Class<T> type) {
@@ -203,19 +205,8 @@ public class EcoreUtil2 extends EcoreUtil {
 		return result;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static <T extends EObject> List<T> eAllOfType(EObject ele, Class<T> type) {
-		List<T> result = new ArrayList<T>();
-		if (type.isAssignableFrom(ele.getClass()))
-			result.add((T) ele);
-		TreeIterator<EObject> allContents = ele.eAllContents();
-		while (allContents.hasNext()) {
-			EObject object = allContents.next();
-			if (type.isAssignableFrom(object.getClass())) {
-				result.add((T) object);
-			}
-		}
-		return result;
+		return Lists.newArrayList(Iterators.filter(eAll(ele), type));
 	}
 
 	public static TreeIterator<EObject> eAll(final EObject obj) {
@@ -223,6 +214,7 @@ public class EcoreUtil2 extends EcoreUtil {
 			private TreeIterator<EObject> it = null;
 			private int index = 0;
 
+			@Override
 			public void prune() {
 				switch (index) {
 					case 0:
@@ -236,6 +228,7 @@ public class EcoreUtil2 extends EcoreUtil {
 				}
 			}
 
+			@Override
 			public boolean hasNext() {
 				if (index == 0)
 					return true;
@@ -244,6 +237,7 @@ public class EcoreUtil2 extends EcoreUtil {
 				return false;
 			}
 
+			@Override
 			public EObject next() {
 				if (index++ == 0) {
 					it = obj.eAllContents();
@@ -254,6 +248,7 @@ public class EcoreUtil2 extends EcoreUtil {
 				return null;
 			}
 
+			@Override
 			public void remove() {
 				if (index == 0)
 					EcoreUtil.remove(obj);
@@ -265,6 +260,7 @@ public class EcoreUtil2 extends EcoreUtil {
 	
 	public static Iterable<EObject> eAllContents(final EObject n) {
 		return new Iterable<EObject>() {
+			@Override
 			public Iterator<EObject> iterator() {
 				return eAll(n);
 			}
@@ -272,20 +268,11 @@ public class EcoreUtil2 extends EcoreUtil {
 	}
 
 	public static List<EObject> eAllContentsAsList(EObject ele) {
-		List<EObject> result = new ArrayList<EObject>();
-		TreeIterator<EObject> iterator = ele.eAllContents();
-		while (iterator.hasNext())
-			result.add(iterator.next());
-		return result;
+		return Lists.newArrayList(ele.eAllContents());
 	}
 
 	public static List<EObject> eAllContentsAsList(Resource resource) {
-		List<EObject> result = new ArrayList<EObject>();
-		TreeIterator<EObject> iterator = resource.getAllContents();
-		while (iterator.hasNext()) {
-			result.add(iterator.next());
-		}
-		return result;
+		return Lists.newArrayList(resource.getAllContents());
 	}
 
 	public static final EPackage loadEPackage(String uriAsString, ClassLoader classLoader) {
@@ -354,6 +341,7 @@ public class EcoreUtil2 extends EcoreUtil {
 
 	private static class EClassTypeHierarchyComparator implements Comparator<EClass> {
 
+		@Override
 		public int compare(EClass classA, EClass classB) {
 			if (classA.getEAllSuperTypes().contains(classB))
 				return -1;
@@ -392,10 +380,11 @@ public class EcoreUtil2 extends EcoreUtil {
 	}
 
 	private static void collectAllSuperTypes(Set<EClass> collectedTypes, EClass eClass) {
-		for (EClass superType : eClass.getESuperTypes())
+		for (EClass superType : eClass.getESuperTypes()) {
 			if (collectedTypes.add(superType)) {
 				collectAllSuperTypes(collectedTypes, superType);
 			}
+		}
 	}
 
 	/**
@@ -491,7 +480,9 @@ public class EcoreUtil2 extends EcoreUtil {
 	}
 
 	public static void resolveAll(Resource resource, CancelIndicator monitor) {
-		for (Iterator<EObject> i = resource.getAllContents(); !monitor.isCanceled() && i.hasNext();) {
+		for (Iterator<EObject> i = resource.getAllContents(); i.hasNext();) {
+			if (monitor.isCanceled())
+				throw new OperationCanceledException();
 			EObject eObject = i.next();
 			resolveCrossReferences(eObject, monitor);
 		}
@@ -515,15 +506,20 @@ public class EcoreUtil2 extends EcoreUtil {
 	 */
 	public static void resolveAll(EObject eObject, CancelIndicator monitor) {
 		resolveCrossReferences(eObject, monitor);
-		for (Iterator<EObject> i = eObject.eAllContents(); !monitor.isCanceled() && i.hasNext();) {
+		for (Iterator<EObject> i = eObject.eAllContents(); i.hasNext();) {
+			if (monitor.isCanceled())
+				throw new OperationCanceledException();
 			EObject childEObject = i.next();
 			resolveCrossReferences(childEObject, monitor);
 		}
 	}
 
 	private static void resolveCrossReferences(EObject eObject, CancelIndicator monitor) {
-		for (Iterator<EObject> i = eObject.eCrossReferences().iterator(); !monitor.isCanceled() && i.hasNext(); i
+		for (Iterator<EObject> i = eObject.eCrossReferences().iterator(); i.hasNext(); i
 				.next()) {
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			// The loop resolves the cross references by visiting them.
 		}
 	}
@@ -591,6 +587,7 @@ public class EcoreUtil2 extends EcoreUtil {
 		return URIConverter.INSTANCE.normalize(EcoreUtil.getURI(eObject).trimFragment());
 	}
 	
+	
 	public static URI getNormalizedURI(EObject eObject) {
 		URI rawURI = EcoreUtil.getURI(eObject);
 		Resource resource = eObject.eResource();
@@ -607,5 +604,173 @@ public class EcoreUtil2 extends EcoreUtil {
 		} else {
 			return URIConverter.INSTANCE.normalize(resource.getURI());
 		}
+	}
+	
+	/**
+	 * @return the eobject's URI in the normalized form or as is if it is a platform:/resource URI.
+	 * @since 2.4
+	 */
+	public static URI getPlatformResourceOrNormalizedURI(EObject eObject) {
+		URI rawURI = EcoreUtil.getURI(eObject);
+		if (rawURI.isPlatformResource()) {
+			return rawURI;
+		}
+		Resource resource = eObject.eResource();
+		if(resource != null && resource.getResourceSet() != null) {
+			return resource.getResourceSet().getURIConverter().normalize(rawURI);
+		} else {
+			return URIConverter.INSTANCE.normalize(rawURI);
+		}
+	}
+	/**
+	 * @return the resources uri in the normalized form or as is if it is a platform:/resource URI.
+	 * @since 2.4
+	 */
+	public static URI getPlatformResourceOrNormalizedURI(Resource resource) {
+		URI rawURI = resource.getURI();
+		if (rawURI.isPlatformResource()) {
+			return rawURI;
+		}
+		if(resource.getResourceSet() != null) {
+			return resource.getResourceSet().getURIConverter().normalize(rawURI);
+		} else {
+			return URIConverter.INSTANCE.normalize(rawURI);
+		}
+	}
+	
+	/**
+	 * A better performing alternative to the {@link org.eclipse.emf.ecore.util.EcoreUtil.CrossReferencer}.
+	 * 
+	 * @since 2.4
+	 */
+	@SuppressWarnings("unchecked")
+	public static void findCrossReferences(EObject rootElement, Set<? extends EObject> targets, ElementReferenceAcceptor acceptor) {
+		for(EReference ref: rootElement.eClass().getEAllReferences()) {
+			if(rootElement.eIsSet(ref)) {
+				if(ref.isContainment()) {
+					Object content = rootElement.eGet(ref, false);
+					if(ref.isMany()) {
+						InternalEList<EObject> contentList = (InternalEList<EObject>) content;
+						for(int i=0; i<contentList.size(); ++i) {
+							EObject childElement = contentList.basicGet(i);
+							if(!childElement.eIsProxy())
+								findCrossReferences(childElement, targets, acceptor);
+						}
+					} else {
+						EObject childElement = (EObject) content;
+						if(!childElement.eIsProxy())
+							findCrossReferences(childElement, targets, acceptor);
+					}
+				} else if (!ref.isContainer()) {
+					Object value = rootElement.eGet(ref, false);
+					if(ref.isMany()) {
+						InternalEList<EObject> values = (InternalEList<EObject>) value;
+						for(int i=0; i< values.size(); ++i) {
+							EObject refElement = values.get(i);
+							if(targets.contains(refElement)) {
+								acceptor.accept(rootElement, refElement, ref, i);
+							}
+						}
+					} else {
+						EObject refElement = (EObject) value;
+						if(targets.contains(refElement)) {
+							acceptor.accept(rootElement, refElement, ref, -1);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @since 2.4
+	 */
+	public static interface ElementReferenceAcceptor {
+		void accept(EObject referrer, EObject referenced, EReference reference, int index);
+	}
+	
+	/**
+	 * @since 2.6
+	 */
+	public static TreeIterator<EObject> getAllNonDerivedContents(EObject root, boolean includeRoot) {
+		/*
+		 * We cannot simply use root.eAllContents here since the iterator
+		 * will probe for #hasNext on each invocation of #next. This is usually
+		 * not a problem but with derived containment, it becomes an issue.
+		 * For example, the accessor of XAbstractFeatureCall#getImplicitReceiver uses #getFeature
+		 * to initialize itself. This will cause the potential proxy feature
+		 * to be resolved which in turn tries to access the mapped proxy URI fragments
+		 * in the resource. Now these fragments are currently in the process of being
+		 * updated, e.g. there may not even be enough entries. Thus #getFeature
+		 * shall not be called here. Long story short, this iterator filters
+		 * derived containment features.
+		 */
+		return new AbstractTreeIterator<EObject>(root, includeRoot) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Iterator<EObject> getChildren(Object object) {
+				EObject eObject = (EObject) object;
+				return getNonDerivedContents(eObject);
+			}
+
+		};
+	}
+	
+	/**
+	 * Same as {@link #getAllNonDerivedContents(EObject, boolean) getAllNonDerivedContents(root, false)}. 
+	 * @since 2.6
+	 */
+	public static TreeIterator<EObject> getAllNonDerivedContents(EObject root) {
+		return getAllNonDerivedContents(root, false);
+	}
+
+	/**
+	 * @since 2.6
+	 */
+	public static Iterator<EObject> getNonDerivedContents(EObject eObject) {
+		EClassImpl.FeatureSubsetSupplier featureSupplier = (EClassImpl.FeatureSubsetSupplier) eObject.eClass().getEAllStructuralFeatures();
+		EStructuralFeature[] eStructuralFeatures = featureSupplier.containments();
+
+		return (eStructuralFeatures == null 
+				? EContentsEList.<EObject> emptyContentsEList()
+				: new EContentsEList<EObject>(eObject, eStructuralFeatures) {
+					@Override
+					protected ListIterator<EObject> newResolvingListIterator() {
+						return new ResolvingFeatureIteratorImpl<EObject>(eObject, eStructuralFeatures) {
+							@Override
+							protected boolean isIncluded(EStructuralFeature eStructuralFeature) {
+								return !eStructuralFeature.isDerived();
+							}
+						};
+					}
+				}).iterator();
+	}
+	
+	
+	/**
+	 * Returns an Iterable that iterates over all containers of this EObject, from leaf to root. The <code>obj</code>
+	 * itself is not included.
+	 * 
+	 * @since 2.9
+	 */
+	public static Iterable<EObject> getAllContainers(final EObject obj) {
+		return new Iterable<EObject>() {
+			@Override
+			public Iterator<EObject> iterator() {
+				return new AbstractIterator<EObject>() {
+
+					private EObject current = obj;
+
+					@Override
+					protected EObject computeNext() {
+						current = current.eContainer();
+						if (current == null)
+							return endOfData();
+						return current;
+					}
+				};
+			}
+		};
 	}
 }

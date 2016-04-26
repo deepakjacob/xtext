@@ -7,7 +7,10 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.util;
 
+import static org.eclipse.xtext.ui.util.JREContainerProvider.*;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -21,8 +24,12 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.ui.wizards.buildpaths.BuildPathSupport;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkingSet;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -30,6 +37,11 @@ import org.eclipse.ui.IWorkingSet;
 public class JavaProjectFactory extends ProjectFactory {
 
 	private static final Logger logger = Logger.getLogger(JavaProjectFactory.class);
+	
+	private List<IClasspathEntry> extraClasspathEntries = Lists.newArrayList();
+	private String defaultOutput = "bin";
+
+	private IClasspathEntry jreContainerEntry;
 
 	@Override
 	protected void enhanceProject(IProject project, SubMonitor monitor, Shell shell) throws CoreException {
@@ -50,22 +62,54 @@ public class JavaProjectFactory extends ProjectFactory {
 					final IClasspathEntry srcClasspathEntry = JavaCore.newSourceEntry(sourceFolder.getFullPath());
 					classpathEntries.add(srcClasspathEntry);
 				}
+				classpathEntries.addAll(extraClasspathEntries);
 
-				classpathEntries.add(JavaCore.newContainerEntry(new Path("org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5"))); //$NON-NLS-1$
+				IClasspathEntry defaultJREContainerEntry = getJreContainerEntry();
+				classpathEntries.add(defaultJREContainerEntry);
 				addMoreClasspathEntriesTo(classpathEntries);
-
+				
 				javaProject.setRawClasspath(classpathEntries.toArray(new IClasspathEntry[classpathEntries.size()]),
 						subMonitor.newChild(1));
-				javaProject.setOutputLocation(new Path("/" + project.getName() + "/bin"), subMonitor.newChild(1)); //$NON-NLS-1$ //$NON-NLS-2$
+				javaProject.setOutputLocation(new Path("/" + project.getName() + "/" + defaultOutput), subMonitor.newChild(1));
+				
+				String executionEnvironmentId = JavaRuntime.getExecutionEnvironmentId(defaultJREContainerEntry.getPath());
+				if (executionEnvironmentId != null) {
+					BuildPathSupport.setEEComplianceOptions(javaProject, executionEnvironmentId, null);
+				}
 			} catch (JavaModelException e) {
 				logger.error(e.getMessage(), e);
 			}
 		}
 	}
 
+	private IClasspathEntry getJreContainerEntry() {
+		if(jreContainerEntry == null) {
+			return getDefaultJREContainerEntry();
+		}
+		return jreContainerEntry;
+	}
+	
+	/**
+	 * @since 2.9
+	 * 
+	 * @param jreContainerEntry the JRE to use. If not set the default from <code>JREContainerProvider</code> will be used.
+	 * @see org.eclipse.xtext.ui.util.JREContainerProvider#getDefaultJREContainerEntry
+	 */
+	public void setJreContainerEntry(IClasspathEntry jreContainerEntry) {
+		this.jreContainerEntry = jreContainerEntry;
+	}
+	
 	protected void addMoreClasspathEntriesTo(List<IClasspathEntry> classpathEntries) {
 	}
 
+	/**
+	 * @since 2.9
+	 */
+	public JavaProjectFactory addClasspathEntries(IClasspathEntry...classpathEntries) {
+		this.extraClasspathEntries.addAll(Arrays.asList(classpathEntries));
+		return this;
+	}
+	
 	@Override
 	public JavaProjectFactory addBuilderIds(String... builderIds) {
 		return (JavaProjectFactory) super.addBuilderIds(builderIds);
@@ -99,5 +143,14 @@ public class JavaProjectFactory extends ProjectFactory {
 	@Override
 	public JavaProjectFactory addWorkingSets(List<IWorkingSet> workingSets) {
 		return (JavaProjectFactory) super.addWorkingSets(workingSets);
+	}
+	
+	/**
+	 * The default output directory, relative to the project root
+	 * @since 2.9
+	 */
+	public JavaProjectFactory setDefaultOutput(String defaultOutput) {
+		this.defaultOutput= defaultOutput;
+		return this;
 	}
 }

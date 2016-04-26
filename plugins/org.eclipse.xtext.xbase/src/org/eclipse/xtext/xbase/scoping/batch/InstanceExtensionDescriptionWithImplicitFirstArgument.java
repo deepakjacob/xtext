@@ -10,40 +10,45 @@ package org.eclipse.xtext.xbase.scoping.batch;
 import java.util.Collections;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.common.types.JvmFeature;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class InstanceExtensionDescriptionWithImplicitFirstArgument extends InstanceExtensionDescription {
 
-	protected InstanceExtensionDescriptionWithImplicitFirstArgument(QualifiedName qualifiedName,
-			JvmIdentifiableElement feature, XExpression receiver, LightweightTypeReference receiverType,
-			Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping, 
-			XExpression firstArgument, LightweightTypeReference firstArgumentType,
-			Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> argumentTypeParameterMapping, int bucketId,
-			boolean visible) {
-		super(qualifiedName, feature, receiver, receiverType, typeParameterMapping, EcoreUtil2.clone(firstArgument), firstArgumentType,
-				argumentTypeParameterMapping, bucketId, visible);
+	public InstanceExtensionDescriptionWithImplicitFirstArgument(
+			QualifiedName qualifiedName,
+			JvmFeature feature,
+			XExpression receiver,
+			LightweightTypeReference receiverType,
+			Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> receiverTypeParameterMapping,
+			int receiverConformanceFlags,
+			XExpression firstArgument,
+			LightweightTypeReference firstArgumentType,
+			Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> firstArgumentTypeParameterMapping,
+			int bucketId,
+			boolean visible,
+			boolean validStaticState) {
+		super(qualifiedName, feature, receiver, receiverType, receiverTypeParameterMapping, receiverConformanceFlags, EcoreUtil.copy(firstArgument), firstArgumentType,
+				firstArgumentTypeParameterMapping, ConformanceFlags.NONE, bucketId, visible, validStaticState);
 	}
 
 	@Override
-	@Nullable
+	/* @Nullable */
 	public XExpression getSyntacticReceiver() {
 		return null;
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public LightweightTypeReference getSyntacticReceiverType() {
 		return null;
 	}
@@ -54,20 +59,20 @@ public class InstanceExtensionDescriptionWithImplicitFirstArgument extends Insta
 	}
 	
 	@Override
-	@Nullable
+	public int getSyntacticReceiverConformanceFlags() {
+		return ConformanceFlags.NONE;
+	}
+	
+	@Override
+	/* @Nullable */
 	public XExpression getImplicitFirstArgument() {
 		return super.getSyntacticReceiver();
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public LightweightTypeReference getImplicitFirstArgumentType() {
 		return super.getSyntacticReceiverType();
 	}
 	
-	@Override
-	public Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getImplicitFirstArgumentTypeParameterMapping() {
-		return super.getSyntacticReceiverTypeParameterMapping();
-	}
-
 }

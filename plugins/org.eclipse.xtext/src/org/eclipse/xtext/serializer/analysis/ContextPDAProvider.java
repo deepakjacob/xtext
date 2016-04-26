@@ -7,27 +7,39 @@
  *******************************************************************************/
 package org.eclipse.xtext.serializer.analysis;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.emf.ecore.EClass;
+import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.AbstractElement;
 import org.eclipse.xtext.Action;
+import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
+import org.eclipse.xtext.Parameter;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
-import org.eclipse.xtext.grammaranalysis.impl.CfgAdapter;
-import org.eclipse.xtext.serializer.analysis.SerializerPDA.SerializerPDACloneFactory;
+import org.eclipse.xtext.serializer.ISerializationContext;
+import org.eclipse.xtext.serializer.analysis.ISerState.SerStateType;
+import org.eclipse.xtext.serializer.analysis.SerializationContext.ActionContext;
 import org.eclipse.xtext.serializer.analysis.SerializerPDA.SerializerPDAElementFactory;
-import org.eclipse.xtext.serializer.analysis.SerializerPDA.SerializerPDAGetToken;
-import org.eclipse.xtext.util.formallang.FollowerFunctionImpl;
+import org.eclipse.xtext.serializer.analysis.SerializerPDA.SerializerPDAState;
+import org.eclipse.xtext.util.Pair;
+import org.eclipse.xtext.util.Tuples;
+import org.eclipse.xtext.util.formallang.NfaUtil;
 import org.eclipse.xtext.util.formallang.Pda;
 import org.eclipse.xtext.util.formallang.PdaUtil;
-import org.eclipse.xtext.util.formallang.Production;
 
-import com.google.common.base.Function;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -38,168 +50,219 @@ import com.google.inject.Singleton;
 @Singleton
 public class ContextPDAProvider implements IContextPDAProvider {
 
-	protected class ExpandRuleCalls implements Function<ISerState, Pda<ISerState, RuleCall>> {
-		public Pda<ISerState, RuleCall> apply(ISerState input) {
-			if (GrammarUtil.isUnassignedParserRuleCall(input.getGrammarElement()))
-				return getContextPDA((((RuleCall) input.getGrammarElement()).getRule()));
-			return null;
+	protected static class CallStack {
+		private final RuleCall call;
+		private final CallStack parent;
+		private final Set<ISerState> visited = Sets.newHashSet();
+
+		public CallStack(CallStack parent, RuleCall call) {
+			super();
+			this.parent = parent;
+			this.call = call;
+		}
+
+		public boolean isLoop() {
+			CallStack current = parent;
+			int counter = 0;
+			while (current != null) {
+				if (current.call == call)
+					counter++;
+				if (counter >= 2)
+					return true;
+				current = current.parent;
+			}
+			return false;
 		}
 	}
 
-	protected static class SerializerActionCfg extends CfgAdapter {
-		protected Action context;
+	private static Logger LOG = Logger.getLogger(ContextPDAProvider.class);
 
-		public SerializerActionCfg(Action context) {
-			super(GrammarUtil.getGrammar(context));
-			this.context = context;
-		}
+	@Inject
+	protected SerializerPDAElementFactory factory;
 
-		@Override
-		public AbstractElement getCall(AbstractElement ele) {
-			return null;
-		}
+	@Inject
+	private IGrammarPDAProvider grammarPdaProvider;
 
-		@Override
-		public AbstractElement getRoot() {
-			return GrammarUtil.containingRule(context).getAlternatives();
-		}
-	}
-
-	protected static class SerializerActionFollowerFunction extends
-			FollowerFunctionImpl<AbstractElement, AbstractElement> {
-
-		protected Action actionCtx;
-
-		public SerializerActionFollowerFunction(Production<AbstractElement, AbstractElement> production, Action context) {
-			super(production);
-			this.actionCtx = context;
-		}
-
-		@Override
-		public Iterable<AbstractElement> getFollowers(AbstractElement element) {
-			Set<AbstractElement> result = Sets.newLinkedHashSet();
-			for (AbstractElement ele : super.getFollowers(element))
-				if (ele == null) {
-				} else if (actionCtx == ele)
-					result.add(null);
-				else if (!GrammarUtil.isAssignedAction(ele))
-					result.add(ele);
-			return result;
-		}
-
-		@Override
-		public Iterable<AbstractElement> getStarts(AbstractElement root) {
-			Set<AbstractElement> result = Sets.newLinkedHashSet();
-			for (Action act : GrammarUtil.containedActions(root))
-				if (act.getFeature() != null)
-					result.add(act);
-			for (AbstractElement ele : super.getStarts(root))
-				if (ele == null) {
-				} else if (actionCtx == ele) {
-					result.add(null);
-				} else if (!GrammarUtil.isAssignedAction(ele))
-					result.add(ele);
-			return result;
-		}
-
-	}
-
-	protected static class SerializerParserRuleCfg extends CfgAdapter {
-		protected ParserRule context;
-
-		public SerializerParserRuleCfg(ParserRule context) {
-			super(GrammarUtil.getGrammar(context));
-			this.context = context;
-		}
-
-		@Override
-		public AbstractElement getCall(AbstractElement ele) {
-			if (ele instanceof RuleCall && !GrammarUtil.isAssigned(ele)
-					&& ((RuleCall) ele).getRule().getType().getClassifier() instanceof EClass)
-				return ((RuleCall) ele).getRule().getAlternatives();
-			return null;
-		}
-
-		@Override
-		public AbstractElement getRoot() {
-			return context.getAlternatives();
-		}
-	}
-
-	protected static class SerializerParserRuleFollowerFunction extends
-			FollowerFunctionImpl<AbstractElement, AbstractElement> {
-
-		protected ParserRule ruleCtx;
-
-		public SerializerParserRuleFollowerFunction(Production<AbstractElement, AbstractElement> production,
-				ParserRule context) {
-			super(production);
-			this.ruleCtx = context;
-		}
-
-		@Override
-		public Iterable<AbstractElement> getFollowers(AbstractElement element) {
-			Set<AbstractElement> result = Sets.newLinkedHashSet();
-			for (AbstractElement ele : super.getFollowers(element))
-				if (ele == null)
-					result.add(null);
-				else if (!GrammarUtil.isAssignedAction(ele))
-					result.add(ele);
-			return result;
-		}
-
-		@Override
-		public Iterable<AbstractElement> getStarts(AbstractElement root) {
-			Set<AbstractElement> result = Sets.newLinkedHashSet();
-			for (Action act : GrammarUtil.containedActions(root))
-				if (act.getFeature() != null)
-					result.add(act);
-			for (AbstractElement ele : super.getStarts(root))
-				if (ele == null)
-					result.add(null);
-				else if (!GrammarUtil.isAssignedAction(ele))
-					result.add(ele);
-			return result;
-		}
-
-	}
-
-	protected Map<EObject, Pda<ISerState, RuleCall>> cache = Maps.newHashMap();
+	@Inject
+	private NfaUtil nfaUtil;
 
 	@Inject
 	protected PdaUtil pdaUtil;
 
-	protected Pda<ISerState, RuleCall> createPDA(Action action) {
-		SerializerActionCfg cfg = new SerializerActionCfg(action);
-		SerializerActionFollowerFunction ff = new SerializerActionFollowerFunction(cfg, action);
-		SerializerPDAElementFactory fact = new SerializerPDAElementFactory();
-		Pda<ISerState, RuleCall> actionpda = pdaUtil.create(cfg, ff, fact);
-		SerializerPDAGetToken getToken = new SerializerPDAGetToken();
-		Pda<ISerState, RuleCall> expandedpda = pdaUtil.expand(actionpda, new ExpandRuleCalls(), getToken, fact);
-		Pda<ISerState, RuleCall> filteredpda = pdaUtil.filterOrphans(expandedpda, new SerializerPDACloneFactory());
-		return filteredpda;
+	protected void collectExtracted(ISerState orig, Collection<? extends ISerState> precedents, SerializerPDAState copy,
+			Map<Pair<AbstractElement, SerStateType>, SerializerPDAState> oldToNew, final CallStack inTop, SerializerPDAState start) {
+		for (ISerState pre : precedents) {
+			CallStack top = inTop;
+			AbstractElement element = pre.getGrammarElement();
+			switch (pre.getType()) {
+				case START:
+					if (top.call == null)
+						connect(start, copy);
+					continue;
+				case POP:
+					top = new CallStack(top, (RuleCall) element);
+					if (top.isLoop())
+						continue;
+					break;
+				case PUSH:
+					if (top.call == null) {
+						connect(start, copy);
+						continue;
+					} else if (top.call == element) {
+						top = top.parent;
+					} else {
+						continue;
+					}
+				default:
+					break;
+			}
+			Pair<AbstractElement, SerStateType> key = Tuples.create(element, pre.getType());
+			SerializerPDAState pre2 = oldToNew.get(key);
+			if (pre2 == null) {
+				pre2 = new SerializerPDAState(element, pre.getType());
+				oldToNew.put(key, pre2);
+			}
+			if (GrammarUtil.isAssignedAction(pre.getGrammarElement()) /* && pre.getType() != STOP */) {
+				Set<ISerState> entries = collectPushForAction(pre);
+				collectExtracted(pre, entries, pre2, oldToNew, top, start);
+			} else {
+				if (top.visited.add(pre))
+					collectExtracted(pre, pre.getPrecedents(), pre2, oldToNew, top, start);
+			}
+			connect(pre2, copy);
+		}
 	}
 
-	protected Pda<ISerState, RuleCall> createPDA(EObject context, Pda<ISerState, RuleCall> result) {
-		if (context instanceof ParserRule)
-			return createPDA((ParserRule) context);
-		else if (context instanceof Action)
-			return createPDA((Action) context);
-		throw new IllegalStateException("illegal context");
-	}
-
-	protected Pda<ISerState, RuleCall> createPDA(ParserRule rule) {
-		SerializerParserRuleCfg cfg = new SerializerParserRuleCfg(rule);
-		SerializerParserRuleFollowerFunction ff = new SerializerParserRuleFollowerFunction(cfg, rule);
-		Pda<ISerState, RuleCall> pda = pdaUtil.create(cfg, ff, new SerializerPDAElementFactory());
-		return pdaUtil.filterOrphans(pda, new SerializerPDACloneFactory());
-	}
-
-	public Pda<ISerState, RuleCall> getContextPDA(EObject context) {
-		Pda<ISerState, RuleCall> result = cache.get(context);
-		if (result == null)
-			cache.put(context, result = createPDA(context, result));
+	protected Set<ISerState> collectPushForAction(ISerState action) {
+		ParserRule rule = GrammarUtil.containingParserRule(action.getGrammarElement());
+		LinkedHashSet<ISerState> result = Sets.<ISerState> newLinkedHashSet();
+		collectPushForAction(action, rule, result, Sets.<ISerState> newHashSet());
 		return result;
+	}
+
+	protected void collectPushForAction(ISerState state, ParserRule rule, Set<ISerState> result, Set<ISerState> visited) {
+		if (!visited.add(state))
+			return;
+		switch (state.getType()) {
+			case START:
+				result.add(state);
+				return;
+			case PUSH:
+				AbstractElement element = state.getGrammarElement();
+				if (element instanceof RuleCall && ((RuleCall) element).getRule() == rule) {
+					result.add(state);
+					return;
+				}
+			default:
+				break;
+		}
+		List<? extends ISerState> precedents = state.getPrecedents();
+		for (ISerState pre : precedents)
+			collectPushForAction(pre, rule, result, visited);
+	}
+
+	protected void connect(SerializerPDAState precedent, SerializerPDAState follower) {
+		if (precedent == null || follower == null)
+			return;
+		if (follower.getPrecedents().contains(precedent))
+			return;
+		follower.getPrecedents().add(precedent);
+		precedent.getFollowers().add(follower);
+	}
+
+	protected SerializerPDA extract(ISerState last) {
+		SerializerPDA result = factory.create(null, null);
+		HashMap<Pair<AbstractElement, SerStateType>, SerializerPDAState> oldToNew = Maps.newHashMap();
+		CallStack callStack = new CallStack(null, null);
+		collectExtracted(last, last.getPrecedents(), result.getStop(), oldToNew, callStack, result.getStart());
+		return result;
+	}
+
+	protected EObject getContext(AbstractElement ele) {
+		if (ele instanceof RuleCall) {
+			if (GrammarUtil.isAssignedEObjectRuleCall(ele))
+				return ((RuleCall) ele).getRule();
+		} else if (GrammarUtil.isAssignedAction(ele))
+			return ele;
+		return null;
+	}
+
+	@Override
+	public Map<ISerializationContext, Pda<ISerState, RuleCall>> getContextPDAs(Grammar grammar) {
+		Map<ISerializationContext, Pda<ISerState, RuleCall>> result = Maps.newLinkedHashMap();
+		Map<ISerializationContext, Pda<ISerState, RuleCall>> grammarPDAs = grammarPdaProvider.getGrammarPDAs(grammar);
+		Multimap<Action, SerializerPDA> actionPdas = LinkedHashMultimap.create();
+		Multimap<Action, ISerializationContext> actionContexts = LinkedHashMultimap.create();
+		for (Entry<ISerializationContext, Pda<ISerState, RuleCall>> e : grammarPDAs.entrySet()) {
+			ISerializationContext context = e.getKey();
+			Pda<ISerState, RuleCall> pda = e.getValue();
+			List<ISerState> actions = Lists.newArrayList();
+			for (ISerState state : nfaUtil.collect(pda)) {
+				if (GrammarUtil.isAssignedAction(state.getGrammarElement())) {
+					actions.add(state);
+				}
+			}
+			if (actions.isEmpty()) {
+				result.put(context, pda);
+			} else {
+				try {
+					SerializerPDA rulePda = extract(pda.getStop());
+					result.put(context, rulePda);
+					for (ISerState state : actions) {
+						Action action = (Action) state.getGrammarElement();
+						SerializerPDA actionPda = extract(state);
+						actionPdas.put(action, actionPda);
+						actionContexts.put(action, context);
+					}
+				} catch (Exception x) {
+					LOG.error("Error extracting PDA for action in context '" + context + "': " + x.getMessage(), x);
+				}
+			}
+		}
+		for (Map.Entry<Action, Collection<SerializerPDA>> action : actionPdas.asMap().entrySet()) {
+			SerializerPDA merged = merge(new ActionContext(null, action.getKey()), action.getValue());
+			Set<Set<Parameter>> parameterPermutations = Sets.newLinkedHashSet();
+			for (ISerializationContext container : actionContexts.get(action.getKey())) {
+				parameterPermutations.add(container.getEnabledBooleanParameters());
+			}
+			//			for (IContext container : actionContexts.get(action.getKey())) {
+			for (Set<Parameter> parameters : parameterPermutations) {
+				ISerializationContext context = new ActionContext( /*container */ null, action.getKey());
+				if (!parameters.isEmpty())
+					context = new SerializationContext.ParameterValueContext(context, parameters);
+				result.put(context, merged);
+			}
+			//			}
+		}
+		return result;
+	}
+
+	protected SerializerPDA merge(ISerializationContext context, Collection<SerializerPDA> pdas) {
+		if (pdas.isEmpty())
+			throw new IllegalStateException();
+		if (pdas.size() == 1)
+			return pdas.iterator().next();
+		SerializerPDA merged = factory.create(null, null);
+		Map<ISerState, SerializerPDAState> oldToNew = Maps.newHashMap();
+		for (Pda<ISerState, RuleCall> pda : pdas) {
+			oldToNew.put(pda.getStop(), merged.getStop());
+			merge(pda.getStart(), merged.getStart(), oldToNew, new IdentityHashMap<ISerState, Boolean>());
+		}
+		return merged;
+	}
+
+	protected void merge(ISerState orig, SerializerPDAState copy, Map<ISerState, SerializerPDAState> oldToNew,
+			IdentityHashMap<ISerState, Boolean> visited) {
+		for (ISerState fol : orig.getFollowers()) {
+			SerializerPDAState folCopy = oldToNew.get(fol);
+			if (folCopy == null) {
+				folCopy = new SerializerPDAState(fol.getGrammarElement(), fol.getType());
+				oldToNew.put(fol, folCopy);
+			}
+			connect(copy, folCopy);
+			if (visited.put(fol, Boolean.TRUE) == null)
+				merge(fol, folCopy, oldToNew, visited);
+		}
 	}
 
 }

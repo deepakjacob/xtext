@@ -7,6 +7,8 @@
  *******************************************************************************/
 package org.eclipse.xtext.validation;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +43,7 @@ public abstract class AbstractInjectableValidator implements EValidator {
 	
 	@Inject
 	public void register(EValidatorRegistrar registrar) {
-		List<EPackage> packages = getEPackages();
+		Collection<EPackage> packages = new LinkedHashSet<EPackage>(getEPackages());
 		if (packages.size()==0) {
 			throw new IllegalStateException("No EPackages were registered for the validator "+getClass().getName()+" please override and implement getEPackages().");
 		}
@@ -54,22 +56,33 @@ public abstract class AbstractInjectableValidator implements EValidator {
 		throw new UnsupportedOperationException("please overwrite");
 	}
 
+	@Override
 	public boolean validate(EDataType eDataType, Object value, DiagnosticChain diagnostics, Map<Object, Object> context) {
 		return true;
 	}
 
+	@Override
 	final public boolean validate(EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) {
 		return validate(eObject.eClass(), eObject, diagnostics, context);
 	}
 
+	@Override
 	final public boolean validate(EClass eClass, EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) {
 		return (isResponsible(context, eObject)) ? internalValidate(eObject.eClass(), eObject, diagnostics, context) : true;
 	}
 
 	protected abstract boolean internalValidate(EClass eClass, EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context);
 	
+	/**
+	 * If this validator is for an EPackage you want to use in multiple languages, 
+	 * this method should return false. Otherwise issues will be reported twice.
+	 */
 	public boolean isLanguageSpecific() {
 		return languageName != null;
+	}
+	
+	String getLanguageName() {
+		return languageName;
 	}
 	
 	protected boolean isResponsible(Map<Object, Object> context, EObject eObject) {

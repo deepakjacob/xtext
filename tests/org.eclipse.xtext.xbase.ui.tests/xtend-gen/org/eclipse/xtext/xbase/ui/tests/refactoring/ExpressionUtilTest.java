@@ -1,11 +1,10 @@
 package org.eclipse.xtext.xbase.ui.tests.refactoring;
 
+import com.google.common.base.Objects;
+import com.google.inject.Inject;
 import java.util.List;
-import javax.inject.Inject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.xtext.junit4.InjectWith;
-import org.eclipse.xtext.junit4.XtextRunner;
 import org.eclipse.xtext.junit4.util.ParseHelper;
 import org.eclipse.xtext.junit4.validation.ValidationTestHelper;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
@@ -17,20 +16,16 @@ import org.eclipse.xtext.xbase.lib.Functions.Function1;
 import org.eclipse.xtext.xbase.lib.Functions.Function2;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.ListExtensions;
-import org.eclipse.xtext.xbase.lib.ObjectExtensions;
-import org.eclipse.xtext.xbase.tests.XbaseInjectorProvider;
+import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
 import org.eclipse.xtext.xbase.ui.refactoring.ExpressionUtil;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * @author Jan Koehnlein
  */
-@RunWith(value = XtextRunner.class)
-@InjectWith(value = XbaseInjectorProvider.class)
 @SuppressWarnings("all")
-public class ExpressionUtilTest {
+public class ExpressionUtilTest extends AbstractXbaseTestCase {
   @Inject
   private ExpressionUtil util;
   
@@ -56,15 +51,57 @@ public class ExpressionUtilTest {
     this.assertExpressionSelected("123$+$456", "123+456");
     this.assertExpressionSelected("12$3+$456", "123+456");
     this.assertExpressionSelected("123$+4$56", "123+456");
-    this.assertExpressionSelected("if($$true) null", "true");
-    this.assertExpressionSelected("if(true$$) null", "true");
-    this.assertExpressionSelected("if(true)$$ null", "if(true) null");
-    this.assertExpressionSelected("if(true) null$$ else null", "null");
-    this.assertExpressionSelected("if(true) null $$else null", "if(true) null else null");
+    this.assertExpressionSelected("if(Boolean.TRUE$$) null", "Boolean.TRUE");
+    this.assertExpressionSelected("if(Boolean.TRUE)$$ null", "if(Boolean.TRUE) null");
+    this.assertExpressionSelected("if(Boolean.TRUE) null$$ else null", "null");
+    this.assertExpressionSelected("if(Boolean.TRUE) null $$else null", "if(Boolean.TRUE) null else null");
     this.assertExpressionSelected("newArrayList(\'jan\',\'hein\',\'claas\',\'pit\').map[$it|toFirstUpper]$", "[it|toFirstUpper]");
     this.assertExpressionSelected("newArrayList(\'jan\',\'hein\',\'claas\',\'pit\').map[it$|$toFirstUpper]", "[it|toFirstUpper]");
     this.assertExpressionSelected("newArrayList(\'jan\',\'hein\',\'claas\',\'pit\').map$[it|toFirstUpper]$", "[it|toFirstUpper]");
     this.assertExpressionSelected("newArrayList(\'jan\',\'hein\',\'claas\',\'pit\').map$[it|toFirstUpper$]", "[it|toFirstUpper]");
+    this.assertExpressionSelected("newArrayList(\'jan\',\'hein\',\'claas\',\'pit\').map$[it|toFirstUpper$]", "[it|toFirstUpper]");
+  }
+  
+  @Test
+  public void testSelectedExpression_01() {
+    this.assertExpressionSelected("newArrayList($$true)", "true");
+    this.assertExpressionSelected("newArrayList($$\'ru\')", "\'ru\'");
+    this.assertExpressionSelected("newArrayList($\'ru\'$)", "\'ru\'");
+    this.assertExpressionSelected("newArrayList(\'ru\'$$)", "\'ru\'");
+    this.assertExpressionSelected("newArrayList(\'ru$$\')", "\'ru\'");
+    this.assertExpressionSelected("newArrayList(\'$ru$\')", "\'ru\'");
+  }
+  
+  @Test
+  public void testSelectedExpression_02() {
+    this.assertExpressionSelected("if(Boolean.$$TRUE) null", "Boolean.TRUE");
+  }
+  
+  @Test
+  public void testSelectedExpression_03() {
+    this.assertExpressionSelected("newArrayList($$#[42])", "#[42]");
+  }
+  
+  @Test
+  public void testSelectedExpression_04() {
+    this.assertExpressionSelected("newArrayList($$#{42})", "#{42}");
+  }
+  
+  @Test
+  public void testSelectedExpression_05() {
+    this.assertExpressionSelected("newArrayList($${42})", "{42}");
+  }
+  
+  @Test
+  public void testSelectedExpression_06() {
+    this.assertExpressionSelected("newArrayList($ {$42})", "{42}");
+  }
+  
+  @Test
+  public void testBug401082() {
+    this.assertExpressionSelected("{ var Object x val result = ($(x as String).toString$ ?:\"foo\") }", "(x as String).toString");
+    this.assertExpressionSelected("{ var Object x val result = ($(x as String).$toString ?:\"foo\") }", "(x as String).toString");
+    this.assertExpressionSelected("{ var Object x val result = ($(x as String)$.toString ?:\"foo\") }", "x as String");
   }
   
   @Test
@@ -80,11 +117,12 @@ public class ExpressionUtilTest {
     this.assertSiblingExpressionsSelected("123$+$456", "123+456");
     this.assertSiblingExpressionsSelected("12$3+$456", "123+456");
     this.assertSiblingExpressionsSelected("123$+4$56", "123+456");
-    this.assertSiblingExpressionsSelected("if($$true) null", "true");
-    this.assertSiblingExpressionsSelected("if(true$$) null", "true");
-    this.assertSiblingExpressionsSelected("if(true)$$ null", "if(true) null");
-    this.assertSiblingExpressionsSelected("if(true) null$$ else null", "null");
-    this.assertSiblingExpressionsSelected("if(true) null $$else null", "if(true) null else null");
+    this.assertSiblingExpressionsSelected("if(Boolean.$$TRUE) null", "Boolean.TRUE");
+    this.assertSiblingExpressionsSelected("if(Boolean.TRUE$$) null", "Boolean.TRUE");
+    this.assertSiblingExpressionsSelected("if(Boolean.TRUE)$$ null", "if(Boolean.TRUE) null");
+    this.assertSiblingExpressionsSelected("if(Boolean.TRUE) $$null", "null");
+    this.assertSiblingExpressionsSelected("if(Boolean.TRUE) null$$ else null", "null");
+    this.assertSiblingExpressionsSelected("if(Boolean.TRUE) null $$else null", "if(Boolean.TRUE) null else null");
   }
   
   @Test
@@ -107,11 +145,11 @@ public class ExpressionUtilTest {
   
   @Test
   public void testInsertionPointIf() {
-    this.assertInsertionPoint("if($1==2) true", null);
-    this.assertInsertionPoint("{ if($1==2) true }", "if(1==2) true");
-    this.assertInsertionPoint("if(1==2) $true", "true");
-    this.assertInsertionPoint("if(1==2) true else $false", "false");
-    this.assertInsertionPoint("if(1==2) { val x = 7 + $8 }", "val x = 7 + 8");
+    this.assertInsertionPoint("if($1==2.intValue) true", null);
+    this.assertInsertionPoint("{ if($1==2.intValue) true }", "if(1==2.intValue) true");
+    this.assertInsertionPoint("if(1==2.intValue) $true", "true");
+    this.assertInsertionPoint("if(1==2.intValue) true else $false", "false");
+    this.assertInsertionPoint("if(1==2.intValue) { val x = 7 + $8 }", "val x = 7 + 8");
   }
   
   @Test
@@ -137,6 +175,8 @@ public class ExpressionUtilTest {
   @Test
   public void testInsertionPointClosure() {
     this.assertInsertionPoint("[|2+$3]", "2+3");
+    this.assertInsertionPoint("[|2$+3]", "2+3");
+    this.assertInsertionPoint("[|$2+3]", "2+3");
   }
   
   @Test
@@ -175,19 +215,19 @@ public class ExpressionUtilTest {
     Resource _eResource = expression.eResource();
     TextSelection _textSelection = new TextSelection(selectionOffset, selectionLength);
     final List<XExpression> selectedExpressions = this.util.findSelectedSiblingExpressions(((XtextResource) _eResource), _textSelection);
-    final Function1<XExpression,ITextRegion> _function = new Function1<XExpression,ITextRegion>() {
-        public ITextRegion apply(final XExpression it) {
-          ITextRegion _fullTextRegion = ExpressionUtilTest.this.locationInFileProvider.getFullTextRegion(it);
-          return _fullTextRegion;
-        }
-      };
+    final Function1<XExpression, ITextRegion> _function = new Function1<XExpression, ITextRegion>() {
+      @Override
+      public ITextRegion apply(final XExpression it) {
+        return ExpressionUtilTest.this.locationInFileProvider.getFullTextRegion(it);
+      }
+    };
     List<ITextRegion> _map = ListExtensions.<XExpression, ITextRegion>map(selectedExpressions, _function);
-    final Function2<ITextRegion,ITextRegion,ITextRegion> _function_1 = new Function2<ITextRegion,ITextRegion,ITextRegion>() {
-        public ITextRegion apply(final ITextRegion a, final ITextRegion b) {
-          ITextRegion _merge = a.merge(b);
-          return _merge;
-        }
-      };
+    final Function2<ITextRegion, ITextRegion, ITextRegion> _function_1 = new Function2<ITextRegion, ITextRegion, ITextRegion>() {
+      @Override
+      public ITextRegion apply(final ITextRegion a, final ITextRegion b) {
+        return a.merge(b);
+      }
+    };
     final ITextRegion selectedRegion = IterableExtensions.<ITextRegion>reduce(_map, _function_1);
     int _offset = selectedRegion.getOffset();
     int _offset_1 = selectedRegion.getOffset();
@@ -205,7 +245,7 @@ public class ExpressionUtilTest {
     TextSelection _textSelection = new TextSelection(selectionOffset, 0);
     final XExpression selectedExpression = this.util.findSelectedExpression(((XtextResource) _eResource), _textSelection);
     final XExpression successor = this.util.findSuccessorExpressionForVariableDeclaration(selectedExpression);
-    boolean _equals = ObjectExtensions.operator_equals(expectedSuccessor, null);
+    boolean _equals = Objects.equal(expectedSuccessor, null);
     if (_equals) {
       Assert.assertNull(successor);
     } else {
@@ -226,10 +266,10 @@ public class ExpressionUtilTest {
       {
         final XExpression expression = this.parseHelper.parse(string);
         this.validationHelper.assertNoErrors(expression);
-        _xblockexpression = (expression);
+        _xblockexpression = expression;
       }
       return _xblockexpression;
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }

@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.mwe2.runtime.workflow.IWorkflowComponent;
 import org.eclipse.emf.mwe2.runtime.workflow.IWorkflowContext;
 import org.eclipse.xtext.ISetup;
+import org.eclipse.xtext.util.CancelIndicator;
 
 import com.google.common.base.Function;
 import com.google.inject.Injector;
@@ -32,6 +33,19 @@ public class GeneratorComponent implements IWorkflowComponent {
 	private List<String> slotNames = newArrayList();
 	private Map<String,String> outlets = newHashMap();
 
+	/**
+	 * @since 2.4
+	 */
+	protected List<String> getSlotNames() {
+		return slotNames;
+	}
+	
+	/**
+	 * @since 2.4
+	 */
+	protected Map<String, String> getOutlets() {
+		return outlets;
+	}
 	
 	/**
 	 * registering an {@link ISetup}, which causes the execution of {@link ISetup#createInjectorAndDoEMFRegistration()}
@@ -55,9 +69,8 @@ public class GeneratorComponent implements IWorkflowComponent {
 		this.slotNames.add(slot);
 	}
 
+	@Override
 	public void preInvoke() {
-		if (slotNames.isEmpty())
-			throw new IllegalStateException("no 'slot' has been configured.");
 		if (injector == null)
 			throw new IllegalStateException("no Injector has been configured. Use 'register' with an ISetup or 'injector' directly.");
 		if (outlets.isEmpty())
@@ -67,7 +80,7 @@ public class GeneratorComponent implements IWorkflowComponent {
 			if (outlet.getKey()==null)
 				throw new IllegalStateException("One of the outlets was configured without a name");
 			if (outlet.getValue()==null)
-				throw new IllegalStateException("The path of outle '"+outlet.getKey()+"' was null.");
+				throw new IllegalStateException("The path of outlet '"+outlet.getKey()+"' was null.");
 		}
 	}
 	
@@ -100,9 +113,10 @@ public class GeneratorComponent implements IWorkflowComponent {
 		outlets.put(out.outletName,out.path);
 	}
 	
+	@Override
 	public void invoke(IWorkflowContext ctx) {
-		IGenerator instance = getCompiler();
-		IFileSystemAccess fileSystemAccess = getConfiguredFileSystemAccess();
+		GeneratorDelegate instance = getCompiler();
+		IFileSystemAccess2 fileSystemAccess = getConfiguredFileSystemAccess();
 		for (String slot : slotNames) {
 			Object object = ctx.get(slot);
 			if (object == null) {
@@ -114,7 +128,9 @@ public class GeneratorComponent implements IWorkflowComponent {
 					if (!(object2 instanceof Resource)) {
 						throw new IllegalStateException("Slot contents was not a Resource but a '"+object.getClass().getSimpleName()+"'!");
 					}
-					instance.doGenerate((Resource) object2, fileSystemAccess);
+					GeneratorContext context = new GeneratorContext();
+					context.setCancelIndicator(CancelIndicator.NullImpl);
+					instance.generate((Resource) object2, fileSystemAccess, context);
 				}
 			} else if (object instanceof Resource) {
 				instance.doGenerate((Resource) object, fileSystemAccess);
@@ -124,11 +140,17 @@ public class GeneratorComponent implements IWorkflowComponent {
 		}
 	}
 
-	protected IGenerator getCompiler() {
-		return injector.getInstance(IGenerator.class);
+	/**
+	 * @since 2.9
+	 */
+	protected GeneratorDelegate getCompiler() {
+		return injector.getInstance(GeneratorDelegate.class);
 	}
 
-	protected IFileSystemAccess getConfiguredFileSystemAccess() {
+	/**
+	 * @since 2.9
+	 */
+	protected IFileSystemAccess2 getConfiguredFileSystemAccess() {
 		final JavaIoFileSystemAccess configuredFileSystemAccess = injector.getInstance(JavaIoFileSystemAccess.class);
 		configuredFileSystemAccess.setOutputConfigurations(getOutputConfigurations());
 		for (Entry<String, String> outs : outlets.entrySet()) {
@@ -137,6 +159,7 @@ public class GeneratorComponent implements IWorkflowComponent {
 		return configuredFileSystemAccess;
 	}
 
+	@Override
 	public void postInvoke() {
 		
 	}
@@ -149,6 +172,7 @@ public class GeneratorComponent implements IWorkflowComponent {
 				.getInstance(IOutputConfigurationProvider.class);
 		Set<OutputConfiguration> configurations = outputConfigurationProvider.getOutputConfigurations();
 		return uniqueIndex(configurations, new Function<OutputConfiguration, String>() {
+			@Override
 			public String apply(OutputConfiguration from) {
 				return from.getName();
 			}

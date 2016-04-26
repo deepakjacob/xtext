@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.generator.ecore.genmodelaccess.noLiterals.impl;
 
@@ -24,11 +21,11 @@ import org.eclipse.xtext.generator.ecore.genmodelaccess.noLiterals.NoLiteralsPac
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.generator.ecore.genmodelaccess.noLiterals.impl.NoLitClassImpl#getAttribute2 <em>Attribute2</em>}</li>
  *   <li>{@link org.eclipse.xtext.generator.ecore.genmodelaccess.noLiterals.impl.NoLitClassImpl#getReference2 <em>Reference2</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -2,12 +2,12 @@ package org.eclipse.xtext.xbase.tests.compiler
 
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.eclipse.xtext.xbase.compiler.LoopExtensions
-import javax.inject.Inject
 import org.junit.Test
 import org.eclipse.xtext.xbase.compiler.output.FakeTreeAppendable
 import org.eclipse.xtext.xbase.compiler.LoopParams
 
 import static java.util.Collections.*
+import com.google.inject.Inject
 
 class LoopExtensionsTest extends AbstractXbaseTestCase {
 	
@@ -62,9 +62,9 @@ class LoopExtensionsTest extends AbstractXbaseTestCase {
 	
 	@Test
 	def testForEachWithShortcut() {
-		newArrayList('jan', 'hein', 'class', 'pit').assertForEachWithShortcut("{jan, hein, class, pit}")
+		newArrayList('jan', 'hein', 'class', 'pit').assertForEachWithShortcut("{ jan, hein, class, pit }")
 		newArrayList('foo').assertForEachWithShortcut("foo")
-		newArrayList().assertForEachWithShortcut("")
+		newArrayList().assertForEachWithShortcut("{}")
 	}
 
 	def protected assertForEach(Iterable<String> elements, (LoopParams)=>void params, String expectedResult) {

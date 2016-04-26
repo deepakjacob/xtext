@@ -9,17 +9,20 @@
 package org.eclipse.xtext.linking.impl;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.util.InternalEList;
+import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.GrammarUtil;
+import org.eclipse.xtext.ParserRule;
+import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.diagnostics.DiagnosticMessage;
 import org.eclipse.xtext.diagnostics.IDiagnosticConsumer;
 import org.eclipse.xtext.diagnostics.IDiagnosticProducer;
@@ -53,24 +56,29 @@ public class Linker extends AbstractCleaningLinker {
 		if (node == null)
 			return;
 		Set<EReference> handledReferences = new HashSet<EReference>();
-		ensureLinked(obj, producer, node, handledReferences);
+		ensureLinked(obj, producer, node, handledReferences, false);
 		producer.setNode(node);
 		setDefaultValues(obj, handledReferences, producer);
 	}
-
+	
 	private void ensureLinked(EObject obj, IDiagnosticProducer producer, ICompositeNode node,
-			Set<EReference> handledReferences) {
-		Iterator<INode> iterator = node.getChildren().iterator();
-		while(iterator.hasNext()) {
-			INode abstractNode = iterator.next();
-			if (abstractNode.getGrammarElement() instanceof CrossReference) {
-				CrossReference ref = (CrossReference) abstractNode.getGrammarElement();
+			Set<EReference> handledReferences, boolean dontCheckParent) {
+		for(INode abstractNode = node.getFirstChild(); abstractNode != null; abstractNode = abstractNode.getNextSibling()) {
+			EObject grammarElement = abstractNode.getGrammarElement();
+			if (grammarElement instanceof CrossReference) {
+				CrossReference ref = (CrossReference) grammarElement;
 				producer.setNode(abstractNode);
 				ensureIsLinked(obj, abstractNode, ref, handledReferences, producer);
+			} else if (grammarElement instanceof RuleCall && abstractNode instanceof ICompositeNode) {
+				RuleCall ruleCall = (RuleCall) grammarElement;
+				AbstractRule calledRule = ruleCall.getRule();
+				if (calledRule instanceof ParserRule && ((ParserRule) calledRule).isFragment()) {
+					ensureLinked(obj, producer, (ICompositeNode) abstractNode, handledReferences, true);
+				}
 			}
 		}
-		if (shouldCheckParentNode(node)) {
-			ensureLinked(obj, producer, node.getParent(), handledReferences);
+		if (!dontCheckParent && shouldCheckParentNode(node)) {
+			ensureLinked(obj, producer, node.getParent(), handledReferences, false);
 		}
 	}
 
@@ -79,10 +87,11 @@ public class Linker extends AbstractCleaningLinker {
 	}
 
 	private void setDefaultValues(EObject obj, Set<EReference> references, IDiagnosticProducer producer) {
-		for (EReference ref : obj.eClass().getEAllReferences())
+		for (EReference ref : obj.eClass().getEAllReferences()) {
 			if (canSetDefaultValues(ref) && !references.contains(ref) && !obj.eIsSet(ref) && !ref.isDerived()) {
 				setDefaultValue(obj, ref, producer);
 			}
+		}
 	}
 
 	protected boolean canSetDefaultValues(EReference ref) {
@@ -188,14 +197,17 @@ public class Linker extends AbstractCleaningLinker {
 			this.linkingHelper = helper;
 		}
 
+		@Override
 		public EObject getContext() {
 			return obj;
 		}
 
+		@Override
 		public EReference getReference() {
 			return eRef;
 		}
 
+		@Override
 		public String getLinkText() {
 			return linkingHelper.getCrossRefNodeAsString(node, true);
 		}
@@ -230,10 +242,15 @@ public class Linker extends AbstractCleaningLinker {
 	}
 
 	protected void ensureModelLinked(EObject model, final IDiagnosticProducer producer) {
-		ensureLinked(model, producer);
-		final Iterator<EObject> allContents = model.eAllContents();
-		while (allContents.hasNext())
-			ensureLinked(allContents.next(), producer);
+		boolean clearAllReferencesRequired = isClearAllReferencesRequired(model.eResource());
+		TreeIterator<EObject> iterator = getAllLinkableContents(model);
+		while(iterator.hasNext()) {
+			EObject next = iterator.next();
+			if (clearAllReferencesRequired) {
+				clearReferences(next);
+			}
+			ensureLinked(next, producer);
+		}
 	}
 
 	public void setDiagnosticMessageProvider(ILinkingDiagnosticMessageProvider.Extended diagnosticMessageProvider) {

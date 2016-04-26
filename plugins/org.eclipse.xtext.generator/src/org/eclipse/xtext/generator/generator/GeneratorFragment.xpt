@@ -18,11 +18,13 @@
 
 «DEFINE addToPluginXmlRt(Boolean generatorStub, Boolean mwe, Boolean javaMain, Boolean xtendMain) FOR Grammar»«ENDDEFINE»
 
-«DEFINE addToPluginXmlUi(Boolean generatorStub, Boolean mwe, Boolean javaMain, boolean xtendMain) FOR Grammar»
+«DEFINE addToPluginXmlUi(Boolean generatorStub, Boolean mwe, Boolean javaMain, boolean xtendMain, List[String] fileExtensions) FOR Grammar»
    <extension
          point="org.eclipse.xtext.builder.participant">
       <participant
-            class="«executableExtensionFactory()»:org.eclipse.xtext.builder.IXtextBuilderParticipant">
+            class="«executableExtensionFactory()»:org.eclipse.xtext.builder.IXtextBuilderParticipant"
+            fileExtensions="«fileExtensions.toString(',')»"
+            >
       </participant>
    </extension>
    <extension
@@ -49,6 +51,27 @@
 	        <filter name="projectNature" value="org.eclipse.xtext.ui.shared.xtextNature"/>
         </page>
     </extension>
+    <extension point="org.eclipse.ui.menus">
+		<menuContribution locationURI="popup:#TextEditorContext?after=xtext.ui.openDeclaration">
+			<command
+				commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand"
+				id="«name».OpenGeneratedCode"
+				style="push">
+					<visibleWhen checkEnabled="false">
+						<reference definitionId="«name».Editor.opened" />
+					</visibleWhen>
+			</command>
+		</menuContribution>
+	</extension>
+	<extension point="org.eclipse.ui.handlers">
+		<handler
+			class="«executableExtensionFactory()»:org.eclipse.xtext.ui.generator.trace.OpenGeneratedFileHandler"
+			commandId="org.eclipse.xtext.ui.OpenGeneratedFileCommand">
+				<activeWhen>
+					<reference definitionId="«name».Editor.opened" />
+				</activeWhen>
+		</handler>
+	</extension>
 «ENDDEFINE»
 
 «DEFINE addToStandaloneSetup(Boolean generatorStub, Boolean mwe, Boolean javaMain, Boolean xtendMain) FOR Grammar»«ENDDEFINE»
@@ -56,9 +79,7 @@
 «DEFINE generate(Boolean generatorStub, Boolean mwe, Boolean javaMain, boolean xtendMain) FOR Grammar»
 «IF generatorStub»
 «FILE generatorName().asPath()+".xtend" SRC-»
-/*
- «fileHeader()»
- */
+«fileHeader()»
 package «generatorName().toJavaPackage()»
 
 import org.eclipse.emf.ecore.resource.Resource
@@ -68,7 +89,7 @@ import org.eclipse.xtext.generator.IFileSystemAccess
 /**
  * Generates code from your model files on save.
  * 
- * see http://www.eclipse.org/Xtext/documentation.html#TutorialCodeGeneration
+ * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
 class «generatorName().toSimpleName()» implements IGenerator {
 	
@@ -121,9 +142,7 @@ Workflow {
 
 «IF javaMain»
 «FILE generatorName().toJavaPackage().asPath()+"/Main.java" SRC-»
-/*
- «fileHeader()»
- */
+«fileHeader()»
 package «generatorName().toJavaPackage()»;
 
 import java.util.List;
@@ -149,7 +168,7 @@ public class Main {
 			System.err.println("Aborting: no path to EMF resource provided!");
 			return;
 		}
-		Injector injector = new «setupImpl()»().createInjectorAndDoEMFRegistration();
+		Injector injector = new «setup()»().createInjectorAndDoEMFRegistration();
 		Main main = injector.getInstance(Main.class);
 		main.runGenerator(args[0]);
 	}
@@ -169,7 +188,7 @@ public class Main {
 	protected void runGenerator(String string) {
 		// load the resource
 		ResourceSet set = resourceSetProvider.get();
-		Resource resource = set.getResource(URI.createURI(string), true);
+		Resource resource = set.getResource(URI.createFileURI(string), true);
 		
 		// validate the resource
 		List<Issue> list = validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
@@ -192,9 +211,7 @@ public class Main {
 
 «IF xtendMain»
 «FILE generatorName().toJavaPackage().asPath()+"/Main.xtend" SRC-»
-/*
- «fileHeader()»
- */
+«fileHeader()»
 package «generatorName().toJavaPackage()»
 
 import org.eclipse.emf.common.util.URI
@@ -215,7 +232,7 @@ class Main {
 			System::err.println('Aborting: no path to EMF resource provided!')
 			return
 		}
-		val injector = new «setupImpl()»().createInjectorAndDoEMFRegistration
+		val injector = new «setup()»().createInjectorAndDoEMFRegistration
 		val main = injector.getInstance(typeof(Main))
 		main.runGenerator(args.get(0))
 	}
@@ -231,7 +248,7 @@ class Main {
 	def protected runGenerator(String string) {
 		// load the resource
 		val set = resourceSetProvider.get
-		val resource = set.getResource(URI::createURI(string), true)
+		val resource = set.getResource(URI.createFileURI(string), true)
 		
 		// validate the resource
 		val issues = validator.validate(resource, CheckMode::ALL, CancelIndicator::NullImpl)

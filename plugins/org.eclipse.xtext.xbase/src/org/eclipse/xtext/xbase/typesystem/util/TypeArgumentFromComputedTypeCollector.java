@@ -10,13 +10,9 @@ package org.eclipse.xtext.xbase.typesystem.util;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
-import org.eclipse.xtext.common.types.JvmTypeParameterDeclarator;
-import org.eclipse.xtext.xbase.typesystem.references.AnyTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ArrayTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.FunctionTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
@@ -24,18 +20,12 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightBoundTypeArgumen
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.TypeReferenceVisitorWithParameter;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.WildcardTypeReference;
-import org.eclipse.xtext.xbase.typesystem.util.AbstractTypeReferencePairWalker.ParameterizedTypeReferenceTraverser;
-
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Sets;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class TypeArgumentFromComputedTypeCollector extends UnboundTypeParameterAwareTypeArgumentCollector {
 
 	public static void resolveAgainstActualType(final LightweightTypeReference declaredType, LightweightTypeReference actualType,
@@ -46,21 +36,22 @@ public class TypeArgumentFromComputedTypeCollector extends UnboundTypeParameterA
 			return;
 		TypeArgumentFromComputedTypeCollector implementation = new TypeArgumentFromComputedTypeCollector(typeParameters, source, owner);
 		implementation.populateTypeParameterMapping(declaredType, actualType);
-		ListMultimap<JvmTypeParameter, LightweightBoundTypeArgument> parameterMapping = implementation.rawGetTypeParameterMapping();
-		for(Map.Entry<JvmTypeParameter, LightweightBoundTypeArgument> entry: parameterMapping.entries()) {
+		Map<JvmTypeParameter, List<LightweightBoundTypeArgument>> parameterMapping = implementation.rawGetTypeParameterMapping();
+		for(Map.Entry<JvmTypeParameter, List<LightweightBoundTypeArgument>> entry: parameterMapping.entrySet()) {
 			LightweightMergedBoundTypeArgument boundTypeArgument = typeParameterMapping.get(entry.getKey());
 			if (boundTypeArgument != null ) {
-				LightweightBoundTypeArgument computedBoundTypeArgument = entry.getValue();
-				if (computedBoundTypeArgument.getSource() == BoundTypeArgumentSource.RESOLVED) {
-					VarianceInfo varianceInfo = computedBoundTypeArgument.getDeclaredVariance().mergeDeclaredWithActual(computedBoundTypeArgument.getActualVariance());
-					typeParameterMapping.put(entry.getKey(), new LightweightMergedBoundTypeArgument(computedBoundTypeArgument.getTypeReference(), varianceInfo));
-				} else if (boundTypeArgument.getTypeReference() instanceof UnboundTypeReference) {
-					UnboundTypeReference typeReference = (UnboundTypeReference) boundTypeArgument.getTypeReference();
-					if (!typeReference.internalIsResolved()) {
-						LightweightBoundTypeArgument value = entry.getValue();
-						if (!(value.getTypeReference() instanceof UnboundTypeReference) || 
-								((UnboundTypeReference) value.getTypeReference()).getHandle() != typeReference.getHandle())
-							typeReference.acceptHint(value);
+				List<LightweightBoundTypeArgument> computedBoundTypeArguments = entry.getValue();
+				for(LightweightBoundTypeArgument computedBoundTypeArgument: computedBoundTypeArguments) { 
+					if (computedBoundTypeArgument.getSource() == BoundTypeArgumentSource.RESOLVED) {
+						VarianceInfo varianceInfo = computedBoundTypeArgument.getDeclaredVariance().mergeDeclaredWithActual(computedBoundTypeArgument.getActualVariance());
+						typeParameterMapping.put(entry.getKey(), new LightweightMergedBoundTypeArgument(computedBoundTypeArgument.getTypeReference(), varianceInfo));
+					} else if (boundTypeArgument.getTypeReference() instanceof UnboundTypeReference) {
+						UnboundTypeReference typeReference = (UnboundTypeReference) boundTypeArgument.getTypeReference();
+						if (!typeReference.internalIsResolved()) {
+							if (!(computedBoundTypeArgument.getTypeReference() instanceof UnboundTypeReference) || 
+									((UnboundTypeReference) computedBoundTypeArgument.getTypeReference()).getHandle() != typeReference.getHandle())
+								typeReference.acceptHint(computedBoundTypeArgument);
+						}
 					}
 				}
 			}
@@ -101,6 +92,17 @@ public class TypeArgumentFromComputedTypeCollector extends UnboundTypeParameterA
 					ArrayTypeReference array = reference.tryConvertToArray();
 					if (array != null) {
 						outerVisit(declaration, array);
+					}
+				}
+			}
+			@Override
+			protected void doVisitWildcardTypeReference(WildcardTypeReference reference, ArrayTypeReference declaration) {
+				LightweightTypeReference lowerBound = reference.getLowerBound();
+				if (lowerBound != null) {
+					outerVisit(declaration, lowerBound);
+				} else {
+					for(LightweightTypeReference upperBound: reference.getUpperBounds()) {
+						outerVisit(declaration, upperBound);	
 					}
 				}
 			}

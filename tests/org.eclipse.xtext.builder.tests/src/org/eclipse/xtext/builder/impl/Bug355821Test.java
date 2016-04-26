@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.xtext.ui.XtextProjectHelper;
+import org.eclipse.xtext.ui.util.JREContainerProvider;
 import org.eclipse.xtext.ui.util.PluginProjectFactory;
 import org.eclipse.xtext.util.StringInputStream;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class Bug355821Test extends AbstractParticipatingBuilderTest {
 	
 	@Test public void testBuildIsInvokedOnlyOnceWhenManifestChanges() throws Exception {
 		IProject fooProject = createPluginProject("Foo");
-		waitForAutoBuild();
+		waitForBuild();
 		
 		IFile manifestFile = fooProject.getFile("META-INF/MANIFEST.MF");
 		String manifestContent = "Manifest-Version: 1.0\n";
@@ -43,14 +44,12 @@ public class Bug355821Test extends AbstractParticipatingBuilderTest {
 		manifestContent += " org.eclipse.core.runtime\n";
 		manifestContent += "Bundle-ActivationPolicy: lazy\n";
 		// Remove this one implies a change of build.properties
-//		manifestContent += "Bundle-RequiredExecutionEnvironment: J2SE-1.5\n";
+//		manifestContent += "Bundle-RequiredExecutionEnvironment: JavaSE-1.6\n";
 		reset();
 		manifestFile.setContents(new StringInputStream(manifestContent), true, true, monitor());
-		waitForAutoBuild();
+		waitForBuild();
 		assertEquals(1, getInvocationCount());
-
 	}
-	
 	
 	@Override
 	public void build(IBuildContext context, IProgressMonitor monitor) throws CoreException {
@@ -61,6 +60,7 @@ public class Bug355821Test extends AbstractParticipatingBuilderTest {
 	private IProject createPluginProject(String name) throws CoreException {
 		PluginProjectFactory projectFactory = getInstance(PluginProjectFactory.class);
 		projectFactory.setProjectName(name);
+		projectFactory.setBreeToUse(JREContainerProvider.PREFERRED_BREE);
 		projectFactory.addFolders(Collections.singletonList("src"));
 		projectFactory.addBuilderIds(JavaCore.BUILDER_ID, "org.eclipse.pde.ManifestBuilder",
 				"org.eclipse.pde.SchemaBuilder", XtextProjectHelper.BUILDER_ID);
@@ -69,5 +69,9 @@ public class Bug355821Test extends AbstractParticipatingBuilderTest {
 		projectFactory.addRequiredBundles(Collections.singletonList("org.eclipse.xtext"));
 		IProject result = projectFactory.createProject(new NullProgressMonitor(), null);
 		return result;
+	}
+	
+	protected void waitForBuild() {
+		reallyWaitForAutoBuild();
 	}
 }

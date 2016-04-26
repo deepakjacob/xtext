@@ -7,11 +7,11 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.compiler;
 
+import static org.eclipse.xtext.util.JavaVersion.*;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.util.Strings;
 import org.eclipse.xtext.xbase.XBooleanLiteral;
 import org.eclipse.xtext.xbase.XClosure;
@@ -21,7 +21,8 @@ import org.eclipse.xtext.xbase.XNumberLiteral;
 import org.eclipse.xtext.xbase.XStringLiteral;
 import org.eclipse.xtext.xbase.XTypeLiteral;
 import org.eclipse.xtext.xbase.compiler.output.ITreeAppendable;
-import org.eclipse.xtext.xbase.typing.NumberLiterals;
+import org.eclipse.xtext.xbase.typesystem.computation.NumberLiterals;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
@@ -29,11 +30,7 @@ import com.google.inject.Inject;
 /**
  * @author Sven Efftinge - Initial contribution and API
  */
-@NonNullByDefault
 public class LiteralsCompiler extends TypeConvertingCompiler {
-
-	@Inject
-	private TypeReferenceSerializer referenceSerializer;	
 
 	@Inject
 	private NumberLiterals numberLiterals;
@@ -73,16 +70,40 @@ public class LiteralsCompiler extends TypeConvertingCompiler {
 	}
 	
 	public void _toJavaExpression(XStringLiteral expr, ITreeAppendable b) {
-		String javaString = Strings.convertToJavaString(expr.getValue());
-		b.append("\"").append(javaString).append("\"");
+		toJavaExpression(expr, b, true);
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	protected void toJavaExpression(XStringLiteral literal, ITreeAppendable appendable, boolean useUnicodeEscapes) {
+		LightweightTypeReference type = getLightweightType(literal);
+		if (type.isType(Character.TYPE)) {
+			String javaString = Strings.convertToJavaString(literal.getValue(), useUnicodeEscapes);
+			appendable.append("'").append(javaString).append("'");
+		} else if (type.isType(Character.class)) {
+			String javaString = Strings.convertToJavaString(literal.getValue(), useUnicodeEscapes);
+			appendable.append("Character.valueOf('").append(javaString).append("')");
+		} else {
+			String javaString = Strings.convertToJavaString(literal.getValue(), useUnicodeEscapes);
+			appendable.append("\"").append(javaString).append("\"");
+		}
 	}
 	
 	public void _toJavaStatement(final XStringLiteral expr, ITreeAppendable b, boolean isReferenced) {
+		toJavaStatement(expr, b, isReferenced, true);
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	protected void toJavaStatement(final XStringLiteral expr, ITreeAppendable b, boolean isReferenced, final boolean useUnicodeEscapes) {
 		generateComment(new Later() {
+			@Override
 			public void exec(ITreeAppendable appendable) {
-				String javaString = Strings.convertToJavaString(expr.getValue());
 				// we have to escape closing comments in string literals
-				javaString = javaString.replace("*/", "* /");
+				String escapedClosingComments = expr.getValue().replace("*/", "* /");
+				String javaString = Strings.convertToJavaString(escapedClosingComments, useUnicodeEscapes);
 				appendable.append("\"").append(javaString).append("\"");
 			}
 		}, b, isReferenced);
@@ -90,6 +111,7 @@ public class LiteralsCompiler extends TypeConvertingCompiler {
 
 	protected void generateComment(final XExpression expr, ITreeAppendable b, boolean isReferenced) {
 		generateComment(new Later() {
+			@Override
 			public void exec(ITreeAppendable appendable) {
 				internalToJavaExpression(expr, appendable);
 			}
@@ -108,8 +130,8 @@ public class LiteralsCompiler extends TypeConvertingCompiler {
 	}
 
 	public void _toJavaExpression(XNumberLiteral expr, ITreeAppendable b) {
-		JvmTypeReference type = getTypeProvider().getType(expr);
-		if(getTypeReferences().is(type, BigInteger.class)) {
+		LightweightTypeReference type = getLightweightType(expr);
+		if(type.isType(BigInteger.class)) {
 			BigInteger value = numberLiterals.toBigInteger(expr);
 			if (BigInteger.ZERO.equals(value)) {
 				b.append(type.getType()).append(".ZERO");
@@ -155,7 +177,7 @@ public class LiteralsCompiler extends TypeConvertingCompiler {
 					}
 				}
 			}
-		} else if(getTypeReferences().is(type, BigDecimal.class)) {
+		} else if(type.isType(BigDecimal.class)) {
 			BigDecimal value = numberLiterals.toBigDecimal(expr);
 			if (BigDecimal.ZERO.equals(value)) {
 				b.append(type.getType()).append(".ZERO");
@@ -173,7 +195,12 @@ public class LiteralsCompiler extends TypeConvertingCompiler {
 				}
 			}
 		} else {
-			b.append(numberLiterals.toJavaLiteral(expr));
+			GeneratorConfig config = b.getGeneratorConfig();
+			if (config != null && config.getJavaSourceVersion().isAtLeast(JAVA7)) {
+				b.append(numberLiterals.toJavaLiteral(expr, false));
+			} else {
+				b.append(numberLiterals.toJavaLiteral(expr, true));
+			}
 		}
 	}
 	
@@ -219,4 +246,5 @@ public class LiteralsCompiler extends TypeConvertingCompiler {
 			return false;
 		return super.isVariableDeclarationRequired(expr,b);
 	}
+	
 }

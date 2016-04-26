@@ -8,12 +8,17 @@
 package org.eclipse.xtext.ui.refactoring.ui;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.xtext.ui.refactoring.impl.EditorDocumentChange;
 import org.eclipse.xtext.ui.refactoring.impl.ProjectUtil;
 import org.eclipse.xtext.ui.util.DisplayRunnable;
 
@@ -21,7 +26,9 @@ import com.google.inject.Inject;
 
 /**
  * @author Jan Koehnlein - Initial contribution and API
+ * @deprecated saving now happens in {@link EditorDocumentChange}. 
  */
+@Deprecated
 public class SaveHelper {
 
 	@Inject
@@ -33,6 +40,9 @@ public class SaveHelper {
 	@Inject(optional = true)
 	private IWorkbench workbench;
 	
+	@Inject(optional = true)
+	private IWorkspace workspace;
+	
 	@Inject  
 	private SyncUtil syncUtil;
 
@@ -40,15 +50,19 @@ public class SaveHelper {
 		new DisplayRunnable() {
 			@Override
 			protected void run() throws Exception {
-				IWorkbenchPage workbenchPage = getWorkbenchPage(context);
-				if (prefs.isSaveAllBeforeRefactoring()) 
-					workbenchPage.saveAllEditors(false);
-				else
-					saveDeclaringEditor(context, workbenchPage);
-				
+				workspace.run(new IWorkspaceRunnable() {
+					@Override
+					public void run(IProgressMonitor monitor) throws CoreException {
+						IWorkbenchPage workbenchPage = getWorkbenchPage(context);
+						if (prefs.isSaveAllBeforeRefactoring()) 
+							workbenchPage.saveAllEditors(false);
+						else
+							saveDeclaringEditor(context, workbenchPage);
+					}
+				}, new NullProgressMonitor());
 			}
 		}.syncExec();
-		syncUtil.waitForAutoBuild(null);
+		syncUtil.waitForBuild(null);
 	}
 
 	protected IWorkbenchPage getWorkbenchPage(IRenameElementContext context) {
@@ -72,5 +86,5 @@ public class SaveHelper {
 		return null;
 	}
 	
-
+	
 }

@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: AbstractMetamodelDeclaration.java,v 1.17 2010/04/06 14:10:19 sefftinge Exp $
  */
 package org.eclipse.xtext;
 
@@ -16,11 +12,11 @@ import org.eclipse.emf.ecore.EPackage;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.AbstractMetamodelDeclaration#getEPackage <em>EPackage</em>}</li>
  *   <li>{@link org.eclipse.xtext.AbstractMetamodelDeclaration#getAlias <em>Alias</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.XtextPackage#getAbstractMetamodelDeclaration()
  * @model

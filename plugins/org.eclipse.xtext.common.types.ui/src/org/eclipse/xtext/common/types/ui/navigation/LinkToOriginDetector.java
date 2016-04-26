@@ -7,7 +7,7 @@
  *******************************************************************************/
 package org.eclipse.xtext.common.types.ui.navigation;
 
-import java.util.List;
+import java.util.Collections;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -20,34 +20,34 @@ import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.xtext.generator.trace.ILocationInResource;
 import org.eclipse.xtext.generator.trace.ITrace;
-import org.eclipse.xtext.generator.trace.ITraceInformation;
-import org.eclipse.xtext.util.TextRegion;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.ui.generator.trace.ITraceForStorageProvider;
+import org.eclipse.xtext.ui.resource.IResourceUIServiceProvider;
+import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 /**
  * Navigates to the original source element if the selected Java type was generated
- * from an Xbase language (e.g. {@link ITraceInformation} is available).
+ * from an Xbase language (e.g. {@link ITraceForStorageProvider} is available).
  * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public class LinkToOriginDetector extends AbstractHyperlinkDetector {
 
 	@Inject
-	private Provider<LinkToOrigin> hyperlinkProvider;
+	private ITraceForStorageProvider traceInformation;
 	
 	@Inject
-	private ITraceInformation traceInformation;
+	private IResourceUIServiceProvider.Registry serviceProviderRegistry;
 	
+	@Override
 	public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
 		try {
 			// very pessimistic guards - most things should never happen
@@ -70,7 +70,12 @@ public class LinkToOriginDetector extends AbstractHyperlinkDetector {
 				// to its origin if it's contained in a 'derived' resource
 				IJavaElement[] javaElements = compilationUnit.codeSelect(selectedWord.getOffset(), selectedWord.getLength());
 				for(IJavaElement javaElement: javaElements) {
-					if (javaElement instanceof IMember) {
+					/**
+					 * if IDE 3.8 is available the default 'Open Declaration' navigation will already open the original editor
+					 * So we don't need the additional hyperlinks.
+					 */
+					boolean provideHyperlinkOnReferences = !is_ORG_ECLIPSE_UI_IDE_3_8_Enabled() || compilationUnit.equals(((IMember) javaElement).getCompilationUnit());
+					if (javaElement instanceof IMember && provideHyperlinkOnReferences) {
 						IMember selectedMember = (IMember) javaElement;
 						IResource resource = selectedMember.getResource();
 						if (resource instanceof IFile) {
@@ -78,28 +83,23 @@ public class LinkToOriginDetector extends AbstractHyperlinkDetector {
 							if (traceToSource == null) {
 								return null;
 							}
-							Iterable<ILocationInResource> sourceInformation = traceToSource.getAllAssociatedLocations(new TextRegion(selectedWord.getOffset(), selectedWord.getLength()));
-							List<ILocationInResource> sourceInformationAsList = Lists.newArrayList(sourceInformation);
-							if (!canShowMultipleHyperlinks && sourceInformationAsList.size() > 1)
-								return null;
-							List<IHyperlink> result = Lists.newArrayListWithCapacity(sourceInformationAsList.size());
-							for(ILocationInResource source: sourceInformationAsList) {
+							ILocationInResource sourceInformation = IterableExtensions.head(traceToSource.getAllAssociatedLocations());
+							if(sourceInformation != null) {
 								try {
-									URI resourceURI = source.getResourceURI();
+									URI resourceURI = sourceInformation.getAbsoluteResourceURI().getURI();
 									if (resourceURI != null) {
-										LinkToOrigin hyperlink = hyperlinkProvider.get();
-										hyperlink.setHyperlinkRegion(new Region(selectedWord.getOffset(), selectedWord.getLength()));
-										hyperlink.setURI(resourceURI);
-										hyperlink.setHyperlinkText("Go to " + resourceURI.lastSegment());
-										hyperlink.setTypeLabel("Navigate to source artifact");
-										hyperlink.setMember(selectedMember);
-										result.add(hyperlink);
+										IResourceServiceProvider serviceProvider = serviceProviderRegistry.getResourceServiceProvider(resourceURI);
+										if (serviceProvider == null)
+											return null;
+										LinkToOriginProvider provider = serviceProvider.get(LinkToOriginProvider.class);
+										LinkToOrigin hyperlink = provider.createLinkToOrigin(sourceInformation, selectedWord, selectedMember, compilationUnit, Collections.<LinkToOrigin>emptyList());
+										if (hyperlink != null) {
+											return new IHyperlink[]{hyperlink};
+										}
 									}
 								} catch(IllegalArgumentException e) { /* invalid URI - ignore */ }
 							}
-							if (result.isEmpty())
-								return null;
-							return result.toArray(new IHyperlink[result.size()]);
+							return null;
 						}
 					}
 				}
@@ -109,6 +109,15 @@ public class LinkToOriginDetector extends AbstractHyperlinkDetector {
 			}
 		} catch(Throwable t) {
 			return null;
+		}
+	}
+
+	private boolean is_ORG_ECLIPSE_UI_IDE_3_8_Enabled() {
+		try {
+			Class<?> clazz = getClass().getClassLoader().loadClass("org.eclipse.ui.ide.IDE");
+			return clazz != null;
+		} catch (ClassNotFoundException e) {
+			return false;
 		}
 	}
 

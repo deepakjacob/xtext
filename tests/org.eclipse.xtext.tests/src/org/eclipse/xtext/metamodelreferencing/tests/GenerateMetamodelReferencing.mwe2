@@ -14,6 +14,7 @@ import org.eclipse.xtext.generator.*
 
 var projectName = "org.eclipse.xtext.tests"
 var runtimeProject = "../${projectName}"
+var lineDelimiter = '\n'
 
 Workflow {
 	bean = StandaloneSetup {
@@ -27,7 +28,7 @@ Workflow {
 			from = "platform:/plugin/org.eclipse.emf.ecore/model/Ecore.genmodel"
 			to = "platform:/resource/org.eclipse.emf.ecore/model/Ecore.genmodel"
 		}
-		registerGenModelFile = "platform:/resource/org.eclipse.xtext/src/org/eclipse/xtext/Xtext.genmodel"
+		registerGenModelFile = "platform:/resource/org.eclipse.xtext/org/eclipse/xtext/Xtext.genmodel"
 		registerGenModelFile = "platform:/resource/${projectName}/src/org/eclipse/xtext/metamodelreferencing/tests/EcoreReferences.genmodel"
 	}
 	bean = ecore.EcoreSupportStandaloneSetup {}
@@ -36,7 +37,7 @@ Workflow {
 		directory="${runtimeProject}/src-gen/org/eclipse/xtext/metamodelreferencing/tests"
 	}
 	
-	component = Generator {
+	component = Generator auto-inject {
 		pathRtProject = runtimeProject
 		projectNameRt = projectName
 		

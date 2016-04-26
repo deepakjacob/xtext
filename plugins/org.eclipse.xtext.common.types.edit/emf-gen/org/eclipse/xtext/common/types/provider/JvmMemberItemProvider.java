@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.provider;
 
@@ -11,17 +13,10 @@ import java.util.List;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.edit.provider.ComposeableAdapterFactory;
-import org.eclipse.emf.edit.provider.IEditingDomainItemProvider;
-import org.eclipse.emf.edit.provider.IItemLabelProvider;
 import org.eclipse.emf.edit.provider.IItemPropertyDescriptor;
-import org.eclipse.emf.edit.provider.IItemPropertySource;
-import org.eclipse.emf.edit.provider.IStructuredItemContentProvider;
-import org.eclipse.emf.edit.provider.ITreeItemContentProvider;
 import org.eclipse.emf.edit.provider.ItemPropertyDescriptor;
 import org.eclipse.emf.edit.provider.ViewerNotification;
-
 import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.TypesPackage;
 
@@ -31,14 +26,7 @@ import org.eclipse.xtext.common.types.TypesPackage;
  * <!-- end-user-doc -->
  * @generated
  */
-public class JvmMemberItemProvider
-	extends JvmAnnotationTargetItemProvider
-	implements
-		IEditingDomainItemProvider,
-		IStructuredItemContentProvider,
-		ITreeItemContentProvider,
-		IItemLabelProvider,
-		IItemPropertySource
+public class JvmMemberItemProvider extends JvmAnnotationTargetItemProvider
 {
 	/**
 	 * This constructs an instance from a factory and a notifier.
@@ -67,6 +55,7 @@ public class JvmMemberItemProvider
 			addVisibilityPropertyDescriptor(object);
 			addSimpleNamePropertyDescriptor(object);
 			addIdentifierPropertyDescriptor(object);
+			addDeprecatedPropertyDescriptor(object);
 		}
 		return itemPropertyDescriptors;
 	}
@@ -141,6 +130,30 @@ public class JvmMemberItemProvider
 	}
 
 	/**
+	 * This adds a property descriptor for the Deprecated feature.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @since 2.7
+	 */
+	protected void addDeprecatedPropertyDescriptor(Object object)
+	{
+		itemPropertyDescriptors.add
+			(createItemPropertyDescriptor
+				(((ComposeableAdapterFactory)adapterFactory).getRootAdapterFactory(),
+				 getResourceLocator(),
+				 getString("_UI_JvmMember_deprecated_feature"),
+				 getString("_UI_PropertyDescriptor_description", "_UI_JvmMember_deprecated_feature", "_UI_JvmMember_type"),
+				 TypesPackage.Literals.JVM_MEMBER__DEPRECATED,
+				 true,
+				 false,
+				 false,
+				 ItemPropertyDescriptor.BOOLEAN_VALUE_IMAGE,
+				 null,
+				 null));
+	}
+
+	/**
 	 * This returns the label text for the adapted class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -154,6 +167,7 @@ public class JvmMemberItemProvider
 			getString("_UI_JvmMember_type") :
 			getString("_UI_JvmMember_type") + " " + label;
 	}
+	
 
 	/**
 	 * This handles model notifications by calling {@link #updateChildren} to update any cached
@@ -172,6 +186,7 @@ public class JvmMemberItemProvider
 			case TypesPackage.JVM_MEMBER__VISIBILITY:
 			case TypesPackage.JVM_MEMBER__SIMPLE_NAME:
 			case TypesPackage.JVM_MEMBER__IDENTIFIER:
+			case TypesPackage.JVM_MEMBER__DEPRECATED:
 				fireNotifyChanged(new ViewerNotification(notification, notification.getNotifier(), false, true));
 				return;
 		}

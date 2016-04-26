@@ -11,6 +11,7 @@ import static org.eclipse.xtext.util.Strings.*;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
 import org.eclipse.core.resources.IContainer;
@@ -21,8 +22,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.xtext.generator.AbstractFileSystemAccess;
+import org.eclipse.xtext.generator.AbstractFileSystemAccess2;
 import org.eclipse.xtext.util.IAcceptor;
+import org.eclipse.xtext.util.RuntimeIOException;
 import org.eclipse.xtext.util.StringInputStream;
 
 import com.google.inject.Inject;
@@ -33,7 +35,7 @@ import com.google.inject.Inject;
  * @deprecated use {@link EclipseResourceFileSystemAccess2} instead
  */
 @Deprecated
-public class EclipseResourceFileSystemAccess extends AbstractFileSystemAccess {
+public class EclipseResourceFileSystemAccess extends AbstractFileSystemAccess2 {
 
 	@Inject
 	private IWorkspaceRoot root;
@@ -54,12 +56,13 @@ public class EclipseResourceFileSystemAccess extends AbstractFileSystemAccess {
 		}
 	}
 	
+	@Override
 	public void generateFile(String fileName, String slot, CharSequence contents) {
 		IFile file = getFile(fileName, slot);
 		try {
 			createFolder(file.getParent());
 			final String defaultCharset = file.getCharset();
-			String newContentAsString = postProcess(fileName, slot, contents).toString();
+			String newContentAsString = postProcess(fileName, slot, contents, defaultCharset).toString();
 			if (file.exists()) {
 				boolean contentChanged = false;
 				BufferedInputStream oldContent = null;
@@ -127,8 +130,33 @@ public class EclipseResourceFileSystemAccess extends AbstractFileSystemAccess {
 	 * We cannot use the storage to URI mapper here, as it only works for Xtext based languages 
 	 * @since 2.3
 	 */
+	@Override
 	public URI getURI(String fileName, String outputConfiguration) {
 		IFile file = getFile(fileName, outputConfiguration);
 		return URI.createPlatformResourceURI(file.getFullPath().toString(), true);
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	@Override
+	public void generateFile(String fileName, String outputCfgName, InputStream content) throws RuntimeIOException {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	@Override
+	public InputStream readBinaryFile(String fileName, String outputCfgName) throws RuntimeIOException {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	@Override
+	public CharSequence readTextFile(String fileName, String outputCfgName) throws RuntimeIOException {
+		throw new UnsupportedOperationException();
 	}
 }

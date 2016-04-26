@@ -27,13 +27,13 @@ import org.eclipse.xtext.xbase.XbasePackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XVariableDeclarationImpl#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XVariableDeclarationImpl#getName <em>Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XVariableDeclarationImpl#getRight <em>Right</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XVariableDeclarationImpl#isWriteable <em>Writeable</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

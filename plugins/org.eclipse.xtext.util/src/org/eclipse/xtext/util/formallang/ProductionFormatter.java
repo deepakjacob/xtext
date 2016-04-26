@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 public class ProductionFormatter<ELEMENT, TOKEN> implements Function<Production<ELEMENT, TOKEN>, String> {
 
 	protected static class ObjToStrFunction<TOKEN> implements Function<TOKEN, String> {
+		@Override
 		public String apply(TOKEN from) {
 			return from == null ? "null" : from.toString();
 		}
@@ -26,10 +27,13 @@ public class ProductionFormatter<ELEMENT, TOKEN> implements Function<Production<
 
 	protected int autoWrapChars = 140;
 
+	protected int autoWrapChildren = 5;
+
 	protected String indent = "    ";
 
 	protected Function<TOKEN, String> tokenToString = new ObjToStrFunction<TOKEN>();
 
+	@Override
 	public String apply(Production<ELEMENT, TOKEN> from) {
 		return format(from);
 	}
@@ -52,18 +56,18 @@ public class ProductionFormatter<ELEMENT, TOKEN> implements Function<Production<
 		}
 		Iterable<ELEMENT> alternative = adapter.getAlternativeChildren(grammarElement);
 		if (alternative != null)
-			return format(adapter, grammarElement, alternative, " | ", false, needParenthesis, 5);
+			return format(adapter, grammarElement, alternative, " | ", false, needParenthesis);
 		Iterable<ELEMENT> group = adapter.getSequentialChildren(grammarElement);
 		if (group != null)
-			return format(adapter, grammarElement, group, " ", false, needParenthesis, 5);
+			return format(adapter, grammarElement, group, " ", false, needParenthesis);
 		Iterable<ELEMENT> ungroup = adapter.getUnorderedChildren(grammarElement);
 		if (ungroup != null)
-			return format(adapter, grammarElement, ungroup, " & ", false, needParenthesis, 5);
+			return format(adapter, grammarElement, ungroup, " & ", false, needParenthesis);
 		return "<unknown>";
 	}
 
 	protected String format(Production<ELEMENT, TOKEN> adapter, ELEMENT element, Iterable<ELEMENT> children,
-			String separator, boolean needWrap, boolean needParenthesis, int maxChildren) {
+			String separator, boolean needWrap, boolean needParenthesis) {
 		List<String> childStrs2 = Lists.newArrayList();
 		int width2 = 0;
 		for (ELEMENT child : children) {
@@ -73,7 +77,7 @@ public class ProductionFormatter<ELEMENT, TOKEN> implements Function<Production<
 			if (childStr.contains("\n"))
 				needWrap = true;
 		}
-		if (childStrs2.size() > maxChildren)
+		if (childStrs2.size() > autoWrapChildren)
 			needWrap = true;
 		if (width2 > autoWrapChars)
 			needWrap = true;
@@ -99,6 +103,11 @@ public class ProductionFormatter<ELEMENT, TOKEN> implements Function<Production<
 
 	public ProductionFormatter<ELEMENT, TOKEN> setAutoWrapChars(int autoWrapChars) {
 		this.autoWrapChars = autoWrapChars;
+		return this;
+	}
+
+	public ProductionFormatter<ELEMENT, TOKEN> setAutoWrapChildren(int autoWrapChildren) {
+		this.autoWrapChildren = autoWrapChildren;
 		return this;
 	}
 

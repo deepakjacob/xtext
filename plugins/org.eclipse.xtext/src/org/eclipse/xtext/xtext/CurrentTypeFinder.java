@@ -8,6 +8,7 @@
 package org.eclipse.xtext.xtext;
 
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
@@ -26,6 +27,7 @@ import org.eclipse.xtext.TypeRef;
 import org.eclipse.xtext.util.XtextSwitch;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -55,6 +57,8 @@ public class CurrentTypeFinder {
 
 		private AbstractElement stopElement;
 		
+		private Set<AbstractRule> visiting = Sets.newHashSet();
+		
 		public EClassifier getResult() {
 			return currentType;
 		}
@@ -79,8 +83,14 @@ public class CurrentTypeFinder {
 		
 		@Override
 		public Boolean caseParserRule(ParserRule object) {
-			if (object.getAlternatives() != null)
-				return doSwitch(object.getAlternatives());
+			if (visiting.add(object)) {
+				try {
+					if (object.getAlternatives() != null)
+						return doSwitch(object.getAlternatives());
+				} finally {
+					visiting.remove(object);
+				}
+			}
 			return true;
 		}
 		
@@ -125,12 +135,25 @@ public class CurrentTypeFinder {
 		@Override
 		public Boolean caseRuleCall(RuleCall object) {
 			EClassifier wasType = currentType;
+			AbstractRule calledRule = object.getRule();
 			if (currentType == null) {
-				if (object.getRule() instanceof ParserRule && !GrammarUtil.isDatatypeRule((ParserRule) object.getRule())) {
-					TypeRef returnType = object.getRule().getType();
-					if (returnType != null)
-						currentType = returnType.getClassifier();
+				if (calledRule instanceof ParserRule && !GrammarUtil.isDatatypeRule((ParserRule) calledRule)) {
+					ParserRule parserRule = (ParserRule) calledRule;
+					if (parserRule.isFragment()) {
+						if (context.getType() != null)
+							currentType = context.getType().getClassifier();
+						if (!parserRule.isWildcard()) {
+							doSwitch(parserRule);
+						}
+					} else {
+						TypeRef returnType = calledRule.getType();
+						if (returnType != null) {
+							currentType = returnType.getClassifier();
+						}
+					}
 				}
+			} else if (isFragmentButNotWildcard(calledRule)) {
+				doSwitch(calledRule);
 			}
 			if (object == stopElement)
 				return true;
@@ -139,6 +162,14 @@ public class CurrentTypeFinder {
 			return false;
 		}
 		
+		private boolean isFragmentButNotWildcard(AbstractRule calledRule) {
+			if (calledRule instanceof ParserRule) {
+				ParserRule casted = (ParserRule) calledRule;
+				return casted.isFragment() && !casted.isWildcard();
+			}
+			return false;
+		}
+
 		protected EClassifier getCompatibleType(EClassifier a, EClassifier b, EObject context) {
 			if (a == null)
 				return b;

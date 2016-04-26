@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.impl;
 
@@ -31,6 +33,7 @@ import org.eclipse.xtext.common.types.TypesPackage;
  *   <li>{@link org.eclipse.xtext.common.types.impl.JvmMemberImpl#getVisibility <em>Visibility</em>}</li>
  *   <li>{@link org.eclipse.xtext.common.types.impl.JvmMemberImpl#getSimpleName <em>Simple Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.common.types.impl.JvmMemberImpl#getIdentifier <em>Identifier</em>}</li>
+ *   <li>{@link org.eclipse.xtext.common.types.impl.JvmMemberImpl#isDeprecated <em>Deprecated</em>}</li>
  * </ul>
  * </p>
  *
@@ -99,6 +102,35 @@ public abstract class JvmMemberImpl extends JvmAnnotationTargetImplCustom implem
 	protected String identifier = IDENTIFIER_EDEFAULT;
 
 	/**
+	 * The default value of the '{@link #isDeprecated() <em>Deprecated</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isDeprecated()
+	 * @generated
+	 * @ordered
+	 */
+	protected static final boolean DEPRECATED_EDEFAULT = false;
+
+	/**
+	 * The cached value of the '{@link #isDeprecated() <em>Deprecated</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @see #isDeprecated()
+	 * @generated
+	 * @ordered
+	 */
+	protected boolean deprecated = DEPRECATED_EDEFAULT;
+
+	/**
+	 * This is true if the Deprecated attribute has been set.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	protected boolean deprecatedESet;
+
+	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
@@ -125,17 +157,6 @@ public abstract class JvmMemberImpl extends JvmAnnotationTargetImplCustom implem
 	 * @generated
 	 */
 	public JvmDeclaredType getDeclaringType()
-	{
-		if (eContainerFeatureID() != TypesPackage.JVM_MEMBER__DECLARING_TYPE) return null;
-		return (JvmDeclaredType)eContainer();
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public JvmDeclaredType basicGetDeclaringType()
 	{
 		if (eContainerFeatureID() != TypesPackage.JVM_MEMBER__DECLARING_TYPE) return null;
 		return (JvmDeclaredType)eInternalContainer();
@@ -236,6 +257,56 @@ public abstract class JvmMemberImpl extends JvmAnnotationTargetImplCustom implem
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public boolean isDeprecated()
+	{
+		return deprecated;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void setDeprecated(boolean newDeprecated)
+	{
+		boolean oldDeprecated = deprecated;
+		deprecated = newDeprecated;
+		boolean oldDeprecatedESet = deprecatedESet;
+		deprecatedESet = true;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.SET, TypesPackage.JVM_MEMBER__DEPRECATED, oldDeprecated, deprecated, !oldDeprecatedESet));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public void unsetDeprecated()
+	{
+		boolean oldDeprecated = deprecated;
+		boolean oldDeprecatedESet = deprecatedESet;
+		deprecated = DEPRECATED_EDEFAULT;
+		deprecatedESet = false;
+		if (eNotificationRequired())
+			eNotify(new ENotificationImpl(this, Notification.UNSET, TypesPackage.JVM_MEMBER__DEPRECATED, oldDeprecated, DEPRECATED_EDEFAULT, oldDeprecatedESet));
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isSetDeprecated()
+	{
+		return deprecatedESet;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public void internalSetIdentifier(String identifier)
 	{
 		// TODO: implement this method
@@ -304,14 +375,15 @@ public abstract class JvmMemberImpl extends JvmAnnotationTargetImplCustom implem
 		switch (featureID)
 		{
 			case TypesPackage.JVM_MEMBER__DECLARING_TYPE:
-				if (resolve) return getDeclaringType();
-				return basicGetDeclaringType();
+				return getDeclaringType();
 			case TypesPackage.JVM_MEMBER__VISIBILITY:
 				return getVisibility();
 			case TypesPackage.JVM_MEMBER__SIMPLE_NAME:
 				return getSimpleName();
 			case TypesPackage.JVM_MEMBER__IDENTIFIER:
 				return getIdentifier();
+			case TypesPackage.JVM_MEMBER__DEPRECATED:
+				return isDeprecated();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}
@@ -334,6 +406,9 @@ public abstract class JvmMemberImpl extends JvmAnnotationTargetImplCustom implem
 				return;
 			case TypesPackage.JVM_MEMBER__SIMPLE_NAME:
 				setSimpleName((String)newValue);
+				return;
+			case TypesPackage.JVM_MEMBER__DEPRECATED:
+				setDeprecated((Boolean)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -358,6 +433,9 @@ public abstract class JvmMemberImpl extends JvmAnnotationTargetImplCustom implem
 			case TypesPackage.JVM_MEMBER__SIMPLE_NAME:
 				setSimpleName(SIMPLE_NAME_EDEFAULT);
 				return;
+			case TypesPackage.JVM_MEMBER__DEPRECATED:
+				unsetDeprecated();
+				return;
 		}
 		super.eUnset(featureID);
 	}
@@ -373,13 +451,15 @@ public abstract class JvmMemberImpl extends JvmAnnotationTargetImplCustom implem
 		switch (featureID)
 		{
 			case TypesPackage.JVM_MEMBER__DECLARING_TYPE:
-				return basicGetDeclaringType() != null;
+				return getDeclaringType() != null;
 			case TypesPackage.JVM_MEMBER__VISIBILITY:
 				return visibility != VISIBILITY_EDEFAULT;
 			case TypesPackage.JVM_MEMBER__SIMPLE_NAME:
 				return SIMPLE_NAME_EDEFAULT == null ? simpleName != null : !SIMPLE_NAME_EDEFAULT.equals(simpleName);
 			case TypesPackage.JVM_MEMBER__IDENTIFIER:
 				return IDENTIFIER_EDEFAULT == null ? identifier != null : !IDENTIFIER_EDEFAULT.equals(identifier);
+			case TypesPackage.JVM_MEMBER__DEPRECATED:
+				return isSetDeprecated();
 		}
 		return super.eIsSet(featureID);
 	}
@@ -401,6 +481,8 @@ public abstract class JvmMemberImpl extends JvmAnnotationTargetImplCustom implem
 		result.append(simpleName);
 		result.append(", identifier: ");
 		result.append(identifier);
+		result.append(", deprecated: ");
+		if (deprecatedESet) result.append(deprecated); else result.append("<unset>");
 		result.append(')');
 		return result.toString();
 	}

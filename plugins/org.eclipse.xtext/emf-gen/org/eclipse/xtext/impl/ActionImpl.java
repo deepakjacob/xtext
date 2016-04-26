@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: ActionImpl.java,v 1.16 2010/04/06 14:10:05 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -24,12 +20,12 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.impl.ActionImpl#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.ActionImpl#getFeature <em>Feature</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.ActionImpl#getOperator <em>Operator</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

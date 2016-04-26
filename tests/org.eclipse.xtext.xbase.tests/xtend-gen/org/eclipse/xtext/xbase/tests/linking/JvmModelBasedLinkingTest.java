@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.eclipse.xtext.xbase.tests.linking;
 
 import com.google.inject.Inject;
@@ -12,25 +19,34 @@ import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.common.types.util.TypeReferences;
+import org.eclipse.xtext.junit4.InjectWith;
+import org.eclipse.xtext.junit4.XtextRunner;
 import org.eclipse.xtext.junit4.validation.ValidationTestHelper;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XFeatureCall;
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder;
 import org.eclipse.xtext.xbase.lib.Exceptions;
+import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
+import org.eclipse.xtext.xbase.tests.typesystem.XbaseWithLogicalContainerInjectorProvider;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(XtextRunner.class)
+@InjectWith(XbaseWithLogicalContainerInjectorProvider.class)
 @SuppressWarnings("all")
 public class JvmModelBasedLinkingTest extends AbstractXbaseTestCase {
   @Inject
+  @Extension
   private JvmTypesBuilder _jvmTypesBuilder;
   
   @Inject
   private TypeReferences refs;
   
   @Inject
+  @Extension
   private ValidationTestHelper _validationTestHelper;
   
   @Test
@@ -41,26 +57,28 @@ public class JvmModelBasedLinkingTest extends AbstractXbaseTestCase {
       resource.eSetDeliver(false);
       EList<EObject> _contents = resource.getContents();
       final Procedure1<JvmGenericType> _function = new Procedure1<JvmGenericType>() {
-          public void apply(final JvmGenericType it) {
-            EList<JvmMember> _members = it.getMembers();
-            JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
-            final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
-                public void apply(final JvmOperation it) {
-                  EList<JvmFormalParameter> _parameters = it.getParameters();
-                  JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
-                  JvmFormalParameter _parameter = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toParameter(expr, "x", _stringType);
-                  JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmFormalParameter>operator_add(_parameters, _parameter);
-                  JvmModelBasedLinkingTest.this._jvmTypesBuilder.setBody(it, expr);
-                }
-              };
-            JvmOperation _method = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toMethod(expr, "doStuff", _stringType, _function);
-            JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmOperation>operator_add(_members, _method);
-          }
-        };
+        @Override
+        public void apply(final JvmGenericType it) {
+          EList<JvmMember> _members = it.getMembers();
+          JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
+          final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
+            @Override
+            public void apply(final JvmOperation it) {
+              EList<JvmFormalParameter> _parameters = it.getParameters();
+              JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
+              JvmFormalParameter _parameter = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toParameter(expr, "x", _stringType);
+              JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmFormalParameter>operator_add(_parameters, _parameter);
+              JvmModelBasedLinkingTest.this._jvmTypesBuilder.setBody(it, expr);
+            }
+          };
+          JvmOperation _method = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toMethod(expr, "doStuff", _stringType, _function);
+          JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmOperation>operator_add(_members, _method);
+        }
+      };
       JvmGenericType _class = this._jvmTypesBuilder.toClass(expr, "Foo", _function);
       this._jvmTypesBuilder.<JvmGenericType>operator_add(_contents, _class);
       this._validationTestHelper.assertNoErrors(expr);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -74,32 +92,34 @@ public class JvmModelBasedLinkingTest extends AbstractXbaseTestCase {
       resource.eSetDeliver(false);
       EList<EObject> _contents = resource.getContents();
       final Procedure1<JvmGenericType> _function = new Procedure1<JvmGenericType>() {
-          public void apply(final JvmGenericType it) {
-            EList<JvmMember> _members = it.getMembers();
-            JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
-            JvmField _field = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toField(expr, "x", _stringType);
-            JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmField>operator_add(_members, _field);
-            EList<JvmMember> _members_1 = it.getMembers();
-            JvmTypeReference _stringType_1 = JvmModelBasedLinkingTest.this.stringType(expr);
-            final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
-                public void apply(final JvmOperation it) {
-                  EList<JvmFormalParameter> _parameters = it.getParameters();
-                  JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
-                  JvmFormalParameter _parameter = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toParameter(expr, "x", _stringType);
-                  JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmFormalParameter>operator_add(_parameters, _parameter);
-                  JvmModelBasedLinkingTest.this._jvmTypesBuilder.setBody(it, expr);
-                }
-              };
-            JvmOperation _method = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toMethod(expr, "doStuff", _stringType_1, _function);
-            JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmOperation>operator_add(_members_1, _method);
-          }
-        };
+        @Override
+        public void apply(final JvmGenericType it) {
+          EList<JvmMember> _members = it.getMembers();
+          JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
+          JvmField _field = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toField(expr, "x", _stringType);
+          JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmField>operator_add(_members, _field);
+          EList<JvmMember> _members_1 = it.getMembers();
+          JvmTypeReference _stringType_1 = JvmModelBasedLinkingTest.this.stringType(expr);
+          final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
+            @Override
+            public void apply(final JvmOperation it) {
+              EList<JvmFormalParameter> _parameters = it.getParameters();
+              JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
+              JvmFormalParameter _parameter = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toParameter(expr, "x", _stringType);
+              JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmFormalParameter>operator_add(_parameters, _parameter);
+              JvmModelBasedLinkingTest.this._jvmTypesBuilder.setBody(it, expr);
+            }
+          };
+          JvmOperation _method = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toMethod(expr, "doStuff", _stringType_1, _function);
+          JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmOperation>operator_add(_members_1, _method);
+        }
+      };
       JvmGenericType _class = this._jvmTypesBuilder.toClass(expr, "Foo", _function);
       this._jvmTypesBuilder.<JvmGenericType>operator_add(_contents, _class);
       this._validationTestHelper.assertNoErrors(expr);
       JvmIdentifiableElement _feature = expr.getFeature();
       Assert.assertTrue((_feature instanceof JvmFormalParameter));
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -113,32 +133,34 @@ public class JvmModelBasedLinkingTest extends AbstractXbaseTestCase {
       resource.eSetDeliver(false);
       EList<EObject> _contents = resource.getContents();
       final Procedure1<JvmGenericType> _function = new Procedure1<JvmGenericType>() {
-          public void apply(final JvmGenericType it) {
-            EList<JvmMember> _members = it.getMembers();
-            JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
-            JvmField _field = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toField(expr, "x", _stringType);
-            JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmField>operator_add(_members, _field);
-            EList<JvmMember> _members_1 = it.getMembers();
-            JvmTypeReference _stringType_1 = JvmModelBasedLinkingTest.this.stringType(expr);
-            final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
-                public void apply(final JvmOperation it) {
-                  EList<JvmFormalParameter> _parameters = it.getParameters();
-                  JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
-                  JvmFormalParameter _parameter = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toParameter(expr, "y", _stringType);
-                  JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmFormalParameter>operator_add(_parameters, _parameter);
-                  JvmModelBasedLinkingTest.this._jvmTypesBuilder.setBody(it, expr);
-                }
-              };
-            JvmOperation _method = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toMethod(expr, "doStuff", _stringType_1, _function);
-            JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmOperation>operator_add(_members_1, _method);
-          }
-        };
+        @Override
+        public void apply(final JvmGenericType it) {
+          EList<JvmMember> _members = it.getMembers();
+          JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
+          JvmField _field = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toField(expr, "x", _stringType);
+          JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmField>operator_add(_members, _field);
+          EList<JvmMember> _members_1 = it.getMembers();
+          JvmTypeReference _stringType_1 = JvmModelBasedLinkingTest.this.stringType(expr);
+          final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
+            @Override
+            public void apply(final JvmOperation it) {
+              EList<JvmFormalParameter> _parameters = it.getParameters();
+              JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
+              JvmFormalParameter _parameter = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toParameter(expr, "y", _stringType);
+              JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmFormalParameter>operator_add(_parameters, _parameter);
+              JvmModelBasedLinkingTest.this._jvmTypesBuilder.setBody(it, expr);
+            }
+          };
+          JvmOperation _method = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toMethod(expr, "doStuff", _stringType_1, _function);
+          JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmOperation>operator_add(_members_1, _method);
+        }
+      };
       JvmGenericType _class = this._jvmTypesBuilder.toClass(expr, "Foo", _function);
       this._jvmTypesBuilder.<JvmGenericType>operator_add(_contents, _class);
       this._validationTestHelper.assertNoErrors(expr);
       JvmIdentifiableElement _feature = expr.getFeature();
       Assert.assertTrue((_feature instanceof JvmField));
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -152,34 +174,35 @@ public class JvmModelBasedLinkingTest extends AbstractXbaseTestCase {
       resource.eSetDeliver(false);
       EList<EObject> _contents = resource.getContents();
       final Procedure1<JvmGenericType> _function = new Procedure1<JvmGenericType>() {
-          public void apply(final JvmGenericType it) {
-            EList<JvmMember> _members = it.getMembers();
-            JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
-            JvmField _field = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toField(expr, "x", _stringType);
-            JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmField>operator_add(_members, _field);
-            EList<JvmMember> _members_1 = it.getMembers();
-            JvmTypeReference _stringType_1 = JvmModelBasedLinkingTest.this.stringType(expr);
-            final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
-                public void apply(final JvmOperation it) {
-                  JvmModelBasedLinkingTest.this._jvmTypesBuilder.setBody(it, expr);
-                }
-              };
-            JvmOperation _method = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toMethod(expr, "getX", _stringType_1, _function);
-            JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmOperation>operator_add(_members_1, _method);
-          }
-        };
+        @Override
+        public void apply(final JvmGenericType it) {
+          EList<JvmMember> _members = it.getMembers();
+          JvmTypeReference _stringType = JvmModelBasedLinkingTest.this.stringType(expr);
+          JvmField _field = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toField(expr, "x", _stringType);
+          JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmField>operator_add(_members, _field);
+          EList<JvmMember> _members_1 = it.getMembers();
+          JvmTypeReference _stringType_1 = JvmModelBasedLinkingTest.this.stringType(expr);
+          final Procedure1<JvmOperation> _function = new Procedure1<JvmOperation>() {
+            @Override
+            public void apply(final JvmOperation it) {
+              JvmModelBasedLinkingTest.this._jvmTypesBuilder.setBody(it, expr);
+            }
+          };
+          JvmOperation _method = JvmModelBasedLinkingTest.this._jvmTypesBuilder.toMethod(expr, "getX", _stringType_1, _function);
+          JvmModelBasedLinkingTest.this._jvmTypesBuilder.<JvmOperation>operator_add(_members_1, _method);
+        }
+      };
       JvmGenericType _class = this._jvmTypesBuilder.toClass(expr, "Foo", _function);
       this._jvmTypesBuilder.<JvmGenericType>operator_add(_contents, _class);
       this._validationTestHelper.assertNoErrors(expr);
       JvmIdentifiableElement _feature = expr.getFeature();
       Assert.assertTrue((_feature instanceof JvmField));
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
   
   public JvmTypeReference stringType(final EObject ctx) {
-    JvmTypeReference _typeForName = this.refs.getTypeForName(String.class, ctx);
-    return _typeForName;
+    return this.refs.getTypeForName(String.class, ctx);
   }
 }

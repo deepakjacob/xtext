@@ -3,10 +3,15 @@ package org.eclipse.xtext.parsetree.formatter;
 import java.io.IOException;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.ParserRule;
+import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.formatting.INodeModelFormatter.IFormattedRegion;
+import org.eclipse.xtext.formatting.INodeModelStreamer;
 import org.eclipse.xtext.formatting.impl.AbstractTokenStream;
+import org.eclipse.xtext.formatting.impl.DefaultNodeModelFormatter;
+import org.eclipse.xtext.formatting.impl.NodeModelStreamer;
 import org.eclipse.xtext.junit4.AbstractXtextTests;
 import org.eclipse.xtext.junit4.util.ParseHelper;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
@@ -16,14 +21,15 @@ import org.eclipse.xtext.parsetree.formatter.formattertestlanguage.Formattertest
 import org.eclipse.xtext.parsetree.formatter.formattertestlanguage.TestLinewrapMinMax;
 import org.eclipse.xtext.parsetree.reconstr.ITokenStream;
 import org.eclipse.xtext.resource.SaveOptions;
+import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.acceptor.ISemanticSequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.ISyntacticSequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.TokenStreamSequenceAdapter;
+import org.eclipse.xtext.serializer.analysis.SerializationContext;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic;
 import org.eclipse.xtext.serializer.sequencer.IHiddenTokenSequencer;
 import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
 import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class FormatterTest extends AbstractXtextTests {
@@ -67,8 +73,8 @@ public class FormatterTest extends AbstractXtextTests {
 		assertEquals(revealLineBreaks(convertLineBreaks(expected)), revealLineBreaks(res));
 	}
 
-	protected void assertPreserved(String model) throws Exception {
-		model = convertLineBreaks(model);
+	protected void assertPreserved(final String modelP) throws Exception {
+		String model = convertLineBreaks(modelP);
 		EObject m = getModel(model);
 		String res = getSerializer().serialize(m, SaveOptions.newBuilder().getOptions());
 		assertEquals(revealLineBreaks(model), revealLineBreaks(res));
@@ -103,9 +109,9 @@ public class FormatterTest extends AbstractXtextTests {
 		ISemanticSequencer semantic = get(ISemanticSequencer.class);
 		ISyntacticSequencer syntactic = get(ISyntacticSequencer.class);
 		IHiddenTokenSequencer hidden = get(IHiddenTokenSequencer.class);
-		TokenStreamSequenceAdapter tokenstream = new TokenStreamSequenceAdapter(out, errors);
+		TokenStreamSequenceAdapter tokenstream = new TokenStreamSequenceAdapter(out, getGrammarAccess().getGrammar(), errors);
 		semantic.init((ISemanticSequenceAcceptor) syntactic, errors);
-		EObject context = get(IGrammarAccess.class).getGrammar().getRules().get(0);
+		ISerializationContext context = new SerializationContext.RuleContext(null, (ParserRule) get(IGrammarAccess.class).getGrammar().getRules().get(0));
 		syntactic.init(context, semanticObject, (ISyntacticSequenceAcceptor) hidden, errors);
 		hidden.init(context, semanticObject, tokenstream, errors);
 		tokenstream.init(context);
@@ -381,6 +387,32 @@ public class FormatterTest extends AbstractXtextTests {
 		final String expected = "test wrappingdt f\nb kw1";
 		assertFormattedPTC(expected, model);
 		assertFormattedNM(expected, model, 0, model.length());
+		assertEqualTokenStreams(model);
+		assertPreserved(model);
+	}
+
+	private static class AccessibleFormatter extends DefaultNodeModelFormatter {
+		void setNodeModelStreamer(INodeModelStreamer streamer) {
+			nodeModelStreamer = streamer;
+		}
+	}
+	
+	private static class BrokenStreamer extends NodeModelStreamer {
+		@Override
+		protected String getFormattedDatatypeValue(ICompositeNode node, AbstractRule rule, String text)
+				throws ValueConverterException {
+			throw new ValueConverterException("", null, null);
+		}
+	}
+	
+	@Test public void testBug471212() throws Exception {
+		String model = "test wrappingdt f\nb kw1";
+		ICompositeNode node = NodeModelUtils.getNode(getModel(model)).getRootNode();
+		AccessibleFormatter formatter = get(AccessibleFormatter.class);
+		formatter.setNodeModelStreamer(get(BrokenStreamer.class));
+		IFormattedRegion region = formatter.format(node, 0, model.length());
+		String actual = region.getFormattedText();
+		assertEquals(model, actual);
 		assertEqualTokenStreams(model);
 		assertPreserved(model);
 	}

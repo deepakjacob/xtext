@@ -2,7 +2,6 @@ package org.eclipse.xtext.purexbase.jvmmodel
 
 import com.google.inject.Inject
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.jdt.annotation.NonNull
 import org.eclipse.xtext.purexbase.pureXbase.Model
 import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
 import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
@@ -15,17 +14,17 @@ import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
  * which is generated from the source model. 
  * Other Xtend models link against the JVM model rather than the source model. The JVM
  * model elements should be associated with their source element by means of the
- * {@link IJvmModelAssociator}.</p>     
+ * {@link org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociator}.</p>     
  */
 class PureXbaseJvmModelInferrer extends AbstractModelInferrer {
 
 	@Inject extension JvmTypesBuilder
 
-   	def dispatch void infer(Model m, @NonNull IJvmDeclaredTypeAcceptor acceptor, boolean prelinkingPhase) {
+   	def dispatch void infer(Model m, /* @NonNull */ IJvmDeclaredTypeAcceptor acceptor, boolean prelinkingPhase) {
    		val e  = m.block
-   		acceptor.accept(e.toClass(e.eResource.name)).initializeLater [
+   		acceptor.accept(e.toClass(e.eResource.name)) [
    			members += e.toMethod("myMethod", inferredType) [
-   				exceptions += e.newTypeRef(typeof(Throwable))
+   				exceptions += typeRef(Throwable)
    				body = e
    			]
    		]

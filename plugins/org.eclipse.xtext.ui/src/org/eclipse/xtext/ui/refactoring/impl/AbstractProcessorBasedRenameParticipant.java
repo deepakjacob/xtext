@@ -38,6 +38,8 @@ import org.eclipse.xtext.resource.IGlobalServiceProvider;
 import org.eclipse.xtext.ui.internal.Activator;
 import org.eclipse.xtext.ui.refactoring.IRenameRefactoringProvider;
 import org.eclipse.xtext.ui.refactoring.ui.IRenameElementContext;
+import org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferences;
+import org.eclipse.xtext.ui.refactoring.ui.SyncUtil;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -66,6 +68,12 @@ public abstract class AbstractProcessorBasedRenameParticipant extends RenamePart
 
 	@Inject
 	private StatusWrapper status;
+	
+	@Inject 
+	private SyncUtil syncUtil;
+	
+	@Inject
+	private RefactoringPreferences preferences;
 
 	private List<RenameProcessor> wrappedProcessors;
 
@@ -75,7 +83,12 @@ public abstract class AbstractProcessorBasedRenameParticipant extends RenamePart
 	protected boolean initialize(Object originalTargetElement) {
 		try {
 			wrappedProcessors = getRenameProcessors(originalTargetElement);
-			return wrappedProcessors != null;
+			if(wrappedProcessors != null) {
+				syncUtil.totalSync(preferences.isSaveAllBeforeRefactoring(), true, false);
+				return true;
+			}
+		} catch (InterruptedException e) {
+			return false;
 		} catch (Exception exc) {
 			status.add(ERROR, "Error initializing refactoring participant.", exc, LOG);
 		}
@@ -130,7 +143,7 @@ public abstract class AbstractProcessorBasedRenameParticipant extends RenamePart
 	@Override
 	public RefactoringStatus checkConditions(IProgressMonitor pm, CheckConditionsContext context)
 			throws OperationCanceledException {
-		SubMonitor progress = SubMonitor.convert(pm).setWorkRemaining(100);
+		SubMonitor progress = SubMonitor.convert(pm).setWorkRemaining(100 * wrappedProcessors.size());
 		try {
 			for (RenameProcessor wrappedProcessor : wrappedProcessors) {
 				List<Object> targetElements = Arrays.asList(wrappedProcessor.getElements());
@@ -141,6 +154,8 @@ public abstract class AbstractProcessorBasedRenameParticipant extends RenamePart
 						status.merge(wrappedProcessor.checkFinalConditions(progress.newChild(80), context));
 				}
 			}
+		} catch (OperationCanceledException e) {
+			throw e;
 		} catch (Exception ce) {
 			status.add(ERROR, "Error checking conditions in refactoring participant: {0}. See log for details", ce, LOG);
 		}
@@ -155,16 +170,21 @@ public abstract class AbstractProcessorBasedRenameParticipant extends RenamePart
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		CompositeChange compositeChange = null;
 		try {
+			SubMonitor subMonitor = SubMonitor.convert(pm, wrappedProcessors.size());
 			for (RenameProcessor wrappedProcessor : wrappedProcessors) {
 				if (!disabledTargets.containsAll(Arrays.asList(wrappedProcessor.getElements()))) {
-					Change processorChange = wrappedProcessor.createChange(pm);
+					Change processorChange = wrappedProcessor.createChange(subMonitor.newChild(1));
 					if (processorChange != null) {
 						if (compositeChange == null)
 							compositeChange = new CompositeChange("Changes from participant: " + getName());
 						compositeChange.add(processorChange);
 					}
+				} else {
+					subMonitor.worked(1);
 				}
 			}
+		} catch (OperationCanceledException e) {
+			throw e;
 		} catch (Exception e) {
 			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error creating change", e));
 		} finally {

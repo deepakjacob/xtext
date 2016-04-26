@@ -7,14 +7,14 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.scoping.batch;
 
+import java.util.EnumSet;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
@@ -22,7 +22,6 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc
  */
-@NonNullByDefault
 public interface IIdentifiableElementDescription extends IEObjectDescription {
 
 	JvmIdentifiableElement getElementOrProxy();
@@ -30,35 +29,53 @@ public interface IIdentifiableElementDescription extends IEObjectDescription {
 	String getShadowingKey();
 	
 	int getBucketId();
-
-	@Nullable
+	
+	/* @Nullable */
 	LightweightTypeReference getImplicitReceiverType();
 
-	@Nullable
+	/* @Nullable */
 	XExpression getImplicitReceiver();
 	
 	Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getImplicitReceiverTypeParameterMapping();
 	
-	@Nullable
+	EnumSet<ConformanceHint> getImplicitReceiverConformanceHints();
+	
+	int getImplicitReceiverConformanceFlags();
+	
+	/* @Nullable */
 	LightweightTypeReference getSyntacticReceiverType();
 	
-	@Nullable
+	/* @Nullable */
 	XExpression getSyntacticReceiver();
+	
+	boolean isSyntacticReceiverPossibleArgument();
 	
 	Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getSyntacticReceiverTypeParameterMapping();
 	
-	@Nullable
+	EnumSet<ConformanceHint> getSyntacticReceiverConformanceHints();
+	
+	int getSyntacticReceiverConformanceFlags();
+	
+	/* @Nullable */
 	XExpression getImplicitFirstArgument();
 	
-	@Nullable
+	/* @Nullable */
 	LightweightTypeReference getImplicitFirstArgumentType();
-	
-	Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getImplicitFirstArgumentTypeParameterMapping();
 	
 	boolean isVisible();
 
 	boolean isStatic();
 	
+	boolean isValidStaticState();
+	
+	boolean isTypeLiteral();
+	
+	boolean isAnonymousClassConstructorCall();
+	
 	boolean isExtension();
+
+	int getNumberOfIrrelevantParameters();
+	
+	int getNumberOfParameters();
 	
 }

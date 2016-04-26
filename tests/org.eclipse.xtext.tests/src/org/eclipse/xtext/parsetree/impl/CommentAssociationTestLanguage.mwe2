@@ -12,19 +12,20 @@ import org.eclipse.xtext.generator.*
 
 var projectName = "org.eclipse.xtext.tests"
 var runtimeProject = "../${projectName}"
+var lineDelimiter = '\n'
 
 Workflow {
 	bean = StandaloneSetup {
 		platformUri="${runtimeProject}/.."
 	}
 
-	component = Generator {
+	component = Generator auto-inject {
 		pathRtProject = runtimeProject
 		projectNameRt = projectName
 		
 		language = {
 			uri = "classpath:/org/eclipse/xtext/parsetree/impl/CommentAssociationTestLanguage.xtext"
-			fragment = @org.eclipse.xtext.TestLanguagesFragments {}
+			fragment = @org.eclipse.xtext.TestLanguagesFragmentsParseTreeConstructor {}
 		}
 	}
 }

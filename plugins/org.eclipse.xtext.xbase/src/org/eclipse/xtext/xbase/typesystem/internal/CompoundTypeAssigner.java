@@ -7,19 +7,16 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeAssigner;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputationState;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class CompoundTypeAssigner implements ITypeAssigner {
 
 	private final TypeAssigner[] assigners;
@@ -30,19 +27,14 @@ public class CompoundTypeAssigner implements ITypeAssigner {
 		this.assigners = assigners;
 	}
 
-	public void assignType(JvmIdentifiableElement element, LightweightTypeReference expectedType) {
+	@Override
+	public void assignType(JvmIdentifiableElement element, /* @Nullable */ LightweightTypeReference actualType) {
 		for(ITypeAssigner assigner: assigners) {
-			assigner.assignType(element, expectedType);
+			assigner.assignType(element, actualType);
 		}
 	}
 
-	public void assignType(JvmIdentifiableElement element, LightweightTypeReference actualDeclaredType,
-			LightweightTypeReference expectedType) {
-		for(ITypeAssigner assigner: assigners) {
-			assigner.assignType(element, actualDeclaredType, expectedType);
-		}
-	}
-
+	@Override
 	public ITypeComputationState getForkedState() {
 		AbstractTypeComputationState[] states = new AbstractTypeComputationState[assigners.length];
 		for(int i = 0; i < states.length; i++) {
@@ -51,8 +43,14 @@ public class CompoundTypeAssigner implements ITypeAssigner {
 		return new CompoundTypeComputationState(owner, states);
 	}
 
+	@Override
 	public LightweightTypeReference toLightweightTypeReference(JvmTypeReference reference) {
-		return new OwnedConverter(owner).toLightweightReference(reference);
+		return owner.toLightweightTypeReference(reference);
+	}
+	
+	@Override
+	public ITypeReferenceOwner getReferenceOwner() {
+		return owner;
 	}
 	
 }

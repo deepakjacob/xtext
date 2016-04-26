@@ -7,20 +7,20 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import java.util.EnumSet;
+
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeExpectation;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public abstract class AbstractTypeExpectation implements ITypeExpectation {
 
 	private final AbstractTypeComputationState state;
@@ -29,14 +29,22 @@ public abstract class AbstractTypeExpectation implements ITypeExpectation {
 		this.state = state;
 	}
 	
-	public OwnedConverter getConverter() {
-		return state.getConverter();
-	}
-	
+	@Override
 	public ITypeReferenceOwner getReferenceOwner() {
 		return state.getReferenceOwner();
 	}
 
+	@Override
+	public void acceptActualType(LightweightTypeReference type, ConformanceHint... hints) {
+		acceptActualType(type, ConformanceHint.toFlags(hints));
+	}
+	
+	@Override
+	public void acceptActualType(LightweightTypeReference type, EnumSet<ConformanceHint> hints) {
+		acceptActualType(type, ConformanceHint.toFlags(hints));
+	}
+	
+	@Override
 	public boolean isVoidTypeAllowed() {
 		LightweightTypeReference expectedType = getExpectedType();
 		if (expectedType != null && expectedType.isType(Void.TYPE)) {
@@ -45,6 +53,7 @@ public abstract class AbstractTypeExpectation implements ITypeExpectation {
 		return false;
 	}
 	
+	@Override
 	public boolean isOwnedBy(ITypeReferenceOwner referenceOwner) {
 		LightweightTypeReference expectedType = getExpectedType();
 		return expectedType == null || expectedType.isOwnedBy(referenceOwner);
@@ -58,6 +67,7 @@ public abstract class AbstractTypeExpectation implements ITypeExpectation {
 		return state.getResolvedTypes();
 	}
 	
+	@Override
 	public UnboundTypeReference createUnboundTypeReference(XExpression expression, JvmTypeParameter typeParameter) {
 		return getResolvedTypes().createUnboundTypeReference(expression, typeParameter);
 	}

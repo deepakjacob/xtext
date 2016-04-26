@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.impl;
 
@@ -71,33 +73,6 @@ public class JvmGenericArrayTypeReferenceImpl extends JvmTypeReferenceImplCustom
 	 */
 	public JvmTypeReference getComponentType()
 	{
-		if (componentType != null && componentType.eIsProxy())
-		{
-			InternalEObject oldComponentType = (InternalEObject)componentType;
-			componentType = (JvmTypeReference)eResolveProxy(oldComponentType);
-			if (componentType != oldComponentType)
-			{
-				InternalEObject newComponentType = (InternalEObject)componentType;
-				NotificationChain msgs = oldComponentType.eInverseRemove(this, EOPPOSITE_FEATURE_BASE - TypesPackage.JVM_GENERIC_ARRAY_TYPE_REFERENCE__COMPONENT_TYPE, null, null);
-				if (newComponentType.eInternalContainer() == null)
-				{
-					msgs = newComponentType.eInverseAdd(this, EOPPOSITE_FEATURE_BASE - TypesPackage.JVM_GENERIC_ARRAY_TYPE_REFERENCE__COMPONENT_TYPE, null, msgs);
-				}
-				if (msgs != null) msgs.dispatch();
-				if (eNotificationRequired())
-					eNotify(new ENotificationImpl(this, Notification.RESOLVE, TypesPackage.JVM_GENERIC_ARRAY_TYPE_REFERENCE__COMPONENT_TYPE, oldComponentType, componentType));
-			}
-		}
-		return componentType;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public JvmTypeReference basicGetComponentType()
-	{
 		return componentType;
 	}
 
@@ -156,7 +131,6 @@ public class JvmGenericArrayTypeReferenceImpl extends JvmTypeReferenceImplCustom
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	@Override
 	public JvmArrayType getType()
 	{
 		// TODO: implement this method
@@ -191,8 +165,7 @@ public class JvmGenericArrayTypeReferenceImpl extends JvmTypeReferenceImplCustom
 		switch (featureID)
 		{
 			case TypesPackage.JVM_GENERIC_ARRAY_TYPE_REFERENCE__COMPONENT_TYPE:
-				if (resolve) return getComponentType();
-				return basicGetComponentType();
+				return getComponentType();
 		}
 		return super.eGet(featureID, resolve, coreType);
 	}

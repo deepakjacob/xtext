@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl;
 
@@ -23,11 +20,11 @@ import org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.UntilElement;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl.UntilElementImpl#getLeft <em>Left</em>}</li>
  *   <li>{@link org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl.UntilElementImpl#getRight <em>Right</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -20,6 +20,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	InvariantCheckingIsolationTest.class,
 	InvariantCheckingBatchTypeResolverTest.class,
 	ShuffledTypeResolverTest.class,
-	TypeSystemSuite.class
+	PermutingBatchReturnTypeResolverTest.class,
+	TypeSystemSuite.class,
 })
 public class CompleteTypeSystemSuite {}

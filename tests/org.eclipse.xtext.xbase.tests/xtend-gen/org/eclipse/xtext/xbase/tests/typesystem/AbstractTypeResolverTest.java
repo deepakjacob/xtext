@@ -9,11 +9,17 @@ package org.eclipse.xtext.xbase.tests.typesystem;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.junit4.smoketest.IgnoredBySmokeTest;
+import org.eclipse.xtext.linking.impl.XtextLinkingDiagnostic;
+import org.eclipse.xtext.resource.XtextSyntaxDiagnostic;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
+import org.eclipse.xtext.xbase.lib.Functions.Function1;
 import org.eclipse.xtext.xbase.lib.IntegerRange;
+import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
-import org.eclipse.xtext.xbase.tests.typesystem.XbaseNewTypeSystemInjectorProvider.ClasspathTypeProviderFactoryWithoutAnnotationValues;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -33,7 +39,6 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @BeforeClass
   public static void createSeenExpressionsSet() {
-    ClasspathTypeProviderFactoryWithoutAnnotationValues.skipAnnotationValues();
     HashSet<String> _newHashSet = CollectionLiterals.<String>newHashSet();
     AbstractTypeResolverTest.seenExpressions = _newHashSet;
   }
@@ -41,23 +46,58 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   @AfterClass
   public static void discardSeenExpressions() {
     AbstractTypeResolverTest.seenExpressions = null;
-    ClasspathTypeProviderFactoryWithoutAnnotationValues.readAnnotationValues();
   }
   
+  @Override
   protected XExpression expression(final CharSequence expression, final boolean resolve) throws Exception {
     XExpression _xblockexpression = null;
     {
-      final String string = expression.toString();
+      String _string = expression.toString();
+      final String string = _string.replace("$$", "org::eclipse::xtext::xbase::lib::");
       boolean _add = AbstractTypeResolverTest.seenExpressions.add(string);
       boolean _not = (!_add);
       if (_not) {
-        String _plus = ("Duplicate expression under test: " + expression);
-        Assert.fail(_plus);
+        this.handleDuplicateExpression(expression);
+        return null;
       }
-      XExpression _expression = super.expression(expression, resolve);
-      _xblockexpression = (_expression);
+      _xblockexpression = super.expression(string, resolve);
     }
     return _xblockexpression;
+  }
+  
+  public Iterable<Resource.Diagnostic> getLinkingAndSyntaxErrors(final Resource resource) {
+    EList<Resource.Diagnostic> _errors = resource.getErrors();
+    final Function1<Resource.Diagnostic, Boolean> _function = new Function1<Resource.Diagnostic, Boolean>() {
+      @Override
+      public Boolean apply(final Resource.Diagnostic it) {
+        return Boolean.valueOf(((it instanceof XtextSyntaxDiagnostic) || (it instanceof XtextLinkingDiagnostic)));
+      }
+    };
+    return IterableExtensions.<Resource.Diagnostic>filter(_errors, _function);
+  }
+  
+  protected void handleDuplicateExpression(final CharSequence expression) {
+    Assert.fail(("Duplicate expression under test: " + expression));
+  }
+  
+  @Test
+  public void testRawType_01() throws Exception {
+    this.resolvesTo("{ val java.util.Set set = newHashSet() set }", "Set");
+  }
+  
+  @Test
+  public void testRawType_02() throws Exception {
+    this.resolvesTo("{ val java.util.Set set = newHashSet set.head }", "Object");
+  }
+  
+  @Test
+  public void testRawType_03() throws Exception {
+    this.resolvesTo("(null as java.util.Set<java.util.Set>).head", "Set");
+  }
+  
+  @Test
+  public void testRawType_04() throws Exception {
+    this.resolvesTo("{ val java.util.Set<java.util.Set> set = newHashSet set }", "Set<Set>");
   }
   
   @Test
@@ -73,6 +113,26 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   @Test
   public void testAssignment_03() throws Exception {
     this.resolvesTo("new testdata.FieldAccess().stringField = \'\'", "String");
+  }
+  
+  @Test
+  public void testAssignment_04() throws Exception {
+    this.resolvesTo("{\n\t\t\tvar Comparable<Object> it = null\n\t\t\tswitch it {\n\t            CharSequence: { it.length it = null }\n        \t}\n\t\t}", "Comparable<Object>");
+  }
+  
+  @Test
+  public void testAssignment_05() throws Exception {
+    this.resolvesTo("{\n\t\t\tval Comparable<Object> it = null\n\t\t\tswitch it {\n\t            CharSequence: it = null\n        \t}\n\t\t}", "Comparable<Object> & CharSequence");
+  }
+  
+  @Test
+  public void testAssignment_06() throws Exception {
+    this.resolvesTo("{\n\t\t\tvar Comparable<Object> it = null\n\t\t\tswitch it {\n\t            CharSequence: { it = null it }\n        \t}\n\t\t}", "Comparable<Object>");
+  }
+  
+  @Test
+  public void testReassignedTypeDiscarded_01() throws Exception {
+    this.resolvesTo("{\n\t\t\tvar Comparable<Object> it = null\n\t\t\tswitch it {\n\t            CharSequence: it\n        \t}\n\t\t\tit\n\t\t}", "Comparable<Object>");
   }
   
   @Test
@@ -103,6 +163,31 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   @Test
   public void testTypeLiteral_4() throws Exception {
     this.resolvesTo("typeof(int[])", "Class<int[]>");
+  }
+  
+  @Test
+  public void testTypeLiteral_5() throws Exception {
+    this.resolvesTo("typeof(int[]).superclass", "Class<? super int[]>");
+  }
+  
+  @Test
+  public void testTypeLiteral_6() throws Exception {
+    this.resolvesTo("String", "Class<String>");
+  }
+  
+  @Test
+  public void testTypeLiteral_7() throws Exception {
+    this.resolvesTo("void", "Class<Void>");
+  }
+  
+  @Test
+  public void testTypeLiteral_8() throws Exception {
+    this.resolvesTo("int", "Class<Integer>");
+  }
+  
+  @Test
+  public void testTypeLiteral_9() throws Exception {
+    this.resolvesTo("java.lang.String", "Class<String>");
   }
   
   @Test
@@ -288,6 +373,146 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   }
   
   @Test
+  public void testListLiteral_00() {
+    this.resolvesTo("#[]", "List<Object>");
+  }
+  
+  @Test
+  public void testListLiteral_01() throws Exception {
+    this.resolvesTo("#[\'foo\']", "List<String>");
+  }
+  
+  @Test
+  public void testListLiteral_02() throws Exception {
+    this.resolvesTo("#[\'foo\', null, \'bar\']", "List<String>");
+  }
+  
+  @Test
+  public void testListLiteral_03() throws Exception {
+    this.resolvesTo("#[null]", "List<Object>");
+  }
+  
+  @Test
+  public void testListLiteral_04() throws Exception {
+    this.resolvesTo("#[1, 2, 3]", "List<Integer>");
+  }
+  
+  @Test
+  public void testListLiteral_05() throws Exception {
+    this.resolvesTo("#[1, 2.0, 3]", "List<? extends Number & Comparable<?>>");
+  }
+  
+  @Test
+  public void testListLiteral_06() throws Exception {
+    this.resolvesTo("{ val java.util.List<Number> foo = #[1, 2.0, 3bi] foo }", "List<Number>");
+  }
+  
+  @Test
+  public void testListLiteral_07() throws Exception {
+    this.resolvesTo("{ val java.util.List<CharSequence> foo = #[\'foo\', \'bar\'] foo }", "List<CharSequence>");
+  }
+  
+  @Test
+  public void testListLiteral_08() throws Exception {
+    this.resolvesTo("{ val String[] foo = #[\'foo\', \'bar\'] foo }", "String[]");
+  }
+  
+  @Test
+  public void testListLiteral_09() throws Exception {
+    this.resolvesTo("{ val x = #[] val String[] y = x x }", "List<String>");
+  }
+  
+  @Test
+  public void testListLiteral_10() throws Exception {
+    this.resolvesTo("{ val x = #[null] val String[] y = x x }", "List<String>");
+  }
+  
+  @Test
+  public void testListLiteral_11() throws Exception {
+    this.resolvesTo("{ val x = #[] val Iterable<String> y = x x }", "List<String>");
+  }
+  
+  @Test
+  public void testListLiteral_12() throws Exception {
+    this.resolvesTo("{ val x = #[null] val java.util.Set<String> y = x x }", "List<String>");
+  }
+  
+  @Test
+  public void testListLiteral_13() throws Exception {
+    this.resolvesTo("#[#[\'foo\'], #{}]", "List<? extends Collection<String>>");
+  }
+  
+  @Test
+  public void testListLiteral_14() throws Exception {
+    this.resolvesTo("newArrayList(#[\'foo\'], #{})", "ArrayList<Collection<String>>");
+  }
+  
+  @Test
+  public void testSetLiteral_00() {
+    this.resolvesTo("#{}", "Set<Object>");
+  }
+  
+  @Test
+  public void testSetLiteral_01() throws Exception {
+    this.resolvesTo("#{\'foo\'}", "Set<String>");
+  }
+  
+  @Test
+  public void testSetLiteral_02() throws Exception {
+    this.resolvesTo("#{\'foo\', null, \'bar\'}", "Set<String>");
+  }
+  
+  @Test
+  public void testSetLiteral_03() throws Exception {
+    this.resolvesTo("#{null}", "Set<Object>");
+  }
+  
+  @Test
+  public void testSetLiteral_04() throws Exception {
+    this.resolvesTo("#{1, 2 ,3}", "Set<Integer>");
+  }
+  
+  @Test
+  public void testSetLiteral_05() throws Exception {
+    this.resolvesTo("#{1, 2.0 ,3}", "Set<? extends Number & Comparable<?>>");
+  }
+  
+  @Test
+  public void testSetLiteral_06() throws Exception {
+    this.resolvesTo("{ val java.util.Set<Number> foo = #{1, 2.0, 3bi} foo }", "Set<Number>");
+  }
+  
+  @Test
+  public void testSetLiteral_07() throws Exception {
+    this.resolvesTo("{ val java.util.Set<CharSequence> foo = #{\'foo\', \'bar\'} foo }", "Set<CharSequence>");
+  }
+  
+  @Test
+  public void testSetLiteral_08() throws Exception {
+    this.resolvesTo("#{\'foo\' -> \'bar\'}", "Map<String, String>");
+  }
+  
+  @Test
+  public void testSetLiteral_09() throws Exception {
+    this.resolvesTo("#{\'foo\' -> true, \'bar\' -> false}", "Map<String, Boolean>");
+  }
+  
+  @Test
+  public void testSetLiteral_10() throws Exception {
+    this.resolvesTo("#{\'foo\'-> new Exception(\'ohoh\'),\'bar\'->new Error(\'ohohoh\')}", "Map<String, Throwable>");
+  }
+  
+  @Test
+  public void testSetLiteral_11() throws Exception {
+    this.resolvesTo("{ val java.util.Map<String,String> x = #{} x }", "Map<String, String>");
+  }
+  
+  @Test
+  public void testSetLiteral_12() throws Exception {
+    this.resolvesTo("{ val java.util.Set<org.eclipse.xtext.xbase.lib.Pair<String,Object>> foo = #{\'foo\'->\'bar\'} foo }", "Set<Pair<String, Object>>");
+  }
+  
+  @Test
   public void testOverloadedVarArgs_01() throws Exception {
     this.resolvesTo("testdata::OverloadedMethods::overloadedVarArgs(null, null)", "long");
   }
@@ -432,7 +657,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
     this.resolvesTo("(1..2).map[ new java.math.BigInteger(toString) ].reduce[ i1, i2| i1 + i2 ]", "BigInteger");
   }
   
-  @Ignore(value = "i1 and i2 should become T -> Object thus + maps to String + Object")
+  @Ignore("i1 and i2 should become T -> Object thus + maps to String + Object")
   @Test
   public void testOverloadedOperators_11() throws Exception {
     this.resolvesTo("(1..2).map[ new java.math.BigInteger(toString) ].reduce[ i1, i2 | i1.toString + i2 ]", "String");
@@ -443,7 +668,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
     this.resolvesTo("{\n\t\t\tval i = 1bi\n\t\t\tval s = \'\'\n\t\t\ts + i\n\t\t}", "String");
   }
   
-  @Ignore(value = "i1 and i2 should become T -> Object thus + maps to Object + String")
+  @Ignore("i1 and i2 should become T -> Object thus + maps to Object + String")
   @Test
   public void testOverloadedOperators_13() throws Exception {
     this.resolvesTo("(1..2).map[ new java.math.BigInteger(toString) ].reduce[ i1, i2| i1 + String::valueOf(i2) ]", "String");
@@ -481,13 +706,18 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testOverloadedOperators_20() throws Exception {
-    this.resolvesTo("\'a\' - 1", "int");
+    this.resolvesTo("(null as Iterable<StringBuilder>) + (null as Iterable<StringBuffer>) + (null as Iterable<String>)", "Iterable<Serializable & CharSequence>");
   }
   
   @Test
   public void testCastExpression() throws Exception {
     this.resolvesTo("null as String", "String");
     this.resolvesTo("null as Boolean", "Boolean");
+  }
+  
+  @Test
+  public void testCastExpression_02() throws Exception {
+    this.resolvesTo("(null as Iterable<String[]>)", "Iterable<String[]>");
   }
   
   @Test
@@ -735,6 +965,11 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   }
   
   @Test
+  public void testElvisWithEmptyListInLamdba() throws Exception {
+    this.resolvesTo("[ String s |\n\t\t\tval result = <Integer>newArrayList\n\t\t\tval (String)=>Iterable<Integer> fun = []\n\t\t\tresult += fun.apply(s) ?: emptyList\n\t\t\tresult\n\t\t]", "(String)=>ArrayList<Integer>");
+  }
+  
+  @Test
   public void testMethodTypeParamInference_00() throws Exception {
     this.resolvesTo("new java.util.ArrayList<String>().findFirst(e | true)", "String");
   }
@@ -770,8 +1005,62 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   }
   
   @Test
-  public void testTypeForVoidClosure() throws Exception {
+  public void testTypeForVoidClosure_01() throws Exception {
     this.resolvesTo("newArrayList(\'foo\',\'bar\').forEach []", "void");
+  }
+  
+  @Test
+  public void testTypeForVoidClosure_02() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[ return ]", "(Object)=>void");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Procedure1<Object>");
+  }
+  
+  @Test
+  public void testTypeForVoidClosure_03() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[| return ]", "()=>void");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Procedure0");
+  }
+  
+  @Test
+  public void testTypeForVoidClosure_04() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[a, b| return ]", "(Object, Object)=>void");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Procedure2<Object, Object>");
+  }
+  
+  @Test
+  public void testTypeForVoidClosure_05() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[ System::out.println ]", "(Object)=>void");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Procedure1<Object>");
+  }
+  
+  @Test
+  public void testTypeForVoidClosure_06() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[| System::out.println ]", "()=>void");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Procedure0");
+  }
+  
+  @Test
+  public void testTypeForVoidClosure_07() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[a, b| System::out.println ]", "(Object, Object)=>void");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Procedure2<Object, Object>");
+  }
+  
+  @Test
+  public void testTypeForEmptyClosure_01() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[]", "(Object)=>Object");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Function1<Object, Object>");
+  }
+  
+  @Test
+  public void testTypeForEmptyClosure_02() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[|]", "()=>Object");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Function0<Object>");
+  }
+  
+  @Test
+  public void testTypeForEmptyClosure_03() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[a, b|]", "(Object, Object)=>Object");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Function2<Object, Object, Object>");
   }
   
   @Test
@@ -795,54 +1084,89 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   }
   
   @Test
-  public void testReturnType_00() throws Exception {
+  public void testFeatureCallWithArrayToIterableConversion_05() throws Exception {
+    this.resolvesTo("{ var x = <String[]>newArrayList(\'a,b\'.split(\',\')) x }", "ArrayList<String[]>");
+  }
+  
+  @Test
+  public void testFeatureCallWithArrayToIterableConversion_06() throws Exception {
+    this.resolvesTo("{ var x = <String[]>newArrayList(\'a,b\'.split(\',\')) x.head }", "String[]");
+  }
+  
+  @Test
+  public void testFeatureCallWithArrayToIterableConversion_07() throws Exception {
+    this.resolvesTo("{ var x = <String[]>newArrayList(\'a,b\'.split(\',\')) x.head.head }", "String");
+  }
+  
+  @Test
+  public void testFeatureCallWithArrayToIterableConversion_08() throws Exception {
+    this.resolvesTo("{ var x = <Iterable<String>>newArrayList(\'a,b\'.split(\',\')) x }", "ArrayList<Iterable<String>>");
+  }
+  
+  @Test
+  public void testFeatureCallWithArrayToIterableConversion_09() throws Exception {
+    this.resolvesTo("{ var x = <Iterable<String>>newArrayList(\'a,b\'.split(\',\')) x.head }", "Iterable<String>");
+  }
+  
+  @Test
+  public void testFeatureCallWithArrayToIterableConversion_10() throws Exception {
+    this.resolvesTo("{ var x = <Iterable<String>>newArrayList(\'a,b\'.split(\',\')) x.head.head }", "String");
+  }
+  
+  @Test
+  public void testReturnExpression_00() throws Exception {
     this.resolvesTo("return", "void");
   }
   
   @Test
-  public void testReturnType_01() throws Exception {
+  public void testReturnExpression_01() throws Exception {
     this.resolvesTo("return \'foo\'", "void");
   }
   
   @Test
-  public void testReturnType_02() throws Exception {
+  public void testReturnExpression_02() throws Exception {
     this.resolvesTo("return try { if (true) \'foo\' else \'bar\' } finally { String::valueOf(\'zonk\') }", "void");
   }
   
   @Test
-  public void testReturnType_03() throws Exception {
+  public void testReturnExpression_03() throws Exception {
     this.resolvesTo("{ val c = [ int i | return i ] c.apply(1) return null }", "void");
   }
   
   @Test
-  public void testReturnType_04() throws Exception {
+  public void testReturnExpression_04() throws Exception {
     this.resolvesTo("{ val c = [ int i | i ] c.apply(1) return null }", "void");
   }
   
   @Test
-  public void testReturnType_05() throws Exception {
+  public void testReturnExpression_05() throws Exception {
     this.resolvesTo("{ var closure = [| return \'literal\'] closure.apply }", "String");
   }
   
   @Test
-  public void testReturnType_06() throws Exception {
+  public void testReturnExpression_06() throws Exception {
     this.resolvesTo("{ var closure = [| return \'literal\'] return closure.apply }", "void");
   }
   
   @Test
-  public void testReturnType_07() throws Exception {
+  public void testReturnExpression_07() throws Exception {
     this.resolvesTo("[| return \'literal\'].apply", "String");
   }
   
   @Test
-  public void testReturnType_08() throws Exception {
+  public void testReturnExpression_08() throws Exception {
     this.resolvesTo("return [| return \'literal\'].apply", "void");
   }
   
   @Test
-  public void testReturnType_09() throws Exception {
+  public void testReturnExpression_09() throws Exception {
     Reference _resolvesTo = this.resolvesTo("[| return \'literal\']", "()=>String");
     this.isFunctionAndEquivalentTo(_resolvesTo, "Function0<String>");
+  }
+  
+  @Test
+  public void testReturnExpression_10() throws Exception {
+    this.resolvesTo("return if (true) while(false) (\'foo\'+\'bar\').length", "void");
   }
   
   @Test
@@ -863,24 +1187,18 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testClosure_03() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  list.map(e|e)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesTo(_plus_2, "List<Object>");
+    this.resolvesTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  list.map(e|e)\n") + 
+      "}"), "List<Object>");
   }
   
   @Test
   public void testClosure_04() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  list.map(e|false)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesTo(_plus_2, "List<Boolean>");
+    this.resolvesTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  list.map(e|false)\n") + 
+      "}"), "List<Boolean>");
   }
   
   @Test
@@ -946,7 +1264,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
     this.resolvesTo("{ \n\t\t\tval mapper = [ x | x ]\n\t\t\tnewArrayList(1).map(mapper).findFirst [ true ]\n\t\t}", "Integer");
   }
   
-  @Ignore(value = "TODO deferred closure body typing")
+  @Ignore("TODO deferred closure body typing")
   @Test
   public void testClosure_14() throws Exception {
     this.resolvesTo("{ \n\t\t\tval mapper = [ x | x.charAt(0) ]\n\t\t\tnewArrayList(\'\').map(mapper)\n\t\t}", "List<Character>");
@@ -960,7 +1278,13 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testClosure_16() throws Exception {
-    Reference _resolvesTo = this.resolvesTo("{ \n\t\t\tval fun = [ x | x ]\n\t\t\tval java.util.List<String> list = newArrayList(fun.apply(null))\n\t\t\tfun\n\t\t}", "(String)=>String");
+    Reference _resolvesTo = this.resolvesTo("{ \n\t\t\tval fun = [ x | x ]\n\t\t\tval java.util.List<String> list = newArrayList(fun.apply(null))\n\t\t\tfun\n\t\t}", "(String[])=>String[]");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Function1<String[], String[]>");
+  }
+  
+  @Test
+  public void testClosure_16_02() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("{ \n\t\t\tval fun = [ x | x ]\n\t\t\tval java.util.List<String> list = newArrayList(fun.apply(null), fun.apply(null))\n\t\t\tfun\n\t\t}", "(String)=>String");
     this.isFunctionAndEquivalentTo(_resolvesTo, "Function1<String, String>");
   }
   
@@ -1037,6 +1361,8 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   @Test
   public void testClosure_29() throws Exception {
     this.resolvesTo("[].apply()", "Object");
+    this.resolvesTo("[].apply(\'\')", "Object");
+    this.resolvesTo("[].apply(\'\', \'\')", "Object");
   }
   
   @Test
@@ -1046,19 +1372,22 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testClosure_31() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  $$ListExtensions::map(list) [e|e]\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    this.resolvesTo(_plus_2, "List<Object>");
+    this.resolvesTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  $$ListExtensions::map(list) [e|e]\n") + 
+      "}"), "List<Object>");
   }
   
-  @Ignore(value = "TODO deferred closure body typing")
+  @Ignore("TODO deferred closure body typing")
   @Test
   public void testClosure_32() throws Exception {
     this.resolvesTo("[ x, i | x.charAt(i) ].apply(\'\', 0)", "Character");
+  }
+  
+  @Test
+  public void testClosure_33() throws Exception {
+    Reference _resolvesTo = this.resolvesTo("[ String it | val bytes = new String bytes ]", "(String)=>String");
+    this.isFunctionAndEquivalentTo(_resolvesTo, "Function1<String, String>");
   }
   
   @Test
@@ -1076,21 +1405,24 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
     this.resolvesTo("newTreeSet([a, b|0], \'a\', \'b\')", "TreeSet<String>");
   }
   
-  @Ignore(value = "TODO deferred closure body typing")
   @Test
   public void testNewTreeSet_04() throws Exception {
     this.resolvesTo("newTreeSet([a, b|a.length.compareTo(b.length)], \'a\', \'b\')", "TreeSet<String>");
   }
   
-  @Ignore(value = "TODO deferred closure body typing")
   @Test
   public void testNewTreeSet_05() throws Exception {
     this.resolvesTo("newTreeSet([a, b|a.toString.compareTo(b.toString)], \'a\', \'b\')", "TreeSet<String>");
   }
   
   @Test
-  public void testTypeArgs() throws Exception {
+  public void testTypeArgs_01() throws Exception {
     this.resolvesTo("new java.util.ArrayList<String>() += \'foo\'", "boolean");
+  }
+  
+  @Test
+  public void testJEP101Example_01() throws Exception {
+    this.resolvesTo("foo::JEP101List::cons(42, foo::JEP101List::nil())", "JEP101List<Integer>");
   }
   
   @Test
@@ -1107,7 +1439,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testIfExpression_03() throws Exception {
-    this.resolvesTo("if (true) return \'foo\'", "null");
+    this.resolvesTo("if (true) return \'foo\'", "void");
   }
   
   @Test
@@ -1147,7 +1479,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testIfExpression_10() throws Exception {
-    this.resolvesTo("if (true) null as java.util.List<String> else null as String[]", "List<String>");
+    this.resolvesTo("if (true) null as java.util.List<String> else null as String[]", "Object");
   }
   
   @Test
@@ -1182,12 +1514,12 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testIfExpression_17() throws Exception {
-    this.resolvesTo("if (true) return 1", "null");
+    this.resolvesTo("if (true) return 1", "void");
   }
   
   @Test
   public void testIfExpression_18() throws Exception {
-    this.resolvesTo("if (true) return", "null");
+    this.resolvesTo("if (true) return", "void");
   }
   
   @Test
@@ -1198,6 +1530,76 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   @Test
   public void testIfExpression_20() throws Exception {
     this.resolvesTo("if (true) return else return", "void");
+  }
+  
+  @Test
+  public void testIfExpression_21() throws Exception {
+    this.resolvesTo("{ val x = if (true) null else null x }", "null");
+  }
+  
+  @Test
+  public void testIfExpression_22() throws Exception {
+    this.resolvesTo("{ val x = if (true) return 1 else 0 x }", "int");
+  }
+  
+  @Test
+  public void testIfExpression_23() throws Exception {
+    this.resolvesTo("{ val x = if (true) return 1 x }", "null");
+  }
+  
+  @Test
+  public void testIfExpression_24() throws Exception {
+    this.resolvesTo("{ val x = if (true) return; x }", "null");
+  }
+  
+  @Test
+  public void testIfExpression_25() throws Exception {
+    this.resolvesTo("{ val x = if (true) return else null x }", "null");
+  }
+  
+  @Test
+  public void testIfExpression_26() throws Exception {
+    this.resolvesTo("if (true) for(i: 1..2) i.toString else \'\'", "String");
+  }
+  
+  @Test
+  public void testIfExpression_27() throws Exception {
+    this.resolvesTo("if (true) while(false) (\'foo\'+\'bar\').length", "void");
+  }
+  
+  @Test
+  public void testIfExpression_28() throws Exception {
+    this.resolvesTo("if (true) return \'\' else 1", "int");
+  }
+  
+  @Test
+  public void testIfExpression_29() throws Exception {
+    this.resolvesTo("if (true) while(true) \'\'.toString else while(true) \'\'.toString", "void");
+  }
+  
+  @Test
+  public void testIfExpression_30() throws Exception {
+    this.resolvesTo("if (true) null as int[] else null as Integer[]", "Serializable & Cloneable");
+  }
+  
+  @Test
+  public void testIfExpression_31() throws Exception {
+    this.resolvesTo("if (true) null as int[] else null as Iterable<Integer>", "Object");
+  }
+  
+  @Test
+  public void testIfExpression_32() throws Exception {
+    this.resolvesTo("if (true) while(false) \'\'.toString else \'myString\'", "String");
+  }
+  
+  @Test
+  public void testIfExpression_33() throws Exception {
+    this.resolvesTo("if(true) #{\'f\'} else emptySet", "Set<String>");
+  }
+  
+  @Test
+  public void testIfExpression_34() throws Exception {
+    this.resolvesTo("if(true) true else Boolean.TRUE", "Boolean");
   }
   
   @Test
@@ -1213,17 +1615,17 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testSwitchExpression_2() throws Exception {
-    this.resolvesTo("switch null {\n\t\t  Object : return null \n\t\t}", "null");
+    this.resolvesTo("switch null {\n\t\t  Object : return null \n\t\t}", "void");
   }
   
   @Test
   public void testSwitchExpression_3() throws Exception {
-    this.resolvesTo("{\n\t\t\tval Object c = null\n\t\t\tswitch c {\n\t            CharSequence: 1\n\t    \t}\n\t\t}", "Integer");
+    this.resolvesTo("{\n\t\t\tval Object c = null\n\t\t\tswitch c {\n\t            CharSequence: 1\n\t    \t}\n\t\t}", "int");
   }
   
   @Test
   public void testSwitchExpression_4() throws Exception {
-    this.resolvesTo("{\n\t\t\tval Comparable<Object> c = null\n\t\t\tswitch c {\n\t            CharSequence: switch(c) {\n                    Appendable: {\n                        c.charAt(1)\n                    }\n                }\n        \t}\n\t\t}", "Character");
+    this.resolvesTo("{\n\t\t\tval Comparable<Object> c = null\n\t\t\tswitch c {\n\t            CharSequence: switch(c) {\n                    Appendable: {\n                        c.charAt(1)\n                    }\n                }\n        \t}\n\t\t}", "char");
   }
   
   @Test
@@ -1233,12 +1635,12 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testSwitchExpression_6() throws Exception {
-    this.resolvesTo("{\n\t\t\tval Comparable<Object> c = null\n\t\t\tswitch c {\n\t            CharSequence: switch(c) {\n                    Appendable: {\n                        c.compareTo(null)\n                    }\n                }\n        \t}\n\t\t}", "Integer");
+    this.resolvesTo("{\n\t\t\tval Comparable<Object> c = null\n\t\t\tswitch c {\n\t            CharSequence: switch(c) {\n                    Appendable: {\n                        c.compareTo(null)\n                    }\n                }\n        \t}\n\t\t}", "int");
   }
   
   @Test
   public void testSwitchExpression_7() throws Exception {
-    this.resolvesTo("{\n\t\t\tval Comparable<Object> it = null\n\t\t\tswitch it {\n\t            CharSequence: switch(it) {\n                    Appendable: {\n                        charAt(1)\n                    }\n                }\n        \t}\n\t\t}", "Character");
+    this.resolvesTo("{\n\t\t\tval Comparable<Object> it = null\n\t\t\tswitch it {\n\t            CharSequence: switch(it) {\n                    Appendable: {\n                        charAt(1)\n                    }\n                }\n        \t}\n\t\t}", "char");
   }
   
   @Test
@@ -1248,7 +1650,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testSwitchExpression_9() throws Exception {
-    this.resolvesTo("{\n\t\t\tval Comparable<Object> it = null\n\t\t\tswitch it {\n\t            CharSequence: switch(it) {\n                    Appendable: {\n                        compareTo(null)\n                    }\n                }\n        \t}\n\t\t}", "Integer");
+    this.resolvesTo("{\n\t\t\tval Comparable<Object> it = null\n\t\t\tswitch it {\n\t            CharSequence: switch(it) {\n                    Appendable: {\n                        compareTo(null)\n                    }\n                }\n        \t}\n\t\t}", "int");
   }
   
   @Test
@@ -1259,7 +1661,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testSwitchExpression_11() throws Exception {
-    this.resolvesTo("switch null {\n\t\t  Object : return \n\t\t}", "null");
+    this.resolvesTo("switch null {\n\t\t  Object : return \n\t\t}", "void");
   }
   
   @Test
@@ -1283,6 +1685,16 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   }
   
   @Test
+  public void testTypeGuardedCase_3() throws Exception {
+    this.resolvesTo("switch s: new Object() { String, StringBuffer: s}", "Serializable & CharSequence");
+  }
+  
+  @Test
+  public void testTypeGuardedCase_4() throws Exception {
+    this.resolvesTo("switch s: \'\' as CharSequence { Cloneable, String: s }", "CharSequence");
+  }
+  
+  @Test
   public void testSwitchExpression_Bug343100() throws Exception {
     this.resolvesTo("switch \'a\' {\n\t\t  case null: typeof(String) \n\t\t  case \'a\': typeof(Void)\n\t\t}", "Class<?>");
   }
@@ -1300,25 +1712,16 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
     this.resolvesTo("{val s = \'\' s}", "String");
   }
   
+  @IgnoredBySmokeTest("Do not run smoke test with 1000s of nested expressions")
   @Test
   public void testBlockExpression_03() throws Exception {
     String input = "{ val s1 = \'\'\n";
     final int max = 1000;
     IntegerRange _upTo = new IntegerRange(1, max);
     for (final Integer i : _upTo) {
-      String _plus = (input + " val s");
-      int _plus_1 = ((i).intValue() + 1);
-      String _plus_2 = (_plus + Integer.valueOf(_plus_1));
-      String _plus_3 = (_plus_2 + " = s");
-      String _plus_4 = (_plus_3 + i);
-      String _plus_5 = (_plus_4 + "\n");
-      input = _plus_5;
+      input = (((((input + " val s") + Integer.valueOf(((i).intValue() + 1))) + " = s") + i) + "\n");
     }
-    String _plus_6 = (input + " s");
-    int _plus_7 = (max + 1);
-    String _plus_8 = (_plus_6 + Integer.valueOf(_plus_7));
-    String _plus_9 = (_plus_8 + "}");
-    input = _plus_9;
+    input = (((input + " s") + Integer.valueOf((max + 1))) + "}");
     this.resolvesTo(input, "String");
   }
   
@@ -1345,6 +1748,41 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   @Test
   public void testBlockExpression_08() throws Exception {
     this.resolvesTo("{\n            val (Integer, Double, Boolean) => void fun1 = null\n            val (byte[], Object) => double[] fun2 = null\n            val test = newArrayList.map[1 -> org::eclipse::xtext::xbase::lib::Pair::of(fun1, fun2)]\n            val test2 = newArrayList.map[2 -> org::eclipse::xtext::xbase::lib::Pair::of(fun1, fun2)]\n            val test3 = com::google::common::collect::Iterables::concat(test, test2).toMap[key].entrySet.map[value].toList\n            test3.head.value.value.apply(null, null).last\n        }", "Double");
+  }
+  
+  @Test
+  public void testBlockExpression_09() throws Exception {
+    this.resolvesTo("{val Object x = if (false) return; x }", "Object");
+  }
+  
+  @Test
+  public void testBlockExpression_10() throws Exception {
+    this.resolvesTo("{ ( if (true) {val Object x = if (false) return; x } ) }", "Object");
+  }
+  
+  @Test
+  public void testBlockExpression_11() throws Exception {
+    this.resolvesTo("{ ( if (true) {val Object x = if (false) return; x } ) {val Object x = if (false) return; x } }", "Object");
+  }
+  
+  @Test
+  public void testBlockExpression_12() throws Exception {
+    this.resolvesTo("{ ( if (true) if (true) return else null ) { if (true) return else null } }", "null");
+  }
+  
+  @Test
+  public void testEntrySet_01() throws Exception {
+    this.resolvesTo("(null as java.util.Map<? extends String,? extends String>).entrySet", "Set<? extends Entry<? extends String, ? extends String>>");
+  }
+  
+  @Test
+  public void testEntrySet_02() throws Exception {
+    this.resolvesTo("(null as java.util.Map<String, String>).entrySet", "Set<Entry<String, String>>");
+  }
+  
+  @Test
+  public void testEntrySet_03() throws Exception {
+    this.resolvesTo("(null as java.util.Map<Iterable<? extends String>, Iterable<? extends String>>).entrySet", "Set<Entry<Iterable<? extends String>, Iterable<? extends String>>>");
   }
   
   @Test
@@ -1427,6 +1865,16 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   }
   
   @Test
+  public void testBrokenConstructorCall_01() throws Exception {
+    this.resolvesTo("new Iterable<String>()", "Iterable<String>");
+  }
+  
+  @Test
+  public void testBrokenConstructorCall_02() throws Exception {
+    this.resolvesTo("new java.util.Map<String>()", "Map<String, Object>");
+  }
+  
+  @Test
   public void testConstructorTypeInference_01() throws Exception {
     this.resolvesTo("new testdata.GenericType1(\'\')", "GenericType1<String>");
   }
@@ -1487,6 +1935,26 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   }
   
   @Test
+  public void testClassGetSuperclass_01() throws Exception {
+    this.resolvesTo("typeof(String).superclass", "Class<? super String>");
+  }
+  
+  @Test
+  public void testClassGetSuperclass_02() throws Exception {
+    this.resolvesTo("typeof(String).superclass.superclass", "Class<? super String>");
+  }
+  
+  @Test
+  public void testClassGetSuperclass_03() throws Exception {
+    this.resolvesTo("{ var c = Class::forName(\'\') c.superclass }", "Class<?>");
+  }
+  
+  @Test
+  public void testClassGetSuperclass_04() throws Exception {
+    this.resolvesTo("{ var c = Class::forName(\'\') println(c.superclass) }", "Class<?>");
+  }
+  
+  @Test
   public void testVarArgs_01() throws Exception {
     this.resolvesTo("newArrayList(new Double(\'-20\'), new Integer(\'20\'))", "ArrayList<Number & Comparable<?>>");
   }
@@ -1514,6 +1982,16 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   @Test
   public void testVarArgs_06() throws Exception {
     this.resolvesTo("java::util::Arrays::asList(1, 3d, \'4\')", "List<Comparable<?> & Serializable>");
+  }
+  
+  @Test
+  public void testVarArgs_07() throws Exception {
+    this.resolvesTo("newArrayList(null as Integer[], null as int[], null as Iterable<Integer>)", "ArrayList<Object>");
+  }
+  
+  @Test
+  public void testVarArgs_08() throws Exception {
+    this.resolvesTo("newArrayList(null as Integer[], null as int[])", "ArrayList<Serializable & Cloneable>");
   }
   
   @Test
@@ -1558,6 +2036,16 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   public void testMemberFeatureCall_03() throws Exception {
     this.resolvesTo("newArrayList(\'\').get(0)", "String");
     this.resolvesTo("<String>newArrayList().get(0)", "String");
+  }
+  
+  @Test
+  public void testMemberFeatureCall_04() throws Exception {
+    this.resolvesTo("\'\'.^class", "Class<? extends String>");
+  }
+  
+  @Test
+  public void testMemberFeatureCall_05() throws Exception {
+    this.resolvesTo("\'\'.^class.superclass", "Class<?>");
   }
   
   @Test
@@ -1823,24 +2311,25 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
     this.resolvesTo("newArrayList(newArrayList(\'\').map(s|1).map(e|e).map(e|e).map(e|e).map(e|e)).map(iterable|iterable.size()).map(e|e).map(e|e).map(e|e).map(e|e).head", "Integer");
   }
   
+  @IgnoredBySmokeTest("Pointless since the scenario is pretty much the same as above")
   @Test
   public void testFeatureCall_15_m() throws Exception {
     this.resolvesTo("newArrayList(newArrayList(\'\').map(String s|1).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t).map(iterable|iterable.size()).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)\n\t\t.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).head", "Integer");
   }
   
-  @Ignore(value = "slightly too slow")
+  @Ignore("slightly too slow")
   @Test
   public void testFeatureCall_15_n() throws Exception {
     this.resolvesTo("newArrayList(newArrayList(\'\').map(s|1).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t).map(iterable|iterable.size()).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).map(e|e).map(e|e)\n\t\t.map(e|e).map(e|e).map(e|e).map(e|e).head", "Integer");
   }
   
-  @Ignore(value = "too slow")
+  @Ignore("too slow")
   @Test
   public void testFeatureCall_15_n_1() throws Exception {
     this.resolvesTo("newArrayList(newArrayList(\'\').map(s|1).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t).map(iterable|iterable.size()).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e)\n\t\t.map(e|e+e).map(e|e+e).map(e|e+e).map(e|e+e).head", "Integer");
   }
   
-  @Ignore(value = "way too slow")
+  @Ignore("way too slow")
   @Test
   public void testFeatureCall_15_n_2() throws Exception {
     this.resolvesTo("newArrayList(newArrayList(\'\').map(s|1).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t).map(iterable|iterable.size()).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e))\n\t\t.map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).map(e|(e+e)+(e+e)).head", "Integer");
@@ -1948,24 +2437,18 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testFeatureCall_24_a() throws Exception {
-    String _plus = ("newArrayList(\'\').map(s|" + 
-      "$$ObjectExtensions::operator_equals(");
-    String _plus_1 = (_plus + 
-      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)");
-    String _plus_2 = (_plus_1 + 
-      ").map(b| $$BooleanExtensions::operator_not(b) )");
-    this.resolvesTo(_plus_2, "List<Boolean>");
+    this.resolvesTo(((("newArrayList(\'\').map(s|" + 
+      "$$ObjectExtensions::operator_equals(") + 
+      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)") + 
+      ").map(b| $$BooleanExtensions::operator_not(b) )"), "List<Boolean>");
   }
   
   @Test
   public void testFeatureCall_24_b() throws Exception {
-    String _plus = ("newArrayList(\'\').map(s|" + 
-      "$$ObjectExtensions::operator_equals(");
-    String _plus_1 = (_plus + 
-      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)");
-    String _plus_2 = (_plus_1 + 
-      ").map(b| $$BooleanExtensions::operator_not(b) ).head");
-    this.resolvesTo(_plus_2, "Boolean");
+    this.resolvesTo(((("newArrayList(\'\').map(s|" + 
+      "$$ObjectExtensions::operator_equals(") + 
+      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)") + 
+      ").map(b| $$BooleanExtensions::operator_not(b) ).head"), "Boolean");
   }
   
   @Test
@@ -1973,16 +2456,19 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
     this.resolvesTo("newArrayList(\'\').map(s|s.length + 1 * 5).map(b| b / 5 )", "List<Integer>");
   }
   
+  @IgnoredBySmokeTest("Same as testFeatureCall_25_a")
   @Test
   public void testFeatureCall_25_b() throws Exception {
     this.resolvesTo("newArrayList(\'\').map(s|s.length + 1 * 5).map(b| b / 5 ).head", "Integer");
   }
   
+  @IgnoredBySmokeTest("Same as testFeatureCall_25_a")
   @Test
   public void testFeatureCall_25_c() throws Exception {
     this.resolvesTo("newArrayList(\'\').map[ length + 1 * 5 ].map [ it / 5 ].head", "Integer");
   }
   
+  @IgnoredBySmokeTest("Same as testFeatureCall_25_a")
   @Test
   public void testFeatureCall_25_d() throws Exception {
     this.resolvesTo("newArrayList(\'\').map[ length + 1 * 5 - length + 1 * 5 ].map [ it / 5 + 1 / it ].head", "Integer");
@@ -2183,7 +2669,6 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
     this.resolvesTo("{\n\t\t\tval Object it = null\n\t\t\t^class.declaredFields.toMap[name].mapValues[get(it)]\n\t\t}", "Map<String, Object>");
   }
   
-  @Ignore(value = "TODO this should work")
   @Test
   public void testBug_391758() throws Exception {
     this.resolvesTo("{\n\t\t\tval iterable = newArrayList\n\t\t\titerable.fold(newArrayList) [ list , elem | null as java.util.List<String> ]\n\t\t}", "List<String>");
@@ -3181,7 +3666,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testDeferredTypeArgumentResolution_145() throws Exception {
-    this.resolvesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval Iterable<String> s = list.head.head.head\n\t\t\tlist.head\n\t\t}", "ArrayList<Iterable<Iterable<String>>>");
+    this.resolvesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval Iterable<String> s = list.head.flatten.head\n\t\t\tlist.head\n\t\t}", "ArrayList<Iterable<? extends Iterable<String>>>");
   }
   
   @Test
@@ -3191,7 +3676,7 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   
   @Test
   public void testDeferredTypeArgumentResolution_147() throws Exception {
-    this.resolvesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval String s = list.head.head.head\n\t\t\tlist.head\n\t\t}", "ArrayList<Iterable<String>>");
+    this.resolvesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval String s = list.head.flatten.head\n\t\t\tlist.head\n\t\t}", "ArrayList<Iterable<? extends String>>");
   }
   
   @Test
@@ -3257,6 +3742,47 @@ public abstract class AbstractTypeResolverTest<Reference extends Object> extends
   @Test
   public void testDeferredTypeArgumentResolution_160() throws Exception {
     this.resolvesTo("{\n\t\t\tval list = newArrayList\n\t\t\tval secondList = newArrayList\n\t\t\tlist.addAll(secondList)\n\t\t\tlist.addAll(null as String[])\n\t\t\tsecondList\n\t\t}", "ArrayList<String>");
+  }
+  
+  @Test
+  public void testDeferredTypeArgumentResolution_161() throws Exception {
+    this.resolvesTo("{\n\t\t\tval list = newArrayList\n\t\t\tfor(s: list) {\n\t\t\t\tval String x = s\n\t\t\t\tx.toString\n\t\t\t}\n\t\t\tlist\n\t\t}", "ArrayList<String>");
+  }
+  
+  @Test
+  public void testDeferredTypeArgumentResolution_162() throws Exception {
+    this.resolvesTo("{\n\t\t\tval list = newArrayList\n\t\t\tfor(s: newArrayList) {\n\t\t\t\tlist.add(s)\n\t\t\t\tval String x = s\n\t\t\t\tx.toString\n\t\t\t}\n\t\t\tlist\n\t\t}", "ArrayList<String>");
+  }
+  
+  @Test
+  public void testDeferredTypeArgumentResolution_163() throws Exception {
+    this.resolvesTo("{\n\t\t\tval list = newArrayList\n\t\t\tval literal = #{}\n\t\t\tlist.addAll(literal)\n\t\t\tfor(s: newArrayList) {\n\t\t\t\tlist.add(s)\n\t\t\t\tval String x = s\n\t\t\t\tx.toString\n\t\t\t}\n\t\t\tliteral\n\t\t}", "Set<String>");
+  }
+  
+  @Test
+  public void testDeferredTypeArgumentResolution_164() throws Exception {
+    this.resolvesTo("{\n\t\t\tval list = newArrayList\n\t\t\tval literal = #{}\n\t\t\tlist += literal\n\t\t\tfor(s: newArrayList) {\n\t\t\t\tlist.add(s)\n\t\t\t\tval String x = s\n\t\t\t\tx.toString\n\t\t\t}\n\t\t\tliteral\n\t\t}", "Set<String>");
+  }
+  
+  @Test
+  public void testDeferredTypeArgumentResolution_165() throws Exception {
+    this.resolvesTo("{\n\t\t\tval list = newArrayList\n\t\t\tval literal = #{}\n\t\t\tlist.add(literal.flatten.head)\n\t\t\tfor(s: newArrayList) {\n\t\t\t\tlist.add(s)\n\t\t\t\tval String x = s\n\t\t\t\tx.toString\n\t\t\t}\n\t\t\tliteral\n\t\t}", "Set<Iterable<? extends String>>");
+  }
+  
+  @Ignore("+= resolves the type parameter since Integer is a resolved type")
+  @Test
+  public void testDeferredTypeArgumentResolution_166() throws Exception {
+    this.resolvesTo("{\n\t\t\tval list = newArrayList\n\t\t\tlist += 1\n\t\t\tlist += 1.0\n\t\t\tlist\n\t\t}", "ArrayList<Number & Comparable<?>>");
+  }
+  
+  @Test
+  public void testDeferredTypeArgumentResolution_167() throws Exception {
+    this.resolvesTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval java.util.Iterator<String> s = list.head.flatten.head\n\t\t\tlist.head\n\t\t}", "ArrayList<Iterable<? extends Iterator<String>>>");
+  }
+  
+  @Test
+  public void testDeferredTypeArgumentResolution_168() throws Exception {
+    this.resolvesTo("{\n\t\t\tval list = newArrayList\n\t\t\tlist.addAll(1, null as String[])\n\t\t\tlist\n\t\t}", "ArrayList<String>");
   }
   
   @Test

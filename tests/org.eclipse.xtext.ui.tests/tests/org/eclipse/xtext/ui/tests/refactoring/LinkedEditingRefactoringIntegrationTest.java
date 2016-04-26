@@ -28,7 +28,6 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.XtextProjectHelper;
 import org.eclipse.xtext.ui.editor.XtextEditor;
 import org.eclipse.xtext.ui.refactoring.ui.IRenameElementContext;
-import org.eclipse.xtext.ui.refactoring.ui.RefactoringType;
 import org.eclipse.xtext.ui.refactoring.ui.RenameRefactoringController;
 import org.eclipse.xtext.ui.tests.Activator;
 import org.eclipse.xtext.ui.tests.refactoring.referring.Reference;
@@ -83,12 +82,13 @@ public class LinkedEditingRefactoringIntegrationTest extends AbstractLinkedEditi
 		
 		String model = "ref test." + TEST_CLASS;
 		IFile file = createFile(TEST_PROJECT + "/ref.referringtestlanguage", model);
-		waitForAutoBuild();
+		waitForBuild();
 		final XtextEditor editor = openEditor(file);
 		final TextSelection selection = new TextSelection(model.indexOf(TEST_CLASS), TEST_CLASS.length());
 		editor.getSelectionProvider().setSelection(selection);
 		waitForDisplay();
 		IRenameElementContext context = editor.getDocument().readOnly(new IUnitOfWork<IRenameElementContext, XtextResource>() {
+			@Override
 			public IRenameElementContext exec(XtextResource state) throws Exception {
 				Reference ref = (Reference) state.getContents().get(0).eContents().get(0);
 				EObject referenced = ref.getReferenced();
@@ -96,13 +96,12 @@ public class LinkedEditingRefactoringIntegrationTest extends AbstractLinkedEditi
 				return new IRenameElementContext.Impl(EcoreUtil.getURI(referenced), referenced.eClass(), editor, selection, state.getURI());
 			}
 		});
-		renameRefactoringController.initialize(context);
-		renameRefactoringController.startRefactoring(RefactoringType.LINKED_EDITING);
+		renameRefactoringController.startRefactoring(context);
 		waitForDisplay();
 		pressKeys(editor, "NewTestClass\n");
 		waitForReconciler(editor);
 		waitForDisplay();
-		waitForAutoBuild();
+		waitForBuild();
 		ecoreResource.load(null);
 		assertEquals("NewTestClass", ((EPackage)ecoreResource.getContents().get(0)).getEClassifiers().get(0).getName());
 	}

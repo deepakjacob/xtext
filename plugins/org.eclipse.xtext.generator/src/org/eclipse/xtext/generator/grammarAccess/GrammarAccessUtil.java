@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.AbstractElement;
@@ -24,16 +26,48 @@ import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.XtextRuntimeModule;
+import org.eclipse.xtext.formatting.ILineSeparatorInformation;
 import org.eclipse.xtext.generator.Naming;
-import org.eclipse.xtext.parsetree.reconstr.Serializer;
-import org.eclipse.xtext.resource.SaveOptions;
+import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.util.Strings;
+import org.eclipse.xtext.xbase.lib.IterableExtensions;
+import org.eclipse.xtext.xbase.lib.ListExtensions;
+import org.eclipse.xtext.xbase.lib.Functions.Function1;
+import org.eclipse.xtext.xtext.RuleNames;
+import org.eclipse.xtext.xtext.generator.grammarAccess.GrammarAccessExtensions;
 
+import com.google.common.collect.Maps;
+import com.google.inject.Binder;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
 
 /**
  * @author Moritz Eysholdt
  */
 public class GrammarAccessUtil {
+
+	/**
+	 * @since 2.9
+	 */
+	protected static class LineSeparatorModule extends XtextRuntimeModule {
+		private final ILineSeparatorInformation lineSeparatorInformation;
+
+		protected LineSeparatorModule(ILineSeparatorInformation lineSeparatorInformation) {
+			this.lineSeparatorInformation = lineSeparatorInformation;
+		}
+
+		@Override
+		public void configure(Binder binder) {
+			// avoid duplicate registration of the validator
+			Module compound = getBindings();
+			compound.configure(binder);
+		}
+
+		public ILineSeparatorInformation bindILineSeparatorInformation() {
+			return lineSeparatorInformation;
+		}
+	}
 
 	public static String getClassName(EObject obj) {
 		return obj.eClass().getName();
@@ -79,28 +113,36 @@ public class GrammarAccessUtil {
 		return Collections.emptyList();
 	}
 
-	private static Serializer xtextSerializer;
+	private static Map<String, ISerializer> xtextSerializerByLineDelimiter = Maps.newHashMapWithExpectedSize(2);
 
 	public static String serialize(EObject obj, String prefix) {
-		String s;
-		try {
-			SaveOptions options = SaveOptions.newBuilder().format().getOptions();
-			s = getSerializer().serialize(obj, options);
-		} catch (Exception e) {
-			s = e.toString();
-			// e.printStackTrace();
-		}
-		s = prefix
-				+ s.trim().replaceAll("[\\r\\n]", "\n" + prefix).replaceAll(
-						"/\\*", "/ *").replaceAll("\\*/", "* /");
-		return s;
+		return serialize(obj, prefix, Strings.newLine());
+	}
+	
+	/**
+	 * @since 2.7
+	 */
+	public static String serialize(EObject obj, String prefix, String lineDelimiter) {
+		ISerializer serializer = getSerializer(lineDelimiter);
+		String result = GrammarAccessExtensions.grammarFragmentToString(serializer, obj, prefix);
+		return result;
 	}
 
-	private static Serializer getSerializer() {
-		if (xtextSerializer==null)
-			xtextSerializer = Guice.createInjector(
-					new XtextRuntimeModule()).getInstance(Serializer.class);
-		return xtextSerializer;
+	private static ISerializer getSerializer(final String delimiter) {
+		ISerializer result = xtextSerializerByLineDelimiter.get(delimiter);
+		if (result != null) {
+			return result;
+		}
+		final ILineSeparatorInformation lineSeparatorInformation = new ILineSeparatorInformation() {
+			@Override
+			public String getLineSeparator() {
+				return delimiter;
+			}
+		};
+		Injector injector = Guice.createInjector(new LineSeparatorModule(lineSeparatorInformation));
+		result = injector.getInstance(ISerializer.class);
+		xtextSerializerByLineDelimiter.put(delimiter, result);
+		return result;
 	}
 
 	private static String getElementPath(AbstractElement ele) {
@@ -125,7 +167,15 @@ public class GrammarAccessUtil {
 	}
 
 	public static String getGrammarAccessFQName(Grammar grammar, Naming naming) {
-		return naming.basePackageRuntime(grammar) + ".services." +GrammarUtil.getName(grammar) + "GrammarAccess";
+		return naming.basePackageRuntime(grammar) + ".services." +GrammarUtil.getSimpleName(grammar) + "GrammarAccess";
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public static String getUniqueRuleName(AbstractRule rule) {
+		String plainName = RuleNames.getRuleNames(rule).getUniqueRuleName(rule);
+		return toJavaIdentifier(plainName, true);
 	}
 
 	public static String getUniqueElementName(AbstractElement ele) {
@@ -206,5 +256,27 @@ public class GrammarAccessUtil {
 			t.printStackTrace();
 			return "%_FAILURE_(" + text + ")%";
 		}
+	}
+	
+	// Duplicated from GrammarAccessFragment2
+	/**
+	 * @since 2.9
+	 */
+	public static List<Grammar> getEffectivelyUsedGrammars(final Grammar grammar) {
+		List<AbstractRule> allRules = GrammarUtil.allRules(grammar);
+		List<Grammar> _map = ListExtensions.map(allRules, new Function1<AbstractRule, Grammar>() {
+			@Override
+			public Grammar apply(final AbstractRule it) {
+				return GrammarUtil.getGrammar(it);
+			}
+		});
+		Iterable<Grammar> filtered = IterableExtensions.filter(_map, new Function1<Grammar, Boolean>() {
+			@Override
+			public Boolean apply(final Grammar it) {
+				return Boolean.valueOf((it != grammar));
+			}
+		});
+		Set<Grammar> set = IterableExtensions.toSet(filtered);
+		return IterableExtensions.toList(set);
 	}
 }

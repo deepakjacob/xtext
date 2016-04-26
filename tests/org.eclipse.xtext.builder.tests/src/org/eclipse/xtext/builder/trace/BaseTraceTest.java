@@ -7,10 +7,15 @@
  *******************************************************************************/
 package org.eclipse.xtext.builder.trace;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IStorage;
-import org.eclipse.jdt.annotation.NonNull;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+
+import org.eclipse.xtext.generator.trace.AbsoluteURI;
+import org.eclipse.xtext.generator.trace.SourceRelativeURI;
 import org.eclipse.xtext.generator.trace.TraceRegion;
+import org.eclipse.xtext.generator.trace.internal.AbstractTrace;
+import org.eclipse.xtext.workspace.IProjectConfig;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,14 +37,30 @@ public class BaseTraceTest {
 			}
 			
 			@Override
-			@NonNull
-			public IProject getLocalProject() {
+			/* @NonNull */
+			public IProjectConfig getLocalProjectConfig() {
 				throw new UnsupportedOperationException();
 			}
 			
 			@Override
-			@NonNull
-			public IStorage getLocalStorage() {
+			/* @NonNull */
+			public AbsoluteURI getLocalURI() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			/* @NonNull */
+			protected InputStream getContents(/* @NonNull */ SourceRelativeURI uri) throws IOException {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			protected Reader getContentsAsText(SourceRelativeURI uri) throws IOException {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			protected Reader getLocalContentsAsText() throws IOException {
 				throw new UnsupportedOperationException();
 			}
 		};

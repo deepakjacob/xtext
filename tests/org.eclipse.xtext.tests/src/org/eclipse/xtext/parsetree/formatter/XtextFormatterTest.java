@@ -7,7 +7,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.XtextStandaloneSetup;
-import org.eclipse.xtext.conversion.impl.DeclarativeValueConverterServiceTest;
 import org.eclipse.xtext.formatting.ILineSeparatorInformation;
 import org.eclipse.xtext.junit4.AbstractXtextTests;
 import org.eclipse.xtext.parsetree.reconstr.Serializer;
@@ -19,6 +18,7 @@ import org.junit.Test;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+@SuppressWarnings("deprecation")
 public class XtextFormatterTest extends AbstractXtextTests {
 
 	@Override

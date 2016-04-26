@@ -8,10 +8,10 @@
 package org.eclipse.xtext.xbase.typesystem.util;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeConstraint;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
@@ -21,16 +21,13 @@ import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
-import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference;
 
-import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API 
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class ActualTypeArgumentCollector extends AbstractTypeReferencePairWalker {
 
 	protected class ActualParameterizedTypeReferenceTraverser extends ParameterizedTypeReferenceTraverser {
@@ -44,7 +41,7 @@ public class ActualTypeArgumentCollector extends AbstractTypeReferencePairWalker
 		}
 	}
 
-	private final ListMultimap<JvmTypeParameter, LightweightBoundTypeArgument> typeParameterMapping;
+	private final Map<JvmTypeParameter, List<LightweightBoundTypeArgument>> typeParameterMapping;
 	private final Collection<JvmTypeParameter> parametersToBeMapped;
 	private final BoundTypeArgumentSource defaultSource;
 
@@ -52,7 +49,7 @@ public class ActualTypeArgumentCollector extends AbstractTypeReferencePairWalker
 		super(owner);
 		this.parametersToBeMapped = parametersToBeMapped;
 		this.defaultSource = defaultSource;
-		typeParameterMapping = Multimaps2.newLinkedHashListMultimap(parametersToBeMapped.size(), 3);
+		typeParameterMapping = Maps2.newLinkedHashMapWithExpectedSize(parametersToBeMapped.size());
 	}
 
 	public void populateTypeParameterMapping(LightweightTypeReference declaredType, LightweightTypeReference actualType) {
@@ -61,6 +58,10 @@ public class ActualTypeArgumentCollector extends AbstractTypeReferencePairWalker
 	
 	protected LightweightBoundTypeArgument boundByConstraint(LightweightTypeReference reference, Object origin) {
 		return new LightweightBoundTypeArgument(reference.getWrapperTypeIfPrimitive(), BoundTypeArgumentSource.CONSTRAINT, origin, VarianceInfo.OUT, VarianceInfo.OUT);
+	}
+	
+	protected BoundTypeArgumentSource getDefaultSource() {
+		return defaultSource;
 	}
 	
 	protected LightweightBoundTypeArgument boundByDefaultSource(LightweightTypeReference reference) {
@@ -74,10 +75,10 @@ public class ActualTypeArgumentCollector extends AbstractTypeReferencePairWalker
 	
 	@Override
 	protected void processTypeParameter(JvmTypeParameter typeParameter, LightweightTypeReference reference) {
-		typeParameterMapping.put(typeParameter, boundByDefaultSource(reference));
+		Maps2.putIntoListMap(typeParameter, boundByDefaultSource(reference), typeParameterMapping);
 	}
 	
-	public ListMultimap<JvmTypeParameter, LightweightBoundTypeArgument> rawGetTypeParameterMapping() {
+	public Map<JvmTypeParameter, List<LightweightBoundTypeArgument>> rawGetTypeParameterMapping() {
 		return typeParameterMapping;
 	}
 	
@@ -97,12 +98,11 @@ public class ActualTypeArgumentCollector extends AbstractTypeReferencePairWalker
 		super.processPairedReferences(declaredType, actualType);
 	}
 	
-	public ListMultimap<JvmTypeParameter, LightweightBoundTypeArgument> getTypeParameterMapping() {
+	public Map<JvmTypeParameter, List<LightweightBoundTypeArgument>> getTypeParameterMapping() {
 		if (typeParameterMapping.keySet().containsAll(getParametersToProcess())) {
 			return typeParameterMapping;
 		}
-		ListMultimap<JvmTypeParameter, LightweightBoundTypeArgument> result = Multimaps2.newLinkedHashListMultimap(typeParameterMapping);
-		OwnedConverter converter = new OwnedConverter(getOwner());
+		Map<JvmTypeParameter,List<LightweightBoundTypeArgument>> result = Maps.newLinkedHashMap(typeParameterMapping);
 		for(JvmTypeParameter pendingParameter: getParametersToProcess()) {
 			if (!result.containsKey(pendingParameter)) {
 				for(JvmTypeConstraint constraint: pendingParameter.getConstraints()) {
@@ -114,18 +114,18 @@ public class ActualTypeArgumentCollector extends AbstractTypeReferencePairWalker
 						JvmType constraintType = constraintReference.getType();
 						if (!result.containsKey(constraintType)) {
 							if (!getParametersToProcess().contains(constraintType)) {
-								LightweightTypeReference lightweightReference = converter.toLightweightReference(constraintReference);
+								LightweightTypeReference lightweightReference = getOwner().toLightweightTypeReference(constraintReference);
 								Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> constraintParameterMapping = new DeclaratorTypeArgumentCollector().getTypeParameterMapping(lightweightReference);
+								TypeParameterByConstraintSubstitutor substitutor = new TypeParameterByConstraintSubstitutor(constraintParameterMapping, getOwner());
 								LightweightTypeReference resolvedConstraint = lightweightReference.accept(
-										new TypeParameterByConstraintSubstitutor(constraintParameterMapping, getOwner()), 
-										new ConstraintVisitingInfo(pendingParameter));
-								result.put(pendingParameter, boundByConstraint(resolvedConstraint, pendingParameter));
+										substitutor, substitutor.createVisiting(pendingParameter));
+								Maps2.putIntoListMap(pendingParameter, boundByConstraint(resolvedConstraint, pendingParameter), result);
 							} else {
-								ParameterizedTypeReference lightweightReference = new ParameterizedTypeReference(getOwner(), getOwner().getServices().getTypeReferences().findDeclaredType(Object.class, constraintType));
-								result.put(pendingParameter, boundByConstraint(lightweightReference, pendingParameter));
+								LightweightTypeReference lightweightReference = getOwner().newReferenceToObject();
+								Maps2.putIntoListMap(pendingParameter, boundByConstraint(lightweightReference, pendingParameter), result);
 							}
 						} else {
-							result.putAll(pendingParameter, result.get((JvmTypeParameter) constraintType));
+							Maps2.putAllIntoListMap(pendingParameter, result.get(constraintType), result);
 						}
 					}
 				}

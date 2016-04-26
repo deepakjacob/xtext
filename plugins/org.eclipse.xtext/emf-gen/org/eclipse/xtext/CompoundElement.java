@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: CompoundElement.java,v 1.1 2010/04/06 14:10:16 sefftinge Exp $
  */
 package org.eclipse.xtext;
 
@@ -15,10 +11,10 @@ import org.eclipse.emf.common.util.EList;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.CompoundElement#getElements <em>Elements</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.XtextPackage#getCompoundElement()
  * @model

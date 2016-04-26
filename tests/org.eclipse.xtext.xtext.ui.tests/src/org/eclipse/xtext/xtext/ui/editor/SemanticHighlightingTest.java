@@ -12,15 +12,16 @@ import java.util.Set;
 import org.eclipse.jface.text.TypedRegion;
 import org.eclipse.xtext.XtextRuntimeModule;
 import org.eclipse.xtext.XtextStandaloneSetup;
+import org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor;
+import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 import org.eclipse.xtext.junit4.AbstractXtextTests;
 import org.eclipse.xtext.resource.XtextResource;
-import org.eclipse.xtext.ui.XtextUiModule;
-import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightedPositionAcceptor;
-import org.eclipse.xtext.ui.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 import org.eclipse.xtext.ui.shared.SharedStateModule;
+import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.Modules2;
 import org.eclipse.xtext.xtext.ui.Activator;
 import org.eclipse.xtext.xtext.ui.editor.syntaxcoloring.SemanticHighlightingConfiguration;
+import org.eclipse.xtext.xtext.ui.internal.XtextUIModuleInternal;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
@@ -40,7 +41,7 @@ public class SemanticHighlightingTest extends AbstractXtextTests implements IHig
 		with(new XtextStandaloneSetup() {
 			@Override
 			public Injector createInjector() {
-				return Guice.createInjector(Modules2.mixin(new XtextRuntimeModule(),new XtextUiModule(Activator.getDefault()), new SharedStateModule()));
+				return Guice.createInjector(Modules2.mixin(new XtextRuntimeModule(),new XtextUIModuleInternal(Activator.getDefault()), new SharedStateModule()));
 			}
 		});
 		expectedRegions = Sets.newLinkedHashSet();
@@ -53,10 +54,11 @@ public class SemanticHighlightingTest extends AbstractXtextTests implements IHig
 				"terminal fragment FOO returns EString: 'a';", 1);
 		ISemanticHighlightingCalculator calculator = get(ISemanticHighlightingCalculator.class);
 		calculator.provideHighlightingFor(resource, new IHighlightedPositionAcceptor() {
+			@Override
 			public void addPosition(int offset, int length, String... id) {
 				// ignore
 			}
-		});
+		}, CancelIndicator.NullImpl);
 	}
 	
 	@Test public void testHighlightGrammar() {
@@ -92,7 +94,7 @@ public class SemanticHighlightingTest extends AbstractXtextTests implements IHig
 		try {
 			XtextResource resource = getResourceFromString(grammar);
 			ISemanticHighlightingCalculator calculator = get(ISemanticHighlightingCalculator.class);
-			calculator.provideHighlightingFor(resource, this);
+			calculator.provideHighlightingFor(resource, this, CancelIndicator.NullImpl);
 			assertTrue(expectedRegions.toString(), expectedRegions.isEmpty());
 		} catch(Exception e) {
 			throw new RuntimeException(e);
@@ -103,6 +105,7 @@ public class SemanticHighlightingTest extends AbstractXtextTests implements IHig
 		expectedRegions.add(new TypedRegion(offset, length, type));
 	}
 
+	@Override
 	public void addPosition(int offset, int length, String... id) {
 		assertEquals(1, id.length);
 		TypedRegion region = new TypedRegion(offset, length, id[0]);

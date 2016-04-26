@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl;
 
@@ -20,10 +17,10 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.Ide
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl.IdentifierImpl#getName <em>Name</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

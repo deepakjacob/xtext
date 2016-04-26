@@ -9,9 +9,9 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 
 import java.util.EnumSet;
 
-import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputationResult;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
 import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
@@ -29,31 +29,62 @@ public class ResolutionBasedComputationResult implements ITypeComputationResult 
 		this.resolution = resolution;
 	}
 
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getActualExpressionType() {
 		return resolution.getActualType(expression);
 	}
-
-	public LightweightTypeReference getActualType(JvmIdentifiableElement element) {
-		return resolution.getActualType(element);
-	}
 	
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getReturnType() {
 		return resolution.getReturnType(expression);
 	}
 
+	/* @NonNull */
+	@Override
 	public XExpression getExpression() {
 		return expression;
 	}
 
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getExpectedExpressionType() {
-		return resolution.getActualType(expression);
+		return resolution.getExpectedType(expression);
 	}
 	
+	/* @Nullable */
+	@Override
+	public LightweightTypeReference getExpectedReturnType() {
+		return resolution.getExpectedReturnType(expression);
+	}
+	
+	/* @NonNull */
+	@Override
 	public EnumSet<ConformanceHint> getConformanceHints() {
+		return ConformanceHint.fromFlags(getConformanceFlags());
+	}
+	
+	@Override
+	public int getConformanceFlags() {
 		TypeData typeData = resolution.getTypeData(expression, false);
 		if (typeData == null)
-			return EnumSet.noneOf(ConformanceHint.class);
-		return typeData.getConformanceHints();
+			return ConformanceFlags.NONE;
+		return typeData.getConformanceFlags();
+	}
+
+	/* @NonNull */
+	@Override
+	public EnumSet<ConformanceHint> getCheckedConformanceHints() {
+		return ConformanceHint.fromFlags(getCheckedConformanceFlags());
+	}
+	
+	@Override
+	public int getCheckedConformanceFlags() {
+		TypeData typeData = resolution.getTypeData(expression, false);
+		if (typeData == null)
+			return ConformanceFlags.NONE;
+		return resolution.getConformanceFlags(typeData, false);
 	}
 	
 	@Override

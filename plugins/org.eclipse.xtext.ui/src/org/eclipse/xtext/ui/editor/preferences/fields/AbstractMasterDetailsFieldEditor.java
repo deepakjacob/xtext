@@ -94,6 +94,7 @@ public abstract class AbstractMasterDetailsFieldEditor extends FieldEditor {
 				}
 			});
 			masterList.addDisposeListener(new DisposeListener() {
+				@Override
 				public void widgetDisposed(DisposeEvent event) {
 					masterList = null;
 				}
@@ -172,7 +173,7 @@ public abstract class AbstractMasterDetailsFieldEditor extends FieldEditor {
 	}
 
 	/**
-	 * @return
+	 * @return selected Object
 	 */
 	private Object selectedObject() {
 		int selectionIndex = masterList.getSelectionIndex();

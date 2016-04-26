@@ -9,13 +9,15 @@ package org.eclipse.xtext.serializer.analysis;
 
 import java.util.BitSet;
 import java.util.List;
+import java.util.Map;
 
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.AbstractElement;
+import org.eclipse.xtext.Grammar;
+import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.util.formallang.Nfa;
 
+import com.google.common.base.Function;
 import com.google.inject.ImplementedBy;
 
 /**
@@ -23,6 +25,13 @@ import com.google.inject.ImplementedBy;
  */
 @ImplementedBy(SemanticSequencerNfaProvider.class)
 public interface ISemanticSequencerNfaProvider {
+
+	public Function<ISemState, AbstractElement> GET_ASSIGNED_GRAMMAR_ELEMENT = new Function<ISemState, AbstractElement>() {
+		@Override
+		public AbstractElement apply(ISemState input) {
+			return input.getAssignedGrammarElement();
+		}
+	};
 
 	public interface ISemState {
 		BitSet getAllFollowerFeatures();
@@ -38,7 +47,9 @@ public interface ISemanticSequencerNfaProvider {
 		int getOrderID();
 
 		List<AbstractElement> getToBeValidatedAssignedElements();
+
+		boolean isBooleanAssignment();
 	}
 
-	Nfa<ISemState> getNFA(EObject context, EClass type);
+	Map<ISerializationContext, Nfa<ISemState>> getSemanticSequencerNFAs(Grammar grammar);
 }

@@ -8,61 +8,116 @@
 package org.eclipse.xtext.xbase.typesystem.computation;
 
 import java.util.EnumSet;
-import java.util.Set;
+import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.common.types.util.TypeReferences;
 import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
 import org.eclipse.xtext.xbase.typesystem.references.ArrayTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.ArrayTypes;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference;
-
-import com.google.inject.Inject;
 
 /**
+ * The {@link SynonymTypesProvider} allows to define automatic conversion rules
+ * for specific types. 
+ * 
+ * By default, {@link Iterable iterables} are compatible to arrays, arrays are compatible to {@link List},
+ * and boxing / unboxing semantics are applied.
+ * 
+ * Clients who specialize this service, should announce synonym types by means of
+ * {@link #announceSynonym(LightweightTypeReference, ConformanceHint, Acceptor)},
+ * {@link #announceSynonym(LightweightTypeReference, EnumSet, Acceptor)} or
+ * {@link #announceSynonym(LightweightTypeReference, int, Acceptor)}. 
+ * {@link #collectCustomSynonymTypes(LightweightTypeReference, Acceptor)} should be implemented
+ * to announce custom synonyms. Implementations should respect the acceptor return values.
+ * 
+ * @see ArrayTypes
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public class SynonymTypesProvider {
 	
-	@Inject
-	private TypeReferences typeReferences;
-
-	@NonNullByDefault
+	/**
+	 * Clients of the {@link SynonymTypesProvider} may use a custom acceptor
+	 * to handle the available synonym types.
+	 * 
+	 * @author Sebastian Zarnekow - Initial contribution and API
+	 */
 	public static abstract class Acceptor {
 		/**
 		 * @return <code>true</code> if the client is interested in more synonyms. <code>false</code> to skip
 		 *   further computation.
 		 */
-		protected boolean accept(LightweightTypeReference synonym, ConformanceHint hint) {
-			return accept(synonym, EnumSet.of(hint));
+		protected final boolean accept(LightweightTypeReference synonym, ConformanceHint hint) {
+			return accept(synonym, EnumSet.of(hint, ConformanceHint.SUCCESS, ConformanceHint.CHECKED));
 		}
 		/**
 		 * @return <code>true</code> if the client is interested in more synonyms. <code>false</code> to skip
 		 *   further computation.
 		 */
-		protected abstract boolean accept(LightweightTypeReference synonym, Set<ConformanceHint> hints);
+		protected final boolean accept(LightweightTypeReference synonym, EnumSet<ConformanceHint> hints) {
+			return accept(synonym, toFlags(hints));
+		}
+		
+		/**
+		 * Converts hints to flag bits.
+		 */
+		protected int toFlags(EnumSet<ConformanceHint> hints) {
+			return ConformanceHint.toFlags(hints);
+		}
+		
+		/**
+		 * Converts flag bits to type safe hints.
+		 */
+		protected EnumSet<ConformanceHint> fromFlags(int flags) {
+			return ConformanceHint.fromFlags(flags);
+		}
+		
+		/**
+		 * @return <code>true</code> if the client is interested in more synonyms. <code>false</code> to skip
+		 *   further computation.
+		 * @see ConformanceFlags
+		 */
+		protected abstract boolean accept(LightweightTypeReference synonym, int flags);
+		
 	}
 	
-	public void collectSynonymTypes(@Nullable LightweightTypeReference type, @NonNull Acceptor acceptor) {
+	public void collectSynonymTypes(/* @Nullable */ LightweightTypeReference type, /* @NonNull */ Acceptor acceptor) {
 		if (type == null || type.isPrimitiveVoid() || type.isType(Void.class)) {
 			return;
 		}
 		if (type.isWrapper()) {
-			if (!acceptor.accept(type.getPrimitiveIfWrapperType(), ConformanceHint.UNBOXING)) {
+			if (!acceptor.accept(type.getPrimitiveIfWrapperType(), ConformanceFlags.CHECKED_SUCCESS | ConformanceFlags.UNBOXING)) {
 				return;
 			}
+			// a primitive type is never an array or list
+			collectCustomSynonymTypes(type, acceptor);
+			return;
 		} else if (type.isPrimitive()) {
-			if (!acceptor.accept(type.getWrapperTypeIfPrimitive(), ConformanceHint.BOXING)) {
+			if (!acceptor.accept(type.getWrapperTypeIfPrimitive(), ConformanceFlags.CHECKED_SUCCESS | ConformanceFlags.BOXING)) {
 				return;
 			}
+			// a primitive type is never an array or list
+			collectCustomSynonymTypes(type, acceptor);
+			return;
 		}
-		addArrayAndListSynonyms(type, acceptor);
+		if (addArrayAndListSynonyms(type, acceptor)) {
+			collectCustomSynonymTypes(type, acceptor);
+		}
 	}
 
-	@NonNullByDefault
-	protected void addArrayAndListSynonyms(LightweightTypeReference type, Acceptor acceptor) {
+	/**
+	 * This is the hook to announce more synonym types.
+	 * @param type the original type
+	 * @param acceptor the acceptor to announce the synonyms
+	 */
+	protected boolean collectCustomSynonymTypes(LightweightTypeReference type, Acceptor acceptor) {
+		return true;
+	}
+
+	/**
+	 * @param type never a primitive or a wrapper type
+	 */
+	protected boolean addArrayAndListSynonyms(LightweightTypeReference type, Acceptor acceptor) {
 		if (type.isArray()) {
 			LightweightTypeReference listType = type.tryConvertToListType();
 			if (listType != null) {
@@ -71,31 +126,63 @@ public class SynonymTypesProvider {
 					throw new IllegalStateException("Component type of an array may not be null");
 				}
 				if (componentType.isPrimitive()) {
-					if (!acceptor.accept(listType, EnumSet.of(ConformanceHint.DEMAND_CONVERSION, ConformanceHint.BOXING))) {
-						return;
+					if (!acceptor.accept(listType, ConformanceFlags.CHECKED_SUCCESS | ConformanceFlags.DEMAND_CONVERSION | ConformanceFlags.BOXING)) {
+						return false;
 					}
 				} else {
-					if (!acceptor.accept(listType, ConformanceHint.DEMAND_CONVERSION)) {
-						return;
+					if (!acceptor.accept(listType, ConformanceFlags.CHECKED_SUCCESS | ConformanceFlags.DEMAND_CONVERSION)) {
+						return false;
 					}
 				}
 			}
-		} else if (type instanceof ParameterizedTypeReference) {
+		} else {
 			ArrayTypeReference arrayType = type.tryConvertToArray();
 			if (arrayType != null) {
 				LightweightTypeReference componentType = arrayType.getComponentType();
-				if (componentType.isWrapper()) {
-					LightweightTypeReference primitiveComponentType = componentType.getPrimitiveIfWrapperType();
-					ArrayTypeReference primitiveArray = new ArrayTypeReference(type.getOwner(), primitiveComponentType);
-					if (!acceptor.accept(primitiveArray, EnumSet.of(ConformanceHint.DEMAND_CONVERSION, ConformanceHint.UNBOXING))) {
-						return;
+				LightweightTypeReference primitiveComponentType = componentType.getPrimitiveIfWrapperType();
+				if (primitiveComponentType != componentType) {
+					ArrayTypeReference primitiveArray = type.getOwner().newArrayTypeReference(primitiveComponentType);
+					if (!acceptor.accept(primitiveArray, ConformanceFlags.CHECKED_SUCCESS | ConformanceFlags.DEMAND_CONVERSION | ConformanceFlags.UNBOXING)) {
+						return false;
 					}
 				}
-				if (!acceptor.accept(arrayType, ConformanceHint.DEMAND_CONVERSION)) {
-					return;
+				if (!acceptor.accept(arrayType, ConformanceFlags.CHECKED_SUCCESS | ConformanceFlags.DEMAND_CONVERSION)) {
+					return false;
 				}
 			}
 		}
+		return true;
+	}
+	
+	/**
+	 * Announce a synonym type with the given conformance hint.
+	 */
+	protected final boolean announceSynonym(LightweightTypeReference synonym, ConformanceHint hint, Acceptor acceptor) {
+		if (synonym.isUnknown()) {
+			return true;
+		}
+		return acceptor.accept(synonym, hint);
+	}
+	
+	/**
+	 * Announce a synonym type with the given conformance hints.
+	 */
+	protected final boolean announceSynonym(LightweightTypeReference synonym, EnumSet<ConformanceHint> hints, Acceptor acceptor) {
+		if (synonym.isUnknown()) {
+			return true;
+		}
+		return acceptor.accept(synonym, hints);
+	}
+	
+	/**
+	 * Announce a synonym type with the given conformance flags.
+	 * @see ConformanceFlags
+	 */
+	protected final boolean announceSynonym(LightweightTypeReference synonym, int flags, Acceptor acceptor) {
+		if (synonym.isUnknown()) {
+			return true;
+		}
+		return acceptor.accept(synonym, flags | ConformanceFlags.CHECKED_SUCCESS);
 	}
 	
 }

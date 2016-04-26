@@ -34,6 +34,7 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.editor.model.XtextDocument;
 import org.eclipse.xtext.ui.resource.IResourceSetProvider;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
@@ -152,7 +153,10 @@ public class StreamContentDocumentProvider extends AbstractDocumentProvider {
 		String encoding = ResourcesPlugin.getEncoding();
 		if (element instanceof IEncodedStreamContentAccessor) {
 			try {
-				encoding = ((IEncodedStreamContentAccessor) element).getCharset();
+				String streamEncoding = ((IEncodedStreamContentAccessor) element).getCharset();
+				if (!Strings.isNullOrEmpty(streamEncoding)) {
+					encoding = streamEncoding;
+				}
 			} catch (CoreException exception) {
 			}
 		}

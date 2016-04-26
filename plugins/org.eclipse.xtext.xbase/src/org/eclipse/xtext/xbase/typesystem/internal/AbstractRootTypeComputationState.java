@@ -9,25 +9,20 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.scoping.batch.IFeatureScopeSession;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputationResult;
-import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public abstract class AbstractRootTypeComputationState extends AbstractTypeComputationState {
 	
 	protected AbstractRootTypeComputationState(ResolvedTypes resolvedTypes,
-			IFeatureScopeSession featureScopeSession,
-			DefaultReentrantTypeResolver reentrantTypeResolver) {
-		super(resolvedTypes, featureScopeSession, reentrantTypeResolver);
+			IFeatureScopeSession featureScopeSession) {
+		super(resolvedTypes, featureScopeSession);
 	}
 	
 	public ITypeComputationResult computeTypes() {
@@ -39,28 +34,28 @@ public abstract class AbstractRootTypeComputationState extends AbstractTypeCompu
 	
 	protected abstract ITypeComputationResult createNoTypeResult();
 	
-	@Nullable
+	/* @Nullable */
 	protected abstract XExpression getRootExpression();
 	
-	protected XExpression getDefiniteRootExpression() {
+	protected XExpression getNonNullRootExpression() {
 		XExpression result = getRootExpression();
 		if (result == null)
 			throw new IllegalStateException("root expression was null");
 		return result;
 	}
 	
-	@Nullable
+	/* @Nullable */
 	protected abstract LightweightTypeReference getExpectedType();
 	
 	@Override
-	protected LightweightTypeReference acceptType(ResolvedTypes types, AbstractTypeExpectation expectation, LightweightTypeReference type, boolean returnType, ConformanceHint... hints) {
-		return types.acceptType(getDefiniteRootExpression(), expectation, type, returnType, hints);
+	protected LightweightTypeReference acceptType(ResolvedTypes types, AbstractTypeExpectation expectation, LightweightTypeReference type, boolean returnType, int flags) {
+		return types.acceptType(getNonNullRootExpression(), expectation, type, returnType, flags);
 	}
 	
 	@Override
-	protected LightweightTypeReference acceptType(XExpression alreadyHandled, ResolvedTypes types, AbstractTypeExpectation expectation, LightweightTypeReference type, boolean returnType, ConformanceHint... hints) {
+	protected LightweightTypeReference acceptType(XExpression alreadyHandled, ResolvedTypes types, AbstractTypeExpectation expectation, LightweightTypeReference type, boolean returnType, int flags) {
 		if (alreadyHandled != getRootExpression())
-			return types.acceptType(getDefiniteRootExpression(), expectation, type, returnType, hints);
+			return types.acceptType(getNonNullRootExpression(), expectation, type, returnType, flags);
 		return type;
 	}
 	
@@ -79,16 +74,16 @@ public abstract class AbstractRootTypeComputationState extends AbstractTypeCompu
 	@Override
 	protected ExpressionTypeComputationState createExpressionComputationState(XExpression expression,
 			StackedResolvedTypes typeResolution) {
-		return new RootExpressionTypeComputationState(typeResolution, getFeatureScopeSession(), getResolver(), this, expression, getExpectedType());
+		return new RootExpressionTypeComputationState(typeResolution, getFeatureScopeSession(), this, expression, getExpectedType());
 	}
 	
 	@Override
 	public TypeAssigner assignTypes() {
-		TypeCheckpointComputationState state = new TypeCheckpointComputationState(getResolvedTypes(), getFeatureScopeSession(), getResolver(), this) {
+		TypeCheckpointComputationState state = new TypeCheckpointComputationState(getResolvedTypes(), getFeatureScopeSession(), this) {
 			@Override
 			protected ExpressionTypeComputationState createExpressionComputationState(XExpression expression,
 					StackedResolvedTypes typeResolution) {
-				return new RootExpressionTypeComputationState(typeResolution, getFeatureScopeSession(), getResolver(), this, expression, getExpectedType());
+				return new RootExpressionTypeComputationState(typeResolution, getFeatureScopeSession(), this, expression, getExpectedType());
 			}
 		};
 		return createTypeAssigner(state);

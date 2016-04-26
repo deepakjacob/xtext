@@ -67,6 +67,7 @@ public abstract class AbstractContentProposalProvider implements IContentProposa
 			return Boolean.TRUE;
 		}
 
+		@Override
 		public void accept(AbstractElement element) {
 			doSwitch(element);
 		}
@@ -101,6 +102,7 @@ public abstract class AbstractContentProposalProvider implements IContentProposa
 		}
 	}
 
+	@Override
 	public void createProposals(ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
 		ICompletionProposalAcceptor nullSafe = new NullSafeCompletionProposalAcceptor(acceptor);
 		IFollowElementAcceptor selector = createSelector(context, nullSafe);
@@ -133,6 +135,7 @@ public abstract class AbstractContentProposalProvider implements IContentProposa
 				contentAssistContext.getPrefix(), contentAssistContext);
 	}
 
+	@Override
 	public ICompletionProposal createCompletionProposal(String proposal, StyledString displayString, Image image,
 			ContentAssistContext contentAssistContext) {
 		return createCompletionProposal(proposal, displayString, image, getPriorityHelper().getDefaultPriority(),
@@ -215,6 +218,19 @@ public abstract class AbstractContentProposalProvider implements IContentProposa
 
 	public IValueConverterService getValueConverter() {
 		return valueConverter;
+	}
+
+	/**
+	 * Returns the image for the label of the given element.
+	 * 
+	 * @param description
+	 *            the {@link IEObjectDescription} for which to provide the label image
+	 * @return the image used to label the element, or <code>null</code> if there is no image for the given object
+	 * 
+	 * @noreference This method is not intended to be referenced by clients.
+	 */
+	protected Image getImage(IEObjectDescription description) {
+		return getImage(description.getEObjectOrProxy());
 	}
 
 	/**

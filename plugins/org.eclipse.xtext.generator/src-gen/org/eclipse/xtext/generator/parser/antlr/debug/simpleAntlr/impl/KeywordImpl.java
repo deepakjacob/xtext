@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl;
 
@@ -20,10 +17,10 @@ import org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.SimpleAntlrPac
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl.KeywordImpl#getValue <em>Value</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

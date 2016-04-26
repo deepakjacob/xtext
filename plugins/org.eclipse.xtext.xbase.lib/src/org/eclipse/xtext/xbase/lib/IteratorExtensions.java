@@ -7,9 +7,12 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.lib;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
@@ -18,14 +21,18 @@ import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 import org.eclipse.xtext.xbase.lib.internal.BooleanFunctionDelegate;
 import org.eclipse.xtext.xbase.lib.internal.FunctionDelegate;
+import org.eclipse.xtext.xbase.lib.internal.KeyComparator;
 
 import com.google.common.annotations.GwtCompatible;
+import com.google.common.annotations.GwtIncompatible;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicates;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
 /**
@@ -46,6 +53,7 @@ import com.google.common.collect.Sets;
 		if (iterator == null)
 			throw new NullPointerException("iterator");
 		return new Iterable<T>() {
+			@Override
 			public Iterator<T> iterator() {
 				return iterator;
 			}
@@ -179,7 +187,7 @@ import com.google.common.collect.Sets;
 			throw new IllegalArgumentException("Cannot take a negative number of elements. Argument 'count' was: "
 					+ count);
 		if (count == 0)
-			return Iterators.emptyIterator();
+			return ImmutableSet.<T>of().iterator();
 		return new AbstractIterator<T>() {
 
 			private int remaining = count;
@@ -261,7 +269,7 @@ import com.google.common.collect.Sets;
 	 *            the iterator. May not be <code>null</code>.
 	 * @param predicate
 	 *            the predicate. May not be <code>null</code>.
-	 * @return <code>true</code> if one or more elements in {@code iterator} satisfy the predicate.
+	 * @return <code>true</code> if every element in {@code iterator} satisfies the predicate and also if there is no element.
 	 */
 	public static <T> boolean forall(Iterator<T> iterator, Function1<? super T, Boolean> predicate) {
 		if (predicate == null)
@@ -303,6 +311,7 @@ import com.google.common.collect.Sets;
 	 *         type. Never <code>null</code>.
 	 */
 	@Pure
+	@GwtIncompatible("Class.isInstance")
 	@Inline(value="$3.$4filter($1, $2)", imported=Iterators.class)
 	public static <T> Iterator<T> filter(Iterator<?> unfiltered, Class<T> type) {
 		return Iterators.filter(unfiltered, type);
@@ -383,7 +392,7 @@ import com.google.common.collect.Sets;
 	 * @param iterator
 	 *            the iterator. May not be <code>null</code>.
 	 * @return the string representation of the iterator's elements. Never <code>null</code>.
-	 * @see #join(Iterator, CharSequence, Function1)
+	 * @see #join(Iterator, CharSequence, org.eclipse.xtext.xbase.lib.Functions.Function1)
 	 */
 	public static String join(Iterator<?> iterator) {
 		return join(iterator, "");
@@ -399,7 +408,7 @@ import com.google.common.collect.Sets;
 	 * @param separator
 	 *            the separator. May not be <code>null</code>.
 	 * @return the string representation of the iterator's elements. Never <code>null</code>.
-	 * @see #join(Iterator, CharSequence, Function1)
+	 * @see #join(Iterator, CharSequence, org.eclipse.xtext.xbase.lib.Functions.Function1)
 	 */
 	public static String join(Iterator<?> iterator, CharSequence separator) {
 		return Joiner.on(separator.toString()).useForNull("null").join(toIterable(iterator));
@@ -587,13 +596,13 @@ import com.google.common.collect.Sets;
 	 * </p>
 	 * <p>
 	 * One of the function parameters is an element of the iterator, and the other is the result of previous application
-	 * of the function. The seed of the operation is explicitly passed to {@link #fold(Iterator, Object, Function2)
+	 * of the function. The seed of the operation is explicitly passed to {@link #fold(Iterator, Object, org.eclipse.xtext.xbase.lib.Functions.Function2)
 	 * fold}. The first computed value is the result of the applied function for {@code seed} and the first element of
 	 * the iterator. This intermediate result together with the second element of the iterator produced the next result
 	 * and so on.
 	 * </p>
 	 * <p>
-	 * {@link #fold(Iterator, Object, Function2) fold} is similar to {@link #reduce(Iterator, Function2) reduce} but
+	 * {@link #fold(Iterator, Object, org.eclipse.xtext.xbase.lib.Functions.Function2) fold} is similar to {@link #reduce(Iterator, org.eclipse.xtext.xbase.lib.Functions.Function2) reduce} but
 	 * allows a {@code seed} value and the combinator {@code function} may be asymmetric. It takes {@code T and R} and
 	 * returns {@code R}.
 	 * <p>
@@ -675,7 +684,7 @@ import com.google.common.collect.Sets;
 	 * @param computeKeys
 	 *            the function used to produce the key for each value. May not be <code>null</code>.
 	 * @return a map mapping the result of evaluating the function {@code keyFunction} on each value in the input
-	 *         collection to that value
+	 *         iterator to that value
 	 */
 	public static <K, V> Map<K, V> toMap(Iterator<? extends V> values, Function1<? super V, K> computeKeys) {
 		if (computeKeys == null)
@@ -687,5 +696,259 @@ import com.google.common.collect.Sets;
 		}
 		return result;
 	}
+	
+	/**
+	 * Returns a map for which the {@link Map#values} is a collection of lists, where the elements in the list will 
+	 * appear in the order as they appeared in the iterator. Each key is the product of invoking the supplied 
+	 * function {@code computeKeys} on its corresponding value. So a key of that map groups a list of values for 
+	 * which the function produced exactly that key. The value iterator is left exhausted.
+	 * 
+	 * @param values
+	 *            the values to use when constructing the {@code Map}. May not be <code>null</code>.
+	 * @param computeKeys
+	 *            the function used to produce the key for each value. May not be <code>null</code>.
+	 * @return a map mapping the result of evaluating the function {@code keyFunction} on each value in the input
+	 *         iterator to that value. As there can be more than one value mapped by a key, the mapping result is is a
+	 *         list of values.
+	 * @since 2.7
+	 */
+	public static <K, V> Map<K, List<V>> groupBy(Iterator<? extends V> values,
+			Function1<? super V, ? extends K> computeKeys) {
+		if (computeKeys == null)
+			throw new NullPointerException("computeKeys");
+		Map<K, List<V>> result = Maps.newLinkedHashMap();
+		while(values.hasNext()) {
+			V v = values.next();
+			K key = computeKeys.apply(v);
+			List<V> grouped = result.get(key);
+			if (grouped == null) {
+				grouped = new ArrayList<V>();
+				result.put(key, grouped);
+			}
+			grouped.add(v);
+		}
+		return result;
+	}	
 
+	/**
+	 * Returns an Iterator containing all elements starting from the head of the source up to and excluding the first
+	 * element that violates the predicate. The resulting Iterator is a lazily computed view, so any modifications to the
+	 * underlying Iterators will be reflected on iteration. The result does not support {@link Iterator#remove()}
+	 * 
+	 * @param iterator
+	 *            the elements from which to take. May not be <code>null</code>.
+	 * @param predicate
+	 *            the predicate which decides whether to keep taking elements. May not be <code>null</code>.
+	 * @return the taken elements
+	 * @since 2.7
+	 */
+	public static <T> Iterator<T> takeWhile(final Iterator<? extends T> iterator, final Function1<? super T, Boolean> predicate) {
+		if (iterator == null)
+			throw new NullPointerException("iterator");
+		if (predicate == null)
+			throw new NullPointerException("predicate");
+		return new AbstractIterator<T>() {
+			@Override
+			protected T computeNext() {
+				if (!iterator.hasNext())
+					return endOfData();
+				T next = iterator.next();
+				if (predicate.apply(next)) {
+					return next;
+				} else {
+					return endOfData();
+				}
+			}
+		};
+	}
+
+	/**
+	 * Returns an Iterator containing all elements starting from the first element for which the drop-predicate returned
+	 * false. The resulting Iterator is a lazily computed view, so any modifications to the
+	 * underlying Iterators will be reflected on iteration. The result does not support {@link Iterator#remove()}
+	 * 
+	 * @param iterator
+	 *            the elements from which to drop. May not be <code>null</code>.
+	 * @param predicate
+	 *            the predicate which decides whether to keep dropping elements. May not be <code>null</code>.
+	 * @return the remaining elements after dropping
+	 * @since 2.7
+	 */
+	public static <T> Iterator<T> dropWhile(final Iterator<? extends T> iterator, final Function1<? super T, Boolean> predicate) {
+		if (iterator == null)
+			throw new NullPointerException("iterator");
+		if (predicate == null)
+			throw new NullPointerException("predicate");
+		return new AbstractIterator<T>() {
+			private boolean headFound = false;
+
+			@Override
+			protected T computeNext() {
+				while (!headFound) {
+					if (!iterator.hasNext())
+						return endOfData();
+					T next = iterator.next();
+					if (!predicate.apply(next)) {
+						headFound = true;
+						return next;
+					}
+				}
+				if (iterator.hasNext()) {
+					return iterator.next();
+				} else {
+					return endOfData();
+				}
+			}
+		};
+	}
+
+	/**
+	 * Returns an Iterator of Pairs where the nth pair is created by taking the nth element of the source as the value
+	 * and its 0-based index as the key. E.g.
+	 * <code>zipWitIndex(#["a", "b", "c"]) == #[(0, "a"), (1, "b"), (2, "c")]</code>
+	 * 
+	 * If the index would overflow, {@link Integer#MAX_VALUE} is returned for all subsequent elements.
+	 * 
+	 * The resulting Iterator is a lazily computed view, so any modifications to the underlying Iterator will be
+	 * reflected on iteration. The result does not support {@link Iterator#remove()}
+	 * 
+	 * @param iterator
+	 *            the elements. May not be <code>null</code>.
+	 * @return the zipped result
+	 * @since 2.7
+	 */
+	public static <A> Iterator<Pair<Integer, A>> indexed(final Iterator<? extends A> iterator) {
+		if (iterator == null)
+			throw new NullPointerException("iterator");
+		return new AbstractIterator<Pair<Integer, A>>() {
+			int i = 0;
+			@Override
+			protected Pair<Integer, A> computeNext() {
+				if (iterator.hasNext()) {
+					Pair<Integer, A> next = new Pair<Integer, A>(i, iterator.next());
+					if (i != Integer.MAX_VALUE)
+						i++;
+					return next;
+				} else {
+					return endOfData();
+				}
+			}
+		};
+	}
+
+	/**
+	 * Finds the minimum of the given elements according to their natural ordering. If there are several mimina, the
+	 * first one will be returned.
+	 * 
+	 * @param iterator
+	 *            the mutually comparable elements. May not be <code>null</code>.
+	 * @return the minimum
+	 * @throws NoSuchElementException
+	 *             if the iterator is empty
+	 * @since 2.7
+	 */
+	public static <T extends Comparable<? super T>> T min(final Iterator<T> iterator) {
+		return min(iterator, Ordering.natural());
+	}
+
+	/**
+	 * Finds the element that yields the minimum value when passed to <code>compareBy</code>. If there are several
+	 * maxima, the first one will be returned.
+	 * 
+	 * @param iterator
+	 *            the elements to find the minimum of. May not be <code>null</code>.
+	 * @param compareBy
+	 *            a function that returns a comparable characteristic to compare the elements by. May not be <code>null</code>.
+	 * @return the minimum
+	 * @throws NoSuchElementException
+	 *             if the iterator is empty
+	 * @since 2.7
+	 */
+	public static <T, C extends Comparable<? super C>> T minBy(final Iterator<T> iterator, final Function1<? super T, C> compareBy) {
+		if (compareBy == null)
+			throw new NullPointerException("compareBy");
+		return min(iterator, new KeyComparator<T, C>(compareBy));
+	}
+	
+	/**
+	 * Finds the mininmum element according to <code>comparator</code>. If there are several minima, the first one will
+	 * be returned.
+	 * 
+	 * @param iterator
+	 *            the elements to find the minimum of. May not be <code>null</code>.
+	 * @param comparator
+	 *            the comparison function. May not be <code>null</code>.
+	 * @return the minimum
+	 * @throws NoSuchElementException
+	 *             if the iterator is empty
+	 * @since 2.7
+	 */
+	public static <T> T min(final Iterator<T> iterator, Comparator<? super T> comparator) {
+		if (comparator == null)
+			throw new NullPointerException("comparator");
+		T min = iterator.next();
+		while (iterator.hasNext()) {
+			T element = iterator.next();
+			min = comparator.compare(min, element) <= 0 ? min : element;
+		}
+		return min;
+	}
+
+	/**
+	 * Finds the maximum of the elements according to their natural ordering. If there are several maxima, the first one
+	 * will be returned.
+	 * 
+	 * @param iterator
+	 *            the mutually comparable elements. May not be <code>null</code>.
+	 * @return the maximum
+	 * @throws NoSuchElementException
+	 *             if the iterator is empty
+	 * @since 2.7
+	 */
+	public static <T extends Comparable<? super T>> T max(final Iterator<T> iterator) {
+		return max(iterator, Ordering.natural());
+	}
+
+	/**
+	 * Finds the element that yields the maximum value when passed to <code>compareBy</code> If there are several
+	 * maxima, the first one will be returned.
+	 * 
+	 * @param iterator
+	 *            the elements to find the maximum of. May not be <code>null</code>.
+	 * @param compareBy
+	 *            a function that returns a comparable characteristic to compare the elements by. May not be <code>null</code>.
+	 * @return the maximum
+	 * @throws NoSuchElementException
+	 *             if the iterator is empty
+	 * @since 2.7
+	 */
+	public static <T, C extends Comparable<? super C>> T maxBy(final Iterator<T> iterator, final Function1<? super T, C> compareBy) {
+		if (compareBy == null)
+			throw new NullPointerException("compareBy");
+		return max(iterator, new KeyComparator<T, C>(compareBy));
+	}
+
+	/**
+	 * Finds the maximum element according to <code>comparator</code>. If there are several maxima, the first one will
+	 * be returned.
+	 * 
+	 * @param iterator
+	 *            the elements to find the maximum of. May not be <code>null</code>.
+	 * @param comparator
+	 *            the comparison function. May not be <code>null</code>.
+	 * @return the maximum
+	 * @throws NoSuchElementException
+	 *             if the iterator is empty
+	 * @since 2.7
+	 */
+	public static <T> T max(final Iterator<T> iterator, Comparator<? super T> comparator) {
+		if (comparator == null)
+			throw new NullPointerException("comparator");
+		T max = iterator.next();
+		while (iterator.hasNext()) {
+			T element = iterator.next();
+			max = comparator.compare(max, element) >= 0 ? max : element;
+		}
+		return max;
+	}
 }

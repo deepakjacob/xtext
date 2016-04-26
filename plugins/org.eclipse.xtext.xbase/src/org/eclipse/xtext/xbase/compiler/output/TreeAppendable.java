@@ -13,24 +13,26 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.generator.trace.AbstractTraceRegion;
 import org.eclipse.xtext.generator.trace.ILocationData;
+import org.eclipse.xtext.generator.trace.ITraceURIConverter;
 import org.eclipse.xtext.generator.trace.LocationData;
+import org.eclipse.xtext.generator.trace.SourceRelativeURI;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
 import org.eclipse.xtext.resource.ILocationInFileProviderExtension;
 import org.eclipse.xtext.util.IAcceptor;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 import org.eclipse.xtext.util.TextRegionWithLineInformation;
+import org.eclipse.xtext.xbase.compiler.GeneratorConfig;
 import org.eclipse.xtext.xbase.compiler.ImportManager;
 import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReferenceSerializer;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -39,7 +41,6 @@ import com.google.common.collect.Sets;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharSequence {
 
 	private static final Logger log = Logger.getLogger(TreeAppendable.class);
@@ -80,63 +81,99 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 		 * @param string the visited {@link String}
 		 * @return the original string or a new one.
 		 */
-		@SuppressWarnings("null") // this is necessary due to a bug in JDT nullness stuff
-		protected String visit(@NonNull String string) {
+		protected String visit(/* @NonNull */ String string) {
 			return string;
 		}
 	}
 
-	private List<Object> children;
+	private final List<Object> children;
 	private final SharedAppendableState state;
 	private final ILocationInFileProvider locationProvider;
 	private final IJvmModelAssociations jvmModelAssociations;
 	private final Set<ILocationData> locationData;
+	private final ITraceURIConverter traceURIConverter;
 	private boolean closed = false;
 	private boolean useForDebugging = false;
-
-	public TreeAppendable(ImportManager importManager, ILocationInFileProvider locationProvider, IJvmModelAssociations jvmModelAssociations, EObject source,
+	private LightweightTypeReferenceSerializer lightweightTypeReferenceSerializer;
+	
+	public TreeAppendable(ImportManager importManager, ITraceURIConverter converter, ILocationInFileProvider locationProvider, IJvmModelAssociations jvmModelAssociations, EObject source,
 			String indentation, String lineSeparator) {
-		this(new SharedAppendableState(indentation, lineSeparator, importManager), locationProvider, jvmModelAssociations, source);
+		this(
+				new SharedAppendableState(indentation, lineSeparator, importManager, source.eResource()),
+				converter,
+				locationProvider,
+				jvmModelAssociations,
+				source);
 	}
 
-	protected TreeAppendable(SharedAppendableState state, ILocationInFileProvider locationProvider, IJvmModelAssociations jvmModelAssociations, EObject source) {
-		this(state, locationProvider, jvmModelAssociations, createAllLocationData(locationProvider, jvmModelAssociations, source, ILocationInFileProviderExtension.RegionDescription.INCLUDING_COMMENTS), false);
+	protected TreeAppendable(SharedAppendableState state, ITraceURIConverter converter, ILocationInFileProvider locationProvider, IJvmModelAssociations jvmModelAssociations, EObject source) {
+		this(
+				state,
+				converter,
+				locationProvider,
+				jvmModelAssociations,
+				createAllLocationData(
+						converter,
+						locationProvider,
+						jvmModelAssociations,
+						source,
+						ILocationInFileProviderExtension.RegionDescription.INCLUDING_COMMENTS,
+						false), // don't skip empty root regions
+				false);
 	}
-
-	protected TreeAppendable(SharedAppendableState state, 
+	
+	protected TreeAppendable(SharedAppendableState state,
+			final ITraceURIConverter converter,
 			ILocationInFileProvider locationProvider,
 			IJvmModelAssociations jvmModelAssociations,
 			Set<ILocationData> sourceLocations, 
 			boolean useForDebugging) {
 		this.state = state;
+		this.traceURIConverter = converter;
 		this.locationProvider = locationProvider;
 		this.jvmModelAssociations = jvmModelAssociations;
 		this.children = Lists.newArrayList();
 		this.locationData = sourceLocations;
 		this.useForDebugging = useForDebugging;
+		this.lightweightTypeReferenceSerializer = createLightweightTypeReferenceSerializer();
+	}
+	
+	protected LightweightTypeReferenceSerializer createLightweightTypeReferenceSerializer() {
+		return new LightweightTypeReferenceSerializer(this);
+	}
+	
+	@Override
+	public boolean isJava() {
+		return true;
+	}
+	
+	public ITraceURIConverter getTraceURIConverter() {
+		return traceURIConverter;
 	}
 	
 	/**
 	 * @since 2.4
 	 */
-	public ErrorTreeAppendable errorChild(EObject context) {
-		ErrorTreeAppendable errorChild = new ErrorTreeAppendable(state, locationProvider, jvmModelAssociations, getLocationData(), useForDebugging, 
-				context);
+	@Override
+	public ErrorTreeAppendable errorChild() {
+		ErrorTreeAppendable errorChild = new ErrorTreeAppendable(state, traceURIConverter, locationProvider, jvmModelAssociations, getLocationData(), useForDebugging);
 		children.add(errorChild);
 		return errorChild;
 	}
 
+	@Override
 	public TreeAppendable trace(EObject object) {
 		return trace(object, false);
 	}
 	
+	@Override
 	public TreeAppendable trace(EObject object, boolean useForDebugging) {
 		return trace(object, ILocationInFileProviderExtension.RegionDescription.FULL, useForDebugging);
 	}
 	
 	public TreeAppendable trace(EObject object, ILocationInFileProviderExtension.RegionDescription region, boolean useForDebugging) {
 		// TODO use locationProvider from service registry
-		Set<ILocationData> locationData = createAllLocationData(locationProvider, jvmModelAssociations, object, region);
+		Set<ILocationData> locationData = createAllLocationData(traceURIConverter, locationProvider, jvmModelAssociations, object, region);
 		if (locationData.isEmpty())
 			return this;
 		return trace(locationData, useForDebugging);
@@ -156,20 +193,26 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 	 * @since 2.4
 	 */
 	protected TreeAppendable createChild(SharedAppendableState state, ILocationInFileProvider locationProvider, IJvmModelAssociations jvmModelAssociations, Set<ILocationData> newData, boolean useForDebugging) {
-		return new TreeAppendable(state, locationProvider, 
-				jvmModelAssociations, newData, useForDebugging);
+		return new TreeAppendable(state, traceURIConverter, locationProvider, jvmModelAssociations, newData, useForDebugging);
 	}
 	
+	@Override
 	public ITreeAppendable trace(ILocationData location) {
 		return trace(location, false);
 	}
 	
+	@Override
 	public ITreeAppendable trace(ILocationData location, boolean useForDebugging) {
 		return trace(Collections.singleton(location), useForDebugging);
 	}
 
-	@Nullable
-	protected static ILocationData createLocationData(ILocationInFileProvider locationProvider, EObject object, ILocationInFileProviderExtension.RegionDescription query) {
+	/* @Nullable */
+	protected static ILocationData createLocationData(ITraceURIConverter converter, ILocationInFileProvider locationProvider, EObject object, ILocationInFileProviderExtension.RegionDescription query) {
+		return createLocationData(converter, locationProvider, object, query, true);
+	}
+	
+	/* @Nullable */
+	private static ILocationData createLocationData(ITraceURIConverter converter, ILocationInFileProvider locationProvider, EObject object, ILocationInFileProviderExtension.RegionDescription query, boolean skipEmpty) {
 		ITextRegion textRegion = locationProvider instanceof ILocationInFileProviderExtension ? 
 				((ILocationInFileProviderExtension) locationProvider).getTextRegion(object, query) : locationProvider.getFullTextRegion(object);
 		if (!(textRegion instanceof ITextRegionWithLineInformation)) {
@@ -180,22 +223,27 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 			else
 				return null;
 		} 
-		ILocationData newData = createLocationData(object, (ITextRegionWithLineInformation) textRegion);
+		// usually we want to skip empty regions but if the root region is empty, we want to use it to store the path information along
+		// with the empty offset / length pair
+		if (skipEmpty && textRegion == ITextRegion.EMPTY_REGION) {
+			return null;
+		}
+		ILocationData newData = createLocationData(converter, object, (ITextRegionWithLineInformation) textRegion);
 		return newData;
 	}
 	
-	protected static Set<ILocationData> createAllLocationData(ILocationInFileProvider locationProvider, IJvmModelAssociations jvmModelAssociations, EObject object, ILocationInFileProviderExtension.RegionDescription query) {
+	protected static Set<ILocationData> createAllLocationData(ITraceURIConverter converter, ILocationInFileProvider locationProvider, IJvmModelAssociations jvmModelAssociations, EObject object, ILocationInFileProviderExtension.RegionDescription query, boolean skipEmpty) {
 		Set<EObject> sourceElements = jvmModelAssociations.getSourceElements(object);
 		Set<ILocationData> result = Collections.emptySet();
 		if (sourceElements.isEmpty()) {
-			ILocationData locationData = createLocationData(locationProvider, object, query);
+			ILocationData locationData = createLocationData(converter, locationProvider, object, query, skipEmpty);
 			if (locationData != null) {
 				result = Collections.singleton(locationData);
 			}
 		} else {
 			result = Sets.newHashSet();
 			for(EObject sourceElement: sourceElements) {
-				ILocationData locationData = createLocationData(locationProvider, sourceElement, query);
+				ILocationData locationData = createLocationData(converter, locationProvider, sourceElement, query, skipEmpty);
 				if (locationData != null) {
 					result.add(locationData);
 				}	
@@ -204,6 +252,11 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 		return result;
 	}
 	
+	private static Set<ILocationData> createAllLocationData(ITraceURIConverter converter, ILocationInFileProvider locationProvider, IJvmModelAssociations jvmModelAssociations, EObject object, ILocationInFileProviderExtension.RegionDescription query) {
+		return createAllLocationData(converter, locationProvider, jvmModelAssociations, object, query, true);
+	}
+	
+	@Override
 	public ITreeAppendable trace(Iterable<? extends EObject> objects) {
 		if (Iterables.isEmpty(objects))
 			throw new IllegalArgumentException("List of objects may not be empty");
@@ -212,7 +265,7 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 			return trace(objects.iterator().next(), false);
 		Set<ILocationData> newData = new LinkedHashSet<ILocationData>(size);
 		for(EObject object: objects) {
-			ILocationData locationData = createLocationData(locationProvider, object, ILocationInFileProviderExtension.RegionDescription.FULL);
+			ILocationData locationData = createLocationData(traceURIConverter, locationProvider, object, ILocationInFileProviderExtension.RegionDescription.FULL);
 			if (locationData != null)
 				newData.add(locationData);
 		}
@@ -221,6 +274,7 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 		return trace(newData, false);
 	}
 	
+	@Override
 	public ITreeAppendable trace(EObject object, EStructuralFeature feature, int indexInList) {
 		ITextRegion textRegion = locationProvider.getFullTextRegion(object, feature, indexInList);
 		if (!(textRegion instanceof ITextRegionWithLineInformation)) {
@@ -228,21 +282,20 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 				log.debug("location provider returned text region without line information. Synthesized dummy data.", new Exception());
 			textRegion = new TextRegionWithLineInformation(textRegion.getOffset(), textRegion.getLength(), 0, 0);
 		} 
-		ILocationData newData = createLocationData(object, (ITextRegionWithLineInformation) textRegion);
+		if (textRegion == ITextRegion.EMPTY_REGION) {
+			return this;
+		}
+		ILocationData newData = createLocationData(traceURIConverter, object, (ITextRegionWithLineInformation) textRegion);
 		return trace(Collections.singleton(newData), false);
 	}
-
-	protected static ILocationData createLocationData(EObject object, ITextRegionWithLineInformation textRegion) {
-		URI uri = null;
-		String projectName = null;
-		if (object.eResource() != null) {
-			uri = object.eResource().getURI();
-			if (uri.isPlatformResource()) {
-				// Name of project must be serialized in decoded format see https://bugs.eclipse.org/bugs/show_bug.cgi?id=384188
-				projectName = URI.decode(uri.segment(1));
-			}
+	
+	protected static ILocationData createLocationData(ITraceURIConverter converter, EObject object, ITextRegionWithLineInformation textRegion) {
+		Resource resource = object.eResource();
+		SourceRelativeURI uriForTrace = null;
+		if (converter != null) {
+			uriForTrace = converter.getURIForTrace(resource);
 		}
-		ILocationData newData = new LocationData(textRegion, uri, projectName);
+		ILocationData newData = new LocationData(textRegion, uriForTrace);
 		return newData;
 	}
 
@@ -266,7 +319,8 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 	/**
 	 * @noreference This method is not intended to be referenced by clients.
 	 */
-	public void accept(@Nullable String text) {
+	@Override
+	public void accept(/* @Nullable */ String text) {
 		children.add(text);
 	}
 
@@ -293,9 +347,23 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 		return closed;
 	}
 	
+	@Override
 	public TreeAppendable append(JvmType type) {
 		closeLastChild();
 		state.appendType(type, this);
+		return this;
+	}
+	
+	@Override
+	public ITreeAppendable append(Class<?> type) {
+		closeLastChild();
+		state.appendType(type, this);
+		return this;
+	}
+	
+	@Override
+	public ITreeAppendable append(LightweightTypeReference typeRef) {
+		typeRef.accept(lightweightTypeReferenceSerializer);
 		return this;
 	}
 	
@@ -311,12 +379,18 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 		return this;
 	}
 
+	@Override
 	public ITreeAppendable append(CharSequence content) {
 		if (content instanceof ITreeAppendable) {
 			return appendTreeAppendable((ITreeAppendable)content);
 		}
 		closeLastChild();
-		appendIndented(content.toString());
+		if (content == null) {
+			appendIndented("null");
+			log.warn("null was passed to treeappendable", new NullPointerException());
+		} else {
+			appendIndented(content.toString());
+		}
 		return this;
 	}
 
@@ -325,74 +399,101 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 		return this;
 	}
 
+	@Override
 	public TreeAppendable newLine() {
 		closeLastChild();
 		state.appendNewLineAndIndentation(this);
 		return this;
 	}
 
+	@Override
 	public TreeAppendable increaseIndentation() {
 		closeLastChild();
 		state.increaseIndentation();
 		return this;
 	}
 
+	@Override
 	public TreeAppendable decreaseIndentation() {
 		closeLastChild();
 		state.decreaseIndentation();
 		return this;
 	}
 
+	@Override
+	@Deprecated
 	public List<String> getImports() {
 		return state.getImports();
 	}
 
+	@Override
 	public void openScope() {
 		state.openScope();
 	}
 
+	@Override
 	public void openPseudoScope() {
 		state.openPseudoScope();
 	}
 
+	@Override
 	public String declareVariable(Object key, String proposedName) {
 		return state.declareVariable(key, proposedName);
 	}
 
+	@Override
 	public String declareSyntheticVariable(Object key, String proposedName) {
 		return state.declareSyntheticVariable(key, proposedName);
 	}
+	
+	@Override
+	public String declareUniqueNameVariable(Object key, String proposedName) {
+		return state.declareUniqueNameVariable(key, proposedName);
+	}
+	
+	@Override
+	public String removeName(Object key) {
+		return state.removeName(key);
+	}
 
+	@Override
 	public String getName(Object key) {
 		return state.getName(key);
 	}
 
+	@Override
 	public boolean hasName(Object key) {
 		return state.hasName(key);
 	}
 
+	@Override
 	public Object getObject(String name) {
 		return state.getObject(name);
 	}
 
+	@Override
 	public boolean hasObject(String name) {
 		return state.hasObject(name);
 	}
 
+	@Override
 	public void closeScope() {
 		state.closeScope();
 	}
 
+	@Override
 	public String getContent() {
 		StringBuilder result = new StringBuilder(8 * 1024);
 		doGetContent(result);
 		return result.toString();
 	}
 	
+	@Override
 	public char charAt(int index) {
 		return toString().charAt(index);
 	}
 	
+	@Override
 	public CharSequence subSequence(int start, int end) {
 		return toString().subSequence(start, end);
 	}
@@ -412,10 +513,12 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 		}
 	}
 
+	@Override
 	public int length() {
 		return toString().length();
 	}
 
+	@Override
 	public AbstractTraceRegion getTraceRegion() {
 		if (locationData == null) {
 			throw new IllegalStateException("tree appendable was used without tracing");
@@ -468,12 +571,25 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 	/**
 	 * @since 2.4
 	 */
-	protected SharedAppendableState getState() {
+	public SharedAppendableState getState() {
 		return state;
 	}
 	
+	ImportManager getImportManager() {
+		return state.getImportManager();
+	}
+	
+	String getLineSeparator() {
+		return state.getLineSeparator();
+	}
+	
+	String getIndentationString() {
+		return state.getIndentationString();
+	}
 	
 	/**
+	 * @nooverride This method is not intended to be re-implemented or extended by clients.
+	 * @noreference This method is not intended to be referenced by clients.
 	 * @since 2.4
 	 */
 	public void dump() {
@@ -482,6 +598,8 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 	}
 	
 	/**
+	 * @nooverride This method is not intended to be re-implemented or extended by clients.
+	 * @noreference This method is not intended to be referenced by clients.
 	 * @since 2.4
 	 */
 	protected void dump(String indent) {
@@ -505,6 +623,11 @@ public class TreeAppendable implements ITreeAppendable, IAcceptor<String>, CharS
 			System.out.println(indent + currentChildren.toString());
 		if(closed) 
 			System.out.println(indent + "</closed>");
+	}
+
+	@Override
+	public GeneratorConfig getGeneratorConfig() {
+		return state.getGeneratorConfig();
 	}
 	
 }

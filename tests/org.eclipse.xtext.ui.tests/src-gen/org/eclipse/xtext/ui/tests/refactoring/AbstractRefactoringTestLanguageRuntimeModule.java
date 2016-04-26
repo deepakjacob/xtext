@@ -6,7 +6,6 @@ package org.eclipse.xtext.ui.tests.refactoring;
 import java.util.Properties;
 
 import org.eclipse.xtext.Constants;
-import org.eclipse.xtext.service.DefaultRuntimeModule;
 
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
@@ -14,8 +13,8 @@ import com.google.inject.name.Names;
 /**
  * Manual modifications go to {org.eclipse.xtext.ui.tests.refactoring.RefactoringTestLanguageRuntimeModule}
  */
- @SuppressWarnings("all")
-public abstract class AbstractRefactoringTestLanguageRuntimeModule extends DefaultRuntimeModule {
+@SuppressWarnings("all")
+public abstract class AbstractRefactoringTestLanguageRuntimeModule extends org.eclipse.xtext.service.DefaultRuntimeModule {
 
 	protected Properties properties = null;
 
@@ -42,11 +41,6 @@ public abstract class AbstractRefactoringTestLanguageRuntimeModule extends Defau
 	// contributed by org.eclipse.xtext.generator.grammarAccess.GrammarAccessFragment
 	public Class<? extends org.eclipse.xtext.IGrammarAccess> bindIGrammarAccess() {
 		return org.eclipse.xtext.ui.tests.refactoring.services.RefactoringTestLanguageGrammarAccess.class;
-	}
-
-	// contributed by org.eclipse.xtext.generator.parseTreeConstructor.ParseTreeConstructorFragment
-	public Class<? extends org.eclipse.xtext.parsetree.reconstr.IParseTreeConstructor> bindIParseTreeConstructor() {
-		return org.eclipse.xtext.ui.tests.refactoring.parseTreeConstruction.RefactoringTestLanguageParsetreeConstructor.class;
 	}
 
 	// contributed by org.eclipse.xtext.generator.parser.antlr.XtextAntlrGeneratorFragment
@@ -84,6 +78,21 @@ public abstract class AbstractRefactoringTestLanguageRuntimeModule extends Defau
 		return org.eclipse.xtext.parser.antlr.AntlrTokenDefProvider.class;
 	}
 
+	// contributed by org.eclipse.xtext.generator.serializer.SerializerFragment
+	public Class<? extends org.eclipse.xtext.serializer.sequencer.ISemanticSequencer> bindISemanticSequencer() {
+		return org.eclipse.xtext.ui.tests.refactoring.serializer.RefactoringTestLanguageSemanticSequencer.class;
+	}
+
+	// contributed by org.eclipse.xtext.generator.serializer.SerializerFragment
+	public Class<? extends org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer> bindISyntacticSequencer() {
+		return org.eclipse.xtext.ui.tests.refactoring.serializer.RefactoringTestLanguageSyntacticSequencer.class;
+	}
+
+	// contributed by org.eclipse.xtext.generator.serializer.SerializerFragment
+	public Class<? extends org.eclipse.xtext.serializer.ISerializer> bindISerializer() {
+		return org.eclipse.xtext.serializer.impl.Serializer.class;
+	}
+
 	// contributed by org.eclipse.xtext.generator.validation.JavaValidatorFragment
 	@org.eclipse.xtext.service.SingletonBinding(eager=true)	public Class<? extends org.eclipse.xtext.ui.tests.refactoring.validation.RefactoringTestLanguageJavaValidator> bindRefactoringTestLanguageJavaValidator() {
 		return org.eclipse.xtext.ui.tests.refactoring.validation.RefactoringTestLanguageJavaValidator.class;
@@ -105,8 +114,8 @@ public abstract class AbstractRefactoringTestLanguageRuntimeModule extends Defau
 	}
 
 	// contributed by org.eclipse.xtext.generator.builder.BuilderIntegrationFragment
-	public void configureIResourceDescriptionsBuilderScope(com.google.inject.Binder binder) {
-		binder.bind(org.eclipse.xtext.resource.IResourceDescriptions.class).annotatedWith(com.google.inject.name.Names.named(org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider.NAMED_BUILDER_SCOPE)).to(org.eclipse.xtext.resource.impl.ResourceSetBasedResourceDescriptions.class);
+	public void configureIResourceDescriptionsPersisted(com.google.inject.Binder binder) {
+		binder.bind(org.eclipse.xtext.resource.IResourceDescriptions.class).annotatedWith(com.google.inject.name.Names.named(org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider.PERSISTED_DESCRIPTIONS)).to(org.eclipse.xtext.resource.impl.ResourceSetBasedResourceDescriptions.class);
 	}
 
 	// contributed by org.eclipse.xtext.generator.scoping.AbstractScopingFragment

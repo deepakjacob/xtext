@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.contextFinderTest.impl;
 
@@ -24,10 +21,10 @@ import org.eclipse.xtext.serializer.contextFinderTest.NestedTypeTest;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.contextFinderTest.impl.NestedTypeTestImpl#getNested <em>Nested</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

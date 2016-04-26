@@ -13,6 +13,7 @@ import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.IContainer;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.resource.IResourceServiceProviderExtension;
 import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.inject.ConfigurationException;
@@ -22,7 +23,7 @@ import com.google.inject.Injector;
 /**
  * @author Sven Efftinge - Initial contribution and API
  */
-public class DefaultResourceServiceProvider implements IResourceServiceProvider {
+public class DefaultResourceServiceProvider implements IResourceServiceProvider, IResourceServiceProviderExtension {
 	
 	@Inject
 	private IContainer.Manager containerManager;
@@ -42,32 +43,46 @@ public class DefaultResourceServiceProvider implements IResourceServiceProvider 
 	@Inject
 	private Injector injector;
 	
+	@Override
 	public org.eclipse.xtext.resource.IContainer.Manager getContainerManager() {
 		return containerManager;
 	}
 	
+	@Override
 	public IResourceDescription.Manager getResourceDescriptionManager() {
 		return resourceDescriptionManager;
 	}
 	
+	@Override
 	public IResourceValidator getResourceValidator() {
 		return resourceValidator;
 	}
 	
+	@Override
 	public boolean canHandle(URI uri) {
 		return fileExtensionProvider.isValid(uri.fileExtension());
 	}
 
+	@Override
 	public IEncodingProvider getEncodingProvider() {
 		return encodingProvider;
 	}
 	
+	@Override
 	public <T> T get(Class<T> t) {
 		try {
 			return injector.getInstance(t);
 		} catch (ConfigurationException e) {
 			return null;
 		}
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public boolean isSource(URI uri) {
+		return !uri.isArchive();
 	}
 	
 }

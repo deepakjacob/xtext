@@ -7,13 +7,10 @@
  *******************************************************************************/
 package org.eclipse.xtext.util;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * @since 2.3
  */
-@NonNullByDefault
 public class TextRegionWithLineInformation extends TextRegion implements ITextRegionWithLineInformation {
 
 	private final int lineNumber;
@@ -29,10 +26,12 @@ public class TextRegionWithLineInformation extends TextRegion implements ITextRe
 		this.endLineNumber = endLineNumber;
 	}
 
+	@Override
 	public int getLineNumber() {
 		return lineNumber;
 	}
 	
+	@Override
 	public int getEndLineNumber() {
 		return endLineNumber;
 	}
@@ -44,6 +43,7 @@ public class TextRegionWithLineInformation extends TextRegion implements ITextRe
 		return super.merge(other);
 	}
 	
+	@Override
 	public ITextRegionWithLineInformation merge(ITextRegionWithLineInformation other) {
 		if (contains(other))
 			return this;

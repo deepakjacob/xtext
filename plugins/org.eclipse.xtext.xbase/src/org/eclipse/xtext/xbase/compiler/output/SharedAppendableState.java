@@ -9,9 +9,10 @@ package org.eclipse.xtext.xbase.compiler.output;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.util.IAcceptor;
+import org.eclipse.xtext.xbase.compiler.GeneratorConfig;
 import org.eclipse.xtext.xbase.compiler.ImportManager;
 import org.eclipse.xtext.xbase.compiler.ScopeStack;
 
@@ -20,7 +21,6 @@ import org.eclipse.xtext.xbase.compiler.ScopeStack;
  * @noextend This class is not intended to be subclassed by clients.
  * @noinstantiate This class is not intended to be instantiated by clients.
  */
-@NonNullByDefault
 public class SharedAppendableState {
 
 	private int indentationlevel = 0;
@@ -28,8 +28,11 @@ public class SharedAppendableState {
 	private final String lineSeparator;
 	private final ScopeStack scopes;
 	private final ImportManager importManager;
+	private final Resource resource;
+	private GeneratorConfig generatorConfig;
 	
-	public SharedAppendableState(String indentation, String lineSeparator, ImportManager importManager) {
+	public SharedAppendableState(String indentation, String lineSeparator, ImportManager importManager, Resource resource) {
+		this.resource = resource;
 		this.indentation = indentation;
 		this.lineSeparator = lineSeparator;
 		this.importManager = importManager;
@@ -37,8 +40,12 @@ public class SharedAppendableState {
 		openScope();
 	}
 	
-	public SharedAppendableState(ImportManager importManager) {
-		this("  ", "\n", importManager);
+	public SharedAppendableState(ImportManager importManager, Resource resource) {
+		this("  ", "\n", importManager, resource);
+	}
+	
+	public Resource getResource() {
+		return resource;
 	}
 	
 	public void appendNewLineAndIndentation(IAcceptor<String> content) {
@@ -67,11 +74,18 @@ public class SharedAppendableState {
 	}
 	
 	public String declareVariable(Object key, String proposedName) {
-		return scopes.declareVariable(key, proposedName, false);
+		return scopes.declareVariable(key, proposedName, false, false);
 	}
 	
 	public String declareSyntheticVariable(Object key, String proposedName) {
-		return scopes.declareVariable(key, proposedName, true);
+		return scopes.declareVariable(key, proposedName, true, false);
+	}
+	
+	/**
+	 * This is a workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=445949
+	 */
+	public String declareUniqueNameVariable(Object key, String proposedName) {
+		return scopes.declareVariable(key, proposedName, false, true);
 	}
 	
 	public void closeScope() {
@@ -79,9 +93,27 @@ public class SharedAppendableState {
 	}
 	
 	public void appendType(final JvmType type, IAcceptor<String> content) {
-		StringBuilder builder = new StringBuilder();
-		importManager.appendType(type, builder);
-		content.accept(builder.toString());
+		// don't import if a local variable with the same name is on the scope
+		//TODO logic should be moved to ImportManager eventually.
+		if (hasObject(type.getSimpleName())) {
+			content.accept(type.getQualifiedName('.'));
+		} else {
+			StringBuilder builder = new StringBuilder();
+			importManager.appendType(type, builder);
+			content.accept(builder.toString());
+		}
+	}
+	
+	public void appendType(final Class<?> type, IAcceptor<String> content) {
+		// don't import if a local variable with the same name is on the scope
+		//TODO logic should be moved to ImportManager eventually.
+		if (hasObject(type.getSimpleName())) {
+			content.accept(type.getCanonicalName());
+		} else {
+			StringBuilder builder = new StringBuilder();
+			importManager.appendType(type, builder);
+			content.accept(builder.toString());
+		}
 	}
 
 	public List<String> getImports() {
@@ -90,9 +122,14 @@ public class SharedAppendableState {
 	
 	public String getName(Object key) {
 		String result = scopes.getName(key);
+		// FIXME This leads to a lot of code calling first hasName and then getName, hence scopes.getName is often executed twice
 		if (result == null)
 			throw new IllegalStateException("Cannot get name for " + key);
 		return result;
+	}
+	
+	public String removeName(Object key) {
+		return scopes.removeName(key);
 	}
 	
 	public boolean hasName(Object key) {
@@ -115,6 +152,22 @@ public class SharedAppendableState {
 	 */
 	public String getLineSeparator() {
 		return lineSeparator;
+	}
+	
+	ImportManager getImportManager() {
+		return importManager;
+	}
+	
+	String getIndentationString() {
+		return indentation;
+	}
+
+	public GeneratorConfig getGeneratorConfig() {
+		return generatorConfig;
+	}
+
+	public void setGeneratorConfig(GeneratorConfig generatorConfig) {
+		this.generatorConfig = generatorConfig;
 	}
 
 }

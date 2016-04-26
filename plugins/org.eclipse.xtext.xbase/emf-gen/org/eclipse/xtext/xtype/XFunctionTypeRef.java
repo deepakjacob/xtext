@@ -18,15 +18,21 @@ import org.eclipse.xtext.common.types.JvmTypeReference;
  * A representation of the model object '<em><b>XFunction Type Ref</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <!-- begin-model-doc -->
+ * @since 2.7
+ * @noextend This interface is not intended to be extended by clients.
+ * @noimplement This interface is not intended to be implemented by clients.
+ * <!-- end-model-doc -->
+ *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xtype.XFunctionTypeRef#getParamTypes <em>Param Types</em>}</li>
  *   <li>{@link org.eclipse.xtext.xtype.XFunctionTypeRef#getReturnType <em>Return Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.xtype.XFunctionTypeRef#getType <em>Type</em>}</li>
  *   <li>{@link org.eclipse.xtext.xtype.XFunctionTypeRef#isInstanceContext <em>Instance Context</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.xtype.XtypePackage#getXFunctionTypeRef()
  * @model

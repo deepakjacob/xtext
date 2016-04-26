@@ -1,16 +1,23 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl;
 
+import java.util.Collection;
+
 import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.NotificationChain;
+
+import org.eclipse.emf.common.util.EList;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
+import org.eclipse.emf.ecore.util.EObjectContainmentEList;
+import org.eclipse.emf.ecore.util.InternalEList;
+
+import org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.Expression;
 import org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.RuleCall;
 import org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.SimpleAntlrPackage;
 
@@ -20,10 +27,11 @@ import org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.SimpleAntlrPac
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl.RuleCallImpl#getRule <em>Rule</em>}</li>
+ *   <li>{@link org.eclipse.xtext.generator.parser.antlr.debug.simpleAntlr.impl.RuleCallImpl#getArguments <em>Arguments</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
@@ -48,6 +56,16 @@ public class RuleCallImpl extends RuleElementImpl implements RuleCall
    * @ordered
    */
   protected String rule = RULE_EDEFAULT;
+
+  /**
+   * The cached value of the '{@link #getArguments() <em>Arguments</em>}' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getArguments()
+   * @generated
+   * @ordered
+   */
+  protected EList<Expression> arguments;
 
   /**
    * <!-- begin-user-doc -->
@@ -98,6 +116,36 @@ public class RuleCallImpl extends RuleElementImpl implements RuleCall
    * <!-- end-user-doc -->
    * @generated
    */
+  public EList<Expression> getArguments()
+  {
+    if (arguments == null)
+    {
+      arguments = new EObjectContainmentEList<Expression>(Expression.class, this, SimpleAntlrPackage.RULE_CALL__ARGUMENTS);
+    }
+    return arguments;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
+  {
+    switch (featureID)
+    {
+      case SimpleAntlrPackage.RULE_CALL__ARGUMENTS:
+        return ((InternalEList<?>)getArguments()).basicRemove(otherEnd, msgs);
+    }
+    return super.eInverseRemove(otherEnd, featureID, msgs);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   @Override
   public Object eGet(int featureID, boolean resolve, boolean coreType)
   {
@@ -105,6 +153,8 @@ public class RuleCallImpl extends RuleElementImpl implements RuleCall
     {
       case SimpleAntlrPackage.RULE_CALL__RULE:
         return getRule();
+      case SimpleAntlrPackage.RULE_CALL__ARGUMENTS:
+        return getArguments();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -114,6 +164,7 @@ public class RuleCallImpl extends RuleElementImpl implements RuleCall
    * <!-- end-user-doc -->
    * @generated
    */
+  @SuppressWarnings("unchecked")
   @Override
   public void eSet(int featureID, Object newValue)
   {
@@ -121,6 +172,10 @@ public class RuleCallImpl extends RuleElementImpl implements RuleCall
     {
       case SimpleAntlrPackage.RULE_CALL__RULE:
         setRule((String)newValue);
+        return;
+      case SimpleAntlrPackage.RULE_CALL__ARGUMENTS:
+        getArguments().clear();
+        getArguments().addAll((Collection<? extends Expression>)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -139,6 +194,9 @@ public class RuleCallImpl extends RuleElementImpl implements RuleCall
       case SimpleAntlrPackage.RULE_CALL__RULE:
         setRule(RULE_EDEFAULT);
         return;
+      case SimpleAntlrPackage.RULE_CALL__ARGUMENTS:
+        getArguments().clear();
+        return;
     }
     super.eUnset(featureID);
   }
@@ -155,6 +213,8 @@ public class RuleCallImpl extends RuleElementImpl implements RuleCall
     {
       case SimpleAntlrPackage.RULE_CALL__RULE:
         return RULE_EDEFAULT == null ? rule != null : !RULE_EDEFAULT.equals(rule);
+      case SimpleAntlrPackage.RULE_CALL__ARGUMENTS:
+        return arguments != null && !arguments.isEmpty();
     }
     return super.eIsSet(featureID);
   }

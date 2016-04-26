@@ -22,8 +22,8 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 /**
- * computes the fully qualified name of an EObject by first invoking a method <br/>
- * <code>QulifiedName qualifiedName(MyType ele)</code><br/>
+ * Computes the fully qualified name of an EObject by first invoking a method <br/>
+ * <code>QualifiedName qualifiedName(MyType ele)</code><br/>
  * reflectively.
  * 
  * And if no such method is found looks up a property 'name' and invokes the value and appends it to the
@@ -54,9 +54,11 @@ public class DefaultDeclarativeQualifiedNameProvider extends IQualifiedNameProvi
 		return resolver;
 	}
 
+	@Override
 	public QualifiedName getFullyQualifiedName(final EObject obj) {
 		return cache.get(Tuples.pair(obj, "fqn"), obj.eResource(), new Provider<QualifiedName>(){
 
+			@Override
 			public QualifiedName get() {
 				EObject temp = obj;
 				QualifiedName qualifiedNameFromDispatcher = qualifiedName.invoke(temp);

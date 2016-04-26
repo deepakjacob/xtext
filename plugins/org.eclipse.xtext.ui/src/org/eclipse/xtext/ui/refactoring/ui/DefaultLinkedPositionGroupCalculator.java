@@ -9,7 +9,6 @@ package org.eclipse.xtext.ui.refactoring.ui;
 
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Lists.*;
-import static java.util.Collections.*;
 import static org.eclipse.xtext.util.Strings.*;
 
 import java.util.Collections;
@@ -20,9 +19,11 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.link.LinkedPosition;
@@ -30,11 +31,13 @@ import org.eclipse.jface.text.link.LinkedPositionGroup;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
+import org.eclipse.xtext.findReferences.IReferenceFinder;
 import org.eclipse.xtext.resource.IGlobalServiceProvider;
 import org.eclipse.xtext.resource.IReferenceDescription;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.resource.impl.DefaultReferenceDescription;
 import org.eclipse.xtext.ui.editor.XtextEditor;
-import org.eclipse.xtext.ui.editor.findrefs.IReferenceFinder;
-import org.eclipse.xtext.ui.editor.findrefs.SimpleLocalResourceAccess;
+import org.eclipse.xtext.ui.editor.findrefs.TargetURIConverter;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.refactoring.ElementRenameArguments;
 import org.eclipse.xtext.ui.refactoring.IDependentElementsCalculator;
@@ -42,13 +45,13 @@ import org.eclipse.xtext.ui.refactoring.ILinkedPositionGroupCalculator;
 import org.eclipse.xtext.ui.refactoring.IRefactoringUpdateAcceptor;
 import org.eclipse.xtext.ui.refactoring.IReferenceUpdater;
 import org.eclipse.xtext.ui.refactoring.IRenameStrategy;
-import org.eclipse.xtext.ui.refactoring.IRenamedElementTracker;
 import org.eclipse.xtext.ui.refactoring.IRenameStrategy.Provider.NoSuchStrategyException;
+import org.eclipse.xtext.ui.refactoring.IRenamedElementTracker;
+import org.eclipse.xtext.ui.refactoring.impl.CachingResourceSetProvider;
 import org.eclipse.xtext.ui.refactoring.impl.IRefactoringDocument;
 import org.eclipse.xtext.ui.refactoring.impl.ProjectUtil;
 import org.eclipse.xtext.ui.refactoring.impl.RefactoringResourceSetProvider;
 import org.eclipse.xtext.ui.refactoring.impl.StatusWrapper;
-import org.eclipse.xtext.util.IAcceptor;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
@@ -79,29 +82,40 @@ public class DefaultLinkedPositionGroupCalculator implements ILinkedPositionGrou
 	private IRenamedElementTracker renamedElementTracker;
 
 	@Inject
-	private IDependentElementsCalculator dependentElementsCalculator;
+	private IResourceServiceProvider.Registry resourceServiceProviderRegistry;
 
 	@Inject
 	private IReferenceFinder referenceFinder;
 
 	@Inject
 	private IReferenceUpdater referenceUpdater;
+	
+	@Inject
+	private TargetURIConverter targetURIConverter;
 
 	@Inject
 	private Provider<LocalResourceRefactoringUpdateAcceptor> updateAcceptorProvider;
 
-	public LinkedPositionGroup getLinkedPositionGroup(IRenameElementContext renameElementContext,
+	@Override
+	public Provider<LinkedPositionGroup> getLinkedPositionGroup(
+			IRenameElementContext renameElementContext,
 			IProgressMonitor monitor) {
-		SubMonitor progress = SubMonitor.convert(monitor, 100);
-		XtextEditor editor = (XtextEditor) renameElementContext.getTriggeringEditor();
+		final SubMonitor progress = SubMonitor.convert(monitor, 100);
+		final XtextEditor editor = (XtextEditor) renameElementContext.getTriggeringEditor();
 		IProject project = projectUtil.getProject(renameElementContext.getContextResourceURI());
 		if (project == null)
 			throw new IllegalStateException("Could not determine project for context resource "
 					+ renameElementContext.getContextResourceURI());
+		
+		RefactoringResourceSetProvider resourceSetProvider = new CachingResourceSetProvider(DefaultLinkedPositionGroupCalculator.this.resourceSetProvider);
+		
 		ResourceSet resourceSet = resourceSetProvider.get(project);
 		EObject targetElement = resourceSet.getEObject(renameElementContext.getTargetElementURI(), true);
 		if (targetElement == null)
 			throw new IllegalStateException("Target element could not be loaded");
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 		IRenameStrategy.Provider strategyProvider = globalServiceProvider.findService(targetElement,
 				IRenameStrategy.Provider.class);
 		IRenameStrategy renameStrategy = null;
@@ -114,31 +128,65 @@ public class DefaultLinkedPositionGroupCalculator implements ILinkedPositionGrou
 			throw new IllegalArgumentException("Cannot find a rename strategy for "
 					+ notNull(renameElementContext.getTargetElementURI()));
 		String newName = renameStrategy.getOriginalName();
+		IResourceServiceProvider resourceServiceProvider = resourceServiceProviderRegistry.getResourceServiceProvider(renameElementContext.getTargetElementURI());
+		IDependentElementsCalculator dependentElementsCalculator =  resourceServiceProvider.get(IDependentElementsCalculator.class);
 		Iterable<URI> dependentElementURIs = dependentElementsCalculator.getDependentElementURIs(targetElement,
 				progress.newChild(10));
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 		LocalResourceRefactoringUpdateAcceptor updateAcceptor = updateAcceptorProvider.get();
 		updateAcceptor.setLocalResourceURI(renameElementContext.getContextResourceURI());
 		renameStrategy.createDeclarationUpdates(newName, resourceSet, updateAcceptor);
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 		Map<URI, URI> original2newEObjectURI = renamedElementTracker.renameAndTrack(
 				concat(Collections.singleton(renameElementContext.getTargetElementURI()), dependentElementURIs),
 				newName, resourceSet, renameStrategy, progress.newChild(10));
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 		ElementRenameArguments elementRenameArguments = new ElementRenameArguments(
-				renameElementContext.getTargetElementURI(), newName, renameStrategy, original2newEObjectURI);
+				renameElementContext.getTargetElementURI(), newName, renameStrategy, original2newEObjectURI, resourceSetProvider);
 		final List<IReferenceDescription> referenceDescriptions = newArrayList();
-		IAcceptor<IReferenceDescription> referenceAcceptor = new IAcceptor<IReferenceDescription>() {
+		IReferenceFinder.Acceptor referenceAcceptor = new IReferenceFinder.Acceptor() {
+			@Override
 			public void accept(IReferenceDescription referenceDescription) {
 				referenceDescriptions.add(referenceDescription);
 			}
+			@Override
+			public void accept(EObject source, URI sourceURI, EReference eReference, int index, EObject targetOrProxy,
+					URI targetURI) {
+				referenceDescriptions.add(new DefaultReferenceDescription(sourceURI, targetURI, eReference, index, null));
+			}
 		};
-		referenceFinder.findReferences(elementRenameArguments.getRenamedElementURIs(),
-				singleton(renameElementContext.getContextResourceURI()), new SimpleLocalResourceAccess(resourceSet),
-				referenceAcceptor, progress.newChild(60));
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
+		referenceFinder.findReferences(
+				targetURIConverter.fromIterable(elementRenameArguments.getRenamedElementURIs()),
+				resourceSet.getResource(renameElementContext.getContextResourceURI(), true),
+				referenceAcceptor, progress.newChild(10));
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 		referenceUpdater.createReferenceUpdates(elementRenameArguments, referenceDescriptions, updateAcceptor,
-				progress.newChild(10));
-		List<ReplaceEdit> textEdits = updateAcceptor.getTextEdits();
-		LinkedPositionGroup linkedGroup = createLinkedGroupFromReplaceEdits(textEdits, editor,
-				renameStrategy.getOriginalName(), progress.newChild(10));
-		return linkedGroup;
+				progress.newChild(60));
+		final List<ReplaceEdit> textEdits = updateAcceptor.getTextEdits();
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
+		final IRenameStrategy renameStrategy2 = renameStrategy;
+		return new Provider<LinkedPositionGroup>() {
+
+			@Override
+			public LinkedPositionGroup get() {
+				LinkedPositionGroup linkedGroup = createLinkedGroupFromReplaceEdits(textEdits, editor,
+						renameStrategy2.getOriginalName(), progress.newChild(10));
+				return linkedGroup;
+			}
+		};
 	}
 
 	protected LinkedPositionGroup createLinkedGroupFromReplaceEdits(List<ReplaceEdit> edits, XtextEditor xtextEditor,
@@ -149,6 +197,7 @@ public class DefaultLinkedPositionGroupCalculator implements ILinkedPositionGrou
 		LinkedPositionGroup group = new LinkedPositionGroup();
 		Iterable<LinkedPosition> linkedPositions = filter(
 				Iterables.transform(edits, new Function<ReplaceEdit, LinkedPosition>() {
+					@Override
 					public LinkedPosition apply(ReplaceEdit edit) {
 						try {
 							String textToReplace = document.get(edit.getOffset(), edit.getLength());
@@ -183,6 +232,7 @@ public class DefaultLinkedPositionGroupCalculator implements ILinkedPositionGrou
 			final int invocationOffset) {
 		Comparator<LinkedPosition> comparator = new Comparator<LinkedPosition>() {
 
+			@Override
 			public int compare(LinkedPosition left, LinkedPosition right) {
 				return rank(left) - rank(right);
 			}
@@ -217,22 +267,27 @@ public class DefaultLinkedPositionGroupCalculator implements ILinkedPositionGrou
 			return textEdits;
 		}
 
+		@Override
 		public StatusWrapper getRefactoringStatus() {
 			return status;
 		}
 
+		@Override
 		public IRefactoringDocument getDocument(URI resourceURI) {
 			return refactoringDocumentProvider.get(resourceURI, status);
 		}
 
+		@Override
 		public Change createCompositeChange(String name, IProgressMonitor monitor) {
 			return null;
 		}
 
+		@Override
 		public void accept(URI resourceURI, Change change) {
 			// ignore
 		}
 
+		@Override
 		public void accept(URI resourceURI, TextEdit textEdit) {
 			if (localResourceURI.equals(resourceURI) && textEdit instanceof ReplaceEdit) {
 				textEdits.add((ReplaceEdit) textEdit);

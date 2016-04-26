@@ -8,92 +8,99 @@
 package org.eclipse.xtext.xbase.tests.typesystem;
 
 import com.google.inject.Inject;
+import java.util.Collection;
 import java.util.List;
+import org.eclipse.xtend.lib.annotations.Accessors;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.common.types.TypesFactory;
-import org.eclipse.xtext.junit4.InjectWith;
-import org.eclipse.xtext.junit4.XtextRunner;
+import org.eclipse.xtext.diagnostics.AbstractDiagnostic;
+import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.XFeatureCall;
 import org.eclipse.xtext.xbase.XbaseFactory;
 import org.eclipse.xtext.xbase.junit.typesystem.PublicReentrantTypeResolver;
 import org.eclipse.xtext.xbase.junit.typesystem.PublicResolvedTypes;
+import org.eclipse.xtext.xbase.lib.CollectionLiterals;
+import org.eclipse.xtext.xbase.lib.Exceptions;
+import org.eclipse.xtext.xbase.lib.Pure;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
-import org.eclipse.xtext.xbase.tests.typesystem.XbaseNewTypeSystemInjectorProvider;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@RunWith(value = XtextRunner.class)
-@InjectWith(value = XbaseNewTypeSystemInjectorProvider.class)
 @SuppressWarnings("all")
 public class ResolvedTypesTest extends AbstractXbaseTestCase {
   @Inject
-  private PublicReentrantTypeResolver _resolver;
-  
-  public PublicReentrantTypeResolver getResolver() {
-    return this._resolver;
-  }
-  
-  public void setResolver(final PublicReentrantTypeResolver resolver) {
-    this._resolver = resolver;
-  }
+  @Accessors
+  private PublicReentrantTypeResolver resolver;
   
   private TypesFactory typesFactory = TypesFactory.eINSTANCE;
   
   private XbaseFactory xbaseFactory = XbaseFactory.eINSTANCE;
   
-  private PublicResolvedTypes _testMe;
-  
-  public PublicResolvedTypes getTestMe() {
-    return this._testMe;
-  }
-  
-  public void setTestMe(final PublicResolvedTypes testMe) {
-    this._testMe = testMe;
-  }
+  @Accessors
+  private PublicResolvedTypes testMe;
   
   @Before
   public void initResolvedTypes() {
-    PublicReentrantTypeResolver _resolver = this.getResolver();
-    PublicResolvedTypes _publicResolvedTypes = new PublicResolvedTypes(_resolver);
-    this.setTestMe(_publicResolvedTypes);
+    try {
+      final XExpression expression = this.expression("null");
+      this.resolver.initializeFrom(expression);
+      PublicResolvedTypes _publicResolvedTypes = new PublicResolvedTypes(this.resolver);
+      this.testMe = _publicResolvedTypes;
+    } catch (Throwable _e) {
+      throw Exceptions.sneakyThrow(_e);
+    }
   }
   
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void testDiagnostics() {
-    PublicResolvedTypes _testMe = this.getTestMe();
-    _testMe.getQueuedDiagnostics();
+    List<Object> _emptyList = CollectionLiterals.<Object>emptyList();
+    Collection<AbstractDiagnostic> _queuedDiagnostics = this.testMe.getQueuedDiagnostics();
+    Assert.assertEquals(((Object) _emptyList), _queuedDiagnostics);
   }
   
   @Test
   public void testActualTypeArguments() {
-    PublicResolvedTypes _testMe = this.getTestMe();
-    List<LightweightTypeReference> _actualTypeArguments = _testMe.getActualTypeArguments(null);
+    List<LightweightTypeReference> _actualTypeArguments = this.testMe.getActualTypeArguments(null);
     boolean _isEmpty = _actualTypeArguments.isEmpty();
     Assert.assertTrue(_isEmpty);
   }
   
   @Test
   public void testCreateAndGetUnboundTypeParameter() {
-    PublicResolvedTypes _testMe = this.getTestMe();
     XFeatureCall _createXFeatureCall = this.xbaseFactory.createXFeatureCall();
     JvmTypeParameter _createJvmTypeParameter = this.typesFactory.createJvmTypeParameter();
-    final UnboundTypeReference unbound = _testMe.createUnboundTypeReference(_createXFeatureCall, _createJvmTypeParameter);
-    PublicResolvedTypes _testMe_1 = this.getTestMe();
+    final UnboundTypeReference unbound = this.testMe.createUnboundTypeReference(_createXFeatureCall, _createJvmTypeParameter);
     Object _handle = unbound.getHandle();
-    UnboundTypeReference _unboundTypeReference = _testMe_1.getUnboundTypeReference(_handle);
+    UnboundTypeReference _unboundTypeReference = this.testMe.getUnboundTypeReference(_handle);
     Assert.assertSame(unbound, _unboundTypeReference);
   }
   
   @Test(expected = IllegalStateException.class)
   public void testTryGetUnknownUnboundTypeParameter() {
-    PublicResolvedTypes _testMe = this.getTestMe();
-    _testMe.getUnboundTypeReference("unknown handle");
+    this.testMe.getUnboundTypeReference("unknown handle");
+  }
+  
+  @Pure
+  public PublicReentrantTypeResolver getResolver() {
+    return this.resolver;
+  }
+  
+  public void setResolver(final PublicReentrantTypeResolver resolver) {
+    this.resolver = resolver;
+  }
+  
+  @Pure
+  public PublicResolvedTypes getTestMe() {
+    return this.testMe;
+  }
+  
+  public void setTestMe(final PublicResolvedTypes testMe) {
+    this.testMe = testMe;
   }
 }

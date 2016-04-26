@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.resource.locationprovidertest.impl;
 
@@ -27,10 +24,10 @@ import org.eclipse.xtext.resource.locationprovidertest.Processor;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.resource.locationprovidertest.impl.ProcessorImpl#getData <em>Data</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

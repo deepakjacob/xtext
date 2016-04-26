@@ -10,57 +10,121 @@ package org.eclipse.xtext.xbase.ui.validation;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.core.JavaProject;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.xtext.preferences.PreferenceKey;
 import org.eclipse.xtext.ui.preferences.OptionsConfigurationBlock;
 import org.eclipse.xtext.ui.validation.AbstractValidatorConfigurationBlock;
+import org.eclipse.xtext.validation.ConfigurableIssueCodesProvider;
 import org.eclipse.xtext.validation.SeverityConverter;
-import org.eclipse.xtext.xbase.validation.XbaseConfigurableIssueCodes;
+import org.eclipse.xtext.xbase.validation.IssueCodes;
+import org.eclipse.xtext.xbase.validation.XbaseSeverityConverter;
+
+import com.google.inject.Inject;
 
 /**
- * Default ConfigurationBlock for Xbase Langauges
+ * Default ConfigurationBlock for Xbase Langauges.<br>
+ * Clients may override {@link #fillSettingsPage(Composite, int, int)}<br>
+ * If {@link #fillSettingsPage(Composite, int, int)} is reused, clients may participate<br>
+ * to the section creation in {@link #fillRestrictedApiSection(ComboBoxBuilder)} and/or
+ * {@link #fillUnusedCodeSection(ComboBoxBuilder)}
  * 
  * @author Dennis Huebner - Initial contribution and API
+ * 
  */
 public class XbaseValidationConfigurationBlock extends AbstractValidatorConfigurationBlock {
+	@Inject
+	private ConfigurableIssueCodesProvider issueCodeProvider;
 
-	protected XbaseValidationConfigurationBlock(IProject project, IPreferenceStore preferenceStore,
-			IWorkbenchPreferenceContainer container) {
-		super(project, preferenceStore, container);
+	@Override
+	public Control doCreateContents(Composite parent) {
+		Control createContents = super.doCreateContents(parent);
+		adjustComboWidth(comboBoxes);
+		return createContents;
 	}
 
 	@Override
 	protected void fillSettingsPage(Composite composite, int nColumns, int defaultIndent) {
-		Composite inner = createSection(Messages.XbaseValidationConfigurationBlock_restricted_api_section_title,
-				composite, nColumns);
+		Composite programmingProblems = createSection("Potential programming problems", composite, nColumns);
+		fillPotentialProgrammingProblemsSection(new ComboBoxBuilder(this, programmingProblems, defaultIndent));
 
-		addJavaDelegatingComboBox(XbaseConfigurableIssueCodes.FORBIDDEN_REFERENCE,
-				Messages.XbaseValidationConfigurationBlock_forbidden_ref_label, inner, defaultIndent);
-		addJavaDelegatingComboBox(XbaseConfigurableIssueCodes.DISCOURAGED_REFERENCE,
-				Messages.XbaseValidationConfigurationBlock_discouraged_ref_label, inner, defaultIndent);
+		Composite restrictedApi = createSection(
+				Messages.XbaseValidationConfigurationBlock_restricted_api_section_title, composite, nColumns);
+		fillRestrictedApiSection(new ComboBoxBuilder(this, restrictedApi, defaultIndent));
+
+		Composite unusedCode = createSection("Unnecessary code", composite, nColumns);
+		fillUnusedCodeSection(new ComboBoxBuilder(this, unusedCode, defaultIndent));
+		
+		Composite codingStyle = createSection("Coding style", composite, nColumns);
+		fillCodingStyleSection(new ComboBoxBuilder(this, codingStyle, defaultIndent));
+	}
+	
+	protected void fillCodingStyleSection(ComboBoxBuilder comboBoxBuilder) {
+		comboBoxBuilder.addComboBox(IssueCodes.OPERATION_WITHOUT_PARENTHESES, "Method/Constructor call without parentheses:");
 	}
 
-	protected Combo addJavaDelegatingComboBox(PreferenceKey prefKey, String label, Composite parent, int indent) {
-		String javaIssueCode = prefKey.getDefaultValue();
+	protected void fillUnusedCodeSection(ComboBoxBuilder comboBoxBuilder) {
+		comboBoxBuilder
+				.addJavaDelegatingComboBox(IssueCodes.UNUSED_LOCAL_VARIABLE, "Value of local variable is not used:")
+				.addJavaDelegatingComboBox(IssueCodes.IMPORT_UNUSED, "Unused import:")
+				.addJavaDelegatingComboBox(IssueCodes.OBSOLETE_INSTANCEOF, "Unnecessary 'instanceof' operation:")
+				.addJavaDelegatingComboBox(IssueCodes.OBSOLETE_CAST, "Unnecessary 'cast' operation:");
+	}
+
+	protected void fillPotentialProgrammingProblemsSection(ComboBoxBuilder comboBoxBuilder) {
+		comboBoxBuilder.addComboBox(IssueCodes.NULL_SAFE_FEATURE_CALL_OF_PRIMITIVE_VALUED_FEATURE, "Null safe call of primitive valued feature:");
+		comboBoxBuilder.addComboBox(IssueCodes.EQUALS_WITH_NULL, "Equals comparison with 'null':");
+		comboBoxBuilder.addComboBox(IssueCodes.UNHANDLED_EXCEPTION, "Unhandled checked exceptions:");
+		comboBoxBuilder.addComboBox(IssueCodes.JAVA_STYLE_TYPE_CAST, "Type cast with Java syntax:");
+		comboBoxBuilder.addComboBox(IssueCodes.SUSPICIOUSLY_OVERLOADED_FEATURE, "Method overloading with multiple implicit receivers:");
+		comboBoxBuilder.addComboBox(IssueCodes.VARIABLE_NAME_DISCOURAGED, "Discouraged usage of variable name 'self':");
+		comboBoxBuilder.addComboBox(IssueCodes.UNREACHABLE_CASE, "Unreachable case:");
+		comboBoxBuilder.addComboBox(IssueCodes.UNREACHABLE_IF_BLOCK, "Unreachable if block:");
+		comboBoxBuilder.addComboBox(IssueCodes.CONSTANT_BOOLEAN_CONDITION, "Constant boolean condition:");
+		comboBoxBuilder.addComboBox(IssueCodes.INCOMPLETE_CASES_ON_ENUM, "Incomplete 'switch' cases on enum:");
+	}
+
+	protected void fillRestrictedApiSection(ComboBoxBuilder comboBoxBuilder) {
+		comboBoxBuilder
+				.addJavaDelegatingComboBox(IssueCodes.DEPRECATED_MEMBER_REFERENCE,
+						Messages.XbaseValidationConfigurationBlock_deprecated_ref_label)
+				.addJavaDelegatingComboBox(IssueCodes.FORBIDDEN_REFERENCE,
+						Messages.XbaseValidationConfigurationBlock_forbidden_ref_label)
+				.addJavaDelegatingComboBox(IssueCodes.DISCOURAGED_REFERENCE,
+						Messages.XbaseValidationConfigurationBlock_discouraged_ref_label)
+				.addComboBox(IssueCodes.IMPORT_WILDCARD_DEPRECATED, "Use of wildcard imports:");
+	}
+
+	protected Combo addJavaDelegatingComboBox(String prefKey, String label, Composite parent, int indent) {
+		PreferenceKey preferenceKey = issueCodeProvider.getConfigurableIssueCodes().get(prefKey);
+		if (preferenceKey == null) {
+			throw new IllegalArgumentException(prefKey
+					+ " not registered in the corresponding ConfigurableIssueCodesProvider");
+		}
+		String javaIssueCode = preferenceKey.getDefaultValue();
 		if (!javaIssueCode.startsWith(JavaCore.PLUGIN_ID)) {
-			throw new IllegalArgumentException(prefKey.toString()
-					+ Messages.XbaseValidationConfigurationBlock_not_java_message);
+			throw new IllegalArgumentException(prefKey + Messages.XbaseValidationConfigurationBlock_not_java_message);
 		}
 		String[] values = new String[] { SeverityConverter.SEVERITY_ERROR, SeverityConverter.SEVERITY_WARNING,
 				SeverityConverter.SEVERITY_IGNORE, javaIssueCode };
 		String javaValue = javaValue(javaIssueCode);
-		String[] valueLabels = new String[] {
-				Messages.XbaseValidationConfigurationBlock_error,
-				Messages.XbaseValidationConfigurationBlock_warning,
-				Messages.XbaseValidationConfigurationBlock_ignore,
-				NLS.bind(Messages.XbaseValidationConfigurationBlock_java_label, javaValue)};
-		Combo comboBox = addComboBox(parent, label, prefKey.getId(), indent, values, valueLabels);
+		String[] valueLabels = new String[] { Messages.XbaseValidationConfigurationBlock_error,
+				Messages.XbaseValidationConfigurationBlock_warning, Messages.XbaseValidationConfigurationBlock_ignore,
+				NLS.bind(Messages.XbaseValidationConfigurationBlock_java_label, javaValue) };
+		Combo comboBox = addComboBox(parent, label, prefKey, indent, values, valueLabels);
+		return comboBox;
+	}
+
+	protected Combo addComboBox(String prefKey, String label, Composite parent, int indent) {
+		String[] values = new String[] { SeverityConverter.SEVERITY_ERROR, SeverityConverter.SEVERITY_WARNING,
+				SeverityConverter.SEVERITY_IGNORE };
+		String[] valueLabels = new String[] { Messages.XbaseValidationConfigurationBlock_error,
+				Messages.XbaseValidationConfigurationBlock_warning, Messages.XbaseValidationConfigurationBlock_ignore };
+		Combo comboBox = addComboBox(parent, label, prefKey, indent, values, valueLabels);
 		return comboBox;
 	}
 
@@ -88,17 +152,41 @@ public class XbaseValidationConfigurationBlock extends AbstractValidatorConfigur
 
 	@Override
 	protected void validateSettings(String changedKey, String oldValue, String newValue) {
-		// TODO Auto-generated method stub
+		// Clients may override
 	}
 
-	protected String javaValue(String javaIssueCode) {
+	protected String javaValue(final String javaIssueCode) {
 		String delegatedValue;
-		if (getProject() != null && getProject().isOpen() && JavaProject.hasJavaNature(getProject())) {
-			delegatedValue = JavaCore.create(getProject()).getOption(javaIssueCode, true);
+		String decodedDelegateKey = XbaseSeverityConverter.decodeDelegationKey(javaIssueCode).getFirst();
+		IJavaProject javaProject = JavaCore.create(getProject());
+		if (javaProject != null && javaProject.exists() && javaProject.getProject().isAccessible()) {
+			delegatedValue = javaProject.getOption(decodedDelegateKey, true);
 		} else {
-			delegatedValue = JavaCore.getOption(javaIssueCode);
+			delegatedValue = JavaCore.getOption(decodedDelegateKey);
 		}
 		return delegatedValue;
 	}
 
+	protected static final class ComboBoxBuilder {
+		private int defaultIndent;
+		private Composite section;
+		private final XbaseValidationConfigurationBlock xbaseConfBlock;
+
+		public ComboBoxBuilder(XbaseValidationConfigurationBlock xbaseConfBlock, Composite section, int defaultIndent) {
+			this.section = section;
+			this.xbaseConfBlock = xbaseConfBlock;
+			this.defaultIndent = defaultIndent;
+		}
+
+		public ComboBoxBuilder addJavaDelegatingComboBox(String key, String label) {
+			xbaseConfBlock.addJavaDelegatingComboBox(key, label, section, defaultIndent);
+			return this;
+		}
+
+		public ComboBoxBuilder addComboBox(String key, String label) {
+			xbaseConfBlock.addComboBox(key, label, section, defaultIndent);
+			return this;
+		}
+
+	}
 }

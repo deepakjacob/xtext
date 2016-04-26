@@ -113,7 +113,7 @@ public class MarkOccurrencesTest extends AbstractEditorTest {
 		String model2 = "Foo {}";
 		IFile modelFile1 = IResourcesSetupUtil.createFile("test/src/Test1.outlinetestlanguage", model1);
 		IResourcesSetupUtil.createFile("test/src/Test2.outlinetestlanguage", model2);
-		IResourcesSetupUtil.waitForAutoBuild();
+		IResourcesSetupUtil.waitForBuild();
 		XtextEditor editor = openEditor(modelFile1);
 		ISelectionProvider selectionProvider = editor.getSelectionProvider();
 		selectionProvider.setSelection(new TextSelection(model1.indexOf("Foo"), 1));
@@ -182,6 +182,7 @@ public class MarkOccurrencesTest extends AbstractEditorTest {
 			assertTrue(added.toString(), added.isEmpty());
 		}
 
+		@Override
 		public void modelChanged(AnnotationModelEvent event) {
 			if (event.getAddedAnnotations().length != event.getRemovedAnnotations().length) {
 				this.event = event;
@@ -189,6 +190,7 @@ public class MarkOccurrencesTest extends AbstractEditorTest {
 			}
 		}
 
+		@Override
 		public void modelChanged(IAnnotationModel model) {
 		}
 	}

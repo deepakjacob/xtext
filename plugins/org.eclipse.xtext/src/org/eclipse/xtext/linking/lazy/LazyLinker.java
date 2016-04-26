@@ -8,7 +8,6 @@
 package org.eclipse.xtext.linking.lazy;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,10 +28,13 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.xtext.AbstractMetamodelDeclaration;
+import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.IGrammarAccess;
+import org.eclipse.xtext.ParserRule;
+import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.diagnostics.IDiagnosticConsumer;
 import org.eclipse.xtext.diagnostics.IDiagnosticProducer;
 import org.eclipse.xtext.linking.impl.AbstractCleaningLinker;
@@ -63,6 +65,7 @@ public class LazyLinker extends AbstractCleaningLinker {
 	
 	private SimpleCache<EClass, EClass> instantiableSubTypes = new SimpleCache<EClass, EClass>(
 			new Function<EClass, EClass>() {
+				@Override
 				public EClass apply(EClass from) {
 					return findInstantiableCompatible(from);
 				}
@@ -90,10 +93,13 @@ public class LazyLinker extends AbstractCleaningLinker {
 		cache.execWithoutCacheClear(model.eResource(), new IUnitOfWork.Void<Resource>() {
 			@Override
 			public void process(Resource state) throws Exception {
-				installProxies(model, producer, settingsToLink);
-				TreeIterator<EObject> iterator = model.eAllContents();
+				TreeIterator<EObject> iterator = getAllLinkableContents(model);
+				boolean clearAllReferencesRequired = isClearAllReferencesRequired(state);
 				while (iterator.hasNext()) {
 					EObject eObject = iterator.next();
+					if (clearAllReferencesRequired) {
+						clearReferences(eObject);
+					}
 					installProxies(eObject, producer, settingsToLink);
 				}
 			}
@@ -106,32 +112,58 @@ public class LazyLinker extends AbstractCleaningLinker {
 		ICompositeNode node = NodeModelUtils.getNode(obj);
 		if (node == null)
 			return;
-		installProxies(obj, producer, settingsToLink, node);
+		installProxies(obj, producer, settingsToLink, node, false);
 	}
 
 	private void installProxies(EObject obj, IDiagnosticProducer producer,
-			Multimap<EStructuralFeature.Setting, INode> settingsToLink, ICompositeNode parentNode) {
-		Iterator<INode> iterator = parentNode.getChildren().iterator();
-		while(iterator.hasNext()) {
-			INode node = iterator.next();
-			if (node.getGrammarElement() instanceof CrossReference && !Iterables.isEmpty(node.getLeafNodes())) {
-				CrossReference ref = (CrossReference) node.getGrammarElement();
+			Multimap<EStructuralFeature.Setting, INode> settingsToLink, ICompositeNode parentNode, boolean dontCheckParent) {
+		final EClass eClass = obj.eClass();
+		if (eClass.getEAllReferences().size() - eClass.getEAllContainments().size() == 0)
+			return;
+
+		for (INode node = parentNode.getFirstChild(); node != null; node = node.getNextSibling()) {
+			EObject grammarElement = node.getGrammarElement();
+			if (grammarElement instanceof CrossReference && hasLeafNodes(node)) {
 				producer.setNode(node);
-				final EReference eRef = GrammarUtil.getReference(ref, obj.eClass());
+				CrossReference crossReference = (CrossReference) grammarElement;
+				final EReference eRef = GrammarUtil.getReference(crossReference, eClass);
 				if (eRef == null) {
-					throw new IllegalStateException("Couldn't find EReference for crossreference " + ref);
+					ParserRule parserRule = GrammarUtil.containingParserRule(crossReference);
+					final String feature = GrammarUtil.containingAssignment(crossReference).getFeature();
+					throw new IllegalStateException("Couldn't find EReference for crossreference '"+eClass.getName()+"::"+feature+"' in parser rule '"+parserRule.getName()+"'.");
 				}
 				if (!eRef.isResolveProxies() /*|| eRef.getEOpposite() != null see https://bugs.eclipse.org/bugs/show_bug.cgi?id=282486*/) {
 					final EStructuralFeature.Setting setting = ((InternalEObject) obj).eSetting(eRef);
 					settingsToLink.put(new SettingDelegate(setting), node);
 				} else {
 					createAndSetProxy(obj, node, eRef);
+					afterCreateAndSetProxy(obj, node, eRef, crossReference, producer);
+				}
+			} else if (grammarElement instanceof RuleCall && node instanceof ICompositeNode) {
+				RuleCall ruleCall = (RuleCall) grammarElement;
+				AbstractRule calledRule = ruleCall.getRule();
+				if (calledRule instanceof ParserRule && ((ParserRule) calledRule).isFragment()) {
+					installProxies(obj, producer, settingsToLink, (ICompositeNode) node, true);
 				}
 			}
 		}
-		if (shouldCheckParentNode(parentNode)) {
-			installProxies(obj, producer, settingsToLink, parentNode.getParent());
+		if (!dontCheckParent && shouldCheckParentNode(parentNode)) {
+			installProxies(obj, producer, settingsToLink, parentNode.getParent(), dontCheckParent);
 		}
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	protected void afterCreateAndSetProxy(EObject obj, INode node, EReference eRef, CrossReference crossReference,
+			IDiagnosticProducer producer) {
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	protected boolean hasLeafNodes(INode node) {
+		return !Iterables.isEmpty(node.getLeafNodes());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -170,11 +202,19 @@ public class LazyLinker extends AbstractCleaningLinker {
 			throw new IllegalStateException("object must be contained in a resource");
 		final URI uri = resource.getURI();
 		final URI encodedLink = uri.appendFragment(encoder.encode(obj, eRef, node));
-		EClass referenceType = ecoreGenericsUtil.getReferenceType(eRef, obj.eClass());
-		EClass instantiableType = instantiableSubTypes.get(referenceType);
-		final EObject proxy = EcoreUtil.create(instantiableType);
+		EClass referenceType = getProxyType(obj, eRef);
+		final EObject proxy = EcoreUtil.create(referenceType);
 		((InternalEObject) proxy).eSetProxyURI(encodedLink);
 		return proxy;
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	protected EClass getProxyType(EObject obj, EReference eRef) {
+		EClass referenceType = ecoreGenericsUtil.getReferenceType(eRef, obj.eClass());
+		EClass instantiableType = instantiableSubTypes.get(referenceType);
+		return instantiableType;
 	}
 
 	protected EClass findInstantiableCompatible(EClass eType) {
@@ -264,4 +304,10 @@ public class LazyLinker extends AbstractCleaningLinker {
 		return grammarAccess;
 	}
 
+	/**
+	 * @since 2.4
+	 */
+	protected OnChangeEvictingCache getCache() {
+		return cache;
+	}
 }

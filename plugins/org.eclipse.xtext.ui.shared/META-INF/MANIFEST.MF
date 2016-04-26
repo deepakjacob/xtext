@@ -2,15 +2,18 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Xtext UI Shared
 Bundle-SymbolicName: org.eclipse.xtext.ui.shared;singleton:=true
-Bundle-Version: 2.4.0.qualifier
+Bundle-Version: 2.10.0.qualifier
 Bundle-Localization: plugin
 Bundle-Activator: org.eclipse.xtext.ui.shared.internal.Activator
-Bundle-Vendor: Eclipse Modeling Project
-Require-Bundle: org.eclipse.xtext.ui;bundle-version="2.0.0";resolution:=optional;x-installation:=greedy,
- org.eclipse.xtext.builder;bundle-version="2.0.0";resolution:=optional;x-installation:=greedy,
- org.eclipse.jdt.core;bundle-version="3.5.1";resolution:=optional;x-installation:=greedy,
- org.eclipse.xtext.common.types.ui;bundle-version="2.0.0";resolution:=optional;x-installation:=greedy
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-Vendor: Eclipse Xtext
+Require-Bundle: org.eclipse.xtext.ui;resolution:=optional;x-installation:=greedy,
+ org.eclipse.xtext.builder;resolution:=optional;x-installation:=greedy,
+ org.eclipse.jdt.core;bundle-version="3.6.0";resolution:=optional;x-installation:=greedy,
+ org.eclipse.jdt.ui;bundle-version="3.6.0";resolution:=optional;x-installation:=greedy,
+ org.eclipse.xtext.common.types.ui;resolution:=optional;x-installation:=greedy,
+ org.eclipse.ui.ide;resolution:=optional;x-installation:=greedy,
+ org.eclipse.core.expressions
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.xtext.ui.shared,
  org.eclipse.xtext.ui.shared.internal;x-internal:=true

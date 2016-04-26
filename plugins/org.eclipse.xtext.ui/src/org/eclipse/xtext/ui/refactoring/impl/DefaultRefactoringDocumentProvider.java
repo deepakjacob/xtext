@@ -18,7 +18,6 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ltk.core.refactoring.Change;
-import org.eclipse.ltk.core.refactoring.DocumentChange;
 import org.eclipse.ltk.core.refactoring.TextFileChange;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorPart;
@@ -32,6 +31,7 @@ import org.eclipse.ui.texteditor.ITextEditorExtension;
 import org.eclipse.xtext.parser.IEncodingProvider;
 import org.eclipse.xtext.resource.IGlobalServiceProvider;
 import org.eclipse.xtext.ui.refactoring.IChangeRedirector;
+import org.eclipse.xtext.ui.refactoring.ui.RefactoringPreferences;
 import org.eclipse.xtext.ui.util.DisplayRunnableWithResult;
 
 import com.google.inject.Inject;
@@ -52,8 +52,11 @@ public class DefaultRefactoringDocumentProvider implements IRefactoringDocument.
 	@Inject
 	private IGlobalServiceProvider globalServiceProvider;
 
+	@Inject
+	private RefactoringPreferences preferences;
+	
 	private IChangeRedirector changeRedirector = IChangeRedirector.NULL;
-
+	
 	protected IFileEditorInput getEditorInput(URI resourceURI, StatusWrapper status) {
 		IFile file = projectUtil.findFileStorage(resourceURI, true);
 		if (file == null) {
@@ -63,6 +66,7 @@ public class DefaultRefactoringDocumentProvider implements IRefactoringDocument.
 		return new FileEditorInput(file);
 	}
 
+	@Override
 	public IRefactoringDocument get(URI uri, final StatusWrapper status) {
 		URI resourceURI = uri.trimFragment();
 		final IFileEditorInput fileEditorInput = getEditorInput(resourceURI, status);
@@ -88,8 +92,9 @@ public class DefaultRefactoringDocumentProvider implements IRefactoringDocument.
 				}.syncExec();
 				if (editor != null) {
 					IDocument document = editor.getDocumentProvider().getDocument(fileEditorInput);
-					if (document != null && editor.isDirty())
-						return new EditorDocument(resourceURI, document);
+					if (document != null)
+						return new EditorDocument(resourceURI, editor, document, 
+							preferences.isSaveAllBeforeRefactoring() || !editor.isDirty());
 				}
 				return new FileDocument(resourceURI, file, getEncodingProvider(resourceURI));
 			} else {
@@ -104,10 +109,12 @@ public class DefaultRefactoringDocumentProvider implements IRefactoringDocument.
 				resourceURI, IEncodingProvider.class);
 	}
 
+	@Override
 	public IChangeRedirector getChangeRedirector() {
 		return changeRedirector;
 	}
 	
+	@Override
 	public void setChangeRedirector(IChangeRedirector changeRedirector) {
 		this.changeRedirector  = changeRedirector;
 	}
@@ -119,8 +126,10 @@ public class DefaultRefactoringDocumentProvider implements IRefactoringDocument.
 			this.resourceURI = resourceURI;
 		}
 
+		@Override
 		public abstract Change createChange(String name, TextEdit textEdit);
 
+		@Override
 		public URI getURI() {
 			return resourceURI;
 		}
@@ -139,22 +148,36 @@ public class DefaultRefactoringDocumentProvider implements IRefactoringDocument.
 	public static class EditorDocument extends AbstractRefactoringDocument {
 
 		private IDocument document;
+		
+		private ITextEditor editor;
 
-		public EditorDocument(URI resourceURI, IDocument document) {
+		private boolean doSave;
+
+		public EditorDocument(URI resourceURI, ITextEditor editor, IDocument document, boolean doSave) {
 			super(resourceURI);
+			this.editor = editor;
 			this.document = document;
+			this.doSave = doSave;
+		}
+
+		public ITextEditor getEditor() {
+			return editor;
 		}
 
 		public IDocument getDocument() {
 			return document;
 		}
+		
+		public boolean isDoSave() {
+			return doSave;
+		}
 
 		@Override
 		public Change createChange(String name, TextEdit textEdit) {
-			DocumentChange documentChange = new DocumentChange(getName(), document);
+			EditorDocumentChange documentChange = new EditorDocumentChange(getName(), editor, doSave);
 			documentChange.setEdit(textEdit);
 			documentChange.setTextType(getURI().fileExtension());
-			return new DisplayChangeWrapper(documentChange);
+			return documentChange;
 		}
 
 		protected String getName() {
@@ -168,30 +191,9 @@ public class DefaultRefactoringDocumentProvider implements IRefactoringDocument.
 			return buffer.toString();
 		}
 
+		@Override
 		public String getOriginalContents() {
 			return document.get();
-		}
-	}
-
-	/**
-	 * @depreacted Saving documents during changes causes unpredictable errors when the document is also renamed
-	 */
-	@Deprecated
-	public static class SaveEditorDocument extends EditorDocument {
-
-		private final ITextEditor editor;
-
-		public SaveEditorDocument(URI uri, ITextEditor editor, IDocument document) {
-			super(uri, document);
-			this.editor = editor;
-		}
-
-		@Override
-		public Change createChange(String name, TextEdit textEdit) {
-			DocumentChange documentChange = new DocumentChange(getName(), getDocument());
-			documentChange.setEdit(textEdit);
-			documentChange.setTextType(getURI().fileExtension());
-			return new DisplayChangeWrapper(documentChange, editor);
 		}
 	}
 
@@ -219,6 +221,7 @@ public class DefaultRefactoringDocumentProvider implements IRefactoringDocument.
 			return textFileChange;
 		}
 
+		@Override
 		public String getOriginalContents() {
 			try {
 				InputStream inputStream = file.getContents();

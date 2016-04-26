@@ -10,8 +10,7 @@ package org.eclipse.xtext.xbase.tests.serializer;
 import java.io.IOException;
 
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.formatting.IIndentationInformation;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.xbase.XBlockExpression;
 import org.eclipse.xtext.xbase.XCastedExpression;
@@ -23,15 +22,10 @@ import org.eclipse.xtext.xbase.XbaseFactory;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
 import org.junit.Test;
 
-import com.google.inject.Inject;
-
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public class SerializerTest extends AbstractXbaseTestCase {
-	
-	@Inject
-	private IIndentationInformation indent;
 	
 	@Test public void testSerialize_01() throws IOException {
 		Resource resource = newResource("'foo' as String");
@@ -47,12 +41,12 @@ public class SerializerTest extends AbstractXbaseTestCase {
 		closure.setExplicitSyntax(true);
 		XInstanceOfExpression instanceOfExpression = factory.createXInstanceOfExpression();
 		instanceOfExpression.setExpression(closure);
-		instanceOfExpression.setType(EcoreUtil2.clone(casted.getType()));
+		instanceOfExpression.setType(EcoreUtil.copy(casted.getType()));
 		resource.getContents().clear();
 		resource.getContents().add(instanceOfExpression);
 		ISerializer serializer = get(ISerializer.class);
 		String string = serializer.serialize(instanceOfExpression);
-		assertEquals("[| \"value\"] instanceof String", string);
+		assertEquals("[|\"value\"] instanceof String", string);
 	}
 	
 	@Test public void testSerialize_02() throws IOException {
@@ -67,14 +61,13 @@ public class SerializerTest extends AbstractXbaseTestCase {
 		ifExpression.setThen(stringLiteral);
 		XInstanceOfExpression instanceOfExpression = factory.createXInstanceOfExpression();
 		instanceOfExpression.setExpression(ifExpression);
-		instanceOfExpression.setType(EcoreUtil2.clone(casted.getType()));
+		instanceOfExpression.setType(EcoreUtil.copy(casted.getType()));
 		resource.getContents().clear();
 		resource.getContents().add(instanceOfExpression);
 		ISerializer serializer = get(ISerializer.class);
 		String string = serializer.serialize(instanceOfExpression);
-		// TODO expectation is wrong --> I've (MEY) fixed the expectation, please verify 
-//		assertEquals("if ( false ) \"value\" instanceof String", string);
-		assertEquals("(if(false)\n" + indent.getIndentString() + "\"value\") instanceof String", string);
+		// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=464846
+		assertEquals("( if(false) \"value\" ) instanceof String", string);
 	}
 
 }

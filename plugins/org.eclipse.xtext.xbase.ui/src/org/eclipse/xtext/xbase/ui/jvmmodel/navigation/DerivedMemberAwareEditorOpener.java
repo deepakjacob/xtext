@@ -31,12 +31,14 @@ public class DerivedMemberAwareEditorOpener extends LanguageSpecificURIEditorOpe
 	@Inject
 	private IJvmModelAssociations associations;
 	
+	@Override
 	public IEditorPart open(URI uri, IMember member, boolean select) {
 		if (member != null) {
 			URI memberURI = new TypeURIHelper().getFullURI(member);
 			String identifier = memberURI.fragment();
+			// we decode the qualified name into the uri using query, such that it can be read out in #findEObjectByURI again
 			URI uriWithQuery = uri.appendQuery(identifier);
-			super.open(uriWithQuery, select);
+			return super.open(uriWithQuery, select);
 		}
 		return open(uri, select);
 	}

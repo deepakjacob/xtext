@@ -1,36 +1,20 @@
 package org.eclipse.xtext.xbase.formatting;
 
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.xbase.formatting.IntegerKey;
 import org.eclipse.xtext.xbase.formatting.StringKey;
-import org.eclipse.xtext.xbase.lib.Functions.Function0;
 
+/**
+ * @deprecated use {@link FormatterPreferenceKeys}
+ */
+@Deprecated
 @SuppressWarnings("all")
 public class BasicFormatterPreferenceKeys {
-  public final static StringKey lineSeparator = new Function0<StringKey>() {
-    public StringKey apply() {
-      StringKey _stringKey = new StringKey("line.separator", "\n");
-      return _stringKey;
-    }
-  }.apply();
+  public final static StringKey lineSeparator = new StringKey("line.separator", System.getProperty("line.separator"));
   
-  public final static StringKey indentation = new Function0<StringKey>() {
-    public StringKey apply() {
-      StringKey _stringKey = new StringKey("indentation", "\t");
-      return _stringKey;
-    }
-  }.apply();
+  public final static StringKey indentation = new StringKey("indentation", "\t");
   
-  public final static IntegerKey indentationLength = new Function0<IntegerKey>() {
-    public IntegerKey apply() {
-      IntegerKey _integerKey = new IntegerKey("indentation.length", Integer.valueOf(4));
-      return _integerKey;
-    }
-  }.apply();
+  public final static IntegerKey indentationLength = new IntegerKey("indentation.length", Integer.valueOf(4));
   
-  public final static IntegerKey maxLineWidth = new Function0<IntegerKey>() {
-    public IntegerKey apply() {
-      IntegerKey _integerKey = new IntegerKey("line.width.max", Integer.valueOf(120));
-      return _integerKey;
-    }
-  }.apply();
+  public final static IntegerKey maxLineWidth = new IntegerKey("line.width.max", Integer.valueOf(120));
 }

@@ -1,38 +1,42 @@
 package org.eclipse.xtext.xbase.formatting;
 
-import org.eclipse.xtend.lib.Data;
+import com.google.common.base.Objects;
+import org.eclipse.xtend.lib.annotations.Data;
+import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
 import org.eclipse.xtext.xbase.formatting.FormattingData;
-import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
+import org.eclipse.xtext.xbase.lib.Pure;
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
 
+/**
+ * @deprecated use {@link IHiddenRegionFormatter}
+ */
+@Deprecated
 @Data
 @SuppressWarnings("all")
 public class NewLineData extends FormattingData {
-  private final int _newLines;
+  private final Integer newLines;
   
-  public int getNewLines() {
-    return this._newLines;
-  }
-  
+  @Override
   public boolean isEmpty() {
-    int _newLines = this.getNewLines();
-    boolean _equals = (_newLines == 0);
-    return _equals;
+    return Objects.equal(this.newLines, null);
   }
   
-  public NewLineData(final int offset, final int length, final int indentationChange, final Throwable trace, final int newLines) {
-    super(offset, length, indentationChange, trace);
-    this._newLines = newLines;
+  public NewLineData(final int offset, final int length, final int increaseIndentationChange, final int decreaseIndentationChange, final Throwable trace, final Integer newLines) {
+    super(offset, length, increaseIndentationChange, decreaseIndentationChange, trace);
+    this.newLines = newLines;
   }
   
   @Override
+  @Pure
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + _newLines;
+    result = prime * result + ((this.newLines== null) ? 0 : this.newLines.hashCode());
     return result;
   }
   
   @Override
+  @Pure
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
@@ -43,14 +47,25 @@ public class NewLineData extends FormattingData {
     if (!super.equals(obj))
       return false;
     NewLineData other = (NewLineData) obj;
-    if (other._newLines != _newLines)
+    if (this.newLines == null) {
+      if (other.newLines != null)
+        return false;
+    } else if (!this.newLines.equals(other.newLines))
       return false;
     return true;
   }
   
   @Override
+  @Pure
   public String toString() {
-    String result = new ToStringHelper().toString(this);
+    String result = new ToStringBuilder(this)
+    	.addAllFields()
+    	.toString();
     return result;
+  }
+  
+  @Pure
+  public Integer getNewLines() {
+    return this.newLines;
   }
 }

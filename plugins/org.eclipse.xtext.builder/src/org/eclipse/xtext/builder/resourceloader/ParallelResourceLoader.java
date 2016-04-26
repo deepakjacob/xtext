@@ -69,6 +69,7 @@ public class ParallelResourceLoader extends AbstractResourceLoader {
 		this.timeout = unit.toMillis(time);
 	}
 
+	@Override
 	public LoadOperation create(ResourceSet parent, IProject project) {
 		return new CheckedLoadOperation(new ParallelLoadOperation(parent, project));
 	}
@@ -127,6 +128,7 @@ public class ParallelResourceLoader extends AbstractResourceLoader {
 				this.uri = uri;
 			}
 
+			@Override
 			public void run() {
 				Throwable exception = null;
 				Resource resource = null;
@@ -149,6 +151,7 @@ public class ParallelResourceLoader extends AbstractResourceLoader {
 			}
 		}
 
+		@Override
 		public LoadResult next() {
 			if (!hasNext())
 				throw new NoSuchElementException("The resource queue is empty or the execution was cancelled.");
@@ -169,8 +172,11 @@ public class ParallelResourceLoader extends AbstractResourceLoader {
 
 			if (throwable != null) { // rethrow errors in the main thread
 				if (throwable instanceof WrappedException)
-					throw new LoadOperationException(uri, throwable.getCause());
-				throw new LoadOperationException(uri, throwable);
+					throw new LoadOperationException(uri, (Exception) throwable.getCause());
+				if (throwable instanceof Exception)
+					throw new LoadOperationException(uri, (Exception) throwable);
+				else
+					throw (Error)throwable;
 			}
 			
 			if(resource == null && uri != null) {
@@ -182,10 +188,12 @@ public class ParallelResourceLoader extends AbstractResourceLoader {
 			return new LoadResult(resource, uri);
 		}
 
+		@Override
 		public boolean hasNext() {
 			return toProcess > 0;
 		}
 
+		@Override
 		public void load(Collection<URI> uris) {
 			synchronizeResources(uris);
 			
@@ -206,15 +214,14 @@ public class ParallelResourceLoader extends AbstractResourceLoader {
 				Path path = new Path(uri.toPlatformString(true));
 				IFile file = root.getFile(path);
 				try {
-					if(!file.isSynchronized(IResource.DEPTH_ZERO)) {
-						file.refreshLocal(IResource.DEPTH_ZERO, new NullProgressMonitor());
-					}
+					file.refreshLocal(IResource.DEPTH_ZERO, new NullProgressMonitor());
 				} catch (CoreException e) {
 					throw new RuntimeException(e);
 				}
 			}
 		}
 
+		@Override
 		public Collection<URI> cancel() {
 			toProcess = 0;
 			List<Runnable> jobs = executor.shutdownNow();

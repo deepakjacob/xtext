@@ -27,8 +27,15 @@ import org.eclipse.xtext.validation.ValidationMessageAcceptor;
  */
 public class RuleWithoutInstantiationInspector extends XtextRuleInspector<Boolean, ParserRule> {
 
+	public static final String ISSUE_CODE = "RuleWithoutInstantiationInspector.noInstantiation";
+	
 	public RuleWithoutInstantiationInspector(ValidationMessageAcceptor acceptor) {
 		super(acceptor);
+	}
+	
+	@Override
+	protected String getIssueCode() {
+		return ISSUE_CODE;
 	}
 	
 	@Override
@@ -36,7 +43,7 @@ public class RuleWithoutInstantiationInspector extends XtextRuleInspector<Boolea
 		// special treatment of first rule
 		if (GrammarUtil.getGrammar(rule).getRules().get(0) == rule)
 			return false;
-		if (GrammarUtil.isDatatypeRule(rule) || rule.getAlternatives() == null)
+		if (GrammarUtil.isDatatypeRule(rule) || rule.getAlternatives() == null || rule.isFragment())
 			return false;
 		return super.canInspect(rule);
 	}

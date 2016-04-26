@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.impl;
 
@@ -10,8 +12,9 @@ import java.util.Collection;
 import org.eclipse.emf.common.util.EList;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
 
-import org.eclipse.emf.ecore.util.EDataTypeEList;
+import org.eclipse.emf.ecore.util.EObjectResolvingEList;
 
 import org.eclipse.xtext.common.types.JvmCustomAnnotationValue;
 import org.eclipse.xtext.common.types.TypesPackage;
@@ -21,25 +24,26 @@ import org.eclipse.xtext.common.types.TypesPackage;
  * An implementation of the model object '<em><b>Jvm Custom Annotation Value</b></em>'.
  * <!-- end-user-doc -->
  * <p>
+ * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.common.types.impl.JvmCustomAnnotationValueImpl#getValues <em>Values</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */
 public class JvmCustomAnnotationValueImpl extends JvmAnnotationValueImplCustom implements JvmCustomAnnotationValue
 {
 	/**
-	 * The cached value of the '{@link #getValues() <em>Values</em>}' attribute list.
+	 * The cached value of the '{@link #getValues() <em>Values</em>}' reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @see #getValues()
 	 * @generated
 	 * @ordered
 	 */
-	protected EList<Object> values;
+	protected EList<EObject> values;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -67,11 +71,11 @@ public class JvmCustomAnnotationValueImpl extends JvmAnnotationValueImplCustom i
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EList<Object> getValues()
+	public EList<EObject> getValues()
 	{
 		if (values == null)
 		{
-			values = new EDataTypeEList<Object>(Object.class, this, TypesPackage.JVM_CUSTOM_ANNOTATION_VALUE__VALUES);
+			values = new EObjectResolvingEList<EObject>(EObject.class, this, TypesPackage.JVM_CUSTOM_ANNOTATION_VALUE__VALUES);
 		}
 		return values;
 	}
@@ -105,7 +109,7 @@ public class JvmCustomAnnotationValueImpl extends JvmAnnotationValueImplCustom i
 		{
 			case TypesPackage.JVM_CUSTOM_ANNOTATION_VALUE__VALUES:
 				getValues().clear();
-				getValues().addAll((Collection<? extends Object>)newValue);
+				getValues().addAll((Collection<? extends EObject>)newValue);
 				return;
 		}
 		super.eSet(featureID, newValue);
@@ -142,23 +146,6 @@ public class JvmCustomAnnotationValueImpl extends JvmAnnotationValueImplCustom i
 				return values != null && !values.isEmpty();
 		}
 		return super.eIsSet(featureID);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	@Override
-	public String toString()
-	{
-		if (eIsProxy()) return super.toString();
-
-		StringBuffer result = new StringBuffer(super.toString());
-		result.append(" (values: ");
-		result.append(values);
-		result.append(')');
-		return result.toString();
 	}
 
 } //JvmCustomAnnotationValueImpl

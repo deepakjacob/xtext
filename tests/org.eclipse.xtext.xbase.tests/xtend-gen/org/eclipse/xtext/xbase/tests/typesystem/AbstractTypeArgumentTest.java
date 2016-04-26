@@ -17,8 +17,6 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.common.types.JvmConstructor;
-import org.eclipse.xtext.common.types.JvmDeclaredType;
 import org.eclipse.xtext.common.types.JvmGenericType;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
@@ -29,7 +27,7 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
 import org.eclipse.xtext.xbase.XConstructorCall;
 import org.eclipse.xtext.xbase.XExpression;
-import org.eclipse.xtext.xbase.XbasePackage.Literals;
+import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
@@ -96,6 +94,7 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
     AbstractTypeArgumentTest.seenExpressions = null;
   }
   
+  @Override
   protected XExpression expression(final CharSequence expression, final boolean resolve) throws Exception {
     XExpression _xblockexpression = null;
     {
@@ -104,11 +103,9 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
       boolean _add = AbstractTypeArgumentTest.seenExpressions.add(string);
       boolean _not = (!_add);
       if (_not) {
-        String _plus = ("Duplicate expression under test: " + expression);
-        Assert.fail(_plus);
+        Assert.fail(("Duplicate expression under test: " + expression));
       }
-      XExpression _expression = super.expression(string, resolve);
-      _xblockexpression = (_expression);
+      _xblockexpression = super.expression(string, resolve);
     }
     return _xblockexpression;
   }
@@ -121,100 +118,237 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
       this.resolveTypes(xExpression);
       TreeIterator<EObject> _eAll = EcoreUtil2.eAll(xExpression);
       Iterator<XExpression> _filter = Iterators.<XExpression>filter(_eAll, XExpression.class);
-      final Function1<XExpression,Boolean> _function = new Function1<XExpression,Boolean>() {
-          public Boolean apply(final XExpression it) {
-            boolean _switchResult = false;
-            boolean _matched = false;
-            if (!_matched) {
-              if (it instanceof XAbstractFeatureCall) {
-                final XAbstractFeatureCall _xAbstractFeatureCall = (XAbstractFeatureCall)it;
-                _matched=true;
-                boolean _or = false;
-                EList<JvmTypeReference> _typeArguments = _xAbstractFeatureCall.getTypeArguments();
-                boolean _isEmpty = _typeArguments.isEmpty();
-                boolean _not = (!_isEmpty);
-                if (_not) {
-                  _or = true;
-                } else {
-                  boolean _switchResult_1 = false;
-                  JvmIdentifiableElement _feature = _xAbstractFeatureCall.getFeature();
-                  final JvmIdentifiableElement feature = _feature;
-                  boolean _matched_1 = false;
-                  if (!_matched_1) {
-                    if (feature instanceof JvmTypeParameterDeclarator) {
-                      final JvmTypeParameterDeclarator _jvmTypeParameterDeclarator = (JvmTypeParameterDeclarator)feature;
-                      _matched_1=true;
-                      EList<JvmTypeParameter> _typeParameters = ((JvmTypeParameterDeclarator)_jvmTypeParameterDeclarator).getTypeParameters();
-                      boolean _isEmpty_1 = _typeParameters.isEmpty();
-                      boolean _not_1 = (!_isEmpty_1);
-                      _switchResult_1 = _not_1;
-                    }
-                  }
-                  if (!_matched_1) {
-                    _switchResult_1 = false;
-                  }
-                  _or = (_not || _switchResult_1);
-                }
-                _switchResult = _or;
-              }
-            }
-            if (!_matched) {
-              if (it instanceof XConstructorCall) {
-                final XConstructorCall _xConstructorCall = (XConstructorCall)it;
-                _matched=true;
-                boolean _or = false;
-                EList<JvmTypeReference> _typeArguments = _xConstructorCall.getTypeArguments();
-                boolean _isEmpty = _typeArguments.isEmpty();
-                boolean _not = (!_isEmpty);
-                if (_not) {
-                  _or = true;
-                } else {
-                  JvmConstructor _constructor = _xConstructorCall.getConstructor();
-                  JvmDeclaredType _declaringType = _constructor.getDeclaringType();
-                  EList<JvmTypeParameter> _typeParameters = ((JvmGenericType) _declaringType).getTypeParameters();
+      final Function1<XExpression, Boolean> _function = new Function1<XExpression, Boolean>() {
+        @Override
+        public Boolean apply(final XExpression it) {
+          boolean _switchResult = false;
+          boolean _matched = false;
+          if (it instanceof XAbstractFeatureCall) {
+            _matched=true;
+            boolean _and = false;
+            if (!((!((XAbstractFeatureCall)it).isTypeLiteral()) && (!((XAbstractFeatureCall)it).isPackageFragment()))) {
+              _and = false;
+            } else {
+              boolean _or = false;
+              EList<JvmTypeReference> _typeArguments = ((XAbstractFeatureCall)it).getTypeArguments();
+              boolean _isEmpty = _typeArguments.isEmpty();
+              boolean _not = (!_isEmpty);
+              if (_not) {
+                _or = true;
+              } else {
+                boolean _switchResult_1 = false;
+                JvmIdentifiableElement _feature = ((XAbstractFeatureCall)it).getFeature();
+                final JvmIdentifiableElement feature = _feature;
+                boolean _matched_1 = false;
+                if (feature instanceof JvmTypeParameterDeclarator) {
+                  _matched_1=true;
+                  EList<JvmTypeParameter> _typeParameters = ((JvmTypeParameterDeclarator)feature).getTypeParameters();
                   boolean _isEmpty_1 = _typeParameters.isEmpty();
-                  boolean _not_1 = (!_isEmpty_1);
-                  _or = (_not || _not_1);
+                  _switchResult_1 = (!_isEmpty_1);
                 }
-                _switchResult = _or;
+                if (!_matched_1) {
+                  _switchResult_1 = false;
+                }
+                _or = _switchResult_1;
               }
+              _and = _or;
             }
-            if (!_matched) {
-              _switchResult = false;
-            }
-            return Boolean.valueOf(_switchResult);
+            _switchResult = _and;
           }
-        };
+          if (!_matched) {
+            if (it instanceof XConstructorCall) {
+              _matched=true;
+              _switchResult = ((!((XConstructorCall)it).getTypeArguments().isEmpty()) || 
+                (!((JvmGenericType) ((XConstructorCall)it).getConstructor().getDeclaringType()).getTypeParameters().isEmpty()));
+            }
+          }
+          if (!_matched) {
+            _switchResult = false;
+          }
+          return Boolean.valueOf(_switchResult);
+        }
+      };
       Iterator<XExpression> _filter_1 = IteratorExtensions.<XExpression>filter(_filter, _function);
       final List<XExpression> result = IteratorExtensions.<XExpression>toList(_filter_1);
-      final Function1<XExpression,Integer> _function_1 = new Function1<XExpression,Integer>() {
-          public Integer apply(final XExpression it) {
-            EReference _switchResult = null;
-            boolean _matched = false;
-            if (!_matched) {
-              if (it instanceof XAbstractFeatureCall) {
-                final XAbstractFeatureCall _xAbstractFeatureCall = (XAbstractFeatureCall)it;
-                _matched=true;
-                _switchResult = Literals.XABSTRACT_FEATURE_CALL__FEATURE;
-              }
-            }
-            if (!_matched) {
-              if (it instanceof XConstructorCall) {
-                final XConstructorCall _xConstructorCall = (XConstructorCall)it;
-                _matched=true;
-                _switchResult = Literals.XCONSTRUCTOR_CALL__CONSTRUCTOR;
-              }
-            }
-            final EReference structuralFeature = _switchResult;
-            List<INode> _findNodesForFeature = NodeModelUtils.findNodesForFeature(it, structuralFeature);
-            INode _head = IterableExtensions.<INode>head(_findNodesForFeature);
-            return Integer.valueOf(_head.getOffset());
+      final Function1<XExpression, Integer> _function_1 = new Function1<XExpression, Integer>() {
+        @Override
+        public Integer apply(final XExpression it) {
+          EReference _switchResult = null;
+          boolean _matched = false;
+          if (it instanceof XAbstractFeatureCall) {
+            _matched=true;
+            _switchResult = XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE;
           }
-        };
+          if (!_matched) {
+            if (it instanceof XConstructorCall) {
+              _matched=true;
+              _switchResult = XbasePackage.Literals.XCONSTRUCTOR_CALL__CONSTRUCTOR;
+            }
+          }
+          final EReference structuralFeature = _switchResult;
+          List<INode> _findNodesForFeature = NodeModelUtils.findNodesForFeature(it, structuralFeature);
+          INode _head = IterableExtensions.<INode>head(_findNodesForFeature);
+          return Integer.valueOf(_head.getOffset());
+        }
+      };
       return IterableExtensions.<XExpression, Integer>sortBy(result, _function_1);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
+  }
+  
+  @Test
+  public void testBug461923_01() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<String> it = null com.google.common.collect.ImmutableList.builder.addAll(it).build }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testBug461923_02() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? extends String> it = null com.google.common.collect.ImmutableList.builder.addAll(it).build }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testBug461923_03() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? super String> it = null com.google.common.collect.ImmutableList.builder.addAll(it).build }", "Object");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testBug461923_04() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.map[it]).build }", "String");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "String", "String");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testBug461923_05() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? extends String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.map[it]).build }", "String");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "? extends String", "String");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testBug461923_06() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? super String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.map[it]).build }", "Object");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "? super String", "Object");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testBug461923_07() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).build }", "String");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "String");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testBug461923_08() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? extends String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).build }", "String");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "? extends String");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testBug461923_09() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? super String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).build }", "Object");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "? super String");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testBug461923_10() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).addAll(it.filter[true]).build }", "String");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "String");
+    Iterator<XExpression> _and_1 = this.and(_and, "String");
+    this.done(_and_1);
+  }
+  
+  @Test
+  public void testBug461923_11() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? extends String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).addAll(it.filter[true]).build }", "String");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "? extends String");
+    Iterator<XExpression> _and_1 = this.and(_and, "? extends String");
+    this.done(_and_1);
+  }
+  
+  @Test
+  public void testBug461923_12() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? super String> it = null com.google.common.collect.ImmutableList.builder.addAll(it.filter[true]).addAll(it.filter[true]).build }", "Object");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "? super String");
+    Iterator<XExpression> _and_1 = this.and(_and, "? super String");
+    this.done(_and_1);
+  }
+  
+  @Test
+  public void testBug461923_13() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.Set<String> it = null new java.util.ArrayList().addAll(it) }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testBug461923_14() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.Set<? extends String> it = null new java.util.ArrayList().addAll(it) }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testBug461923_15() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.Set<? super String> it = null new java.util.ArrayList().addAll(it) }", "Object");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testBug461923_16() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.List<String> it = null new java.util.ArrayList().addAll(it.subList(1,1)) }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testBug461923_17() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.List<? extends String> it = null new java.util.ArrayList().addAll(it.subList(1,1)) }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testBug461923_18() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.List<? super String> it = null new java.util.ArrayList().addAll(it.subList(1,1)) }", "Object");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testRawType_01() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.Set set = newHashSet() set }", "");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testRawType_02() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.Set set = newHashSet set.head }", "");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testRawType_03() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("(null as java.util.Set<java.util.Set>).head", "Set");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testRawType_04() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.Set<java.util.Set> set = newHashSet set.head }", "Set");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "Set");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testRawType_05() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.Set<java.util.Set> set = newHashSet(newHashSet) set.head }", "Set");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "");
+    Iterator<XExpression> _and_1 = this.and(_and, "Set");
+    this.done(_and_1);
   }
   
   @Test
@@ -317,6 +451,13 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   public void testOverloadedOperators_17() throws Exception {
     Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("(0..Math::sqrt(1l).intValue).filter[ i | 1l % i == 0 ].empty", "Integer");
     this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testOverloadedOperators_20() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("(null as Iterable<StringBuilder>) + (null as Iterable<StringBuffer>) + (null as Iterable<String>)", "AbstractStringBuilder & Serializable");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "Serializable & CharSequence");
+    this.done(_and);
   }
   
   @Test
@@ -470,6 +611,86 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   }
   
   @Test
+  public void testMethodTypeParamInference_14() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("(null as java.util.Collection<? super String>).addAll(null as Iterable<? extends String>)", "? super String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_15() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("(null as java.util.Collection<? super String>).addAll(null as Iterable<String>)", "? super String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_16() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("(null as java.util.Collection<String>).addAll(null as Iterable<? extends String>)", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_17() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("(null as java.util.Collection<String>).addAll(null as Iterable<String>)", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_18() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("testdata::OverloadedMethods::addAllSuperExtends(null as java.util.List<CharSequence>, null as java.util.List<String>)", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_19() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{\n\t\t\tval Iterable<String> expectation = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<CharSequence>, null as java.util.List<String>)\n\t\t}", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_20() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{\n\t\t\tval Iterable<CharSequence> expectation = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<CharSequence>, null as java.util.List<String>)\n\t\t}", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_21() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("testdata::OverloadedMethods::<CharSequence>addAllSuperExtends(null as java.util.List<CharSequence>, null as java.util.List<String>)", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_22() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("testdata::OverloadedMethods::<String>addAllSuperExtends(null as java.util.List<CharSequence>, null as java.util.List<String>)", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Ignore("TODO subsequent usages of local vars should contribute to the expectation")
+  @Test
+  public void testMethodTypeParamInference_23() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{\n\t\t\tval actual = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<CharSequence>, null as java.util.List<String>)\n\t\t\tval Iterable<String> expectation = actual\n\t\t}", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_24() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{\n\t\t\tval actual = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<CharSequence>, null as java.util.List<String>)\n\t\t\tval Iterable<CharSequence> expectation = actual\n\t\t}", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testMethodTypeParamInference_25() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{\n\t\t\tval Iterable<CharSequence> expectation = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<Object>, null as java.util.List<String>)\n\t\t}", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Ignore("TODO")
+  @Test
+  public void testMethodTypeParamInference_26() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{\n\t\t\tval actual = testdata::OverloadedMethods::addAllSuperExtends2(null as java.util.List<Object>, null as java.util.List<String>)\n\t\t\tval Iterable<CharSequence> expectation = actual\n\t\t}", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
   public void testTypeForVoidClosure() throws Exception {
     Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("newArrayList(\'foo\',\'bar\').forEach []", "String");
     Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "String");
@@ -484,37 +705,28 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   
   @Test
   public void testClosure_03() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  list.map(e|e)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(_plus_2, "? super String", "Object");
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  list.map(e|e)\n") + 
+      "}"), "? super String", "Object");
     this.done(_bindTypeArgumentsTo);
   }
   
   @Test
   public void testClosure_04() throws Exception {
-    String _plus = ("{\n" + 
-      "  var java.util.List<? super String> list = null;\n");
-    String _plus_1 = (_plus + 
-      "  list.map(e|false)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(_plus_2, "? super String", "Boolean");
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(((("{\n" + 
+      "  var java.util.List<? super String> list = null;\n") + 
+      "  list.map(e|false)\n") + 
+      "}"), "? super String", "Boolean");
     this.done(_bindTypeArgumentsTo);
   }
   
   @Test
   public void testClosure_05() throws Exception {
-    String _plus = ("{\n" + 
-      "  val func = [|\'literal\']\n");
-    String _plus_1 = (_plus + 
-      "  new testdata.ClosureClient().useProvider(func)\n");
-    String _plus_2 = (_plus_1 + 
-      "}");
-    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(_plus_2, "String");
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(((("{\n" + 
+      "  val func = [|\'literal\']\n") + 
+      "  new testdata.ClosureClient().useProvider(func)\n") + 
+      "}"), "String");
     this.done(_bindTypeArgumentsTo);
   }
   
@@ -614,7 +826,7 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   
   @Test
   public void testClosure_22() throws Exception {
-    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ \n\t\t\tval fun = [ CharSequence x | x ]\n\t\t\tval java.util.List<String> list = $$ListExtensions::map(newArrayList, fun)\n\t\t\tfun\n\t\t}", "CharSequence", "CharSequence");
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ \n\t\t\tval fun = [ CharSequence x | x ]\n\t\t\tval java.util.List<String> list = $$ListExtensions::map(newArrayList, fun)\n\t\t\tfun\n\t\t}", "CharSequence", "String");
     Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "CharSequence");
     this.done(_and);
   }
@@ -772,6 +984,18 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   @Test
   public void testConstructorCall_07() throws Exception {
     Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("new java.util.HashMap<? super String,Boolean>", "String", "Boolean");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testConstructorTypeParameters_01() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableValue, \'\')", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testConstructorTypeParameters_02() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableValue, 1.0)", "Double");
     this.done(_bindTypeArgumentsTo);
   }
   
@@ -1310,13 +1534,10 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   
   @Test
   public void testFeatureCall_58() throws Exception {
-    String _plus = ("newArrayList(\'\').map(s|" + 
-      "$$ObjectExtensions::operator_equals(");
-    String _plus_1 = (_plus + 
-      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)");
-    String _plus_2 = (_plus_1 + 
-      ").map(b| $$BooleanExtensions::operator_not(b) )");
-    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(_plus_2, "String");
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(((("newArrayList(\'\').map(s|" + 
+      "$$ObjectExtensions::operator_equals(") + 
+      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)") + 
+      ").map(b| $$BooleanExtensions::operator_not(b) )"), "String");
     Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "String", "Boolean");
     Iterator<XExpression> _and_1 = this.and(_and, "Boolean", "Boolean");
     this.done(_and_1);
@@ -1324,13 +1545,10 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   
   @Test
   public void testFeatureCall_59() throws Exception {
-    String _plus = ("newArrayList(\'\').map(s|" + 
-      "$$ObjectExtensions::operator_equals(");
-    String _plus_1 = (_plus + 
-      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)");
-    String _plus_2 = (_plus_1 + 
-      ").map(b| $$BooleanExtensions::operator_not(b) ).head");
-    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(_plus_2, "String");
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo(((("newArrayList(\'\').map(s|" + 
+      "$$ObjectExtensions::operator_equals(") + 
+      "\t$$IntegerExtensions::operator_plus(s.length,1), 5)") + 
+      ").map(b| $$BooleanExtensions::operator_not(b) ).head"), "String");
     Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "String", "Boolean");
     Iterator<XExpression> _and_1 = this.and(_and, "Boolean", "Boolean");
     Iterator<XExpression> _and_2 = this.and(_and_1, "Boolean");
@@ -1486,6 +1704,63 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   }
   
   @Test
+  public void testFeatureCallWithExpectation_01() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.Set<java.util.Set<String>> set = newHashSet(newHashSet) set.head }", "Set<String>");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "String");
+    Iterator<XExpression> _and_1 = this.and(_and, "Set<String>");
+    this.done(_and_1);
+  }
+  
+  @Test
+  public void testFeatureCallWithExpectation_02() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<CharSequence> set = newHashSet(\'\') }", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testFeatureCallWithExpectation_03() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<CharSequence> set = newHashSet() }", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testFeatureCallWithExpectation_04() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val java.util.List<CharSequence> set = newHashSet(\'\') }", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testFeatureCallWithExpectation_05() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? super CharSequence> set = newHashSet(\'\') }", "CharSequence");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testFeatureCallWithExpectation_06() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? extends CharSequence> set = newHashSet(\'\') }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testJEP101Example_01() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val foo.JEP101List<String> ls = foo::JEP101List::nil }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
+  public void testJEP101Example_02() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("foo::JEP101List::cons(42, foo::JEP101List::nil)", "Integer");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "Integer");
+    this.done(_and);
+  }
+  
+  @Test
+  public void testJEP101Example_03() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val String s = foo::JEP101List::nil.head }", "String");
+    this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Test
   public void testToList_01() throws Exception {
     Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<? extends String> iter = null org::eclipse::xtext::xbase::tests::typesystem::TypeResolutionTestData::fixedToList(iter) }", "? extends String");
     this.done(_bindTypeArgumentsTo);
@@ -1624,7 +1899,7 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
     this.done(_and);
   }
   
-  @Ignore(value = "TODO this should work")
+  @Ignore("TODO this should work")
   @Test
   public void testBug_391758() throws Exception {
     Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{\n\t\t\tval iterable = newArrayList\n\t\t\titerable.fold(newArrayList) [ list , elem | null as java.util.List<String> ]\n\t\t}", "Object");
@@ -2963,5 +3238,13 @@ public abstract class AbstractTypeArgumentTest extends AbstractXbaseTestCase {
   public void testStaticMethods_05() throws Exception {
     Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("newHashMap()", "Object", "Object");
     this.done(_bindTypeArgumentsTo);
+  }
+  
+  @Ignore("TODO fix me")
+  @Test
+  public void testJava8Inferrence_01() throws Exception {
+    Iterator<XExpression> _bindTypeArgumentsTo = this.bindTypeArgumentsTo("{ val Iterable<Iterable<Number>> l = java.util.Collections.singleton(java.util.Collections.singleton(1)) }", "Iterable<Number>");
+    Iterator<XExpression> _and = this.and(_bindTypeArgumentsTo, "Number");
+    this.done(_and);
   }
 }

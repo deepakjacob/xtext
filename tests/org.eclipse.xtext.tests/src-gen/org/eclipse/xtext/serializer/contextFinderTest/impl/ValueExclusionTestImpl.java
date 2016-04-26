@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.contextFinderTest.impl;
 
@@ -22,10 +19,10 @@ import org.eclipse.xtext.serializer.contextFinderTest.ValueExclusionTestEn;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.contextFinderTest.impl.ValueExclusionTestImpl#getVal <em>Val</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

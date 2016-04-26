@@ -24,10 +24,10 @@ import org.eclipse.xtext.example.domainmodel.domainmodel.PackageDeclaration;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.example.domainmodel.domainmodel.impl.PackageDeclarationImpl#getElements <em>Elements</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

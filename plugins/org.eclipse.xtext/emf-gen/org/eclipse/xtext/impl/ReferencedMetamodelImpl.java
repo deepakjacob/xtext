@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: ReferencedMetamodelImpl.java,v 1.14 2010/04/06 14:10:07 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -15,8 +11,6 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Referenced Metamodel</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

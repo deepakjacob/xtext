@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl;
 
@@ -21,10 +18,10 @@ import org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.Import;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.common.types.xtext.ui.contentAssistTestLanguage.impl.ImportImpl#getImportedNamespace <em>Imported Namespace</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -9,21 +9,22 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
+import org.eclipse.xtext.diagnostics.AbstractDiagnostic;
+import org.eclipse.xtext.util.IAcceptor;
 import org.eclipse.xtext.xbase.XExpression;
-import org.eclipse.xtext.xbase.typesystem.computation.ILinkingCandidate;
+import org.eclipse.xtext.xbase.typesystem.IResolvedTypes;
+import org.eclipse.xtext.xbase.typesystem.computation.IApplicableCandidate;
+import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString - delegates to parent except for the reassigned types
  */
-@NonNullByDefault
 public class ReassigningStackedResolvedTypes extends StackedResolvedTypes {
 	
 	protected ReassigningStackedResolvedTypes(ResolvedTypes parent) {
@@ -31,20 +32,30 @@ public class ReassigningStackedResolvedTypes extends StackedResolvedTypes {
 	}
 	
 	@Override
-	public void acceptLinkingInformation(XExpression expression, ILinkingCandidate candidate) {
-		getParent().acceptLinkingInformation(expression, candidate);
+	protected void acceptCandidate(XExpression expression, IApplicableCandidate candidate) {
+		getParent().acceptCandidate(expression, candidate);
 	}
 	
 	@Override
-	protected OwnedConverter getConverter() {
-		return getParent().getConverter();
+	public ITypeReferenceOwner getReferenceOwner() {
+		return getParent().getReferenceOwner();
 	}
 	
 	@Override
 	protected void acceptType(XExpression expression, TypeData typeData) {
 		getParent().acceptType(expression, typeData);
 	}
-
+	
+	@Override
+	protected void setPropagatedType(XExpression expression) {
+		getParent().setPropagatedType(expression);
+	}
+	
+	@Override
+	protected void setRefinedType(XExpression expression) {
+		getParent().setRefinedType(expression);
+	}
+	
 	@Override
 	public void setType(JvmIdentifiableElement identifiable, LightweightTypeReference reference) {
 		getParent().setType(identifiable, reference);
@@ -58,6 +69,16 @@ public class ReassigningStackedResolvedTypes extends StackedResolvedTypes {
 	@Override
 	protected void acceptUnboundTypeReference(Object handle, UnboundTypeReference reference) {
 		getParent().acceptUnboundTypeReference(handle, reference);
+	}
+	
+	@Override
+	public void addDiagnostic(AbstractDiagnostic diagnostic) {
+		getParent().addDiagnostic(diagnostic);
+	}
+	
+	@Override
+	protected void addDeferredLogic(IAcceptor<? super IResolvedTypes> code) {
+		getParent().addDeferredLogic(code);
 	}
 	
 	@Override
@@ -90,4 +111,5 @@ public class ReassigningStackedResolvedTypes extends StackedResolvedTypes {
 	protected void prepareMergeIntoParent() {
 		throw new UnsupportedOperationException("Should not be invoked");
 	}
+	
 }

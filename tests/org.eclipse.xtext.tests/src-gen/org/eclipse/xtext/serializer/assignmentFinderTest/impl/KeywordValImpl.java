@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.assignmentFinderTest.impl;
 
@@ -21,10 +18,10 @@ import org.eclipse.xtext.serializer.assignmentFinderTest.KeywordVal;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.assignmentFinderTest.impl.KeywordValImpl#getKw <em>Kw</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

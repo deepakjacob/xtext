@@ -8,7 +8,8 @@
 package org.eclipse.xtext.xbase.typesystem.internal;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.xtext.service.OperationCanceledError;
+import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.xbase.typesystem.IResolvedTypes;
 
 import com.google.inject.ImplementedBy;
@@ -18,12 +19,24 @@ import com.google.inject.ImplementedBy;
  * @noimplement This interface is not intended to be implemented by clients.
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
-@ImplementedBy(DefaultReentrantTypeResolver.class)
+@ImplementedBy(AbstractRootedReentrantTypeResolver.class)
 public interface IReentrantTypeResolver {
 
 	void initializeFrom(EObject root);
 
-	IResolvedTypes reentrantResolve();
+	IResolvedTypes reentrantResolve(CancelIndicator monitor) throws OperationCanceledError;
+	
+	IReentrantTypeResolver NULL = new IReentrantTypeResolver() {
+		
+		@Override
+		public IResolvedTypes reentrantResolve(CancelIndicator monitor) {
+			return IResolvedTypes.NULL;
+		}
+		
+		@Override
+		public void initializeFrom(EObject root) {
+			// ignore
+		}
+	};
 	
 }

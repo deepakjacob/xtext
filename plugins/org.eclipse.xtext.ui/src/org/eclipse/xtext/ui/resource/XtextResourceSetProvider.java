@@ -7,85 +7,50 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.resource;
 
-import static com.google.common.collect.Maps.*;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.plugin.EcorePlugin;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.xtext.resource.XtextResourceSet;
-import org.eclipse.xtext.ui.util.JdtClasspathUriResolver;
-import org.eclipse.xtext.util.Pair;
+import org.eclipse.xtext.ui.shared.contribution.ISharedStateContributionRegistry;
+import org.eclipse.xtext.ui.workspace.EclipseProjectConfigProvider;
+import org.eclipse.xtext.workspace.ProjectConfigAdapter;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 /**
+ * An extensible implementation of the {@link IResourceSetProvider}.
+ * It accepts a list of contributed {@link IResourceSetInitializer initializers}
+ * which may configure the newly created resource set in the context of the given
+ * {@link IProject project}.
+ * 
  * @author Sven Efftinge - Initial contribution and API
  */
+@Singleton
 public class XtextResourceSetProvider implements IResourceSetProvider {
-
-	private final static Logger LOG = Logger.getLogger(XtextResourceSetProvider.class);
 
 	@Inject
 	private Provider<XtextResourceSet> resourceSetProvider;
-	@Inject
-	private IStorage2UriMapperJdtExtensions storage2UriMapper;
+	
+	@Inject 
+	private EclipseProjectConfigProvider projectConfigProvider;
 
-	public ResourceSet get(IProject project) {
-		XtextResourceSet set = resourceSetProvider.get();
-		IJavaProject javaProject = JavaCore.create(project);
-		if (javaProject != null && javaProject.exists()) {
-			set.getURIConverter().getURIMap().putAll(computePlatformURIMap(javaProject));
-			set.setClasspathURIContext(javaProject);
-			set.setClasspathUriResolver(new JdtClasspathUriResolver());
-		}
-		return set;
+	private ImmutableList<? extends IResourceSetInitializer> initializers = ImmutableList.of();
+
+	@Inject
+	private void setContributions(ISharedStateContributionRegistry contributionRegistry) {
+		initializers = contributionRegistry.getContributedInstances(IResourceSetInitializer.class);
 	}
 
-	protected Map<URI, URI> computePlatformURIMap(IJavaProject javaProject) {
-		HashMap<URI, URI> hashMap = newHashMap();
-		try {
-			hashMap.putAll(EcorePlugin.computePlatformURIMap());
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
+	@Override
+	public ResourceSet get(IProject project) {
+		XtextResourceSet set = resourceSetProvider.get();
+		ProjectConfigAdapter.install(set, projectConfigProvider.createProjectConfig(project));
+		for(int i = 0; i < initializers.size(); i++) {
+			initializers.get(i).initialize(set, project);
 		}
-		if (!javaProject.exists())
-			return hashMap;
-		try {
-			IPackageFragmentRoot[] roots = javaProject.getAllPackageFragmentRoots();
-			for (IPackageFragmentRoot root : roots) {
-				try {
-					Pair<URI,URI> mapping = storage2UriMapper.getURIMapping(root);
-					if (mapping != null) {
-						hashMap.put(mapping.getFirst(), mapping.getSecond());
-					}
-				} catch (JavaModelException e) {
-					LOG.error(e.getMessage(), e);
-				}
-			}
-			final IProject project = javaProject.getProject();
-			for (IProject iProject : project.getWorkspace().getRoot().getProjects()) {
-				if (iProject.isAccessible()) {
-					IPath location = iProject.getLocation();
-					if (location != null)
-						hashMap.put(URI.createPlatformResourceURI(iProject.getName(), true), URI.createFileURI(location.toFile().getPath()));
-				}
-			}
-		} catch (JavaModelException e) {
-			LOG.error(e.getMessage(), e);
-		}
-		return hashMap;
+		return set;
 	}
 
 }

@@ -9,47 +9,51 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.emf.common.util.Diagnostic;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
+import org.eclipse.xtext.diagnostics.AbstractDiagnostic;
+import org.eclipse.xtext.util.IAcceptor;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
 import org.eclipse.xtext.xbase.XConstructorCall;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.typesystem.IResolvedTypes;
+import org.eclipse.xtext.xbase.typesystem.computation.IApplicableCandidate;
 import org.eclipse.xtext.xbase.typesystem.computation.IConstructorLinkingCandidate;
 import org.eclipse.xtext.xbase.typesystem.computation.IFeatureLinkingCandidate;
-import org.eclipse.xtext.xbase.typesystem.computation.ILinkingCandidate;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeExpectation;
-import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
-import org.eclipse.xtext.xbase.typesystem.conformance.TypeConformanceComputationArgument;
-import org.eclipse.xtext.xbase.typesystem.conformance.TypeConformanceResult;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
+import org.eclipse.xtext.xbase.typesystem.util.BoundTypeArgumentSource;
 import org.eclipse.xtext.xbase.typesystem.util.VarianceInfo;
 
-import com.google.common.collect.ListMultimap;
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class StackedResolvedTypes extends ResolvedTypes {
 
 	private final ResolvedTypes parent;
+	private Optional<Map<JvmIdentifiableElement, LightweightTypeReference>> flattenedReassignedTypes;
 
 	protected StackedResolvedTypes(ResolvedTypes parent) {
-		super(parent.getResolver());
+		super(parent.shared);
 		this.parent = parent;
+	}
+	
+	@Override
+	protected void clear() {
+		flattenedReassignedTypes = null;
+		super.clear();
 	}
 	
 	protected ResolvedTypes getParent() {
@@ -62,25 +66,76 @@ public class StackedResolvedTypes extends ResolvedTypes {
 	}
 	
 	protected void prepareMergeIntoParent() {
-		// override in sub types
+		// override in subtypes
 	}
 	
 	protected void performMergeIntoParent() {
 		ResolvedTypes parent = getParent();
 		mergeInto(parent);
+		clear();
 	}
-
+	
 	protected void mergeInto(ResolvedTypes parent) {
 		mergeTypeParametersIntoParent(parent);
 		mergeExpressionTypesIntoParent(parent);
 		mergeTypesIntoParent(parent);
 		mergeLinkingCandidatesIntoParent(parent);
+		mergeQueuedDiagnostics(parent);
+		mergeDeferredRunnables(parent);
+		mergePropagatedTypes(parent);
+		mergeRefinedTypes(parent);
 	}
 	
+	protected void mergePropagatedTypes(ResolvedTypes parent) {
+		for(XExpression expression: basicGetPropagatedTypes()) {
+			parent.setPropagatedType(expression);
+		}
+	}
+	
+	protected void mergeRefinedTypes(ResolvedTypes parent) {
+		for(XExpression expression: basicGetRefinedTypes()) {
+			parent.setRefinedType(expression);
+		}
+	}
+	
+	@Override
+	protected boolean isPropagatedType(XExpression expression) {
+		if (super.isPropagatedType(expression)) {
+			return true;
+		}
+		return parent.isPropagatedType(expression);
+	}
+	
+	@Override
+	public boolean isRefinedType(XExpression expression) {
+		if (super.isRefinedType(expression)) {
+			return true;
+		}
+		return parent.isRefinedType(expression);
+	}
+
+	protected void mergeQueuedDiagnostics(ResolvedTypes parent) {
+		Collection<AbstractDiagnostic> diagnostics = super.getQueuedDiagnostics();
+		for(AbstractDiagnostic diagnostic: diagnostics) {
+			parent.addDiagnostic(diagnostic);
+		}
+	}
+	
+	protected void mergeDeferredRunnables(ResolvedTypes parent) {
+		Collection<IAcceptor<? super IResolvedTypes>> runnables = super.getDeferredLogic();
+		for(IAcceptor<? super IResolvedTypes> runnable: runnables) {
+			parent.addDeferredLogic(runnable);
+		}
+	}
+
 	protected void mergeExpressionTypesIntoParent(ResolvedTypes parent) {
-		for(Map.Entry<XExpression, Collection<TypeData>> entry: basicGetExpressionTypes().asMap().entrySet()) {
-			for(TypeData typeData: entry.getValue()) {
-				parent.acceptType(entry.getKey(), prepareMerge(typeData, parent.getReferenceOwner()));
+		Map<XExpression, List<TypeData>> expressionTypes = basicGetExpressionTypes();
+		if (!expressionTypes.isEmpty()) {
+			for(Map.Entry<XExpression, List<TypeData>> entry: expressionTypes.entrySet()) {
+				List<TypeData> list = entry.getValue();
+				for (int i = 0, size = list.size(); i < size; i++) {
+					parent.acceptType(entry.getKey(), prepareMerge(list.get(i), parent.getReferenceOwner()));
+				}
 			}
 		}
 	}
@@ -92,14 +147,14 @@ public class StackedResolvedTypes extends ResolvedTypes {
 		if (typeReference instanceof UnboundTypeReference && super.isResolved(((UnboundTypeReference) typeReference).getHandle())) {
 			typeReference = typeReference.getUpperBoundSubstitute();
 		}
-		return new TypeData(typeData.getExpression(), typeData.getExpectation().copyInto(owner), typeReference.copyInto(owner), typeData.getConformanceHints().clone(), typeData.isReturnType());
+		return new TypeData(typeData.getExpression(), typeData.getExpectation().copyInto(owner), typeReference.copyInto(owner), typeData.getConformanceFlags(), typeData.isReturnType());
 	}
 	
 	protected void mergeLinkingCandidatesIntoParent(ResolvedTypes parent) {
-		Map<XExpression, ILinkingCandidate> linkingCandidates = basicGetLinkingCandidates();
+		Map<XExpression, IApplicableCandidate> linkingCandidates = basicGetLinkingMap();
 		if (!linkingCandidates.isEmpty()) {
-			for(Map.Entry<XExpression, ILinkingCandidate> entry: linkingCandidates.entrySet()) {
-				parent.acceptLinkingInformation(entry.getKey(), entry.getValue());
+			for(Map.Entry<XExpression, IApplicableCandidate> entry: linkingCandidates.entrySet()) {
+				parent.acceptCandidate(entry.getKey(), entry.getValue());
 			}
 		}
 	}
@@ -120,38 +175,57 @@ public class StackedResolvedTypes extends ResolvedTypes {
 
 	protected void mergeTypeParametersIntoParent(ResolvedTypes parent) {
 		for(UnboundTypeReference unbound: basicGetTypeParameters().values()) {
-			LightweightTypeReference reference = unbound.copyInto(parent.getReferenceOwner());
-			if (reference instanceof UnboundTypeReference) {
-				parent.acceptUnboundTypeReference(unbound.getHandle(), (UnboundTypeReference) reference);
+			LightweightTypeReference resolvedTo = unbound.getResolvedTo();
+			if (resolvedTo == null) {
+				List<JvmTypeParameter> typeParameters = basicGetDeclardTypeParameters();
+				if (typeParameters != null && typeParameters.contains(unbound.getTypeParameter())) {
+					unbound.tryResolve();
+					if (!unbound.internalIsResolved()) {
+						if (unbound.getExpression() instanceof XConstructorCall) {
+							unbound.resolve(); // resolve against constraints 
+						} else {
+							unbound.acceptHint(unbound.getOwner().newParameterizedTypeReference(unbound.getTypeParameter()), 
+									BoundTypeArgumentSource.RESOLVED, unbound, VarianceInfo.INVARIANT, VarianceInfo.INVARIANT);
+						}
+					}
+				} else {
+					LightweightTypeReference reference = unbound.copyInto(parent.getReferenceOwner());
+					if (reference instanceof UnboundTypeReference) {
+						parent.acceptUnboundTypeReference(unbound.getHandle(), (UnboundTypeReference) reference);
+					}
+				}
 			}
 		}
-		ListMultimap<Object, LightweightBoundTypeArgument> typeParameterHints = basicGetTypeParameterHints();
-		for(Map.Entry<Object, LightweightBoundTypeArgument> hint: typeParameterHints.entries()) {
+		Map<Object, List<LightweightBoundTypeArgument>> typeParameterHints = basicGetTypeParameterHints();
+		for(Map.Entry<Object, List<LightweightBoundTypeArgument>> hint: typeParameterHints.entrySet()) {
 			if (!parent.isResolved(hint.getKey())) {
-				LightweightBoundTypeArgument boundTypeArgument = hint.getValue();
-				if (boundTypeArgument.getOrigin() instanceof VarianceInfo) {
-					parent.acceptHint(hint.getKey(), boundTypeArgument);
-				} else {
-					LightweightBoundTypeArgument copy = new LightweightBoundTypeArgument(
-							boundTypeArgument.getTypeReference().copyInto(parent.getReferenceOwner()), 
-							boundTypeArgument.getSource(), boundTypeArgument.getOrigin(), 
-							boundTypeArgument.getDeclaredVariance(), 
-							boundTypeArgument.getActualVariance());
-					parent.acceptHint(hint.getKey(), copy);
+				List<LightweightBoundTypeArgument> boundTypeArguments = hint.getValue();
+				for(LightweightBoundTypeArgument boundTypeArgument: boundTypeArguments) {
+					if (boundTypeArgument.getOrigin() instanceof VarianceInfo) {
+						parent.acceptHint(hint.getKey(), boundTypeArgument);
+					} else {
+						LightweightBoundTypeArgument copy = new LightweightBoundTypeArgument(
+								boundTypeArgument.getTypeReference().copyInto(parent.getReferenceOwner()), 
+								boundTypeArgument.getSource(), boundTypeArgument.getOrigin(), 
+								boundTypeArgument.getDeclaredVariance(), 
+								boundTypeArgument.getActualVariance());
+						parent.acceptHint(hint.getKey(), copy);
+					}
 				}
 			}
 		}
 	}
 	
 	@Override
-	public boolean isResolved(Object handle) {
-		return super.isResolved(handle) || parent.isResolved(handle);
+	protected boolean doIsResolved(Object handle) {
+		boolean result = super.doIsResolved(handle) || parent.doIsResolved(handle);
+		return result;
 	}
 
 	@Override
-	@Nullable
-	protected Collection<TypeData> doGetTypeData(XExpression expression) {
-		Collection<TypeData> result = super.doGetTypeData(expression);
+	/* @Nullable */
+	protected List<TypeData> doGetTypeData(XExpression expression) {
+		List<TypeData> result = super.doGetTypeData(expression);
 		if (result == null) {
 			result = parent.doGetTypeData(expression);
 		}
@@ -159,19 +233,51 @@ public class StackedResolvedTypes extends ResolvedTypes {
 	}
 	
 	@Override
-	@Nullable
-	protected LightweightTypeReference doGetActualType(JvmIdentifiableElement identifiable) {
-		LightweightTypeReference result = super.doGetActualType(identifiable);
+	/* @Nullable */
+	protected LightweightTypeReference doGetActualTypeNoDeclaration(JvmIdentifiableElement identifiable, boolean ignoreReassignedTypes) {
+		LightweightTypeReference result = super.doGetActualTypeNoDeclaration(identifiable, ignoreReassignedTypes);
 		if (result == null) {
-			result = parent.doGetActualType(identifiable);
+			result = parent.doGetActualTypeNoDeclaration(identifiable, ignoreReassignedTypes);
 		}
 		return result;
 	}
 	
 	@Override
-	@Nullable
-	protected LightweightTypeReference getDeclaredType(JvmIdentifiableElement identifiable) {
-		return null;
+	protected boolean isRefinedType(JvmIdentifiableElement element) {
+		if (super.isRefinedType(element)) {
+			return true;
+		}
+		return parent.isRefinedType(element);
+	}
+	
+	@Override
+	/* @Nullable */
+	protected IApplicableCandidate doGetCandidate(/* @Nullable */ XExpression featureOrConstructorCall) {
+		IApplicableCandidate result = super.doGetCandidate(featureOrConstructorCall);
+		if (result != null)
+			return result;
+		return parent.doGetCandidate(featureOrConstructorCall);
+	}
+	
+	@Override
+	/* @Nullable */
+	protected JvmIdentifiableElement doGetLinkedFeature(/* @Nullable */ XExpression featureOrConstructorCall) {
+		JvmIdentifiableElement result = super.doGetLinkedFeature(featureOrConstructorCall);
+		if (result != null)
+			return result;
+		return parent.doGetLinkedFeature(featureOrConstructorCall);
+	}
+	
+	@Override
+	public List<LightweightTypeReference> getExpectedExceptions() {
+		return parent.getExpectedExceptions();
+	}
+	
+	@Override
+	/* @Nullable */
+	protected LightweightTypeReference doGetDeclaredType(JvmIdentifiableElement identifiable) {
+		LightweightTypeReference result = shared.root.doGetDeclaredType(identifiable);
+		return result;
 	}
 	
 	@Override
@@ -184,6 +290,8 @@ public class StackedResolvedTypes extends ResolvedTypes {
 	
 	@Override
 	public void addDeclaredTypeParameters(List<JvmTypeParameter> typeParameters) {
+		if (typeParameters.isEmpty())
+			return;
 		List<JvmTypeParameter> list = basicGetDeclardTypeParameters();
 		if (list == null) {
 			super.addDeclaredTypeParameters(parent.getDeclaredTypeParameters());
@@ -193,8 +301,16 @@ public class StackedResolvedTypes extends ResolvedTypes {
 		}
 	}
 	
+	public void replaceDeclaredTypeParameters(List<JvmTypeParameter> typeParameters) {
+		List<JvmTypeParameter> list = basicGetDeclardTypeParameters();
+		if (list != null) {
+			throw new IllegalStateException("Cannot replace declared type parameters if there are already type parameters in this StackedResolvedTypes");
+		}
+		super.addDeclaredTypeParameters(typeParameters);
+	}
+	
 	@Override
-	@Nullable
+	/* @Nullable */
 	protected List<LightweightTypeReference> doGetActualTypeArguments(XExpression expression) {
 		List<LightweightTypeReference> result = super.doGetActualTypeArguments(expression);
 		if (result == null) {
@@ -204,37 +320,45 @@ public class StackedResolvedTypes extends ResolvedTypes {
 	}
 	
 	@Override
-	@Nullable
-	public IFeatureLinkingCandidate getFeature(XAbstractFeatureCall featureCall) {
-		IFeatureLinkingCandidate result = super.getFeature(featureCall);
+	/* @Nullable */
+	protected IFeatureLinkingCandidate doGetFeature(XAbstractFeatureCall featureCall) {
+		IFeatureLinkingCandidate result = super.doGetFeature(featureCall);
 		if (result == null) {
-			result = parent.getFeature(featureCall);
+			result = parent.doGetFeature(featureCall);
 		}
 		return result;
 	}
 	
 	@Override
-	@Nullable
-	public IConstructorLinkingCandidate getConstructor(XConstructorCall constructorCall) {
-		IConstructorLinkingCandidate result = super.getConstructor(constructorCall);
+	/* @Nullable */
+	protected IConstructorLinkingCandidate doGetConstructor(XConstructorCall constructorCall) {
+		IConstructorLinkingCandidate result = super.doGetConstructor(constructorCall);
 		if (result == null) {
-			result = parent.getConstructor(constructorCall);
+			result = parent.doGetConstructor(constructorCall);
 		}
 		return result;
 	}
 	
 	@Override
-	public void reassignType(JvmIdentifiableElement identifiable, @Nullable LightweightTypeReference reference) {
+	public void reassignType(JvmIdentifiableElement identifiable, /* @Nullable */ LightweightTypeReference reference) {
 		super.reassignType(identifiable, reference);
 		if (reference == null) {
 			getParent().reassignType(identifiable, reference);
 		}
+		flattenedReassignedTypes = null;
 	}
 	
 	@Override
-	public List<Diagnostic> getQueuedDiagnostics() {
-		List<Diagnostic> result = Lists.newArrayList(super.getQueuedDiagnostics());
+	public List<AbstractDiagnostic> getQueuedDiagnostics() {
+		List<AbstractDiagnostic> result = Lists.newArrayList(super.getQueuedDiagnostics());
 		result.addAll(parent.getQueuedDiagnostics());
+		return result;
+	}
+	
+	@Override
+	public Collection<IAcceptor<? super IResolvedTypes>> getDeferredLogic() {
+		List<IAcceptor<? super IResolvedTypes>> result = Lists.newArrayList(super.getDeferredLogic());
+		result.addAll(parent.getDeferredLogic());
 		return result;
 	}
 	
@@ -248,6 +372,16 @@ public class StackedResolvedTypes extends ResolvedTypes {
 			return (UnboundTypeReference) result.copyInto(getReferenceOwner());
 		}
 		return result;
+	}
+	
+	@Override
+	protected void refineExpectedType(XExpression receiver, ITypeExpectation refinedExpectation) {
+		Collection<TypeData> typeData = basicGetExpressionTypes().get(receiver);
+		if (typeData == null) {
+			getParent().refineExpectedType(receiver, refinedExpectation);
+		} else {
+			super.refineExpectedType(receiver, refinedExpectation);
+		}
 	}
 	
 	@Override
@@ -266,6 +400,8 @@ public class StackedResolvedTypes extends ResolvedTypes {
 					parentHint.getActualVariance());
 			return Collections.singletonList(copy);
 		}
+		if (parentHints.isEmpty())
+			return result;
 		List<LightweightBoundTypeArgument> withParentHints = Lists.newArrayListWithCapacity(parentHints.size() + result.size());
 		for(LightweightBoundTypeArgument parentHint: parentHints) {
 			if (parentHint.getTypeReference() == null) {
@@ -273,7 +409,8 @@ public class StackedResolvedTypes extends ResolvedTypes {
 			} else {
 				LightweightBoundTypeArgument copy = new LightweightBoundTypeArgument(
 						parentHint.getTypeReference().copyInto(getReferenceOwner()), 
-						parentHint.getSource(), parentHint.getOrigin(), 
+						parentHint.getSource(), 
+						parentHint.getOrigin(), 
 						parentHint.getDeclaredVariance(), 
 						parentHint.getActualVariance());
 				withParentHints.add(copy);
@@ -283,30 +420,14 @@ public class StackedResolvedTypes extends ResolvedTypes {
 		return withParentHints;
 	}
 	
-	protected EnumSet<ConformanceHint> getConformanceHints(XExpression expression) {
+	protected int getConformanceFlags(XExpression expression, boolean recompute) {
 		TypeData typeData = getTypeData(expression, false);
 		if (typeData == null) {
-			return EnumSet.of(ConformanceHint.EXCEPTION);
+			throw new IllegalStateException();
 		}
-		EnumSet<ConformanceHint> conformanceHints = typeData.getConformanceHints();
-		if (conformanceHints.contains(ConformanceHint.UNCHECKED)) {
-			LightweightTypeReference actualType = typeData.getActualType();
-			ITypeExpectation expectation = typeData.getExpectation();
-			LightweightTypeReference expectedType = expectation.getExpectedType();
-			if (expectedType != null) {
-				TypeConformanceResult conformanceResult = expectedType.internalIsAssignableFrom(actualType, new TypeConformanceComputationArgument());
-				conformanceHints.addAll(conformanceResult.getConformanceHints());
-				conformanceHints.remove(ConformanceHint.UNCHECKED);
-				conformanceHints.add(ConformanceHint.CHECKED);
-			} else {
-				conformanceHints.remove(ConformanceHint.UNCHECKED);
-				conformanceHints.add(ConformanceHint.CHECKED);
-				conformanceHints.add(ConformanceHint.SUCCESS);
-			}
-		}
-		return conformanceHints;
+		return getConformanceFlags(typeData, recompute);
 	}
-	
+
 	@Override
 	protected void appendContent(StringBuilder result, String indentation) {
 		super.appendContent(result, indentation);
@@ -316,7 +437,7 @@ public class StackedResolvedTypes extends ResolvedTypes {
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	protected LightweightTypeReference getExpectedTypeForAssociatedExpression(JvmMember member, XExpression expression) {
 		return parent.getExpectedTypeForAssociatedExpression(member, expression);
 	}
@@ -324,5 +445,29 @@ public class StackedResolvedTypes extends ResolvedTypes {
 	@Override
 	protected void markToBeInferred(XExpression expression) {
 		parent.markToBeInferred(expression);
+	}
+
+	@Override
+	/* @Nullable */
+	protected Map<JvmIdentifiableElement, LightweightTypeReference> getFlattenedReassignedTypes() {
+		if (flattenedReassignedTypes != null) {
+			// already computed
+			return flattenedReassignedTypes.orNull();
+		}
+		Map<JvmIdentifiableElement, LightweightTypeReference> result = parent.getFlattenedReassignedTypes();
+		if (result == null) {
+			// parent doesn't have reassigned types
+			// use only locally reassigned types
+			return (flattenedReassignedTypes = Optional.fromNullable(super.getFlattenedReassignedTypes())).orNull();
+		}
+		Map<JvmIdentifiableElement, LightweightTypeReference> myReassignedTypes = basicGetReassignedTypes();
+		if (myReassignedTypes.isEmpty()) {
+			// no locally reassigned types, use result from parent which was already checked for null
+			return (flattenedReassignedTypes = Optional.of(result)).orNull();
+		}
+		// merge parent's reassigned types and locally reassigned types
+		result = Maps.newHashMap(result);
+		result.putAll(myReassignedTypes);
+		return (flattenedReassignedTypes = Optional.of(result)).orNull();
 	}
 }

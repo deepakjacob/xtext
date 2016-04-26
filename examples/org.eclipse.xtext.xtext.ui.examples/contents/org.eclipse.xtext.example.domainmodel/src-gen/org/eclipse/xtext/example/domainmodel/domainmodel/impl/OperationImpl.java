@@ -30,11 +30,11 @@ import org.eclipse.xtext.xbase.XExpression;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.example.domainmodel.domainmodel.impl.OperationImpl#getParams <em>Params</em>}</li>
  *   <li>{@link org.eclipse.xtext.example.domainmodel.domainmodel.impl.OperationImpl#getBody <em>Body</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

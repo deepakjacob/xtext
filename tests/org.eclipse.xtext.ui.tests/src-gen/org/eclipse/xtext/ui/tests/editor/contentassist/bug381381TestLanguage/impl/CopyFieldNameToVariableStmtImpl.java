@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug381381TestLanguage.impl;
 
@@ -21,12 +18,12 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug381381TestLanguage.Cop
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug381381TestLanguage.impl.CopyFieldNameToVariableStmtImpl#getLine <em>Line</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug381381TestLanguage.impl.CopyFieldNameToVariableStmtImpl#getColumn <em>Column</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug381381TestLanguage.impl.CopyFieldNameToVariableStmtImpl#getName <em>Name</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

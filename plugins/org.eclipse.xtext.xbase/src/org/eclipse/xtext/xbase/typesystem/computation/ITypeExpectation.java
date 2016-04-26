@@ -7,28 +7,34 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.computation;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
+import java.util.EnumSet;
+
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
-import org.eclipse.xtext.xbase.typesystem.references.OwnedConverter;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public interface ITypeExpectation {
 
-	void acceptActualType(LightweightTypeReference type, ConformanceHint... hint);
-
-	OwnedConverter getConverter();
+	void acceptActualType(LightweightTypeReference type, ConformanceHint... hints);
 	
+	void acceptActualType(LightweightTypeReference type, EnumSet<ConformanceHint> hints);
+	
+	void acceptActualType(LightweightTypeReference type, int flags);
+
 	ITypeReferenceOwner getReferenceOwner();
 	
+	/**
+	 * Create a new, managed {@link UnboundTypeReference} for the given type parameter which was
+	 * first encountered for the given expression.
+	 * @param expression the expression that used / referenced the type parameter
+	 * @param typeParameter the type parameter
+	 */
 	UnboundTypeReference createUnboundTypeReference(XExpression expression, JvmTypeParameter typeParameter);
 	
 	ITypeExpectation copyInto(ITypeReferenceOwner referenceOwner);
@@ -41,7 +47,7 @@ public interface ITypeExpectation {
 	 * may want to check {@link #isNoTypeExpectation()} or {@link #isVoidTypeAllowed()}.
 	 * @return the expected type. This may be <code>null</code>. 
 	 */
-	@Nullable
+	/* @Nullable */
 	LightweightTypeReference getExpectedType();
 	
 	/**

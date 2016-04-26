@@ -23,7 +23,7 @@ import com.google.common.collect.Sets;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-public class XtextRuleInspector<Result, RuleType extends AbstractRule> extends XtextSwitch<Result> {
+public abstract class XtextRuleInspector<Result, RuleType extends AbstractRule> extends XtextSwitch<Result> {
 
 	private final ValidationMessageAcceptor acceptor;
 
@@ -32,6 +32,13 @@ public class XtextRuleInspector<Result, RuleType extends AbstractRule> extends X
 	public XtextRuleInspector(ValidationMessageAcceptor acceptor) {
 		this.acceptor = acceptor;
 		visitedRules = Sets.newHashSet();
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	protected String getIssueCode() {
+		return null;
 	}
 	
 	public void inspect(RuleType rule) {
@@ -57,11 +64,11 @@ public class XtextRuleInspector<Result, RuleType extends AbstractRule> extends X
 	}
 
 	public void acceptError(String message, EObject object, EStructuralFeature feature) {
-		acceptor.acceptError(message, object, feature, ValidationMessageAcceptor.INSIGNIFICANT_INDEX, null);
+		acceptor.acceptError(message, object, feature, ValidationMessageAcceptor.INSIGNIFICANT_INDEX, getIssueCode());
 	}
 
 	public void acceptWarning(String message, EObject object, EStructuralFeature feature) {
-		acceptor.acceptWarning(message, object, feature, ValidationMessageAcceptor.INSIGNIFICANT_INDEX, null);
+		acceptor.acceptWarning(message, object, feature, ValidationMessageAcceptor.INSIGNIFICANT_INDEX, getIssueCode());
 	}
 	
 	public boolean addVisited(AbstractRule rule) {

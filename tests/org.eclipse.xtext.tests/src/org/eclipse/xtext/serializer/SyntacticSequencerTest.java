@@ -31,6 +31,7 @@ import org.eclipse.xtext.serializer.sequencer.EmitterNodeIterator;
 import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
 import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 import org.eclipse.xtext.serializer.sequencer.NodeModelSemanticSequencer;
+import org.eclipse.xtext.serializer.syntacticsequencertest.Model;
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
@@ -69,87 +70,109 @@ public class SyntacticSequencerTest extends AbstractXtextTests {
 			result.add(titles.doSwitch(ele) + " -> " + token.trim());
 		}
 
+		@Override
 		public void enterUnassignedParserRuleCall(RuleCall rc) {
 		}
 
+		@Override
 		public void leaveUnssignedParserRuleCall(RuleCall rc) {
 		}
 
+		@Override
 		public void acceptUnassignedAction(Action action) {
 		}
 
+		@Override
 		public void acceptUnassignedDatatype(RuleCall datatypeRC, String token, ICompositeNode node) {
 			add(datatypeRC, token);
 		}
 
+		@Override
 		public void acceptUnassignedEnum(RuleCall enumRC, String token, ICompositeNode node) {
 			add(enumRC, token);
 		}
 
+		@Override
 		public void acceptUnassignedKeyword(Keyword keyword, String token, ILeafNode node) {
 			add(keyword, token);
 		}
 
+		@Override
 		public void acceptUnassignedTerminal(RuleCall terminalRC, String token, ILeafNode node) {
 			add(terminalRC, token);
 		}
 
+		@Override
 		public void acceptAssignedCrossRefDatatype(RuleCall datatypeRC, String token, EObject value, int index,
 				ICompositeNode node) {
 			add(datatypeRC, token);
 		}
 
+		@Override
 		public void acceptAssignedCrossRefEnum(RuleCall enumRC, String token, EObject value, int index,
 				ICompositeNode node) {
 			add(enumRC, token);
 		}
 
+		@Override
 		public void acceptAssignedCrossRefTerminal(RuleCall terminalRC, String token, EObject value, int index,
 				ILeafNode node) {
 			add(terminalRC, token);
 		}
 
+		@Override
 		public void acceptAssignedDatatype(RuleCall datatypeRC, String token, Object value, int index,
 				ICompositeNode node) {
 			add(datatypeRC, token);
 		}
 
+		@Override
 		public void acceptAssignedEnum(RuleCall enumRC, String token, Object value, int index, ICompositeNode node) {
 			add(enumRC, token);
 		}
 
+		@Override
 		public void acceptAssignedKeyword(Keyword keyword, String token, Object value, int index, ILeafNode node) {
 			add(keyword, token);
 		}
 
+		@Override
 		public void acceptAssignedTerminal(RuleCall terminalRC, String token, Object value, int index, ILeafNode node) {
 			add(terminalRC, token);
 		}
 
+		@Override
 		public boolean enterAssignedAction(Action action, EObject semanticChild, ICompositeNode node) {
 			return true;
 		}
 
+		@Override
 		public boolean enterAssignedParserRuleCall(RuleCall rc, EObject semanticChild, ICompositeNode node) {
 			return true;
 		}
 
+		@Override
 		public void finish() {
 
 		}
 
+		@Override
 		public void leaveAssignedAction(Action action, EObject semanticChild) {
 		}
 
+		@Override
 		public void leaveAssignedParserRuleCall(RuleCall rc, EObject semanticChild) {
 		}
 
+		@Override
 		public void acceptComment(AbstractRule rule, String token, ILeafNode node) {
 		}
 
+		@Override
 		public void acceptWhitespace(AbstractRule rule, String token, ILeafNode node) {
 		}
 
+		@Override
 		public void acceptAssignedCrossRefKeyword(Keyword kw, String token, EObject value, int index, ILeafNode node) {
 			add(kw, token);
 		}
@@ -166,7 +189,7 @@ public class SyntacticSequencerTest extends AbstractXtextTests {
 
 	private void testSequence(String stringModel) throws Exception {
 		EObject model = getModel(stringModel);
-		EObject context = nmSequencer.findContexts(model, true, null).iterator().next();
+		ISerializationContext context = nmSequencer.findContexts(model, true, null).iterator().next();
 		Acceptor actual = new Acceptor();
 		ISemanticSequencer semanticSeq = semanticSequencerProvider.get();
 		ISyntacticSequencer syntacticSeq = syntacticSequencerProvider.get();
@@ -178,8 +201,12 @@ public class SyntacticSequencerTest extends AbstractXtextTests {
 
 	private void testSequence(String inModel, String outModel) throws Exception {
 		EObject inObj = getModel(inModel);
+		testSequence(inObj, outModel);
+	}
+
+	private void testSequence(EObject inObj, String outModel) throws Exception {
 		EObject outObj = getModel(outModel);
-		EObject context = nmSequencer.findContexts(inObj, true, null).iterator().next();
+		ISerializationContext context = nmSequencer.findContexts(inObj, true, null).iterator().next();
 		Acceptor actual = new Acceptor();
 		ISemanticSequencer semanticSeq = semanticSequencerProvider.get();
 		ISyntacticSequencer syntacticSeq = syntacticSequencerProvider.get();
@@ -286,6 +313,20 @@ public class SyntacticSequencerTest extends AbstractXtextTests {
 	}
 
 	@Test
+	public void testBooleanAlternative_c() throws Exception {
+		Model model = (Model) getModel("#6 kw2");
+		model.getX6().getBool().setIsTrue(false);
+		testSequence(model, "#6 kw1");
+	}
+
+	@Test
+	public void testBooleanAlternative_d() throws Exception {
+		Model model = (Model) getModel("#6 kw1");
+		model.getX6().getBool().setIsTrue(true);
+		testSequence(model, "#6 kw2");
+	}
+
+	@Test
 	public void testUnassignedDatatype() throws Exception {
 		testSequence("#7 foo kw1", "#7 foo matched 1");
 	}
@@ -323,5 +364,45 @@ public class SyntacticSequencerTest extends AbstractXtextTests {
 	@Test
 	public void testBooleanDatatype() throws Exception {
 		testSequence("#12 foo", "#12 foomatched");
+	}
+
+	@Test
+	public void testLongAlternative1() throws Exception {
+		testSequence("#13 x0 kw1 x1a kw1 x1b!");
+	}
+
+	@Test
+	public void testLongAlternative2() throws Exception {
+		testSequence("#13 x0 kw8 x8a kw8 x8b!");
+	}
+
+	@Test
+	public void testLongAlternative3() throws Exception {
+		testSequence("#13 x0 kw1 x1 kw2 x2 kw3 x3 kw4 x4 kw5 x5 kw6 x6 kw7 x7 kw8 x8!");
+	}
+
+	@Test
+	public void testLongAlternative4() throws Exception {
+		testSequence("#13 x0 kw8 x8 kw7 x7 kw6 x6 kw5 x5 kw4 x4 kw3 x3 kw2 x2 kw1 x1!");
+	}
+
+	@Test
+	public void testLongAlternative5() throws Exception {
+		testSequence("#13 x0 kw1 kw2 kw3 kw4 kw5 kw6 kw7 kw8!");
+	}
+
+	@Test
+	public void testLongAlternative6() throws Exception {
+		testSequence("#13 x0 kw8 kw7 kw6 kw5 kw4 kw3 kw2 kw1!");
+	}
+	
+	@Test
+	public void testActionOnlyWithOptionals() throws Exception {
+		testSequence("#14 kw1 foo kw2 bar");
+	}
+	
+	@Test
+	public void testFragment() throws Exception {
+		testSequence("#15 foo bar baz");
 	}
 }

@@ -9,18 +9,17 @@ package org.eclipse.xtext.xbase.compiler.output;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.generator.trace.ILocationData;
 import org.eclipse.xtext.generator.trace.ITraceRegionProvider;
 import org.eclipse.xtext.xbase.compiler.IAppendable;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * A specialized appendable that can be used to trace the source location
  * for the written output.
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public interface ITreeAppendable extends IAppendable, ITraceRegionProvider {
 
 	/**
@@ -49,16 +48,32 @@ public interface ITreeAppendable extends IAppendable, ITraceRegionProvider {
 	 */
 	ITreeAppendable trace(ILocationData location, boolean useForDebugging);
 	
-	ErrorTreeAppendable errorChild(EObject context);
+	ErrorTreeAppendable errorChild();
 	
+	@Override
 	ITreeAppendable append(JvmType type);
 	
+	ITreeAppendable append(Class<?> type);
+	
+	@Override
+	ITreeAppendable append(LightweightTypeReference typeRef);
+	
+	/**
+	 * Appends the specified character sequence to this <tt>ITreeAppendable</tt>.
+	 * 
+	 * @param content - not <code>null</code>
+	 * @param a reference to an ITreeAppendable where the given content got appended
+	 */
+	@Override
 	ITreeAppendable append(CharSequence content);
 	
+	@Override
 	ITreeAppendable decreaseIndentation();
 	
+	@Override
 	ITreeAppendable increaseIndentation();
 	
+	@Override
 	ITreeAppendable newLine();
 
 }

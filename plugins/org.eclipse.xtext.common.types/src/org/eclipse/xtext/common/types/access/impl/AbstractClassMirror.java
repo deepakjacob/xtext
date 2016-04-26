@@ -26,12 +26,25 @@ import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.resource.IFragmentProvider;
 
 /**
+ * A mirror that is used at runtime to allow lazy initialization of resource contents.
+ * Also it implements the contract of fragments and EObject retrieval by identifier.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public abstract class AbstractClassMirror implements IClassMirror {
 
 	private static final Logger logger = Logger.getLogger(AbstractClassMirror.class);
+	private boolean isEmptynessLogged = false;
+	protected TypeResourceServices typeResourceServices;
+
+	public AbstractClassMirror() {
+	}
 	
+	public AbstractClassMirror(TypeResourceServices typeResourceServices) {
+		this.typeResourceServices = typeResourceServices;
+	}
+	
+	@Override
 	public String getFragment(EObject obj, IFragmentProvider.Fallback fallback) {
 		if (obj instanceof JvmTypeParameter)
 			return getFragment(obj.eContainer(), fallback) + "/" + ((JvmTypeParameter) obj).getName();
@@ -41,12 +54,16 @@ public abstract class AbstractClassMirror implements IClassMirror {
 			if (obj instanceof JvmArrayType) {
 				if (obj.eContainer() instanceof JvmGenericArrayTypeReference)
 					return fallback.getFragment(obj);
+				if (obj.eContainer() instanceof JvmIdentifiableElement) {
+					return getFragment(obj.eContainer(), fallback) + "[]";
+				}
 			}
 			return ((JvmIdentifiableElement) obj).getIdentifier();
 		}
 		return fallback.getFragment(obj);
 	}
 	
+	@Override
 	public EObject getEObject(Resource resource, String fragment, IFragmentProvider.Fallback fallback) {
 		if (fragment.endsWith("[]")) {
 			return getArrayEObject(resource, fragment, fallback);
@@ -69,9 +86,14 @@ public abstract class AbstractClassMirror implements IClassMirror {
 			}
 		} else {
 			if (resource.getContents().isEmpty()) {
-				logger.error("resource is empty: " + resource.getURI());
-				if (logger.isDebugEnabled()) {
-					logger.debug(getClass().getName(), new Exception());
+				if (typeResourceServices!= null) 
+					typeResourceServices.outdatedStateManager.checkCanceled(resource.getResourceSet());
+				if (!isEmptynessLogged) {
+					isEmptynessLogged = true;
+					logger.error("resource is empty: " + resource.getURI(), new IllegalStateException());
+					if (logger.isDebugEnabled()) {
+						logger.debug(getClass().getName(), new Exception());
+					}
 				}
 				return null;
 			}

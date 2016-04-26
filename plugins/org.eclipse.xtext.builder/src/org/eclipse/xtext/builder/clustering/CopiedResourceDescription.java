@@ -28,6 +28,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 /**
+ * Makes an eager copy of the exported objects of another resource description.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
  * @author Jan Koehnlein - introduced QualifiedName
  */
@@ -43,7 +45,8 @@ public class CopiedResourceDescription extends AbstractResourceDescription {
         this.uri = original.getURI();
         this.exported = ImmutableList.copyOf(Iterables.transform(original.getExportedObjects(),
                 new Function<IEObjectDescription, IEObjectDescription>() {
-                    public IEObjectDescription apply(IEObjectDescription from) {
+                    @Override
+					public IEObjectDescription apply(IEObjectDescription from) {
                         if (from.getEObjectOrProxy().eIsProxy()) {
                             return from;
                         }
@@ -66,7 +69,8 @@ public class CopiedResourceDescription extends AbstractResourceDescription {
         return exported;
     }
 
-    public Iterable<QualifiedName> getImportedNames() {
+    @Override
+	public Iterable<QualifiedName> getImportedNames() {
     	// TODO see https://bugs.eclipse.org/bugs/show_bug.cgi?id=344373
     	IllegalStateException exception = new IllegalStateException("getImportedNames "+getURI());
 		log.error(exception, exception);
@@ -74,7 +78,8 @@ public class CopiedResourceDescription extends AbstractResourceDescription {
 //        throw new UnsupportedOperationException("getImportedNames()");
     }
 
-    public Iterable<IReferenceDescription> getReferenceDescriptions() {
+    @Override
+	public Iterable<IReferenceDescription> getReferenceDescriptions() {
     	// TODO see https://bugs.eclipse.org/bugs/show_bug.cgi?id=344373
     	IllegalStateException exception = new IllegalStateException("getReferenceDescriptions "+getURI());
     	log.error(exception, exception);
@@ -82,7 +87,8 @@ public class CopiedResourceDescription extends AbstractResourceDescription {
 //        throw new UnsupportedOperationException("getReferenceDescriptions()");
     }
 
-    public URI getURI() {
+    @Override
+	public URI getURI() {
         return uri;
     }
 }

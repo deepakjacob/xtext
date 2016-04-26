@@ -24,7 +24,11 @@ import com.google.inject.Inject;
  */
 public abstract class AbstractSplittingTokenSource implements TokenSource {
 
-	public static final String LEXER_RULE_PREFIX = "RULE_";
+	/**
+	 * @deprecated use {@link TokenTool#LEXER_RULE_PREFIX} if strictly necessary.
+	 */
+	@Deprecated
+	public static final String LEXER_RULE_PREFIX = TokenTool.LEXER_RULE_PREFIX;
 	
 	private TokenSource delegate;
 	
@@ -45,6 +49,7 @@ public abstract class AbstractSplittingTokenSource implements TokenSource {
 		return delegate;
 	}
 	
+	@Override
 	public Token nextToken() {
 		if (nextTokens.hasNext()) {
 			Token result = nextTokens.next(); 
@@ -56,6 +61,7 @@ public abstract class AbstractSplittingTokenSource implements TokenSource {
 		return result;
 	}
 	
+	@Override
 	public String getSourceName() {
 		return "[SplittingTokenSource] " + delegate.getSourceName();
 	}
@@ -72,9 +78,7 @@ public abstract class AbstractSplittingTokenSource implements TokenSource {
 	}
 	
 	public String getLexerRuleName(String antlrTokenDef) {
-		if (antlrTokenDef.startsWith(LEXER_RULE_PREFIX))
-			return antlrTokenDef.substring(LEXER_RULE_PREFIX.length());
-		return antlrTokenDef;
+		return TokenTool.getLexerRuleName(antlrTokenDef);
 	}
 	
 	@Inject

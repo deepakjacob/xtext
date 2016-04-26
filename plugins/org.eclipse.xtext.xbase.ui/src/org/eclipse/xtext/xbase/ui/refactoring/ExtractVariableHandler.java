@@ -13,7 +13,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
 import org.eclipse.xtext.resource.XtextResource;
@@ -21,6 +20,7 @@ import org.eclipse.xtext.ui.editor.XtextEditor;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.editor.utils.EditorUtils;
 import org.eclipse.xtext.ui.refactoring.ui.DefaultRenameElementHandler;
+import org.eclipse.xtext.ui.refactoring.ui.RefactoringWizardOpenOperation_NonForking;
 import org.eclipse.xtext.ui.refactoring.ui.SyncUtil;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.concurrent.IUnitOfWork;
@@ -45,8 +45,12 @@ public class ExtractVariableHandler extends AbstractHandler {
 	@Inject
 	private ILocationInFileProvider locationInFileProvider;
 	
+	@Inject
+	private RefactoredResourceCopier resourceCopier;
+	
 	protected static final Logger LOG = Logger.getLogger(DefaultRenameElementHandler.class);
 
+	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		try {
 			syncUtil.totalSync(false);
@@ -54,24 +58,27 @@ public class ExtractVariableHandler extends AbstractHandler {
 			if (editor != null) {
 				final ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
 				final IXtextDocument document = editor.getDocument();
-				document.modify(new IUnitOfWork.Void<XtextResource>() {
+				XtextResource resource = document.priorityReadOnly(new IUnitOfWork<XtextResource, XtextResource>() {
 					@Override
-					public void process(XtextResource resource) throws Exception {
-						XExpression expression = expressionUtil.findSelectedExpression(resource, selection);
-						if(expression != null) {
-							ExtractVariableRefactoring introduceVariableRefactoring = refactoringProvider.get();
-							if(introduceVariableRefactoring.initialize(document, expression)) {
-								ITextRegion region = locationInFileProvider.getFullTextRegion(expression);
-								editor.selectAndReveal(region.getOffset(), region.getLength());
-								ExtractVariableWizard wizard = new ExtractVariableWizard(introduceVariableRefactoring);
-								RefactoringWizardOpenOperation openOperation = new RefactoringWizardOpenOperation(
-										wizard);
-								openOperation.run(editor.getSite().getShell(), "Extract Local Variable");
-							}
-						}
+					public XtextResource exec(XtextResource state) throws Exception {
+						return resourceCopier.loadIntoNewResourceSet(state);
 					}
 				});
+				XExpression expression = expressionUtil.findSelectedExpression(resource, selection);
+				if(expression != null) {
+					ExtractVariableRefactoring introduceVariableRefactoring = refactoringProvider.get();
+					if(introduceVariableRefactoring.initialize(editor, expression)) {
+						ITextRegion region = locationInFileProvider.getFullTextRegion(expression);
+						editor.selectAndReveal(region.getOffset(), region.getLength());
+						ExtractVariableWizard wizard = new ExtractVariableWizard(introduceVariableRefactoring);
+						RefactoringWizardOpenOperation_NonForking openOperation = new RefactoringWizardOpenOperation_NonForking(
+								wizard);
+						openOperation.run(editor.getSite().getShell(), "Extract Local Variable");
+					}
+				}
 			}
+		} catch (InterruptedException e) {
+			return null;
 		} catch (Exception exc) {
 			LOG.error("Error during refactoring", exc);
 			MessageDialog.openError(Display.getCurrent().getActiveShell(), "Error during refactoring", exc.getMessage()
@@ -79,6 +86,4 @@ public class ExtractVariableHandler extends AbstractHandler {
 		}
 		return null;
 	}
-
-
 }

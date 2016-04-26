@@ -7,8 +7,9 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.refactoring.impl;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.emf.ecore.EClassifier;
@@ -34,6 +35,8 @@ import com.google.inject.Inject;
  * @author Holger Schill
  */
 public class EmfResourceReferenceUpdater extends AbstractReferenceUpdater {
+	
+	private final static Logger LOG = Logger.getLogger(EmfResourceReferenceUpdater.class);
 
 	@Inject
 	private EmfResourceChangeUtil changeUtil;
@@ -42,23 +45,29 @@ public class EmfResourceReferenceUpdater extends AbstractReferenceUpdater {
 	protected void createReferenceUpdates(ElementRenameArguments elementRenameArguments,
 			Multimap<URI, IReferenceDescription> resource2references, ResourceSet resourceSet,
 			IRefactoringUpdateAcceptor updateAcceptor, IProgressMonitor monitor) {
-		SubMonitor progress = SubMonitor.convert(monitor, "Updating EMF References", resource2references.keySet()
-				.size());
 		for (URI referringResourceURI : resource2references.keySet()) {
 			try {
-				if (progress.isCanceled())
-					break;
+				if (monitor.isCanceled())
+					throw new OperationCanceledException();
 				Resource referringResource = resourceSet.getResource(referringResourceURI, false);
 				EObject refactoredElement = resourceSet.getEObject(elementRenameArguments.getNewElementURI(elementRenameArguments.getTargetElementURI()), true);
-				if(refactoredElement != null && refactoredElement instanceof EClassifier){
-					for(IReferenceDescription reference : resource2references.get(referringResourceURI)){
-						EObject referringEReference = referringResource.getEObject(reference.getSourceEObjectUri().fragment()).eContainer();
-						if(referringEReference != null && referringEReference instanceof EReference)
-						((EReference)referringEReference).setEType((EClassifier)refactoredElement);
+				if (referringResource != refactoredElement.eResource()) {
+					if (refactoredElement instanceof EClassifier) { 
+						for (IReferenceDescription reference : resource2references.get(referringResourceURI)) {
+							EObject source = referringResource.getEObject(reference.getSourceEObjectUri().fragment());
+							if (source == null) {
+								LOG.error("Couldn't find source element "+ reference.getSourceEObjectUri() + " in " + referringResource.getURI());
+							} else {
+								EObject referringEReference = source.eContainer();
+								if (referringEReference != null && referringEReference instanceof EReference)
+									((EReference) referringEReference).setEType((EClassifier) refactoredElement);
+							}
+						}
 					}
+					changeUtil.addSaveAsUpdate(referringResource, updateAcceptor);
 				}
-				changeUtil.addSaveAsUpdate(referringResource, updateAcceptor);
-				progress.worked(1);
+			} catch (OperationCanceledException e) {
+				throw e;
 			} catch (Exception exc) {
 				throw new WrappedException(exc);
 			}

@@ -9,12 +9,14 @@ package org.eclipse.xtext.xbase.scoping.batch;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.common.types.JvmFeature;
+import org.eclipse.xtext.common.types.JvmDeclaredType;
+import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.xbase.typesystem.override.IResolvedFeatures;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * An abstract nested feature scope session.
@@ -25,20 +27,21 @@ import org.eclipse.xtext.scoping.IScopeProvider;
  * TODO toString
  * TODO more JavaDoc
  */
-@NonNullByDefault
 public abstract class AbstractNestedFeatureScopeSession extends AbstractFeatureScopeSession {
 	
 	private final AbstractFeatureScopeSession parent;
 	private final FeatureScopes featureScopes;
 	private final ConstructorScopes constructorScopes;
 	private final TypeScopes typeScopes;
-	private int id;
+	private final IResolvedFeatures.Provider resolvedFeaturesProvider;
+	private final int id;
 
 	protected AbstractNestedFeatureScopeSession(AbstractFeatureScopeSession parent) {
 		this.parent = parent;
 		this.featureScopes = parent.getFeatureScopes();
 		this.typeScopes = parent.getTypeScopes();
 		this.constructorScopes = parent.getConstructorScopes();
+		this.resolvedFeaturesProvider = parent.getResolvedFeaturesProvider();
 		this.id = parent.getId() + 1;
 	}
 	
@@ -50,6 +53,11 @@ public abstract class AbstractNestedFeatureScopeSession extends AbstractFeatureS
 	@Override
 	protected FeatureScopes getFeatureScopes() {
 		return featureScopes;
+	}
+	
+	@Override
+	protected IResolvedFeatures.Provider getResolvedFeaturesProvider() {
+		return resolvedFeaturesProvider;
 	}
 	
 	@Override
@@ -66,7 +74,23 @@ public abstract class AbstractNestedFeatureScopeSession extends AbstractFeatureS
 		return parent;
 	}
 	
-	@Nullable
+	@Override
+	public IFeatureScopeSession getNextCaptureLayer() {
+		return parent.getNextCaptureLayer();
+	}
+	
+	@Override
+	public List<JvmDeclaredType> getEnclosingTypes() {
+		return parent.getEnclosingTypes();
+	}
+	
+	@Override
+	public List<JvmDeclaredType> getNestedTypeDeclarators() {
+		return parent.getNestedTypeDeclarators();
+	}
+	
+	/* @Nullable */
+	@Override
 	public IEObjectDescription getLocalElement(QualifiedName name) {
 		return parent.getLocalElement(name);
 	}
@@ -92,6 +116,16 @@ public abstract class AbstractNestedFeatureScopeSession extends AbstractFeatureS
 	}
 	
 	@Override
+	public boolean isInstanceContext() {
+		return parent.isInstanceContext();
+	}
+	
+	@Override
+	public boolean isConstructorContext() {
+		return parent.isConstructorContext();
+	}
+	
+	@Override
 	protected void addExtensionProviders(List<ExpressionBucket> result) {
 		parent.addExtensionProviders(result);
 	}
@@ -101,8 +135,14 @@ public abstract class AbstractNestedFeatureScopeSession extends AbstractFeatureS
 		return id;
 	}
 	
-	public boolean isVisible(JvmFeature feature) {
-		return parent.isVisible(feature);
+	@Override
+	public boolean isVisible(JvmMember member) {
+		return parent.isVisible(member);
+	}
+	
+	@Override
+	public boolean isVisible(JvmMember member, /* @Nullable */ LightweightTypeReference receiverType, /* @Nullable */ JvmIdentifiableElement receiverFeature) {
+		return parent.isVisible(member, receiverType, receiverFeature);
 	}
 	
 }

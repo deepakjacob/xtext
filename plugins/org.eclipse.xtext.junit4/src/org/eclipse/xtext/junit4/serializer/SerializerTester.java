@@ -20,21 +20,23 @@ import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.acceptor.DelegatingSequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.ISemanticSequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.ISequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.ISyntacticSequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.StringBufferSequenceAcceptor;
 import org.eclipse.xtext.serializer.acceptor.WhitespaceAddingSequenceAcceptor;
-import org.eclipse.xtext.serializer.analysis.Context2NameFunction;
 import org.eclipse.xtext.serializer.diagnostic.ISerializationDiagnostic;
 import org.eclipse.xtext.serializer.sequencer.ContextFinder;
 import org.eclipse.xtext.serializer.sequencer.IHiddenTokenSequencer;
 import org.eclipse.xtext.serializer.sequencer.ISemanticSequencer;
 import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 import org.eclipse.xtext.util.EmfFormatter;
+import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
+import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.junit.Assert;
 
 import com.google.common.base.Joiner;
@@ -120,8 +122,10 @@ public class SerializerTester {
 				String oldURI = semanticObject.eResource().getURIFragment(semanticObject);
 				List<Pair<EObject, ICompositeNode>> nodes = detachNodeModel(semanticObject);
 				String serialized = serializeWithoutNodeModel(semanticObject);
-				String newtext = oldtext.substring(0, oldNode.getOffset()) + serialized
-						+ oldtext.substring(oldNode.getOffset() + oldNode.getLength());
+
+				ITextRegion oldRegion = oldNode.getTextRegion();
+				String newtext = oldtext.substring(0, oldRegion.getOffset()) + serialized
+						+ oldtext.substring(oldRegion.getOffset() + oldRegion.getLength());
 				EObject newmodel = parseHelper.parse(newtext, semanticObject.eResource().getResourceSet());
 				parsed = newmodel.eResource().getEObject(oldURI);
 				reattachNodes(nodes);
@@ -165,12 +169,12 @@ public class SerializerTester {
 		return result;
 	}
 
-	protected EObject getContext(EObject semanticObject) {
-		Iterable<EObject> contexts = contextFinder.findContextsByContentsAndContainer(semanticObject, null);
+	protected ISerializationContext getContext(EObject semanticObject) {
+		Iterable<ISerializationContext> contexts = contextFinder.findByContentsAndContainer(semanticObject, null);
 		if (Iterables.size(contexts) != 1) {
 			StringBuilder msg = new StringBuilder();
 			msg.append("One context is expected, but " + Iterables.size(contexts) + " have been found\n");
-			msg.append("Contexts: " + Joiner.on(", ").join(Iterables.transform(contexts, new Context2NameFunction())));
+			msg.append("Contexts: " + Joiner.on(", ").join(contexts));
 			msg.append("Semantic Object: " + EmfFormatter.objPath(semanticObject));
 			Assert.fail(msg.toString());
 		}
@@ -209,7 +213,7 @@ public class SerializerTester {
 			}
 			out = debug = new DebugSequenceAcceptor(out);
 			semantic.init((ISemanticSequenceAcceptor) syntactic, errors);
-			EObject context = getContext(semanticObject);
+			ISerializationContext context = getContext(semanticObject);
 			syntactic.init(context, semanticObject, (ISyntacticSequenceAcceptor) hidden, errors);
 			hidden.init(context, semanticObject, out, errors);
 			semantic.createSequence(context, semanticObject);
@@ -219,7 +223,8 @@ public class SerializerTester {
 				System.out.println("Serializer debug output:");
 				System.out.println(debug.toString());
 			}
-			throw new RuntimeException(t);
+			Exceptions.sneakyThrow(t);
+			return "";
 		}
 	}
 

@@ -40,6 +40,7 @@ public class PreferenceStoreAccessTest extends Assert implements IPreferenceStor
 	private static final String LANGUAGE_ID = "org.xtext.MyLanguage";
 	private IPreferenceStoreAccess preferenceStoreAccess;
 
+	@Override
 	public void initialize(IPreferenceStoreAccess access) {
 		access.getWritablePreferenceStore().setDefault("someBoolean", true);
 	}
@@ -83,6 +84,8 @@ public class PreferenceStoreAccessTest extends Assert implements IPreferenceStor
 	
 	@SuppressWarnings("deprecation")
 	@Test public void testScopeWithAnotherInstance() {
+		// ensure initialization
+		getWritable();
 		ScopedPreferenceStore scopedPreferenceStore = new ScopedPreferenceStore(new ConfigurationScope(), LANGUAGE_ID);
 		assertTrue(scopedPreferenceStore.getBoolean("someBoolean"));
 	}
@@ -105,6 +108,7 @@ public class PreferenceStoreAccessTest extends Assert implements IPreferenceStor
 	@Test public void testScopedEvents() {
 		final List<String> keys = Lists.newArrayList();
 		getReadable().addPropertyChangeListener(new IPropertyChangeListener() {
+			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				keys.add(event.getProperty());
 			}
@@ -119,6 +123,7 @@ public class PreferenceStoreAccessTest extends Assert implements IPreferenceStor
 			IProject project = IResourcesSetupUtil.createProject("test");
 			final List<String> keys = Lists.newArrayList();
 			preferenceStoreAccess.getContextPreferenceStore(project).addPropertyChangeListener(new IPropertyChangeListener() {
+				@Override
 				public void propertyChange(PropertyChangeEvent event) {
 					keys.add(event.getProperty());
 				}

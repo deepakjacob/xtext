@@ -8,20 +8,19 @@
 package org.eclipse.xtext.xbase.scoping.batch;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmExecutable;
-import org.eclipse.xtext.common.types.JvmField;
 import org.eclipse.xtext.common.types.JvmFormalParameter;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
-import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
@@ -41,7 +40,6 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public abstract class BucketedEObjectDescription extends EObjectDescription implements IIdentifiableElementDescription {
 
 	private final int bucketId;
@@ -54,46 +52,59 @@ public abstract class BucketedEObjectDescription extends EObjectDescription impl
 		this.visible = visible;
 	}
 
+	@Override
 	public String getShadowingKey() {
 		EObject object = getEObjectOrProxy();
 		if (object instanceof JvmIdentifiableElement) {
 			JvmIdentifiableElement identifiable = (JvmIdentifiableElement) object;
 			StringBuilder builder = new StringBuilder(identifiable.getSimpleName());
-			if (object instanceof JvmExecutable) {
-				JvmExecutable executable = (JvmExecutable) object;
-				builder.append('(');
-				boolean first = true;
-				for(JvmFormalParameter parameter: executable.getParameters()) {
-					if (!first) {
-						builder.append(',');
-					} else {
-						first = false;
-					}
-					if (parameter.getParameterType() != null && parameter.getParameterType().getType() != null)
-						builder.append(parameter.getParameterType().getType().getIdentifier());
-					else
-						builder.append("null");
-				}
-				builder.append(')');
-			}
-			if (getImplicitFirstArgument() != null) {
-				builder.append(":implicitFirstArgument");
-			}
-			if (isVisible()) {
-				builder.append('+');
-			} else {
-				builder.append('-');
-			}
+			computeShadowingKey(identifiable, builder);
 			return builder.toString();
 		}
 		return getName().toString() + (isVisible() ? '+' : '-');
 	}
+
+	protected void computeShadowingKey(JvmIdentifiableElement identifiable, StringBuilder result) {
+		if (identifiable instanceof JvmExecutable) {
+			JvmExecutable executable = (JvmExecutable) identifiable;
+			result.append('(');
+			boolean first = true;
+			for(JvmFormalParameter parameter: executable.getParameters()) {
+				if (!first) {
+					result.append(',');
+				} else {
+					first = false;
+				}
+				if (parameter.getParameterType() != null && parameter.getParameterType().getType() != null)
+					result.append(parameter.getParameterType().getType().getIdentifier());
+				else
+					result.append("null");
+			}
+			result.append(')');
+		}
+		if (getImplicitFirstArgument() != null) {
+			result.append(":implicitFirstArgument");
+		}
+		if (getImplicitReceiver() != null) {
+			result.append(":implicitReceiver");
+		}
+		if (isTypeLiteral()) {
+			result.append(":typeLiteral");
+		}
+		if (isVisible()) {
+			result.append('+');
+		} else {
+			result.append('-');
+		}
+	}
 	
+	@Override
 	public int getBucketId() {
 		return bucketId;
 	}
 
-	@Nullable
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getImplicitReceiverType() {
 		return null;
 	}
@@ -102,67 +113,118 @@ public abstract class BucketedEObjectDescription extends EObjectDescription impl
 	 * Returns the actual receiver of this (potential) feature call. It may be <code>null</code>
 	 * even though there is a syntactic receiver available (in case of static features).
 	 */
-	@Nullable
+	/* @Nullable */
+	@Override
 	public XExpression getImplicitReceiver() {
 		return null;
 	}
 	
+	@Override
 	public Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getImplicitReceiverTypeParameterMapping() {
 		return Collections.emptyMap();
 	}
 	
-	@Nullable
+	@Override
+	public EnumSet<ConformanceHint> getImplicitReceiverConformanceHints() {
+		return ConformanceHint.fromFlags(getImplicitReceiverConformanceFlags());
+	}
+	
+	@Override
+	public int getImplicitReceiverConformanceFlags() {
+		return ConformanceFlags.NONE;
+	}
+	
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getSyntacticReceiverType() {
 		return null;
 	}
 	
-	@Nullable
+	/* @Nullable */
+	@Override
 	public XExpression getSyntacticReceiver() {
 		return null;
 	}
 	
+	@Override
+	public boolean isSyntacticReceiverPossibleArgument() {
+		return true;
+	}
+	
+	@Override
 	public Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getSyntacticReceiverTypeParameterMapping() {
 		return Collections.emptyMap();
 	}
 	
+	@Override
+	public EnumSet<ConformanceHint> getSyntacticReceiverConformanceHints() {
+		return ConformanceHint.fromFlags(getSyntacticReceiverConformanceFlags());
+	}
+	
+	@Override
+	public int getSyntacticReceiverConformanceFlags() {
+		return ConformanceFlags.NONE;
+	}
+	
+	@Override
 	public boolean isVisible() {
 		return visible;
 	}
 
-	public boolean isStatic() {
-		JvmIdentifiableElement identifiable = getElementOrProxy();
-		if (identifiable instanceof JvmField)
-			return ((JvmField) identifiable).isStatic();
-		if (identifiable instanceof JvmOperation)
-			return ((JvmOperation) identifiable).isStatic();
-		return false;
-	}
-	
 	@Override
 	public String toString() {
-		return getElementOrProxy().getIdentifier();
+		return String.format("%s:%s [key: %s]", getName(), getElementOrProxy().getIdentifier(), getShadowingKey());
 	}
 
+	@Override
 	public JvmIdentifiableElement getElementOrProxy() {
 		return (JvmIdentifiableElement) getEObjectOrProxy();
 	}
 
-	@Nullable
+	/* @Nullable */
+	@Override
 	public XExpression getImplicitFirstArgument() {
 		return null;
 	}
 
-	@Nullable
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getImplicitFirstArgumentType() {
 		return null;
 	}
-
-	public Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> getImplicitFirstArgumentTypeParameterMapping() {
-		return Collections.emptyMap();
-	}
-
-	public boolean isExtension() {
+	
+	@Override
+	public boolean isTypeLiteral() {
 		return false;
 	}
-
+	
+	@Override
+	public boolean isAnonymousClassConstructorCall() {
+		return false;
+	}
+	
+	@Override
+	public int getNumberOfIrrelevantParameters() {
+		if (isExtension())
+			return 1;
+		if (getImplicitFirstArgument() != null)
+			return 1;
+		return 0;
+	}
+	
+	@Override
+	public int getNumberOfParameters() {
+		JvmIdentifiableElement elementOrProxy = getElementOrProxy();
+		if (elementOrProxy instanceof JvmExecutable) {
+			int parameters = ((JvmExecutable) elementOrProxy).getParameters().size() - getNumberOfIrrelevantParameters();
+			return parameters;
+		}
+		return 0;
+	}
+	
+	@Override
+	public boolean isValidStaticState() {
+		return true;
+	}
+	
 }

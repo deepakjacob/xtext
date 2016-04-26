@@ -47,24 +47,25 @@
 	</macrodef>
 
 	<target name="zip_all_examples">
-		<zip_tutorial name="org.eclipse.xtext.example.tutorial" />
-		<zip_tutorial name="org.eclipse.xtext.example.tutorial.tests" />
-		<zip_tutorial name="org.eclipse.xtext.example.tutorial.ui" />
-		<zip_conference_tutorial conference="jax2012-xtext-tutorial"/>
 		<!-- run task "generate_self" to compose the list below -->
 		<zip_example name="org.eclipse.xtext.example.arithmetics" />
 		<zip_example name="org.eclipse.xtext.example.arithmetics.tests" />
+		<zip_example name="org.eclipse.xtext.example.arithmetics.ide" />
 		<zip_example name="org.eclipse.xtext.example.arithmetics.ui" />
+		<zip_example name="org.eclipse.xtext.example.arithmetics.ui.tests" />
 		<zip_example name="org.eclipse.xtext.example.domainmodel" />
 		<zip_example name="org.eclipse.xtext.example.domainmodel.tests" />
 		<zip_example name="org.eclipse.xtext.example.domainmodel.ui" />
 		<zip_example name="org.eclipse.xtext.example.fowlerdsl" />
 		<zip_example name="org.eclipse.xtext.example.fowlerdsl.ui" />
+		<zip_example name="org.eclipse.xtext.example.homeautomation" />
+		<zip_example name="org.eclipse.xtext.example.homeautomation.tests" />
+		<zip_example name="org.eclipse.xtext.example.homeautomation.ide" />
+		<zip_example name="org.eclipse.xtext.example.homeautomation.ui" />
 		<zip_example name="xbase.tutorial" />
 	</target>
 
 	<target name="generate_self">
-		<echo message="Don't add the xtext.example.tutorial by accident"/>
 		<exec executable="bash">
 			<arg value="-c" />
 			<arg value="for i in `ls ${source}`; do echo &quot;&lt;zip_example name=\&quot;$i\&quot; /&gt;&quot;; done" />

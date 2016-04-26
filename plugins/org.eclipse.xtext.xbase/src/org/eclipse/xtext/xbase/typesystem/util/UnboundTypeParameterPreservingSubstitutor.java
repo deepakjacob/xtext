@@ -8,20 +8,23 @@
 package org.eclipse.xtext.xbase.typesystem.util;
 
 import java.util.Map;
+import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
+
+import com.google.common.collect.Sets;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
-public class UnboundTypeParameterPreservingSubstitutor extends TypeParameterSubstitutor<Object> {
+public class UnboundTypeParameterPreservingSubstitutor extends TypeParameterSubstitutor<Set<JvmTypeParameter>> {
 	
 	public UnboundTypeParameterPreservingSubstitutor(Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> typeParameterMapping,
 			ITypeReferenceOwner owner) {
@@ -29,14 +32,41 @@ public class UnboundTypeParameterPreservingSubstitutor extends TypeParameterSubs
 	}
 
 	@Override
-	public LightweightTypeReference doVisitUnboundTypeReference(UnboundTypeReference reference,
-			Object param) {
+	protected LightweightTypeReference doVisitUnboundTypeReference(UnboundTypeReference reference,
+			Set<JvmTypeParameter> visiting) {
 		return reference.copyInto(getOwner());
 	}
 
 	@Override
-	protected Object createVisiting() {
-		return new Object();
+	/* @Nullable */
+	protected LightweightTypeReference getBoundTypeArgument(ParameterizedTypeReference reference, JvmTypeParameter type, Set<JvmTypeParameter> visiting) {
+		LightweightMergedBoundTypeArgument boundTypeArgument = getTypeParameterMapping().get(type);
+		if (boundTypeArgument != null) {
+			LightweightTypeReference boundReference = boundTypeArgument.getTypeReference();
+			if (boundReference != null && reference != boundReference) {
+				if (boundReference instanceof UnboundTypeReference)
+					return boundReference.copyInto(getOwner());
+				JvmType boundType = boundReference.getType();
+				if (boundType != type) {
+					if (visiting.add(type)) {
+						try {
+							LightweightTypeReference result = boundReference.accept(this, visiting);
+							return result;
+						} finally {
+							visiting.remove(type);
+						}
+					} else {
+						return reference;
+					}
+				} 
+			}
+		}
+		return null;
+	}
+
+	@Override
+	protected Set<JvmTypeParameter> createVisiting() {
+		return Sets.newHashSetWithExpectedSize(3);
 	}
 	
 }

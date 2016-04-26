@@ -4,14 +4,13 @@
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.ui;
 
-import org.eclipse.xtext.ui.DefaultUiModule;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * Manual modifications go to {org.eclipse.xtext.ui.tests.editor.contentassist.ui.Bug377311TestLanguageUiModule}
  */
 @SuppressWarnings("all")
-public abstract class AbstractBug377311TestLanguageUiModule extends DefaultUiModule {
+public abstract class AbstractBug377311TestLanguageUiModule extends org.eclipse.xtext.ui.DefaultUiModule {
 	
 	public AbstractBug377311TestLanguageUiModule(AbstractUIPlugin plugin) {
 		super(plugin);

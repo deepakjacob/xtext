@@ -36,6 +36,11 @@ public class ExtractVariableWizard extends RefactoringWizard {
 		addPage(new UserInputPage((ExtractVariableRefactoring) getRefactoring()));
 	}
 	
+	@Override
+	public String getWindowTitle() {
+		return "Extract Local Variable";
+	}
+	
 	protected static class UserInputPage extends UserInputWizardPage {
 
 		private final ExtractVariableRefactoring refactoring;
@@ -49,6 +54,7 @@ public class ExtractVariableWizard extends RefactoringWizard {
 			this.refactoring = refactoring;
 		}
 
+		@Override
 		public void createControl(Composite parent) {
 			Composite composite= new Composite(parent, SWT.NONE);
 			GridLayout layout = new GridLayout(2, false);
@@ -67,6 +73,7 @@ public class ExtractVariableWizard extends RefactoringWizard {
 			nameField.setFont(composite.getFont());
 			nameField.setLayoutData(new GridData(GridData.FILL, GridData.BEGINNING, true, false));
 			nameField.addModifyListener(new ModifyListener() {
+				@Override
 				public void modifyText(ModifyEvent e) {
 					validatePage();
 				}

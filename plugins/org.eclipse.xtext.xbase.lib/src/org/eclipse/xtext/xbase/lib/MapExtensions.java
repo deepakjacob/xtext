@@ -84,6 +84,7 @@ import com.google.common.collect.Maps;
 		if (predicate == null)
 			throw new NullPointerException("predicate");
 		return Maps.filterEntries(original, new Predicate<Map.Entry<K, V>>() {
+			@Override
 			public boolean apply(Map.Entry<K, V> input) {
 				Boolean result = predicate.apply(input.getKey(), input.getValue());
 				return result.booleanValue();
@@ -103,8 +104,9 @@ import com.google.common.collect.Maps;
 	 * @param transformation
 	 *            the transformation. May not be <code>null</code>.
 	 * @return a map with equal keys but transformed values. Never <code>null</code>.
+	 * @since 2.4
 	 */
-	public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> original, Function1<? super V1, V2> transformation) {
+	public static <K, V1, V2> Map<K, V2> mapValues(Map<K, V1> original, Function1<? super V1, ? extends V2> transformation) {
 		return Maps.transformValues(original, new FunctionDelegate<V1, V2>(transformation));
 	}
 	

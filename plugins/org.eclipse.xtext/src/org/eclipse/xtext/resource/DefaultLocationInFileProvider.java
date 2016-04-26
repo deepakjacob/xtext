@@ -16,9 +16,6 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.Action;
 import org.eclipse.xtext.GrammarUtil;
@@ -30,6 +27,7 @@ import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.parsetree.reconstr.IHiddenTokenHelper;
 import org.eclipse.xtext.util.ITextRegion;
+import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 import org.eclipse.xtext.util.TextRegionWithLineInformation;
 
 import com.google.common.collect.Lists;
@@ -44,10 +42,12 @@ public class DefaultLocationInFileProvider implements ILocationInFileProvider, I
 	@Inject(optional = true)
 	private IHiddenTokenHelper hiddenTokenHelper;
 	
+	@Override
 	public ITextRegion getSignificantTextRegion(EObject obj) {
 		return getTextRegion(obj, true);
 	}
 
+	@Override
 	public ITextRegion getFullTextRegion(EObject obj) {
 		return getTextRegion(obj, false);
 	}
@@ -59,8 +59,9 @@ public class DefaultLocationInFileProvider implements ILocationInFileProvider, I
 	/**
 	 * @since 2.3
 	 */
-	@Nullable
-	public ITextRegion getTextRegion(@NonNull EObject object, @NonNull RegionDescription query) {
+	/* @Nullable */
+	@Override
+	public ITextRegion getTextRegion(/* @NonNull */ EObject object, /* @NonNull */ RegionDescription query) {
 		switch(query) {
 			// we delegate the implementation to the existing and potentially overridden methods
 			case SIGNIFICANT: return getSignificantTextRegion(object);
@@ -73,7 +74,7 @@ public class DefaultLocationInFileProvider implements ILocationInFileProvider, I
 	/**
 	 * @since 2.3
 	 */
-	protected ITextRegion doGetTextRegion(EObject obj, @NonNull RegionDescription query) {
+	protected ITextRegion doGetTextRegion(EObject obj, /* @NonNull */ RegionDescription query) {
 		ICompositeNode node = findNodeFor(obj);
 		if (node == null) {
 			if (obj.eContainer() == null)
@@ -88,10 +89,12 @@ public class DefaultLocationInFileProvider implements ILocationInFileProvider, I
 		return createRegion(nodes, query);
 	}
 	
+	@Override
 	public ITextRegion getSignificantTextRegion(final EObject owner, EStructuralFeature feature, final int indexInList) {
 		return getTextRegion(owner, feature, indexInList, true);
 	}
 
+	@Override
 	public ITextRegion getFullTextRegion(EObject owner, EStructuralFeature feature, int indexInList) {
 		return getTextRegion(owner, feature, indexInList, false);
 	}
@@ -99,8 +102,8 @@ public class DefaultLocationInFileProvider implements ILocationInFileProvider, I
 	/**
 	 * @since 2.3
 	 */
-	@NonNullByDefault
-	@Nullable
+	/* @Nullable */
+	@Override
 	public ITextRegion getTextRegion(EObject object, EStructuralFeature feature, int indexInList,
 			RegionDescription query) {
 		switch(query) {
@@ -249,9 +252,10 @@ public class DefaultLocationInFileProvider implements ILocationInFileProvider, I
 		ITextRegion result = ITextRegion.EMPTY_REGION;
 		for (INode node : nodes) {
 			if (!isHidden(node)) {
-				int length = node.getLength();
-				if (length != 0)
-					result = result.merge(new TextRegionWithLineInformation(node.getOffset(), length, node.getStartLine() - 1, node.getEndLine() - 1));
+				ITextRegionWithLineInformation region = node.getTextRegionWithLineInformation();
+				if (region.getLength() != 0) {
+					result = result.merge(toZeroBasedRegion(region));
+				}
 			}
 		}
 		return result;
@@ -267,13 +271,21 @@ public class DefaultLocationInFileProvider implements ILocationInFileProvider, I
 		for (INode node : nodes) {
 			for(INode leafNode: node.getLeafNodes()) {
 				if (!isHidden(leafNode, query)) {
-					int length = leafNode.getLength();
-					if (length != 0)
-						result = result.merge(new TextRegionWithLineInformation(leafNode.getOffset(), length, leafNode.getStartLine() - 1, leafNode.getEndLine() - 1));
+					ITextRegionWithLineInformation region = leafNode.getTextRegionWithLineInformation();
+					if (region.getLength() != 0) {
+						result = result.merge(toZeroBasedRegion(region));
+					}
 				}
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * @since 2.5
+	 */
+	protected TextRegionWithLineInformation toZeroBasedRegion(ITextRegionWithLineInformation region) {
+		return new TextRegionWithLineInformation(region.getOffset(), region.getLength(), region.getLineNumber() - 1, region.getEndLineNumber() - 1);
 	}
 
 	/**

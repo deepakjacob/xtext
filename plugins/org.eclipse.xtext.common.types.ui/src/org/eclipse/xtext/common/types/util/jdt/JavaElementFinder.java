@@ -25,6 +25,8 @@ import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.common.types.JvmPrimitiveType;
+import org.eclipse.xtext.common.types.JvmType;
+import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.common.types.access.jdt.IJavaProjectProvider;
 import org.eclipse.xtext.common.types.util.TypesSwitch;
 
@@ -38,6 +40,7 @@ public class JavaElementFinder implements IJavaElementFinder {
 	@Inject
 	private IJavaProjectProvider projectProvider;
 	
+	@Override
 	public IJavaElement findElementFor(JvmIdentifiableElement element) {
 		return internalFindElementFor(element, false);
 	}
@@ -45,6 +48,7 @@ public class JavaElementFinder implements IJavaElementFinder {
 	/**
 	 * @since 2.3
 	 */
+	@Override
 	public IJavaElement findExactElementFor(JvmIdentifiableElement element) {
 		return internalFindElementFor(element, true);
 	}
@@ -159,10 +163,10 @@ public class JavaElementFinder implements IJavaElementFinder {
 				JvmFormalParameter formalParameter = object.getParameters().get(i);
 				String parameterType = parameterTypes[i];
 				String readable = toQualifiedRawTypeName(parameterType, declaringType);
-				String qualifiedParameterType = formalParameter.getParameterType().getType().getQualifiedName('.');
+				String qualifiedParameterType = getQualifiedParameterType(formalParameter);
 				if (!readable.equals(qualifiedParameterType)) {
 					// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=387576
-					if (qualifiedParameterType.endsWith("$") && qualifiedParameterType.startsWith(readable)) {
+					if (qualifiedParameterType != null && qualifiedParameterType.endsWith("$") && qualifiedParameterType.startsWith(readable)) {
 						for(int c = readable.length(); c < qualifiedParameterType.length() && match; c++) {
 							if (qualifiedParameterType.charAt(c) != '$') {
 								match = false;
@@ -174,6 +178,16 @@ public class JavaElementFinder implements IJavaElementFinder {
 				}
 			}
 			return match;
+		}
+
+		private String getQualifiedParameterType(JvmFormalParameter formalParameter) {
+			JvmTypeReference parameterType = formalParameter.getParameterType();
+			if (parameterType == null)
+				return null;
+			JvmType type = parameterType.getType();
+			if (type == null)
+				return null;
+			return type.getQualifiedName('.');
 		}
 		
 		private String toQualifiedRawTypeName(String parameterType, IType context) throws JavaModelException {

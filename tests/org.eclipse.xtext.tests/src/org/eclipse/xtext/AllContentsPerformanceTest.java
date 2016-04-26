@@ -63,13 +63,13 @@ public class AllContentsPerformanceTest extends AbstractXtextTests {
 	
 	
 	private void doTest(EObject object) {
-		int callCount = 0;
+//		int callCount = 0;
 		for(int i = 0; i < LOOPS; i++) {
 			TreeIterator<Object> iterator = EcoreUtil.getAllContents(object, true);
-			callCount++;
+//			callCount++;
 			while(iterator.hasNext()) {
 				iterator.next();
-				callCount++;
+//				callCount++;
 			}
 		}
 //		System.out.println(callCount);
@@ -78,6 +78,7 @@ public class AllContentsPerformanceTest extends AbstractXtextTests {
 	private void doTestUoW(EObject object) throws Exception {
 		final int callCount[] = new int[]{0};
 		IUnitOfWork<Boolean, EObject> uow = new IUnitOfWork<Boolean, EObject>(){
+			@Override
 			public Boolean exec(EObject state) throws Exception {
 				callCount[0]++;
 				return false;

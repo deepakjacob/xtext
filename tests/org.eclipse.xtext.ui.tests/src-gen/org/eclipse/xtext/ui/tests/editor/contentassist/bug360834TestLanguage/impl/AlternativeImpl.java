@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl;
 
@@ -24,11 +21,11 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.Rec
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.AlternativeImpl#getName <em>Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.AlternativeImpl#getRootDeclaration <em>Root Declaration</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

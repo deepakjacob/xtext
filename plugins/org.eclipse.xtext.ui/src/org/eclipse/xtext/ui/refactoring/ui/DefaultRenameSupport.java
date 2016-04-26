@@ -9,7 +9,6 @@ package org.eclipse.xtext.ui.refactoring.ui;
 
 import org.apache.log4j.Logger;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
-import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.xtext.resource.IGlobalServiceProvider;
 import org.eclipse.xtext.ui.refactoring.IRenameRefactoringProvider;
 import org.eclipse.xtext.ui.refactoring.impl.AbstractRenameProcessor;
@@ -29,6 +28,7 @@ public class DefaultRenameSupport implements IRenameSupport {
 		@Inject
 		private IGlobalServiceProvider globalServiceProvider;
 
+		@Override
 		public IRenameSupport create(Object context, String newName) {
 			if (context instanceof IRenameElementContext) {
 				IRenameElementContext renameElementContext = (IRenameElementContext) context;
@@ -63,9 +63,6 @@ public class DefaultRenameSupport implements IRenameSupport {
 
 	private IRenameElementContext renameElementContext;
 
-	@Inject
-	private SaveHelper saveHelper;
-	
 	protected boolean initialize(IRenameElementContext renameElementContext, String newName) {
 		if (executerProvider != null && renameRefactoringProvider != null) {
 			this.renameRefactoring = renameRefactoringProvider.getRenameRefactoring(renameElementContext);
@@ -78,8 +75,9 @@ public class DefaultRenameSupport implements IRenameSupport {
 		return false;
 	}
 
+	@Override
 	public void startRefactoringWithDialog(final boolean previewOnly) throws InterruptedException {
-		RenameElementWizard renameElementWizard = new RenameElementWizard(renameRefactoring) {
+		RenameElementWizard renameElementWizard = new RenameElementWizard(renameRefactoring, renameElementContext) {
 			@Override
 			protected void addUserInputPages() {
 				if (!previewOnly) {
@@ -90,12 +88,12 @@ public class DefaultRenameSupport implements IRenameSupport {
 		if (previewOnly) {
 			renameElementWizard.setForcePreviewReview(true);
 		}
-		RefactoringWizardOpenOperation openOperation = new RefactoringWizardOpenOperation(renameElementWizard);
+		RefactoringWizardOpenOperation_NonForking openOperation = new RefactoringWizardOpenOperation_NonForking(renameElementWizard);
 		openOperation.run(renameElementContext.getTriggeringEditor().getSite().getShell(), "Rename Element");
 	}
 
+	@Override
 	public void startDirectRefactoring() throws InterruptedException {
-		saveHelper.saveEditors(renameElementContext);
 		RenameRefactoringExecuter renameRefactoringExecuter = executerProvider.get();
 		renameRefactoringExecuter.execute(renameElementContext.getTriggeringEditor(), renameRefactoring);
 	}

@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.resource.bug385636;
 
@@ -13,11 +10,11 @@ package org.eclipse.xtext.resource.bug385636;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.resource.bug385636.Expression_Equal#getLeft <em>Left</em>}</li>
  *   <li>{@link org.eclipse.xtext.resource.bug385636.Expression_Equal#getRight <em>Right</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.resource.bug385636.Bug385636Package#getExpression_Equal()
  * @model
@@ -34,12 +31,12 @@ public interface Expression_Equal extends Expression
    * </p>
    * <!-- end-user-doc -->
    * @return the value of the '<em>Left</em>' containment reference.
-   * @see #setLeft(Expression_VariableName)
+   * @see #setLeft(Expression)
    * @see org.eclipse.xtext.resource.bug385636.Bug385636Package#getExpression_Equal_Left()
    * @model containment="true"
    * @generated
    */
-  Expression_VariableName getLeft();
+  Expression getLeft();
 
   /**
    * Sets the value of the '{@link org.eclipse.xtext.resource.bug385636.Expression_Equal#getLeft <em>Left</em>}' containment reference.
@@ -49,7 +46,7 @@ public interface Expression_Equal extends Expression
    * @see #getLeft()
    * @generated
    */
-  void setLeft(Expression_VariableName value);
+  void setLeft(Expression value);
 
   /**
    * Returns the value of the '<em><b>Right</b></em>' containment reference.

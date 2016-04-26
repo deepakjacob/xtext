@@ -4,14 +4,13 @@
  */
 package org.eclipse.xtext.ui.tests.editor.bracketmatching.ui;
 
-import org.eclipse.xtext.ui.DefaultUiModule;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
  * Manual modifications go to {org.eclipse.xtext.ui.tests.editor.bracketmatching.ui.BmTestLanguageUiModule}
  */
 @SuppressWarnings("all")
-public abstract class AbstractBmTestLanguageUiModule extends DefaultUiModule {
+public abstract class AbstractBmTestLanguageUiModule extends org.eclipse.xtext.ui.DefaultUiModule {
 	
 	public AbstractBmTestLanguageUiModule(AbstractUIPlugin plugin) {
 		super(plugin);
@@ -74,8 +73,13 @@ public abstract class AbstractBmTestLanguageUiModule extends DefaultUiModule {
 	}
 
 	// contributed by org.eclipse.xtext.generator.builder.BuilderIntegrationFragment
+	public Class<? extends org.eclipse.xtext.generator.IContextualOutputConfigurationProvider> bindIContextualOutputConfigurationProvider() {
+		return org.eclipse.xtext.builder.EclipseOutputConfigurationProvider.class;
+	}
+
+	// contributed by org.eclipse.xtext.generator.builder.BuilderIntegrationFragment
 	public void configureIResourceDescriptionsPersisted(com.google.inject.Binder binder) {
-		binder.bind(org.eclipse.xtext.resource.IResourceDescriptions.class).annotatedWith(com.google.inject.name.Names.named(org.eclipse.xtext.builder.impl.PersistentDataAwareDirtyResource.PERSISTED_DESCRIPTIONS)).to(org.eclipse.xtext.builder.builderState.IBuilderState.class);
+		binder.bind(org.eclipse.xtext.resource.IResourceDescriptions.class).annotatedWith(com.google.inject.name.Names.named(org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider.PERSISTED_DESCRIPTIONS)).to(org.eclipse.xtext.builder.builderState.IBuilderState.class);
 	}
 
 	// contributed by org.eclipse.xtext.generator.builder.BuilderIntegrationFragment

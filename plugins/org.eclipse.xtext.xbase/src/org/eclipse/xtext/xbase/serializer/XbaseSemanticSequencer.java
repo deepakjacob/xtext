@@ -14,17 +14,21 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.Action;
 import org.eclipse.xtext.RuleCall;
+import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmTypeReference;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.IScopeProvider;
+import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.acceptor.SequenceFeeder;
 import org.eclipse.xtext.serializer.diagnostic.SerializationDiagnostic;
 import org.eclipse.xtext.serializer.sequencer.ISemanticNodeProvider.INodesForEObjectProvider;
 import org.eclipse.xtext.serializer.tokens.IValueSerializer;
+import org.eclipse.xtext.serializer.tokens.SerializerScopeProviderBinding;
 import org.eclipse.xtext.xbase.XAssignment;
 import org.eclipse.xtext.xbase.XBinaryOperation;
 import org.eclipse.xtext.xbase.XClosure;
@@ -61,6 +65,7 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 	private IQualifiedNameConverter qualifiedNameConverter;
 
 	@Inject
+	@SerializerScopeProviderBinding
 	private IScopeProvider scopeProvider;
 	
 	@Inject
@@ -80,9 +85,9 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 	 *     )
 	 */
 	@Override
-	protected void sequence_XAdditiveExpression_XAndExpression_XAssignment_XEqualityExpression_XMultiplicativeExpression_XOrExpression_XOtherOperatorExpression_XRelationalExpression(EObject context, XBinaryOperation operation) {
+	protected void sequence_XAdditiveExpression_XAndExpression_XAssignment_XEqualityExpression_XMultiplicativeExpression_XOrExpression_XOtherOperatorExpression_XRelationalExpression(ISerializationContext context, XBinaryOperation operation) {
 		INodesForEObjectProvider nodes = createNodeProvider(operation);
-		SequenceFeeder acceptor = createSequencerFeeder(operation, nodes);
+		SequenceFeeder acceptor = createSequencerFeeder(context, operation, nodes);
 		XAdditiveExpressionElements opAdd = grammarAccess.getXAdditiveExpressionAccess();
 		XMultiplicativeExpressionElements opMulti = grammarAccess.getXMultiplicativeExpressionAccess();
 		XOtherOperatorExpressionElements opOther = grammarAccess.getXOtherOperatorExpressionAccess();
@@ -92,11 +97,17 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 		XOrExpressionElements opOr = grammarAccess.getXOrExpressionAccess();
 		XAssignmentElements opMultiAssign = grammarAccess.getXAssignmentAccess();
 		
-		IScope scope = scopeProvider.getScope(operation, XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE);
+		JvmIdentifiableElement feature = operation.getFeature();
 		Set<String> operatorNames = Sets.newHashSet();
-		for (IEObjectDescription desc : scope.getElements(operation.getFeature()))
-			operatorNames.add(qualifiedNameConverter.toString(desc.getName()));
-				
+		if (feature.eIsProxy()) {
+			List<INode> ops = NodeModelUtils.findNodesForFeature(operation, XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE);
+			for (INode o : ops)
+				operatorNames.add(NodeModelUtils.getTokenText(o));
+		} else {
+			IScope scope = scopeProvider.getScope(operation, XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE);
+			for (IEObjectDescription desc : scope.getElements(feature))
+				operatorNames.add(qualifiedNameConverter.toString(desc.getName()));
+		}
 		ICompositeNode featureNode = (ICompositeNode) nodes.getNodeForSingelValue(XbasePackage.Literals.XABSTRACT_FEATURE_CALL__FEATURE, operation.getFeature());
 		String featureToken;
 		
@@ -133,7 +144,7 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 			acceptor.accept(opMultiAssign.getFeatureJvmIdentifiableElementOpMultiAssignParserRuleCall_1_1_0_0_1_0_1(), operation.getFeature(), featureToken, featureNode);
 			acceptor.accept(opMultiAssign.getRightOperandXAssignmentParserRuleCall_1_1_1_0(), operation.getRightOperand());
 		} else if (errorAcceptor != null) {
-			errorAcceptor.accept(new SerializationDiagnostic(OPERATOR_NOT_SUPPORTED, operation, context, "Operator "+operatorNames+" is not supported."));
+			errorAcceptor.accept(new SerializationDiagnostic(OPERATOR_NOT_SUPPORTED, operation, context, grammarAccess.getGrammar(), "Operator "+operatorNames+" is not supported."));
 		} 
 		acceptor.finish();
 	}
@@ -170,37 +181,33 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 	 *    declaringType[0, 1]
 	 */
 	@Override
-	protected void sequence_XFeatureCall(EObject context, XFeatureCall featureCall) {
+	protected void sequence_XFeatureCall(ISerializationContext context, XFeatureCall featureCall) {
 		INodesForEObjectProvider nodes = createNodeProvider(featureCall);
-		SequenceFeeder acceptor = createSequencerFeeder(featureCall, nodes);
+		SequenceFeeder acceptor = createSequencerFeeder(context, featureCall, nodes);
 		XFeatureCallElements featureCallElements = grammarAccess.getXFeatureCallAccess();
-
-		// declaringType=[JvmDeclaredType|StaticQualifier]?
-		if (featureCall.getDeclaringType() != null)
-			acceptor.accept(featureCallElements.getDeclaringTypeJvmDeclaredTypeStaticQualifierParserRuleCall_1_0_1(), featureCall.getDeclaringType());
 
 		// (typeArguments+=JvmArgumentTypeReference typeArguments+=JvmArgumentTypeReference*)?
 		List<JvmTypeReference> typeArguments = featureCall.getTypeArguments();
 		if (!typeArguments.isEmpty()) {
-			acceptor.accept(featureCallElements.getTypeArgumentsJvmArgumentTypeReferenceParserRuleCall_2_1_0(), typeArguments.get(0), 0);
+			acceptor.accept(featureCallElements.getTypeArgumentsJvmArgumentTypeReferenceParserRuleCall_1_1_0(), typeArguments.get(0), 0);
 			for (int i = 1; i < typeArguments.size(); i++)
-				acceptor.accept(featureCallElements.getTypeArgumentsJvmArgumentTypeReferenceParserRuleCall_2_2_1_0(), typeArguments.get(i), i);
+				acceptor.accept(featureCallElements.getTypeArgumentsJvmArgumentTypeReferenceParserRuleCall_1_2_1_0(), typeArguments.get(i), i);
 		}
 
 		// feature=[JvmIdentifiableElement|IdOrSuper]
-		acceptor.accept(featureCallElements.getFeatureJvmIdentifiableElementIdOrSuperParserRuleCall_3_0_1(), featureCall.getFeature());
+		acceptor.accept(featureCallElements.getFeatureJvmIdentifiableElementIdOrSuperParserRuleCall_2_0_1(), featureCall.getFeature());
 
 		// (explicitOperationCall?='(' (featureCallArguments+=XShortClosure | (featureCallArguments+=XExpression featureCallArguments+=XExpression*))?)? featureCallArguments+=XClosure?
 		if (featureCall.isExplicitOperationCallOrBuilderSyntax()) {
 			if (featureCall.isExplicitOperationCall())
-				acceptor.accept(featureCallElements.getExplicitOperationCallLeftParenthesisKeyword_4_0_0());
+				acceptor.accept(featureCallElements.getExplicitOperationCallLeftParenthesisKeyword_3_0_0());
 			List<XExpression> arguments = featureCall.getFeatureCallArguments();
 			if (!arguments.isEmpty()) {
 				if (featureCall.isExplicitOperationCall() && isXShortClosureAndBuilderSyntax(arguments, XbasePackage.Literals.XFEATURE_CALL__FEATURE_CALL_ARGUMENTS, nodes)) {
-					acceptor.accept(featureCallElements.getFeatureCallArgumentsXShortClosureParserRuleCall_4_1_0_0(), arguments.get(0), 0);
-					acceptor.accept(featureCallElements.getFeatureCallArgumentsXClosureParserRuleCall_5_0(), arguments.get(1), 1);
+					acceptor.accept(featureCallElements.getFeatureCallArgumentsXShortClosureParserRuleCall_3_1_0_0(), arguments.get(0), 0);
+					acceptor.accept(featureCallElements.getFeatureCallArgumentsXClosureParserRuleCall_4_0(), arguments.get(1), 1);
 				} else if (featureCall.isExplicitOperationCall() && isXShortClosure(featureCall, XbasePackage.Literals.XFEATURE_CALL__FEATURE_CALL_ARGUMENTS, nodes)) {
-					acceptor.accept(featureCallElements.getFeatureCallArgumentsXShortClosureParserRuleCall_4_1_0_0(), arguments.get(0), 0);
+					acceptor.accept(featureCallElements.getFeatureCallArgumentsXShortClosureParserRuleCall_3_1_0_0(), arguments.get(0), 0);
 				} else {
 					int diff = 0;
 					if (isBuilderSyntax(featureCall, XbasePackage.Literals.XFEATURE_CALL__FEATURE_CALL_ARGUMENTS, featureCall.isExplicitOperationCall(), nodes)) {
@@ -208,13 +215,13 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 					}
 					if (featureCall.isExplicitOperationCall()) {
 						if (arguments.size() - diff > 0)
-							acceptor.accept(featureCallElements.getFeatureCallArgumentsXExpressionParserRuleCall_4_1_1_0_0(), arguments.get(0), 0);
+							acceptor.accept(featureCallElements.getFeatureCallArgumentsXExpressionParserRuleCall_3_1_1_0_0(), arguments.get(0), 0);
 						for (int i = 1; i < arguments.size() - diff; i++)
-							acceptor.accept(featureCallElements.getFeatureCallArgumentsXExpressionParserRuleCall_4_1_1_1_1_0(), arguments.get(i), i);
+							acceptor.accept(featureCallElements.getFeatureCallArgumentsXExpressionParserRuleCall_3_1_1_1_1_0(), arguments.get(i), i);
 					}
 					if (diff != 0) {
 						int lastIdx = arguments.size() - 1;
-						acceptor.accept(featureCallElements.getFeatureCallArgumentsXClosureParserRuleCall_5_0(), arguments.get(lastIdx), lastIdx);
+						acceptor.accept(featureCallElements.getFeatureCallArgumentsXClosureParserRuleCall_4_0(), arguments.get(lastIdx), lastIdx);
 					}
 				}
 			}
@@ -309,19 +316,19 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 	 *         EXCLUDE_IF_SET spreading
 	 */
 	@Override
-	protected void sequence_XMemberFeatureCall(EObject context, XMemberFeatureCall featureCall) {
+	protected void sequence_XMemberFeatureCall(ISerializationContext context, XMemberFeatureCall featureCall) {
 		INodesForEObjectProvider nodes = createNodeProvider(featureCall);
-		SequenceFeeder acceptor = createSequencerFeeder(featureCall, nodes);
+		SequenceFeeder acceptor = createSequencerFeeder(context, featureCall, nodes);
 		XMemberFeatureCallElements memberFeatureCallElements= grammarAccess.getXMemberFeatureCallAccess();
 
 		// memberCallTarget=XMemberFeatureCall_XMemberFeatureCall_1_1_0_0_0
 		acceptor.accept(memberFeatureCallElements.getXMemberFeatureCallMemberCallTargetAction_1_1_0_0_0(), featureCall.getMemberCallTarget());
 
-		// (nullSafe?='?.' | spreading?='*.')?
+		// (nullSafe?='?.' | explicitStatic?='::')?
 		if (featureCall.isNullSafe())
 			acceptor.accept(memberFeatureCallElements.getNullSafeQuestionMarkFullStopKeyword_1_1_0_0_1_1_0());
-		else if (featureCall.isSpreading())
-			acceptor.accept(memberFeatureCallElements.getSpreadingAsteriskFullStopKeyword_1_1_0_0_1_2_0());
+		else if (featureCall.isExplicitStatic())
+			acceptor.accept(memberFeatureCallElements.getExplicitStaticColonColonKeyword_1_1_0_0_1_2_0());
 
 		// (typeArguments+=JvmArgumentTypeReference typeArguments+=JvmArgumentTypeReference*)?
 		List<JvmTypeReference> typeArguments = featureCall.getTypeArguments();
@@ -332,7 +339,7 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 		}
 
 		// feature=[JvmIdentifiableElement|ID]
-		acceptor.accept(memberFeatureCallElements.getFeatureJvmIdentifiableElementValidIDParserRuleCall_1_1_2_0_1(), featureCall.getFeature());
+		acceptor.accept(memberFeatureCallElements.getFeatureJvmIdentifiableElementIdOrSuperParserRuleCall_1_1_2_0_1(), featureCall.getFeature());
 
 		// (explicitOperationCall?='(' (memberCallArguments+=XShortClosure | (memberCallArguments+=XExpression memberCallArguments+=XExpression*))?)? memberCallArguments+=XClosure? 
 		if (featureCall.isExplicitOperationCallOrBuilderSyntax()) {
@@ -376,9 +383,9 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 	 *     )
 	 */
 	@Override
-	protected void sequence_XConstructorCall(EObject context, XConstructorCall constructorCall) {
+	protected void sequence_XConstructorCall(ISerializationContext context, XConstructorCall constructorCall) {
 		INodesForEObjectProvider nodes = createNodeProvider(constructorCall);
-		SequenceFeeder acceptor = createSequencerFeeder(constructorCall, nodes);
+		SequenceFeeder acceptor = createSequencerFeeder(context, constructorCall, nodes);
 		XConstructorCallElements constructorCallElements = grammarAccess.getXConstructorCallAccess();
 
 		// constructor=[types::JvmConstructor|QualifiedName]
@@ -391,32 +398,36 @@ public class XbaseSemanticSequencer extends AbstractXbaseSemanticSequencer {
 			for (int i = 1; i < typeArguments.size(); i++)
 				acceptor.accept(constructorCallElements.getTypeArgumentsJvmArgumentTypeReferenceParserRuleCall_3_2_1_0(), typeArguments.get(i), i);
 		}
+		
 
 		/*
-		 *  (=>'(' 
-		 *    (
-		 *        arguments+=XShortClosure
-		 *      | arguments+=XExpression (',' arguments+=XExpression)*
-		 *    )? 
-		 *  ')')?
-		 *  =>arguments+=XClosure? 
+		 * Constraint:
+		 *      
+		 *     (explicitConstructorCall?='(' (arguments+=XShortClosure | (arguments+=XExpression arguments+=XExpression*))?)? 
+		 *     arguments+=XClosure?
+		 *     
 		 */
+		if (constructorCall.isExplicitConstructorCall()) {
+			acceptor.accept(constructorCallElements.getExplicitConstructorCallLeftParenthesisKeyword_4_0_0());
+		}
 		List<XExpression> arguments = constructorCall.getArguments();
 		if (!arguments.isEmpty()) {
-			if (isXShortClosureAndBuilderSyntax(arguments, XbasePackage.Literals.XCONSTRUCTOR_CALL__ARGUMENTS, nodes)) {
+			if (constructorCall.isExplicitConstructorCall() && isXShortClosureAndBuilderSyntax(arguments, XbasePackage.Literals.XCONSTRUCTOR_CALL__ARGUMENTS, nodes)) {
 				acceptor.accept(constructorCallElements.getArgumentsXShortClosureParserRuleCall_4_1_0_0(), arguments.get(0), 0);
 				acceptor.accept(constructorCallElements.getArgumentsXClosureParserRuleCall_5_0(), arguments.get(1), 1);
-			} else if (isXShortClosure(constructorCall, XbasePackage.Literals.XCONSTRUCTOR_CALL__ARGUMENTS, nodes)) {
+			} else if (constructorCall.isExplicitConstructorCall() && isXShortClosure(constructorCall, XbasePackage.Literals.XCONSTRUCTOR_CALL__ARGUMENTS, nodes)) {
 				acceptor.accept(constructorCallElements.getArgumentsXShortClosureParserRuleCall_4_1_0_0(), arguments.get(0), 0);
 			} else {
 				int diff = 0;
 				if (isBuilderSyntax(arguments, XbasePackage.Literals.XCONSTRUCTOR_CALL__ARGUMENTS, nodes)) {
 					diff = 1;
 				}
-				if (arguments.size() - diff > 0)
-					acceptor.accept(constructorCallElements.getArgumentsXExpressionParserRuleCall_4_1_1_0_0(), arguments.get(0), 0);
-				for (int i = 1; i < arguments.size() - diff; i++)
-					acceptor.accept(constructorCallElements.getArgumentsXExpressionParserRuleCall_4_1_1_1_1_0(), arguments.get(i), i);
+				if (constructorCall.isExplicitConstructorCall()) {
+					if (arguments.size() - diff > 0)
+						acceptor.accept(constructorCallElements.getArgumentsXExpressionParserRuleCall_4_1_1_0_0(), arguments.get(0), 0);
+					for (int i = 1; i < arguments.size() - diff; i++)
+						acceptor.accept(constructorCallElements.getArgumentsXExpressionParserRuleCall_4_1_1_1_1_0(), arguments.get(i), i);
+				}
 				if (diff != 0) {
 					int lastIdx = arguments.size() - 1;
 					acceptor.accept(constructorCallElements.getArgumentsXClosureParserRuleCall_5_0(), arguments.get(lastIdx), lastIdx);

@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.syntacticsequencertest.util;
 
@@ -146,6 +143,21 @@ public class SyntacticsequencertestAdapterFactory extends AdapterFactoryImpl
       public Adapter caseBooleanValues(BooleanValues object)
       {
         return createBooleanValuesAdapter();
+      }
+      @Override
+      public Adapter caseLongAlternative(LongAlternative object)
+      {
+        return createLongAlternativeAdapter();
+      }
+      @Override
+      public Adapter caseActionOnly(ActionOnly object)
+      {
+        return createActionOnlyAdapter();
+      }
+      @Override
+      public Adapter caseFragmentCallerType(FragmentCallerType object)
+      {
+        return createFragmentCallerTypeAdapter();
       }
       @Override
       public Adapter caseAdd0(Add0 object)
@@ -410,6 +422,51 @@ public class SyntacticsequencertestAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createBooleanValuesAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.syntacticsequencertest.LongAlternative <em>Long Alternative</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.syntacticsequencertest.LongAlternative
+   * @generated
+   */
+  public Adapter createLongAlternativeAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.syntacticsequencertest.ActionOnly <em>Action Only</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.syntacticsequencertest.ActionOnly
+   * @generated
+   */
+  public Adapter createActionOnlyAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.serializer.syntacticsequencertest.FragmentCallerType <em>Fragment Caller Type</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see org.eclipse.xtext.serializer.syntacticsequencertest.FragmentCallerType
+   * @generated
+   */
+  public Adapter createFragmentCallerTypeAdapter()
   {
     return null;
   }

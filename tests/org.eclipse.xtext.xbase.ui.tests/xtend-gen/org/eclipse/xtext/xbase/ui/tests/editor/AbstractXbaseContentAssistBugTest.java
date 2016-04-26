@@ -1,5 +1,13 @@
+/**
+ * Copyright (c) 2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ */
 package org.eclipse.xtext.xbase.ui.tests.editor;
 
+import com.google.common.base.Objects;
 import com.google.inject.Injector;
 import java.io.InputStream;
 import org.eclipse.core.resources.IProject;
@@ -13,12 +21,14 @@ import org.eclipse.xtext.junit4.ui.util.JavaProjectSetupUtil;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 import org.eclipse.xtext.xbase.lib.Exceptions;
-import org.eclipse.xtext.xbase.lib.ObjectExtensions;
 import org.eclipse.xtext.xbase.ui.tests.AbstractXbaseUITestCase;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
+/**
+ * @author Sebastian Zarnekow - Initial contribution and API
+ */
 @SuppressWarnings("all")
 public class AbstractXbaseContentAssistBugTest extends AbstractXbaseUITestCase implements IJavaProjectProvider {
   private IProject demandCreateProject;
@@ -37,31 +47,25 @@ public class AbstractXbaseContentAssistBugTest extends AbstractXbaseUITestCase i
     JavaProjectSetupUtil.deleteProject(AbstractXbaseContentAssistBugTest.staticProject);
   }
   
+  @Override
   public void tearDown() throws Exception {
-    boolean _notEquals = ObjectExtensions.operator_notEquals(this.demandCreateProject, null);
+    boolean _notEquals = (!Objects.equal(this.demandCreateProject, null));
     if (_notEquals) {
       JavaProjectSetupUtil.deleteProject(this.demandCreateProject);
     }
     super.tearDown();
   }
   
+  @Override
   public boolean doCleanWorkspace() {
     return false;
   }
   
+  @Override
   public IJavaProject getJavaProject(final ResourceSet resourceSet) {
     final String projectName = this.getProjectName();
     IJavaProject javaProject = JavaProjectSetupUtil.findJavaProject(projectName);
-    boolean _or = false;
-    boolean _equals = ObjectExtensions.operator_equals(javaProject, null);
-    if (_equals) {
-      _or = true;
-    } else {
-      boolean _exists = javaProject.exists();
-      boolean _not = (!_exists);
-      _or = (_equals || _not);
-    }
-    if (_or) {
+    if ((Objects.equal(javaProject, null) || (!javaProject.exists()))) {
       try {
         IProject _createPluginProject = AbstractXbaseUITestCase.createPluginProject(projectName);
         this.demandCreateProject = _createPluginProject;
@@ -84,11 +88,12 @@ public class AbstractXbaseContentAssistBugTest extends AbstractXbaseUITestCase i
   }
   
   protected String getProjectName() {
-    Class<? extends Object> _class = this.getClass();
+    Class<? extends AbstractXbaseContentAssistBugTest> _class = this.getClass();
     String _simpleName = _class.getSimpleName();
     return (_simpleName + "Project");
   }
   
+  @Override
   public XtextResource getResourceFor(final InputStream stream) {
     final XtextResource result = super.getResourceFor(stream);
     this.initializeTypeProvider(result);
@@ -98,8 +103,7 @@ public class AbstractXbaseContentAssistBugTest extends AbstractXbaseUITestCase i
   protected void initializeTypeProvider(final XtextResource result) {
     ResourceSet _resourceSet = result.getResourceSet();
     final XtextResourceSet resourceSet = ((XtextResourceSet) _resourceSet);
-    JdtTypeProviderFactory _jdtTypeProviderFactory = new JdtTypeProviderFactory(this);
-    final JdtTypeProviderFactory typeProviderFactory = _jdtTypeProviderFactory;
+    final JdtTypeProviderFactory typeProviderFactory = new JdtTypeProviderFactory(this);
     typeProviderFactory.findOrCreateTypeProvider(resourceSet);
     IJavaProject _javaProject = this.getJavaProject(resourceSet);
     resourceSet.setClasspathURIContext(_javaProject);
@@ -107,7 +111,6 @@ public class AbstractXbaseContentAssistBugTest extends AbstractXbaseUITestCase i
   
   protected ContentAssistProcessorTestBuilder newBuilder() throws Exception {
     Injector _injector = this.getInjector();
-    ContentAssistProcessorTestBuilder _contentAssistProcessorTestBuilder = new ContentAssistProcessorTestBuilder(_injector, this);
-    return _contentAssistProcessorTestBuilder;
+    return new ContentAssistProcessorTestBuilder(_injector, this);
   }
 }

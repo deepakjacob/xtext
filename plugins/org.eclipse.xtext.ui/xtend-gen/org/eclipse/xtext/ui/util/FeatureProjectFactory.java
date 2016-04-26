@@ -9,7 +9,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.ui.util.ProjectFactory;
-import org.eclipse.xtext.xbase.lib.Functions.Function0;
 import org.eclipse.xtext.xbase.lib.StringExtensions;
 
 /**
@@ -32,19 +31,9 @@ public class FeatureProjectFactory extends ProjectFactory {
   
   private static String FEAT_ENDING = ".feature";
   
-  private List<String> containedBundles = new Function0<List<String>>() {
-    public List<String> apply() {
-      ArrayList<String> _arrayList = new ArrayList<String>();
-      return _arrayList;
-    }
-  }.apply();
+  private List<String> containedBundles = new ArrayList<String>();
   
-  private List<String> includedFeatures = new Function0<List<String>>() {
-    public List<String> apply() {
-      ArrayList<String> _arrayList = new ArrayList<String>();
-      return _arrayList;
-    }
-  }.apply();
+  private List<String> includedFeatures = new ArrayList<String>();
   
   private String mainCategoryName;
   
@@ -117,10 +106,9 @@ public class FeatureProjectFactory extends ProjectFactory {
     if (_not) {
       _xifexpression = this.featureLabel;
     } else {
-      String _plus = (this.projectName + " Feature");
-      _xifexpression = _plus;
+      _xifexpression = (this.projectName + " Feature");
     }
-    _builder.append(_xifexpression, "	");
+    _builder.append(_xifexpression, "\t");
     _builder.append("\"");
     _builder.newLineIfNotEmpty();
     _builder.append("\t");
@@ -134,7 +122,7 @@ public class FeatureProjectFactory extends ProjectFactory {
         _builder.append("\t");
         _builder.append("\t");
         _builder.append("id=\"");
-        _builder.append(includedFeature, "		");
+        _builder.append(includedFeature, "\t\t");
         _builder.append("\"");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
@@ -151,7 +139,7 @@ public class FeatureProjectFactory extends ProjectFactory {
         _builder.append("\t");
         _builder.append("\t\t");
         _builder.append("id=\"");
-        _builder.append(containedBundle, "			");
+        _builder.append(containedBundle, "\t\t\t");
         _builder.append("\"");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
@@ -187,7 +175,7 @@ public class FeatureProjectFactory extends ProjectFactory {
       for(final String includedFeature : this.includedFeatures) {
         _builder.append("\t");
         _builder.append("<feature id=\"");
-        _builder.append(includedFeature, "	");
+        _builder.append(includedFeature, "\t");
         _builder.append("\" version=\"0.0.0\">");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
@@ -199,8 +187,11 @@ public class FeatureProjectFactory extends ProjectFactory {
         _builder.newLine();
         _builder.append("\t");
         _builder.append("<feature id=\"");
-        String _sourceFeatureName = includedFeature==null?(String)null:this.sourceFeatureName(includedFeature);
-        _builder.append(_sourceFeatureName, "	");
+        String _sourceFeatureName = null;
+        if (includedFeature!=null) {
+          _sourceFeatureName=this.sourceFeatureName(includedFeature);
+        }
+        _builder.append(_sourceFeatureName, "\t");
         _builder.append("\" version=\"0.0.0\">");
         _builder.newLineIfNotEmpty();
         _builder.append("\t");
@@ -232,13 +223,9 @@ public class FeatureProjectFactory extends ProjectFactory {
     {
       boolean _endsWith = featureId.endsWith(FeatureProjectFactory.FEAT_ENDING);
       if (_endsWith) {
-        String _plus = ("\\" + FeatureProjectFactory.FEAT_ENDING);
-        String _plus_1 = (_plus + "$");
-        String _plus_2 = (FeatureProjectFactory.SOURCE_FEAT_ENDING + FeatureProjectFactory.FEAT_ENDING);
-        return featureId.replaceAll(_plus_1, _plus_2);
+        return featureId.replaceAll((("\\" + FeatureProjectFactory.FEAT_ENDING) + "$"), (FeatureProjectFactory.SOURCE_FEAT_ENDING + FeatureProjectFactory.FEAT_ENDING));
       }
-      String _plus_3 = (featureId + FeatureProjectFactory.SOURCE_FEAT_ENDING);
-      _xblockexpression = (_plus_3);
+      _xblockexpression = (featureId + FeatureProjectFactory.SOURCE_FEAT_ENDING);
     }
     return _xblockexpression;
   }

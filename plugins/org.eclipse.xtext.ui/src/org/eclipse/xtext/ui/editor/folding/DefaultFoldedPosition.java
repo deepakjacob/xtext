@@ -23,13 +23,25 @@ public class DefaultFoldedPosition extends FoldedPosition {
 	
 	private final int contentStart;
 	private final int contentLength;
-
+	private boolean initiallyFolded;
+	
 	public DefaultFoldedPosition(int offset, int length, int contentStart, int contentLength) {
+		this(offset, length, contentStart, contentLength, false);
+	}
+	
+	/**
+	 * @since 2.8
+	 * @deprecated use / override {@link #DefaultFoldedPosition(int, int, int, int)} instead
+	 */
+	@Deprecated
+	public DefaultFoldedPosition(int offset, int length, int contentStart, int contentLength, boolean initiallyFolded) {
 		super(offset, length);
 		this.contentStart = contentStart;
 		this.contentLength = contentLength;
+		this.initiallyFolded = initiallyFolded;
 	}
 	
+	@Override
 	public IRegion[] computeProjectionRegions(IDocument document) throws BadLocationException {
 		if (contentStart == UNSET) {
 			int line= document.getLineOfOffset(offset);
@@ -73,6 +85,7 @@ public class DefaultFoldedPosition extends FoldedPosition {
 		}
 	}
 
+	@Override
 	public int computeCaptionOffset(IDocument document) throws BadLocationException {
 		if (contentStart == UNSET) {
 			return 0;
@@ -105,5 +118,18 @@ public class DefaultFoldedPosition extends FoldedPosition {
 		return true;
 	}
 
+	/**
+	 * @since 2.8
+	 */
+	public boolean isInitiallyFolded() {
+		return initiallyFolded;
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	public void setInitiallyFolded(boolean initiallyFolded) {
+		this.initiallyFolded = initiallyFolded;
+	}
 
 }

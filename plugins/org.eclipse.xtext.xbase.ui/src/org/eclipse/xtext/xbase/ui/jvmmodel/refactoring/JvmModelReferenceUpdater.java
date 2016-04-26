@@ -27,7 +27,7 @@ import org.eclipse.xtext.ui.refactoring.impl.RefactoringCrossReferenceSerializer
 import org.eclipse.xtext.xbase.XAssignment;
 import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations;
-import org.eclipse.xtext.xbase.scoping.featurecalls.JvmFeatureDescription;
+import org.eclipse.xtext.xbase.scoping.batch.IIdentifiableElementDescription;
 
 import com.google.inject.Inject;
 
@@ -39,7 +39,8 @@ public class JvmModelReferenceUpdater extends DefaultReferenceUpdater {
 	@Inject
 	private IJvmModelAssociations jvmModelAssociations;
 	
-	@Inject@LinkingScopeProviderBinding
+	@Inject
+	@LinkingScopeProviderBinding
 	private IScopeProvider linkingScopeProvider; 
 	
 	@Override
@@ -105,18 +106,22 @@ public class JvmModelReferenceUpdater extends DefaultReferenceUpdater {
 					newTargetElement);
 		return new RefTextEvaluator() {
 
+			@Override
 			public boolean isValid(IEObjectDescription newTarget) {
 				IScope scope = linkingScopeProvider.getScope(referringElement, reference);
-				IEObjectDescription element = scope.getSingleElement(newTarget.getQualifiedName());
-				if(element instanceof JvmFeatureDescription) {
-					if(!((JvmFeatureDescription)element).isValid())
+				IEObjectDescription element = scope.getSingleElement(newTarget.getName());
+				// TODO here we need to simulate linking with the new name instead of the old name
+				if(element instanceof IIdentifiableElementDescription) {
+					IIdentifiableElementDescription casted = (IIdentifiableElementDescription) element;
+					if(!casted.isVisible() || !casted.isValidStaticState())
 						return false;
 				}
 				return element != null 
-						&& element.getEObjectURI() != null 
-						&& element.getEObjectURI().equals(newTarget.getEObjectURI());
+							&& element.getEObjectURI() != null 
+							&& element.getEObjectURI().equals(newTarget.getEObjectURI());
 			}
 
+			@Override
 			public boolean isBetterThan(String newText, String currentText) {
 				ReferenceSyntax newSyntax = getReferenceSyntax(newText);
 				ReferenceSyntax currentSyntax = getReferenceSyntax(currentText);
@@ -130,6 +135,9 @@ public class JvmModelReferenceUpdater extends DefaultReferenceUpdater {
 					return newText.length() < currentText.length();
 			}
 		};
-
+	}
+	
+	protected IScopeProvider getLinkingScopeProvider() {
+		return linkingScopeProvider;
 	}
 }

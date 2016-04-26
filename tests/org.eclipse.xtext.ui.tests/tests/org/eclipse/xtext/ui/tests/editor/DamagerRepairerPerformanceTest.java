@@ -18,6 +18,8 @@ import org.eclipse.jface.text.presentation.IPresentationDamager;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.ITokenScanner;
 import org.eclipse.xtext.parser.antlr.Lexer;
+import org.eclipse.xtext.resource.OutdatedStateManager;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.ui.editor.PresentationDamager;
 import org.eclipse.xtext.ui.editor.model.DocumentTokenSource;
 import org.eclipse.xtext.ui.editor.model.XtextDocument;
@@ -62,11 +64,12 @@ public class DamagerRepairerPerformanceTest extends Assert implements ITokenScan
 		protected Document createDocument(String before) {
 			DocumentTokenSource source = new DocumentTokenSource();
 			source.setLexer(new Provider<Lexer>() {
+				@Override
 				public Lexer get() {
 					return new org.eclipse.xtext.parser.antlr.internal.InternalXtextLexer();
 				}
 			});
-			XtextDocument document = new XtextDocument(source, null);
+			XtextDocument document = new XtextDocument(source, null, new OutdatedStateManager(), new OperationCanceledManager());
 			document.set(before);
 			return document;
 		}
@@ -74,12 +77,12 @@ public class DamagerRepairerPerformanceTest extends Assert implements ITokenScan
 		protected void appendAndCheck(String text) throws BadLocationException {
 			int offset = doc.getLength();
 			doc.replace(offset, 0, text);
-			assertEquals(Math.max(0, offset), Math.min(doc.getLength(), text.length()));
+			assertEquals(Math.max(0, offset - 1), Math.min(doc.getLength(), text.length() + 1));
 		}
 		
 		protected void insertAndCheck(String text, int offset) throws BadLocationException {
 			doc.replace(offset, 0, text);
-			assertEquals(Math.max(0, offset), Math.min(doc.getLength(), text.length()));
+			assertEquals(Math.max(0, offset - 1), Math.min(doc.getLength(), text.length() + 1));
 		}
 		
 		protected void prependAndCheck(String text) throws BadLocationException {
@@ -87,10 +90,12 @@ public class DamagerRepairerPerformanceTest extends Assert implements ITokenScan
 			assertEquals(0, Math.min(text.length(), doc.getLength()));
 		}
 		
+		@Override
 		public void documentChanged(DocumentEvent event) {
 			lastRegion = damager.getDamageRegion(new TypedRegion(0,event.getDocument().getLength(), IDocument.DEFAULT_CONTENT_TYPE), event, false);
 		}
 
+		@Override
 		public void documentAboutToBeChanged(DocumentEvent event) {
 		}
 		
@@ -116,6 +121,7 @@ public class DamagerRepairerPerformanceTest extends Assert implements ITokenScan
 	
 	@Test public void testInsert() throws BadLocationException {
 		Tester tester = new Tester(damager);
+		tester.insertAndCheck("abc ", 0);
 		int offset = tester.doc.getLength();
 		for(int i = 0; i < MAX; i++) {
 			tester.insertAndCheck("abc ", offset);
@@ -124,6 +130,7 @@ public class DamagerRepairerPerformanceTest extends Assert implements ITokenScan
 	
 	@Test public void testInsert2() throws BadLocationException {
 		Tester tester = new Tester(damager);
+		tester.insertAndCheck("abc ", 0);
 		int offset = tester.doc.getLength();
 		for(int i = 0; i < MAX; i++) {
 			tester.insertAndCheck("abc ", offset);
@@ -148,17 +155,21 @@ public class DamagerRepairerPerformanceTest extends Assert implements ITokenScan
 		return new PresentationDamager();
 	}
 	
+	@Override
 	public void setRange(IDocument document, int offset, int length) {
 	}
 
+	@Override
 	public IToken nextToken() {
 		return null;
 	}
 
+	@Override
 	public int getTokenOffset() {
 		return 0;
 	}
 
+	@Override
 	public int getTokenLength() {
 		return 0;
 	}

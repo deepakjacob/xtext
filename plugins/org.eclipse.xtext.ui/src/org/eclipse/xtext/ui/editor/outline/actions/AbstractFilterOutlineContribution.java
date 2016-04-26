@@ -29,10 +29,12 @@ public abstract class AbstractFilterOutlineContribution extends AbstractToggleOu
 	protected IFilter getFilter() {
 		if (filter == null) {
 			filter = new IFilter() {
+				@Override
 				public boolean apply(IOutlineNode node) {
 					return AbstractFilterOutlineContribution.this.apply(node);
 				}
 
+				@Override
 				public boolean isEnabled() {
 					return isPropertySet();
 				}
@@ -43,7 +45,7 @@ public abstract class AbstractFilterOutlineContribution extends AbstractToggleOu
 	
 	@Override
 	protected void stateChanged(boolean newState) {
-		if(!treeViewer.getTree().isDisposed()) 
+		if(treeViewer != null && !treeViewer.getTree().isDisposed()) 
 			treeViewer.refresh();
 	}
 
@@ -58,6 +60,11 @@ public abstract class AbstractFilterOutlineContribution extends AbstractToggleOu
 	@Override
 	public void deregister(OutlinePage outlinePage) {
 		super.deregister(outlinePage);
-		outlineFilterAndSorter.removeFilter(getFilter());
+		if (filter != null) {
+			outlineFilterAndSorter.removeFilter(getFilter());
+			filter = null;
+		}
+		outlineFilterAndSorter = null;
+		treeViewer = null;
 	}
 }

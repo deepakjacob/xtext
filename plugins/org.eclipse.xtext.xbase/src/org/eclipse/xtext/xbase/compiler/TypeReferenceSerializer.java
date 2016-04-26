@@ -7,13 +7,15 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.compiler;
 
+import java.util.List;
+
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmAnyTypeReference;
 import org.eclipse.xtext.common.types.JvmDeclaredType;
 import org.eclipse.xtext.common.types.JvmDelegateTypeReference;
 import org.eclipse.xtext.common.types.JvmGenericArrayTypeReference;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmInnerTypeReference;
 import org.eclipse.xtext.common.types.JvmLowerBound;
 import org.eclipse.xtext.common.types.JvmMultiTypeReference;
 import org.eclipse.xtext.common.types.JvmOperation;
@@ -23,37 +25,39 @@ import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeConstraint;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.common.types.JvmUnknownTypeReference;
 import org.eclipse.xtext.common.types.JvmUpperBound;
 import org.eclipse.xtext.common.types.JvmWildcardTypeReference;
 import org.eclipse.xtext.common.types.TypesPackage;
 import org.eclipse.xtext.common.types.util.Primitives;
-import org.eclipse.xtext.common.types.util.TypeConformanceComputer;
 import org.eclipse.xtext.generator.trace.LocationData;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 import org.eclipse.xtext.xbase.compiler.output.ITreeAppendable;
 import org.eclipse.xtext.xbase.jvmmodel.ILogicalContainerProvider;
+import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
+import org.eclipse.xtext.xbase.typesystem.references.StandardTypeReferenceOwner;
+import org.eclipse.xtext.xbase.typesystem.util.CommonTypeComputationServices;
 
 import com.google.inject.Inject;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
  */
-@NonNullByDefault
 public class TypeReferenceSerializer {
 	
 	@Inject
 	private Primitives primitives;
-	
-	@Inject
-	private TypeConformanceComputer typeConformanceComputer;
 	
 	@Inject 
 	private ILogicalContainerProvider contextProvider;
 	
 	@Inject
 	private ILocationInFileProvider locationProvider;
+	
+	@Inject
+	private CommonTypeComputationServices services;
 	
 	public boolean isLocalTypeParameter(EObject context, JvmTypeParameter parameter) {
 		if (context == parameter.getDeclarator()) 
@@ -62,7 +66,7 @@ public class TypeReferenceSerializer {
 			return false;
 		if (context instanceof JvmDeclaredType && ((JvmDeclaredType) context).isStatic())
 			return false;
-		JvmIdentifiableElement jvmElement = contextProvider.getLogicalContainer(context);
+		JvmIdentifiableElement jvmElement = contextProvider.getNearestLogicalContainer(context);
 		if (jvmElement != null) {
 			return isLocalTypeParameter(jvmElement, parameter);
 		}
@@ -92,8 +96,9 @@ public class TypeReferenceSerializer {
 			if (!withoutConstraints) {
 				tracedAppendable.append("?");
 			}
-			if (!wildcard.getConstraints().isEmpty()) {
-				for(JvmTypeConstraint constraint: wildcard.getConstraints()) {
+			List<JvmTypeConstraint> constraints = wildcard.getConstraints();
+			if (!constraints.isEmpty()) {
+				for(JvmTypeConstraint constraint: constraints) {
 					if (constraint instanceof JvmLowerBound) {
 						if (!withoutConstraints)
 							tracedAppendable.append(" super ");
@@ -101,8 +106,13 @@ public class TypeReferenceSerializer {
 						return;
 					}
 				}
+				if (constraints.size() == 1) {
+					if (Object.class.getName().equals(constraints.get(0).getTypeReference().getIdentifier())) {
+						return;
+					}
+				}
 				boolean first = true;
-				for(JvmTypeConstraint constraint: wildcard.getConstraints()) {
+				for(JvmTypeConstraint constraint: constraints) {
 					if (constraint instanceof JvmUpperBound) {
 						if (first) {
 							if (!withoutConstraints)
@@ -122,6 +132,13 @@ public class TypeReferenceSerializer {
 		} else if (type instanceof JvmGenericArrayTypeReference) {
 			serialize(((JvmGenericArrayTypeReference) type).getComponentType(), context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject, true);
 			tracedAppendable.append("[]");
+		} else if (type instanceof JvmInnerTypeReference) {
+			JvmInnerTypeReference casted = (JvmInnerTypeReference) type;
+			JvmParameterizedTypeReference outer = casted.getOuter();
+			serialize(outer, context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject, true);
+			tracedAppendable.append(".");
+			tracedAppendable.append(type.getType().getSimpleName());
+			serializeTypeArguments(casted, context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject);
 		} else if (type instanceof JvmParameterizedTypeReference) {
 			JvmParameterizedTypeReference parameterized = (JvmParameterizedTypeReference) type;
 			if ((paramsToWildcard || paramsToObject) && parameterized.getType() instanceof JvmTypeParameter) {
@@ -138,27 +155,18 @@ public class TypeReferenceSerializer {
 			if (tracing) {
 				ITextRegion region = locationProvider.getFullTextRegion(type, TypesPackage.Literals.JVM_PARAMETERIZED_TYPE_REFERENCE__TYPE, 0);
 				if (region instanceof ITextRegionWithLineInformation) {
-					((ITreeAppendable) tracedAppendable).trace(new LocationData((ITextRegionWithLineInformation) region, null, null)).append(jvmType);
+					((ITreeAppendable) tracedAppendable).trace(new LocationData((ITextRegionWithLineInformation) region, null)).append(jvmType);
 				} else {
 					tracedAppendable.append(jvmType);
 				}
 			} else {
 				tracedAppendable.append(jvmType);
 			}
-			if (!parameterized.getArguments().isEmpty()) {
-				tracedAppendable.append("<");
-				for(int i = 0; i < parameterized.getArguments().size(); i++) {
-					if (i != 0) {
-						tracedAppendable.append(",");
-					}
-					serialize(parameterized.getArguments().get(i), context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject, false);
-				}
-				tracedAppendable.append(">");
-			}
+			serializeTypeArguments(parameterized, context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject);
 		} else if (type instanceof JvmAnyTypeReference) {
 			tracedAppendable.append("Object");
 		} else if (type instanceof JvmMultiTypeReference) {
-			serialize(resolveMultiType(type), context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject, allowPrimitives);
+			serialize(resolveMultiType(type, context), context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject, allowPrimitives);
 		} else if (type instanceof JvmDelegateTypeReference) {
 			JvmTypeReference delegate = ((JvmDelegateTypeReference) type).getDelegate();
 			if(delegate != null)
@@ -167,18 +175,33 @@ public class TypeReferenceSerializer {
 				tracedAppendable.append("Object");
 		} else if (type instanceof JvmSpecializedTypeReference) {
 			serialize(((JvmSpecializedTypeReference) type).getEquivalent(), context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject, allowPrimitives);
+		} else if (type instanceof JvmUnknownTypeReference) {
+			if (type.eIsSet(TypesPackage.Literals.JVM_UNKNOWN_TYPE_REFERENCE__QUALIFIED_NAME)) {
+				tracedAppendable.append(type.getQualifiedName());
+			} else {
+				tracedAppendable.append("Object");
+			}
 		} else {
 			throw new IllegalArgumentException(String.valueOf(type));
 		}
 	}
-	
-	public JvmTypeReference resolveMultiType(JvmTypeReference reference) {
-		if (reference instanceof JvmMultiTypeReference) {
-			JvmTypeReference result = typeConformanceComputer.getCommonSuperType(((JvmMultiTypeReference) reference).getReferences());
-			if (result instanceof JvmMultiTypeReference)
-				return resolveMultiType(result);
-			return result;
+
+	private void serializeTypeArguments(JvmParameterizedTypeReference reference, EObject context, IAppendable tracedAppendable, boolean withoutConstraints,
+			boolean paramsToWildcard, boolean paramsToObject) {
+		if (!reference.getArguments().isEmpty()) {
+			tracedAppendable.append("<");
+			for(int i = 0; i < reference.getArguments().size(); i++) {
+				if (i != 0) {
+					tracedAppendable.append(", ");
+				}
+				serialize(reference.getArguments().get(i), context, tracedAppendable, withoutConstraints, paramsToWildcard, paramsToObject, false);
+			}
+			tracedAppendable.append(">");
 		}
-		return reference;
+	}
+	
+	public JvmTypeReference resolveMultiType(JvmTypeReference reference, EObject context) {
+		ITypeReferenceOwner owner = new StandardTypeReferenceOwner(services, context.eResource().getResourceSet());
+		return owner.toLightweightTypeReference(reference).toJavaCompliantTypeReference();
 	}
 }

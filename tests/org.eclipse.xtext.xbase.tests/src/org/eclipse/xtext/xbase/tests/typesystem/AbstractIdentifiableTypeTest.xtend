@@ -12,18 +12,14 @@ import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.common.types.JvmFormalParameter
 import org.eclipse.xtext.common.types.JvmIdentifiableElement
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-import org.eclipse.xtext.xbase.XSwitchExpression
+import org.eclipse.xtext.xbase.XClosure
 import org.eclipse.xtext.xbase.XVariableDeclaration
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Ignore
 import org.junit.Test
-
-import static org.junit.Assert.*
-
-import static extension org.eclipse.xtext.xbase.tests.typesystem.AbstractIdentifiableTypeTest.*
-import org.eclipse.xtext.xbase.XClosure
+import org.eclipse.xtext.xbase.XExpression
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -44,23 +40,20 @@ abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase {
 		seenExpressions = null
 	}
 	
-	def protected findIdentifiables(CharSequence expression) {
-		val xExpression = expression(expression, false)
-		
-		val identifiables = EcoreUtil2::eAll(xExpression).map[
+	def protected findIdentifiables(XExpression expression) {
+		val identifiables = EcoreUtil2::eAll(expression).map[
 			switch(it) {
 				// derived features are not part of eContents thus we add it here explicitly
-				XClosure: it.implicitParameter
-				default: it 
+				XClosure: it.implicitFormalParameters
+				default: #[it] 
 			}
-		].toSet.filter [
+		].toIterable.flatten.toSet.filter [
 			it != null && switch(it) {
 				XVariableDeclaration: true
 				JvmFormalParameter: true
-				XSwitchExpression case it.localVarName != null : true
 				default: false
 			}
-		].filter(typeof(JvmIdentifiableElement)).toList
+		].filter(JvmIdentifiableElement).toList
 		return identifiables.sortBy [ 
 			val node = NodeModelUtils::findActualNodeFor(it)
 			if (node != null) 
@@ -76,6 +69,14 @@ abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase {
 			fail("Duplicate expression under test: " + expression)
 		}
 		super.expression(expression, resolve)
+	}
+	
+	@Test def void testIfExpression_01() throws Exception {
+		"{ val x = if (true) while(false) ('foo'+'bar').length }".resolvesIdentifiablesTo("null")
+	}
+	
+	@Test def void testIfExpression_02() throws Exception {
+		"{ val Object x = if (true) while(false) ('foo'+'bar').length }".resolvesIdentifiablesTo("Object")
 	}
 
 	@Test def void testOverloadedMethods_01() throws Exception {
@@ -193,13 +194,21 @@ abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase {
 	}
 	
 	@Test def void testForExpression_03() throws Exception {
-		"for(String x : null as String[][]) x.size".resolvesIdentifiablesTo("String")
+		"for(String x : null as String[][]) x.length".resolvesIdentifiablesTo("String")
 	}
 	
 	@Test def void testForExpression_04() throws Exception {
 		"for(x : null as String[][]) x.size".resolvesIdentifiablesTo("String[]")
 	}
-
+	
+	@Test def void testForExpression_05() throws Exception {
+		"for(x : null as java.util.Set) x.toString".resolvesIdentifiablesTo("Object")
+	}
+	
+	@Test def void testForExpression_06() throws Exception {
+		"for(x : null as Iterable<String>?:emptyList) x.toString".resolvesIdentifiablesTo("String")
+	}
+	
 	@Test def void testMethodTypeParamInference_00() throws Exception {
 		"new java.util.ArrayList<String>().findFirst(e | true)".resolvesIdentifiablesTo("String")
 	}
@@ -300,7 +309,7 @@ abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase {
 			val fun = [ x | x ]
 			val java.util.List<String> list = newArrayList(fun.apply(null))
 			fun
-		}".resolvesIdentifiablesTo("(String)=>String", "String", "List<String>")
+		}".resolvesIdentifiablesTo("(String[])=>String[]", "String[]", "List<String>")
 	}
 	
 	@Test def void testClosure_17() throws Exception {
@@ -783,7 +792,7 @@ abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase {
 			val list = new java.util.ArrayList
 			list.<String, Object>map[s| s]
 			list
-		}".resolvesIdentifiablesTo("ArrayList<String>", "Object") // could actually be 'String' but Object is quit ok, too
+		}".resolvesIdentifiablesTo("ArrayList<String>", "String")
 	}
 
 	@Test def void testDeferredTypeArgumentResolution_136() throws Exception {
@@ -807,6 +816,6 @@ abstract class AbstractIdentifiableTypeTest extends AbstractXbaseTestCase {
 			val list = new java.util.ArrayList
 			list.<String, CharSequence>map[s| s]
 			list
-		}".resolvesIdentifiablesTo("ArrayList<String>", "CharSequence")
+		}".resolvesIdentifiablesTo("ArrayList<String>", "String")
 	}
 }

@@ -8,9 +8,10 @@
 package org.eclipse.xtext.xbase.scoping.batch;
 
 import java.util.List;
-import org.eclipse.xtend.lib.Data;
+import org.eclipse.xtend.lib.annotations.Data;
 import org.eclipse.xtext.common.types.JvmTypeReference;
-import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
+import org.eclipse.xtext.xbase.lib.Pure;
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
 
 /**
  * A type bucket collects a number of types that originate in the
@@ -22,34 +23,28 @@ import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
 @Data
 @SuppressWarnings("all")
 public class TypeReferenceBucket {
-  private final int _id;
+  private final int id;
   
-  public int getId() {
-    return this._id;
-  }
-  
-  private final List<JvmTypeReference> _types;
-  
-  public List<JvmTypeReference> getTypes() {
-    return this._types;
-  }
+  private final List<JvmTypeReference> types;
   
   public TypeReferenceBucket(final int id, final List<JvmTypeReference> types) {
     super();
-    this._id = id;
-    this._types = types;
+    this.id = id;
+    this.types = types;
   }
   
   @Override
+  @Pure
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + _id;
-    result = prime * result + ((_types== null) ? 0 : _types.hashCode());
+    result = prime * result + this.id;
+    result = prime * result + ((this.types== null) ? 0 : this.types.hashCode());
     return result;
   }
   
   @Override
+  @Pure
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
@@ -58,19 +53,32 @@ public class TypeReferenceBucket {
     if (getClass() != obj.getClass())
       return false;
     TypeReferenceBucket other = (TypeReferenceBucket) obj;
-    if (other._id != _id)
+    if (other.id != this.id)
       return false;
-    if (_types == null) {
-      if (other._types != null)
+    if (this.types == null) {
+      if (other.types != null)
         return false;
-    } else if (!_types.equals(other._types))
+    } else if (!this.types.equals(other.types))
       return false;
     return true;
   }
   
   @Override
+  @Pure
   public String toString() {
-    String result = new ToStringHelper().toString(this);
-    return result;
+    ToStringBuilder b = new ToStringBuilder(this);
+    b.add("id", this.id);
+    b.add("types", this.types);
+    return b.toString();
+  }
+  
+  @Pure
+  public int getId() {
+    return this.id;
+  }
+  
+  @Pure
+  public List<JvmTypeReference> getTypes() {
+    return this.types;
   }
 }

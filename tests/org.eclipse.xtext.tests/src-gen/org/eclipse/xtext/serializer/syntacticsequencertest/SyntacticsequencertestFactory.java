@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.syntacticsequencertest;
 
@@ -150,6 +147,33 @@ public interface SyntacticsequencertestFactory extends EFactory
    * @generated
    */
   BooleanValues createBooleanValues();
+
+  /**
+   * Returns a new object of class '<em>Long Alternative</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Long Alternative</em>'.
+   * @generated
+   */
+  LongAlternative createLongAlternative();
+
+  /**
+   * Returns a new object of class '<em>Action Only</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Action Only</em>'.
+   * @generated
+   */
+  ActionOnly createActionOnly();
+
+  /**
+   * Returns a new object of class '<em>Fragment Caller Type</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Fragment Caller Type</em>'.
+   * @generated
+   */
+  FragmentCallerType createFragmentCallerType();
 
   /**
    * Returns a new object of class '<em>Add0</em>'.

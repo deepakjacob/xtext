@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: UntilTokenImpl.java,v 1.1 2010/04/06 14:10:01 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -15,8 +11,6 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Until Token</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

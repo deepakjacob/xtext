@@ -13,19 +13,12 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 import org.eclipse.xtext.xbase.XStringLiteral
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.eclipse.xtext.xbase.typesystem.IBatchTypeResolver
-import org.junit.Test
-
-import static org.junit.Assert.*
-import org.eclipse.xtext.junit4.XtextRunner
-import org.junit.runner.RunWith
-import org.eclipse.xtext.junit4.InjectWith
 import org.junit.Ignore
+import org.junit.Test
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@RunWith(typeof(XtextRunner))
-@InjectWith(typeof(XbaseNewTypeSystemInjectorProvider))
 class StringLiteralTest extends AbstractXbaseTestCase {
 	
 	@Inject
@@ -39,7 +32,7 @@ class StringLiteralTest extends AbstractXbaseTestCase {
 		val resolvedTypes = typeResolver.resolveTypes(featureCalls.head)
 		featureCalls.forEach [ featureCall, index |
 			val type = resolvedTypes.getActualType(featureCall)
-			assertEquals('''failed for feature call at «index»''', types.get(index), type.simpleName); 
+			assertEquals('''failed for literal at «index»''', types.get(index), type.simpleName); 
 		]
 	}
 	
@@ -102,7 +95,7 @@ class StringLiteralTest extends AbstractXbaseTestCase {
 		"{ var Character c = '' }".resolvesStringLiteralsTo("String")
 	}
 	@Test def void testCharacterExpectation_02() throws Exception {
-		"{ var Character c = '1' }".resolvesStringLiteralsTo("char")
+		"{ var Character c = '1' }".resolvesStringLiteralsTo("Character")
 	}
 	@Test def void testCharacterExpectation_03() throws Exception {
 		"{ var Character c = '11' }".resolvesStringLiteralsTo("String")
@@ -116,5 +109,10 @@ class StringLiteralTest extends AbstractXbaseTestCase {
 	}
 	@Test def void testAmbiguousExpectation_03() throws Exception {
 		"String::valueOf('11')".resolvesStringLiteralsTo("String")
+	}
+	@Test def void testCastToChar_01() throws Exception {
+		// TODO should casts impose a weaker type expectation in order
+		// to influence target typing?
+		"'a' as Character".resolvesStringLiteralsTo("String")
 	}
 }

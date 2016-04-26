@@ -7,9 +7,6 @@
  *******************************************************************************/
 package org.eclipse.xtext.generator.trace;
 
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 import org.eclipse.xtext.util.TextRegionWithLineInformation;
 
@@ -18,27 +15,20 @@ import org.eclipse.xtext.util.TextRegionWithLineInformation;
  */
 public class LocationData extends TextRegionWithLineInformation implements ILocationData {
 
-	private final URI path;
-	private final String projectName;
+	private final SourceRelativeURI path;
 	
-	public LocationData(int offset, int length, int lineNumber, int endLineNumber,  @Nullable URI path, @Nullable String projectName) {
+	public LocationData(int offset, int length, int lineNumber, int endLineNumber, SourceRelativeURI path) {
 		super(offset, length, lineNumber, endLineNumber);
 		this.path = path;
-		this.projectName = projectName;
 	}
 	
-	public LocationData(@NonNull ITextRegionWithLineInformation region,  @Nullable URI path, @Nullable String projectName) {
-		this(region.getOffset(), region.getLength(), region.getLineNumber(), region.getEndLineNumber(), path, projectName);
+	public LocationData(ITextRegionWithLineInformation region, SourceRelativeURI path) {
+		this(region.getOffset(), region.getLength(), region.getLineNumber(), region.getEndLineNumber(), path);
 	}
 
-	@Nullable
-	public URI getPath() {
+	@Override
+	public SourceRelativeURI getSrcRelativePath() {
 		return path;
-	}
-
-	@Nullable
-	public String getProjectName() {
-		return projectName;
 	}
 
 	@Override
@@ -46,12 +36,11 @@ public class LocationData extends TextRegionWithLineInformation implements ILoca
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((path == null) ? 0 : path.hashCode());
-		result = prime * result + ((projectName == null) ? 0 : projectName.hashCode());
 		return result;
 	}
 
 	@Override
-	public boolean equals(@Nullable Object obj) {
+	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null || !super.equals(obj))
@@ -64,18 +53,12 @@ public class LocationData extends TextRegionWithLineInformation implements ILoca
 				return false;
 		} else if (!path.equals(other.path))
 			return false;
-		if (projectName == null) {
-			if (other.projectName != null)
-				return false;
-		} else if (!projectName.equals(other.projectName))
-			return false;
 		return true;
 	}
 
 	@Override
-	@NonNull
 	public String toString() {
-		return "LocationData [" + super.toString() + "][path=" + path + ", projectName=" + projectName + "]";
+		return "LocationData [" + super.toString() + "][path=" + path + "]";
 	}
 
 }

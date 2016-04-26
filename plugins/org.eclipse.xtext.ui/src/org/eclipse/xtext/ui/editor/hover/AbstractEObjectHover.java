@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.editor.hover;
 
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -21,6 +22,7 @@ import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.resource.EObjectAtOffsetHelper;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.service.OperationCanceledError;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.editor.model.XtextDocumentUtil;
 import org.eclipse.xtext.util.ITextRegion;
@@ -49,43 +51,61 @@ public abstract class AbstractEObjectHover extends AbstractHover implements IEOb
 		IXtextDocument xtextDocument = XtextDocumentUtil.get(textViewer);
 		if(xtextDocument == null) 
 			return null;
-		return xtextDocument.readOnly(new IUnitOfWork<IRegion, XtextResource>() {
-			public IRegion exec(XtextResource state) throws Exception {
-				// resource can be null e.g. read only zip/jar entry
-				if (state == null) {
-					return null;
+		//TODO this is being called on change in the UI-thread. Not a good idea to do such expensive stuff.
+		// returning the region on a per token basis would be better.
+		try {
+			return xtextDocument.readOnly(new IUnitOfWork<IRegion, XtextResource>() {
+				@Override
+				public IRegion exec(XtextResource state) throws Exception {
+					// resource can be null e.g. read only zip/jar entry
+					if (state == null) {
+						return null;
+					}
+					Pair<EObject, IRegion> element = getXtextElementAt(state, offset);
+					if (element != null) {
+						return element.getSecond();
+					} else {
+						return null;
+					}
 				}
-				Pair<EObject, IRegion> element = getXtextElementAt(state, offset);
-				if (element != null) {
-					return element.getSecond();
-				} else {
-					return null;
-				}
-			}
-		});
+			});
+		} catch (OperationCanceledException e) {
+			return null;
+		} catch (OperationCanceledError e) {
+			return null;
+		}
 	}
 
+	@Override
 	public Object getHoverInfo2(final ITextViewer textViewer, final IRegion hoverRegion) {
 		if (hoverRegion == null)
 			return null;
 		IXtextDocument xtextDocument = XtextDocumentUtil.get(textViewer);
 		if(xtextDocument == null) 
 			return null;
-		return xtextDocument.readOnly(new IUnitOfWork<Object, XtextResource>() {
-			public Object exec(XtextResource state) throws Exception {
-				// resource can be null e.g. read only zip/jar entry
-				if (state == null) {
+		try {
+			return xtextDocument.readOnly(new IUnitOfWork<Object, XtextResource>() {
+				@Override
+				public Object exec(XtextResource state) throws Exception {
+					// resource can be null e.g. read only zip/jar entry
+					if (state == null) {
+						return null;
+					}
+					Pair<EObject, IRegion> element = getXtextElementAt(state, hoverRegion.getOffset());
+					if (element != null && element.getFirst() != null) {
+						return getHoverInfo(element.getFirst(), textViewer, hoverRegion);
+					}
 					return null;
 				}
-				Pair<EObject, IRegion> element = getXtextElementAt(state, hoverRegion.getOffset());
-				if (element != null && element.getFirst() != null) {
-					return getHoverInfo(element.getFirst(), textViewer, hoverRegion);
-				}
-				return null;
-			}
-		});
+			});
+		} catch (OperationCanceledException e) {
+			return null;
+		} catch (OperationCanceledError e) {
+			return null;
+		}
 	}
 
+	@Override
 	public abstract Object getHoverInfo(final EObject eObject, final ITextViewer textViewer,
 			final IRegion hoverRegion);
 
@@ -111,7 +131,8 @@ public abstract class AbstractEObjectHover extends AbstractHover implements IEOb
 						leafNode = NodeModelUtils.findLeafNodeAtOffset(parseResult.getRootNode(), offset - 1);
 					}
 					if (leafNode != null) {
-						return Tuples.create(crossLinkedEObject, (IRegion) new Region(leafNode.getOffset(), leafNode.getLength()));
+						ITextRegion leafRegion = leafNode.getTextRegion();
+						return Tuples.create(crossLinkedEObject, (IRegion) new Region(leafRegion.getOffset(), leafRegion.getLength()));
 					}
 				}
 			}

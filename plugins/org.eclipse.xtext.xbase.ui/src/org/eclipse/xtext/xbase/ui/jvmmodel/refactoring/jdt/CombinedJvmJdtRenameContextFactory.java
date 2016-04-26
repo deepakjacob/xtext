@@ -9,6 +9,7 @@ package org.eclipse.xtext.xbase.ui.jvmmodel.refactoring.jdt;
 
 import static com.google.common.collect.Iterables.*;
 import static com.google.common.collect.Maps.*;
+import static com.google.common.collect.Sets.*;
 
 import java.util.Map;
 import java.util.Set;
@@ -27,50 +28,47 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmFormalParameter;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.common.types.ui.refactoring.JdtRefactoringContextFactory;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.editor.XtextEditor;
 import org.eclipse.xtext.ui.refactoring.ui.IRenameElementContext;
 import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations;
-import org.eclipse.xtext.xbase.ui.jvmmodel.refactoring.OperatorMappingUtil;
+import org.eclipse.xtext.xbase.typesystem.override.OverrideHelper;
 
 import com.google.inject.Inject;
 
 /**
  * @author Jan Koehnlein - Initial contribution and API
  */
+@SuppressWarnings("restriction")
 public class CombinedJvmJdtRenameContextFactory extends JdtRefactoringContextFactory {
 
 	@Inject
 	private IJvmModelAssociations associations;
-
+	
 	@Inject
-	private OperatorMappingUtil operatorMappingUtil;
-
-	@Override
-	public IRenameElementContext createRenameElementContext(EObject targetElement, XtextEditor editor,
-			ITextSelection selection, XtextResource resource) {
-		if (operatorMappingUtil.isMappedOperator(targetElement) && selection.getLength() < "operator".length())
-			return null;
-		else
-			return super.createRenameElementContext(targetElement, editor, selection, resource);
-	}
-
+	private OverrideHelper overrideHelper;
+	
 	@Override
 	public IRenameElementContext createLocalRenameElementContext(EObject targetElement, XtextEditor editor,
 			ITextSelection selection, XtextResource resource) {
 		EObject declarationTarget = getDeclarationTarget(targetElement);
-		Set<EObject> jvmElements = associations.getJvmElements(declarationTarget);
+		Set<EObject> jvmElements = filterJvmElements(associations.getJvmElements(declarationTarget));
+		
 		if (!jvmElements.isEmpty()) {
 			Map<URI, IJavaElement> jvm2javaElement = newLinkedHashMap();
 			for (JvmIdentifiableElement jvmElement : filter(jvmElements, JvmIdentifiableElement.class)) {
-				IJavaElement javaElement = getJavaElementFinder().findExactElementFor(jvmElement);
+				JvmIdentifiableElement jvmElementToBeRenamed = (jvmElement instanceof JvmConstructor) 
+						? ((JvmConstructor) jvmElement).getDeclaringType()
+						: jvmElement;
+				IJavaElement javaElement = getJavaElementFinder().findExactElementFor(jvmElementToBeRenamed);
 				if (javaElement != null)
 					if (javaElement instanceof IMethod)
-						addDeclaringMethod(jvmElement, javaElement, jvm2javaElement);
+						addDeclaringMethod(jvmElementToBeRenamed, javaElement, jvm2javaElement);
 					else
-						jvm2javaElement.put(EcoreUtil.getURI(jvmElement), javaElement);
+						jvm2javaElement.put(EcoreUtil.getURI(jvmElementToBeRenamed), javaElement);
 			}
 			if (!jvm2javaElement.isEmpty()) {
 				return new CombinedJvmJdtRenameContext(declarationTarget, jvm2javaElement, editor, selection, resource);
@@ -108,5 +106,25 @@ public class CombinedJvmJdtRenameContextFactory extends JdtRefactoringContextFac
 		} catch (JavaModelException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	protected Set<EObject> filterJvmElements(Set<EObject> unfiltered) {
+		Set<EObject> filtered = newLinkedHashSet();
+		for (EObject element : unfiltered) {
+			if (isAcceptedElement(element)) {
+				filtered.add(element);
+			}
+		}
+		return filtered;
+	}
+	
+	protected boolean isAcceptedElement(EObject jvmElement) {
+		if (jvmElement instanceof JvmOperation) {
+			JvmOperation op = (JvmOperation) jvmElement;
+			if (!associations.isPrimaryJvmElement(op) && overrideHelper.findOverriddenOperation(op) != null) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

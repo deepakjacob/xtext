@@ -18,13 +18,19 @@ import org.eclipse.xtext.xbase.XExpression;
  * A representation of the model object '<em><b>XAnnotation Element Value Pair</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <!-- begin-model-doc -->
+ * @since 2.7
+ * @noextend This interface is not intended to be extended by clients.
+ * @noimplement This interface is not intended to be implemented by clients.
+ * <!-- end-model-doc -->
+ *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationElementValuePair#getValue <em>Value</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationElementValuePair#getElement <em>Element</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.xbase.annotations.xAnnotations.XAnnotationsPackage#getXAnnotationElementValuePair()
  * @model

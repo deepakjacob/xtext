@@ -8,9 +8,15 @@
 package org.eclipse.xtext.xbase.scoping.batch;
 
 import java.util.List;
-import org.eclipse.xtend.lib.Data;
+import java.util.Map;
+import java.util.Set;
+import org.eclipse.xtend.lib.annotations.Data;
 import org.eclipse.xtext.common.types.JvmType;
-import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
+import org.eclipse.xtext.xbase.lib.CollectionLiterals;
+import org.eclipse.xtext.xbase.lib.Pure;
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
+import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceFlags;
+import org.eclipse.xtext.xbase.typesystem.override.IResolvedFeatures;
 
 /**
  * A type bucket collects a number of types that originate in the
@@ -23,34 +29,44 @@ import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
 @Data
 @SuppressWarnings("all")
 public class TypeBucket {
-  private final int _id;
+  private final int id;
   
-  public int getId() {
-    return this._id;
+  private final List<? extends JvmType> types;
+  
+  private final IResolvedFeatures.Provider resolvedFeaturesProvider;
+  
+  public int getFlags() {
+    return ConformanceFlags.CHECKED_SUCCESS;
   }
   
-  private final List<JvmType> _types;
-  
-  public List<JvmType> getTypes() {
-    return this._types;
+  public Map<? extends JvmType, ? extends Set<String>> getTypesToNames() {
+    return CollectionLiterals.<JvmType, Set<String>>emptyMap();
   }
   
-  public TypeBucket(final int id, final List<JvmType> types) {
+  public boolean isRestrictingNames() {
+    return false;
+  }
+  
+  public TypeBucket(final int id, final List<? extends JvmType> types, final IResolvedFeatures.Provider resolvedFeaturesProvider) {
     super();
-    this._id = id;
-    this._types = types;
+    this.id = id;
+    this.types = types;
+    this.resolvedFeaturesProvider = resolvedFeaturesProvider;
   }
   
   @Override
+  @Pure
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + _id;
-    result = prime * result + ((_types== null) ? 0 : _types.hashCode());
+    result = prime * result + this.id;
+    result = prime * result + ((this.types== null) ? 0 : this.types.hashCode());
+    result = prime * result + ((this.resolvedFeaturesProvider== null) ? 0 : this.resolvedFeaturesProvider.hashCode());
     return result;
   }
   
   @Override
+  @Pure
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
@@ -59,19 +75,43 @@ public class TypeBucket {
     if (getClass() != obj.getClass())
       return false;
     TypeBucket other = (TypeBucket) obj;
-    if (other._id != _id)
+    if (other.id != this.id)
       return false;
-    if (_types == null) {
-      if (other._types != null)
+    if (this.types == null) {
+      if (other.types != null)
         return false;
-    } else if (!_types.equals(other._types))
+    } else if (!this.types.equals(other.types))
+      return false;
+    if (this.resolvedFeaturesProvider == null) {
+      if (other.resolvedFeaturesProvider != null)
+        return false;
+    } else if (!this.resolvedFeaturesProvider.equals(other.resolvedFeaturesProvider))
       return false;
     return true;
   }
   
   @Override
+  @Pure
   public String toString() {
-    String result = new ToStringHelper().toString(this);
-    return result;
+    ToStringBuilder b = new ToStringBuilder(this);
+    b.add("id", this.id);
+    b.add("types", this.types);
+    b.add("resolvedFeaturesProvider", this.resolvedFeaturesProvider);
+    return b.toString();
+  }
+  
+  @Pure
+  public int getId() {
+    return this.id;
+  }
+  
+  @Pure
+  public List<? extends JvmType> getTypes() {
+    return this.types;
+  }
+  
+  @Pure
+  public IResolvedFeatures.Provider getResolvedFeaturesProvider() {
+    return this.resolvedFeaturesProvider;
   }
 }

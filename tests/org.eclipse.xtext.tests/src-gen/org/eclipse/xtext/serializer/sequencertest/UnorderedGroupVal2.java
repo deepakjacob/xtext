@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.sequencertest;
 
@@ -13,10 +10,10 @@ package org.eclipse.xtext.serializer.sequencertest;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.sequencertest.UnorderedGroupVal2#getVal <em>Val</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.serializer.sequencertest.SequencertestPackage#getUnorderedGroupVal2()
  * @model

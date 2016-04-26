@@ -13,11 +13,13 @@ import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchy;
 import org.eclipse.jdt.internal.ui.callhierarchy.CallHierarchyUI;
 import org.eclipse.xtext.ui.editor.XtextEditor;
+import org.eclipse.xtext.xbase.ui.editor.AbstractJvmElementHandler;
 
 /**
  * @author Holger Schill - Initial contribution and API
  */
-public class OpenCallHierachyHandler extends AbstractHierarchyHandler {
+@SuppressWarnings("restriction")
+public class OpenCallHierachyHandler extends AbstractJvmElementHandler {
 
 	@Override
 	protected void openPresentation(XtextEditor editor, IJavaElement javaElement, EObject selectedElement) {

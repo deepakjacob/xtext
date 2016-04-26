@@ -8,19 +8,16 @@
 package org.eclipse.xtext.xbase.tests.linking
 
 import com.google.inject.Inject
-import org.eclipse.xtext.xbase.typesystem.IBatchTypeResolver
-import org.eclipse.xtext.xbase.XSwitchExpression
-import org.eclipse.xtext.xbase.XAbstractFeatureCall
-import org.eclipse.xtext.xbase.XExpression
-import org.eclipse.xtext.xbase.XCasePart
-import org.eclipse.xtext.common.types.JvmIdentifiableElement
-import org.eclipse.xtext.xbase.XConstructorCall
-import org.eclipse.xtext.xbase.XbasePackage
-import org.eclipse.xtext.xbase.typesystem.IResolvedTypes
 import org.eclipse.emf.ecore.InternalEObject
-import org.junit.Test
-import org.junit.Ignore
+import org.eclipse.xtext.common.types.JvmIdentifiableElement
+import org.eclipse.xtext.xbase.XAbstractFeatureCall
+import org.eclipse.xtext.xbase.XConstructorCall
+import org.eclipse.xtext.xbase.XExpression
+import org.eclipse.xtext.xbase.XbasePackage
+import org.eclipse.xtext.xbase.typesystem.IBatchTypeResolver
+import org.eclipse.xtext.xbase.typesystem.IResolvedTypes
 import org.junit.Before
+import org.junit.Test
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -43,12 +40,6 @@ class BatchLinkingTest extends AbstractXbaseLinkingTest {
 		val resolvedTypes = typeResolver.resolveTypes(result);
 		for(content: result.eAllContents.toIterable) {
 			switch(content) {
-				XSwitchExpression: {
-					assertExpressionTypeIsResolved(content, resolvedTypes)
-					if (content.localVarName != null) {
-						assertIdentifiableTypeIsResolved(content, resolvedTypes)
-					}
-				}
 				XAbstractFeatureCall: {
 					assertExpressionTypeIsResolved(content, resolvedTypes)
 					if (content.implicitReceiver != null) {
@@ -58,7 +49,6 @@ class BatchLinkingTest extends AbstractXbaseLinkingTest {
 				XExpression: {
 					assertExpressionTypeIsResolved(content, resolvedTypes)
 				}
-				XCasePart : { /* skip */}
 				JvmIdentifiableElement: {
 					assertIdentifiableTypeIsResolved(content, resolvedTypes)
 				}
@@ -68,12 +58,12 @@ class BatchLinkingTest extends AbstractXbaseLinkingTest {
 			for(content: result.eAllContents.toIterable) {
 				switch(content) {
 					XConstructorCall: {
-						val constructor = content.eGet(XbasePackage$Literals::XCONSTRUCTOR_CALL__CONSTRUCTOR, false) as InternalEObject
+						val constructor = content.eGet(XbasePackage.Literals::XCONSTRUCTOR_CALL__CONSTRUCTOR, false) as InternalEObject
 						assertNotNull(content.toString, constructor)
 						assertFalse(content.toString, constructor.eIsProxy())
 					}
 					XAbstractFeatureCall: {
-						val feature = content.eGet(XbasePackage$Literals::XABSTRACT_FEATURE_CALL__FEATURE, false) as InternalEObject
+						val feature = content.eGet(XbasePackage.Literals::XABSTRACT_FEATURE_CALL__FEATURE, false) as InternalEObject
 						assertNotNull(content.toString, feature)
 						assertFalse(content.toString, feature.eIsProxy())
 					}
@@ -92,36 +82,6 @@ class BatchLinkingTest extends AbstractXbaseLinkingTest {
 		val type = types.getActualType(identifiable)
 		assertNotNull(identifiable.toString, type)
 		assertNotNull(identifiable.toString + " / " + type, type.identifier)	
-	}
-	
-	@Test
-	@Ignore("Implement me")
-	override testMemberCallOnNull_02() throws Exception {
-		fail("Should be unresolved proxy for now - or ambiguous feature later on")
-	}
-	
-	@Test
-	@Ignore("Implement me")
-	override testMemberCallOnNull_06() throws Exception {
-		fail("Should be unresolved proxy for now - or ambiguous feature later on")
-	}
-	
-	@Test
-	@Ignore("Implement me")
-	override testMemberCallOnNull_07() throws Exception {
-		fail("Should be unresolved proxy for now - or ambiguous feature later on")
-	}
-	
-	@Test
-	@Ignore("Implement me")
-	override testMemberCallOnNull_11() throws Exception {
-		fail("Should be unresolved proxy for now - or ambiguous feature later on")
-	}
-	
-	@Test
-	@Ignore("Implement me")
-	override testMemberCallOnNull_12() throws Exception {
-		fail("Should be unresolved proxy for now - or ambiguous feature later on")
 	}
 	
 	@Test

@@ -20,7 +20,6 @@ import org.eclipse.jface.text.presentation.IPresentationRepairer;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 import org.eclipse.jface.text.rules.ITokenScanner;
-import org.eclipse.jface.text.source.DefaultCharacterPairMatcher;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.templates.ContextTypeRegistry;
@@ -31,6 +30,9 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.xtext.formatting.IIndentationInformation;
 import org.eclipse.xtext.formatting.IWhitespaceInformationProvider;
+import org.eclipse.xtext.generator.IShouldGenerate;
+import org.eclipse.xtext.ide.editor.bracketmatching.DefaultBracePairProvider;
+import org.eclipse.xtext.ide.editor.bracketmatching.IBracePairProvider;
 import org.eclipse.xtext.parser.IEncodingProvider;
 import org.eclipse.xtext.preferences.IPreferenceValuesProvider;
 import org.eclipse.xtext.resource.IExternalContentSupport;
@@ -40,6 +42,8 @@ import org.eclipse.xtext.resource.impl.LiveShadowedResourceDescriptions;
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider;
 import org.eclipse.xtext.service.AbstractGenericModule;
 import org.eclipse.xtext.service.DispatchingProvider;
+import org.eclipse.xtext.service.SingletonBinding;
+import org.eclipse.xtext.ui.IImageHelper.IImageDescriptorHelper;
 import org.eclipse.xtext.ui.containers.ContainerStateProvider;
 import org.eclipse.xtext.ui.editor.IDirtyStateManager;
 import org.eclipse.xtext.ui.editor.IURIEditorOpener;
@@ -52,12 +56,15 @@ import org.eclipse.xtext.ui.editor.XtextEditorErrorTickUpdater;
 import org.eclipse.xtext.ui.editor.actions.IActionContributor;
 import org.eclipse.xtext.ui.editor.autoedit.AbstractEditStrategyProvider;
 import org.eclipse.xtext.ui.editor.autoedit.DefaultAutoEditStrategyProvider;
+import org.eclipse.xtext.ui.editor.bracketmatching.BracePairMatcher;
 import org.eclipse.xtext.ui.editor.contentassist.DefaultCompletionProposalPostProcessor;
 import org.eclipse.xtext.ui.editor.contentassist.DefaultContentAssistantFactory;
 import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalPostProcessor;
 import org.eclipse.xtext.ui.editor.contentassist.IContentAssistantFactory;
 import org.eclipse.xtext.ui.editor.contentassist.ITemplateProposalProvider;
 import org.eclipse.xtext.ui.editor.contentassist.XtextContentAssistProcessor;
+import org.eclipse.xtext.ui.editor.copyqualifiedname.CopyQualifiedNameService;
+import org.eclipse.xtext.ui.editor.copyqualifiedname.DefaultCopyQualifiedNameService;
 import org.eclipse.xtext.ui.editor.formatting.ContentFormatterFactory;
 import org.eclipse.xtext.ui.editor.formatting.IContentFormatterFactory;
 import org.eclipse.xtext.ui.editor.formatting.PreferenceStoreIndentationInformation;
@@ -77,6 +84,7 @@ import org.eclipse.xtext.ui.editor.outline.actions.LinkWithEditorOutlineContribu
 import org.eclipse.xtext.ui.editor.outline.actions.SortOutlineContribution;
 import org.eclipse.xtext.ui.editor.outline.impl.OutlineFilterAndSorter.IComparator;
 import org.eclipse.xtext.ui.editor.outline.impl.OutlinePage;
+import org.eclipse.xtext.ui.editor.outline.quickoutline.IQuickOutlineContribution;
 import org.eclipse.xtext.ui.editor.preferences.IPreferenceStoreInitializer;
 import org.eclipse.xtext.ui.editor.quickfix.DefaultQuickfixProvider;
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionProvider;
@@ -90,14 +98,20 @@ import org.eclipse.xtext.ui.editor.templates.XtextTemplateContextTypeRegistry;
 import org.eclipse.xtext.ui.editor.templates.XtextTemplateStore;
 import org.eclipse.xtext.ui.editor.toggleComments.DefaultSingleLineCommentHelper;
 import org.eclipse.xtext.ui.editor.toggleComments.ISingleLineCommentHelper;
+import org.eclipse.xtext.ui.generator.EclipseBasedShouldGenerate;
 import org.eclipse.xtext.ui.label.DefaultDescriptionLabelProvider;
 import org.eclipse.xtext.ui.label.DefaultEObjectLabelProvider;
 import org.eclipse.xtext.ui.label.InjectableAdapterFactoryLabelProvider;
+import org.eclipse.xtext.ui.markers.IMarkerContributor;
 import org.eclipse.xtext.ui.preferences.EclipsePreferencesProvider;
 import org.eclipse.xtext.ui.resource.IResourceSetProvider;
 import org.eclipse.xtext.ui.resource.XtextResourceSetProvider;
+import org.eclipse.xtext.ui.tasks.TaskMarkerContributor;
+import org.eclipse.xtext.ui.validation.ConfigurableIssueCodesPreferenceStoreInitializer;
 import org.eclipse.xtext.ui.validation.LanguageAwareMarkerTypeProvider;
 import org.eclipse.xtext.ui.validation.MarkerTypeProvider;
+import org.eclipse.xtext.ui.workspace.EclipseProjectConfigProvider;
+import org.eclipse.xtext.workspace.IProjectConfigProvider;
 
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
@@ -137,6 +151,13 @@ public class DefaultUiModule extends AbstractGenericModule {
 		return PluginImageHelper.class;
 	}
 
+	/**
+	 * @since 2.4
+	 */
+	public Class<? extends IImageDescriptorHelper> bindIImageDescriptorHelper() {
+		return PluginImageHelper.class;
+	}
+
 	public Class<? extends IIndentationInformation> bindIIndentationInformation() {
 		return PreferenceStoreIndentationInformation.class;
 	}
@@ -171,9 +192,17 @@ public class DefaultUiModule extends AbstractGenericModule {
 	public Class<? extends IPresentationRepairer> bindIPresentationRepairer() {
 		return PresentationRepairer.class;
 	}
+	
+	/**
+	 * @since 2.8
+	 */
+	@SingletonBinding
+	public Class<? extends IBracePairProvider> bindIBracePairProvider() {
+		return DefaultBracePairProvider.class;
+	}
 
 	public ICharacterPairMatcher bindICharacterPairMatcher() {
-		return new DefaultCharacterPairMatcher(new char[] { '(', ')', '{', '}', '[', ']' });
+		return new BracePairMatcher();
 	}
 
 	public Class<? extends ITokenScanner> bindITokenScanner() {
@@ -303,8 +332,8 @@ public class DefaultUiModule extends AbstractGenericModule {
 	public void configureUiEncodingProvider(Binder binder) {
 		binder.bind(IEncodingProvider.class).annotatedWith(DispatchingProvider.Ui.class)
 				.to(WorkspaceEncodingProvider.class);
-	}	
-	
+	}
+
 	public Class<? extends IAllContainersState.Provider> bindIAllContainersState$Provider() {
 		return ContainerStateProvider.class;
 	}
@@ -317,10 +346,10 @@ public class DefaultUiModule extends AbstractGenericModule {
 		return XtextResourceSetProvider.class;
 	}
 
-	public Class<? extends IAnnotationHover> bindIAnnotationHover () {
-		return ProblemAnnotationHover.class;		
+	public Class<? extends IAnnotationHover> bindIAnnotationHover() {
+		return ProblemAnnotationHover.class;
 	}
-		 
+
 	public Class<? extends org.eclipse.jface.text.ITextHover> bindITextHover() {
 		return DefaultCompositeHover.class;
 	}
@@ -331,16 +360,17 @@ public class DefaultUiModule extends AbstractGenericModule {
 
 	public void configureMarkOccurrencesAction(Binder binder) {
 		binder.bind(IActionContributor.class).annotatedWith(Names.named("markOccurrences"))
-			.to(MarkOccurrenceActionContributor.class);
+				.to(MarkOccurrenceActionContributor.class);
 	}
 
 	/**
 	 * @since 2.1
 	 */
 	public void configureIResourceDescriptionsLiveScope(Binder binder) {
-		binder.bind(IResourceDescriptions.class).annotatedWith(Names.named(ResourceDescriptionsProvider.LIVE_SCOPE)).to(LiveShadowedResourceDescriptions.class);
+		binder.bind(IResourceDescriptions.class).annotatedWith(Names.named(ResourceDescriptionsProvider.LIVE_SCOPE))
+				.to(LiveShadowedResourceDescriptions.class);
 	}
-	
+
 	/**
 	 * @since 2.3
 	 */
@@ -355,13 +385,55 @@ public class DefaultUiModule extends AbstractGenericModule {
 		binder.bind(IPreferenceStoreInitializer.class).annotatedWith(Names.named("smartCaretPreferenceInitializer")) //$NON-NLS-1$
 				.to(SmartCaretPreferenceInitializer.class);
 	}
-	
+
 	/**
 	 * @since 2.4
 	 */
 	public Class<? extends IPreferenceValuesProvider> bindIPreferenceValuesProvider() {
 		return EclipsePreferencesProvider.class;
 	}
+
+	/**
+	 * @since 2.4
+	 */
+	public Class<? extends CopyQualifiedNameService> bindCopyQualifiedNameService() {
+		return DefaultCopyQualifiedNameService.class;
+	}
+
+	/**
+	 * @since 2.6
+	 */
+	public Class<? extends IMarkerContributor> bindMarkerContributor() {
+		return TaskMarkerContributor.class;
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	public void configureIQuickOutlineContribution$Composite(Binder binder) {
+		binder.bind(IPreferenceStoreInitializer.class).annotatedWith(IQuickOutlineContribution.All.class)
+				.to(IQuickOutlineContribution.Composite.class);
+	}
+	
+	/**
+	 * @since 2.8
+	 */
+	public void configureIssueCodesPreferenceInitializer(Binder binder) {
+		binder.bind(IPreferenceStoreInitializer.class).annotatedWith(Names.named("issueCodesPreferenceInitializer")) //$NON-NLS-1$
+			.to(ConfigurableIssueCodesPreferenceStoreInitializer.class);
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public Class<? extends IShouldGenerate> bindIShouldGenerate() {
+		return EclipseBasedShouldGenerate.class;
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public Class<? extends IProjectConfigProvider> bindProjectConfigProvider() {
+		return EclipseProjectConfigProvider.class;
+	}
 }
-
-

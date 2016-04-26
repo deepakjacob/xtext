@@ -7,8 +7,11 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.editor;
 
+import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IAutoEditStrategy;
@@ -20,6 +23,10 @@ import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.formatter.IContentFormatter;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
+import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
+import org.eclipse.jface.text.hyperlink.MultipleHyperlinkPresenter;
+import org.eclipse.jface.text.information.IInformationPresenter;
+import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.presentation.IPresentationDamager;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.IPresentationRepairer;
@@ -33,24 +40,36 @@ import org.eclipse.xtext.ui.editor.autoedit.AbstractEditStrategyProvider;
 import org.eclipse.xtext.ui.editor.contentassist.IContentAssistantFactory;
 import org.eclipse.xtext.ui.editor.doubleClicking.DoubleClickStrategyProvider;
 import org.eclipse.xtext.ui.editor.formatting.IContentFormatterFactory;
+import org.eclipse.xtext.ui.editor.hyperlinking.SingleHoverShowingHyperlinkPresenter;
 import org.eclipse.xtext.ui.editor.model.ITokenTypeToPartitionTypeMapper;
 import org.eclipse.xtext.ui.editor.quickfix.XtextQuickAssistAssistant;
+import org.eclipse.xtext.ui.editor.reconciler.XtextReconciler;
 import org.eclipse.xtext.ui.editor.toggleComments.ISingleLineCommentHelper;
 
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
+ * @author Holger Schill - Add InformationPresenter for https://bugs.eclipse.org/bugs/show_bug.cgi?id=419112
  */
 public class XtextSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
+	/**
+	 * Position category for Xtext templates.
+	 * 
+	 * @see org.eclipse.jface.text.IDocument#addPositionCategory(String)
+	 * @since 2.8
+	 */
+	public static final String XTEXT_TEMPLATE_POS_CATEGORY = "xtext_template_position_category";
+	
 	@Inject
 	private IContentAssistantFactory contentAssistantFactory;
 
 	@Inject
 	private IHyperlinkDetector detector;
-
+	
 	@Inject
 	private Provider<IReconciler> reconcilerProvider;
 
@@ -82,6 +101,9 @@ public class XtextSourceViewerConfiguration extends TextSourceViewerConfiguratio
 	private Provider<ITextHover> textHoverProvider;
 
 	private IEditorPart  editor;
+
+	@Inject
+	private XtextInformationProvider informationProvider;
 
 	/**
 	 * @since 2.4
@@ -125,6 +147,8 @@ public class XtextSourceViewerConfiguration extends TextSourceViewerConfiguratio
 	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 		IReconciler reconciler = reconcilerProvider.get();
+		if (reconciler instanceof XtextReconciler && editor instanceof XtextEditor) 
+			((XtextReconciler) reconciler).setEditor((XtextEditor) editor);
 		return reconciler;
 	}
 
@@ -158,10 +182,17 @@ public class XtextSourceViewerConfiguration extends TextSourceViewerConfiguratio
 		if (inheritedDetectors != null) {
 			for (final IHyperlinkDetector detector : inheritedDetectors) {
 				detectors.add(new IHyperlinkDetector() {
+					@Override
 					public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region,
 							boolean canShowMultipleHyperlinks) {
 						try {
-							return detector.detectHyperlinks(textViewer, region, canShowMultipleHyperlinks);
+							IHyperlink[] result = detector.detectHyperlinks(textViewer, region, canShowMultipleHyperlinks);
+							// fail safe detector: don't return an empty array
+							// but null (see org.eclipse.jface.text.hyperlink.HyperlinkManager.findHyperlinks(IRegion))
+							if (result != null && result.length == 0) {
+								return null;
+							}
+							return result;
 						}
 						catch (Throwable e) {
 							// fail safe hyperlink detector - prevent others
@@ -175,6 +206,24 @@ public class XtextSourceViewerConfiguration extends TextSourceViewerConfiguratio
 		}
 		detectors.add(detector);
 		return detectors.toArray(new IHyperlinkDetector[detectors.size()]);
+	}
+	
+	@Override
+	public IHyperlinkPresenter getHyperlinkPresenter(ISourceViewer sourceViewer) {
+		IHyperlinkPresenter base = super.getHyperlinkPresenter(sourceViewer);
+		try {
+			SingleHoverShowingHyperlinkPresenter wrapper = new SingleHoverShowingHyperlinkPresenter((MultipleHyperlinkPresenter) base);
+			Set<Class<?>> interfaces = Sets.newHashSet();
+			Class<?> c = base.getClass();
+			while(c != null) {
+				Collections.addAll(interfaces, c.getInterfaces());
+				c = c.getSuperclass();
+			}
+			IHyperlinkPresenter result = (IHyperlinkPresenter) Proxy.newProxyInstance(getClass().getClassLoader(), interfaces.toArray(new Class[0]), wrapper);	
+			return result;
+		} catch(Exception e) {
+			return base;
+		}
 	}
 
     @Override
@@ -235,6 +284,20 @@ public class XtextSourceViewerConfiguration extends TextSourceViewerConfiguratio
 
 	void setPreferenceStore(IPreferenceStore preferenceStore) {
 		this.fPreferenceStore = preferenceStore;
+	}
+
+	/**
+	 * @since 2.6
+	 */
+	@Override
+	public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer) {
+		InformationPresenter presenter = new InformationPresenter(getInformationControlCreator(sourceViewer));
+		String[] contentTypes= getConfiguredContentTypes(sourceViewer);
+		for (int i= 0; i < contentTypes.length; i++)
+			presenter.setInformationProvider(informationProvider, contentTypes[i]);
+		// sizes: see org.eclipse.jface.text.TextViewer.TEXT_HOVER_*_CHARS
+		presenter.setSizeConstraints(100, 12, true, true);
+		return presenter;
 	}
 
 	

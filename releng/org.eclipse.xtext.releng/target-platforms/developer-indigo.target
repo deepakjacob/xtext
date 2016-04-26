@@ -5,19 +5,22 @@
 <locations>
 <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.xpand.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases"/>
+<unit id="org.eclipse.emf.mwe2.language.sdk.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/composite/nightly"/>
 </location>
 <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.emf.sdk.feature.group" version="2.5.0.v200906151043"/>
 <unit id="org.eclipse.emf.compare.sdk.feature.group" version="1.0.1.v200909161031"/>
 <repository location="http://download.eclipse.org/modeling/emf/updates"/>
+</location>
+<location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.emf.sdk.feature.group" version="0.0.0"/>
+<repository location="http://download.eclipse.org/modeling/emf/emf/updates/2.12milestones"/>
 </location>
 <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jdt.feature.group" version="3.7.1.r371_v20110810-0800-7z8gFcoFMLfTabvKsR5Qm9rBGEBK"/>
 <unit id="org.eclipse.pde.core" version="0.0.0"/>
 <unit id="org.eclipse.pde.ui" version="0.0.0"/>
 <unit id="org.junit4" version="0.0.0"/>
-<unit id="org.junit" version="0.0.0"/>
 <repository location="http://download.eclipse.org/eclipse/updates/3.7"/>
 </location>
 <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -27,6 +30,7 @@
 <unit id="org.aopalliance" version="0.0.0"/>
 <unit id="org.easymock" version="0.0.0"/>
 <unit id="org.antlr.runtime" version="0.0.0"/>
+<unit id="org.junit" version="0.0.0"/>
 <unit id="javax.inject" version="0.0.0"/>
 <unit id="org.objectweb.asm" version="0.0.0"/>
 <repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/orbit"/>
@@ -37,11 +41,11 @@
 </location>
 <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.itemis.xtext.antlr.sdk.feature.group" version="0.0.0"/>
-<repository location="http://download.itemis.com/updates/releases/2.0.0"/>
+<repository location="http://download.itemis.com/updates/releases/2.1.1"/>
 </location>
 <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.jdt.annotation" version="0.0.0"/>
-<repository location="http://download.eclipse.org/eclipse/updates/3.8"/>
+<unit id="org.eclipse.m2e.core" version="0.0.0"/>
+<repository location="http://download.eclipse.org/technology/m2e/releases/1.1"/>
 </location>
 </locations>
 </target>

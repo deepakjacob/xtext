@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * Copyright (c) 2015 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *******************************************************************************/
 package org.eclipse.xtext.example.arithmetics.serializer;
 
 import com.google.inject.Inject;
@@ -39,25 +46,39 @@ public class ArithmeticsSyntacticSequencer extends AbstractSyntacticSequencer {
 		List<INode> transitionNodes = collectNodes(fromNode, toNode);
 		for (AbstractElementAlias syntax : transition.getAmbiguousSyntaxes()) {
 			List<INode> syntaxNodes = getNodesFor(transitionNodes, syntax);
-			if(match_PrimaryExpression_LeftParenthesisKeyword_0_0_a.equals(syntax))
+			if (match_PrimaryExpression_LeftParenthesisKeyword_0_0_a.equals(syntax))
 				emit_PrimaryExpression_LeftParenthesisKeyword_0_0_a(semanticObject, getLastNavigableState(), syntaxNodes);
-			else if(match_PrimaryExpression_LeftParenthesisKeyword_0_0_p.equals(syntax))
+			else if (match_PrimaryExpression_LeftParenthesisKeyword_0_0_p.equals(syntax))
 				emit_PrimaryExpression_LeftParenthesisKeyword_0_0_p(semanticObject, getLastNavigableState(), syntaxNodes);
 			else acceptNodes(getLastNavigableState(), syntaxNodes);
 		}
 	}
 
 	/**
-	 * Syntax:
+	 * Ambiguous syntax:
 	 *     '('*
+	 *
+	 * This ambiguous syntax occurs at:
+	 *     (rule start) (ambiguity) func=[AbstractDefinition|ID]
+	 *     (rule start) (ambiguity) value=NUMBER
+	 *     (rule start) (ambiguity) {Div.left=}
+	 *     (rule start) (ambiguity) {Minus.left=}
+	 *     (rule start) (ambiguity) {Multi.left=}
+	 *     (rule start) (ambiguity) {Plus.left=}
 	 */
 	protected void emit_PrimaryExpression_LeftParenthesisKeyword_0_0_a(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);
 	}
 	
 	/**
-	 * Syntax:
+	 * Ambiguous syntax:
 	 *     '('+
+	 *
+	 * This ambiguous syntax occurs at:
+	 *     (rule start) (ambiguity) {Div.left=}
+	 *     (rule start) (ambiguity) {Minus.left=}
+	 *     (rule start) (ambiguity) {Multi.left=}
+	 *     (rule start) (ambiguity) {Plus.left=}
 	 */
 	protected void emit_PrimaryExpression_LeftParenthesisKeyword_0_0_p(EObject semanticObject, ISynNavigable transition, List<INode> nodes) {
 		acceptNodes(transition, nodes);

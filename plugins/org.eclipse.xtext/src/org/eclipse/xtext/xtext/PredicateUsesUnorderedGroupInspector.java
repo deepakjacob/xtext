@@ -149,7 +149,10 @@ public class PredicateUsesUnorderedGroupInspector extends XtextSwitch<Boolean> i
 	public Boolean caseParserRule(ParserRule object) {
 		if (!validatedRules.add(object))
 			return Boolean.FALSE;
-		return doSwitch(object.getAlternatives());
+		AbstractElement alternatives = object.getAlternatives();
+		if (alternatives == null)
+			return Boolean.FALSE;
+		return doSwitch(alternatives);
 	}
 
 	public void createErrorMessages(UnorderedGroup object) {
@@ -178,28 +181,34 @@ public class PredicateUsesUnorderedGroupInspector extends XtextSwitch<Boolean> i
 		}
 	}
 
+	@Override
 	public void acceptError(String message, EObject object, EStructuralFeature feature, int index, String code, String... issueData) {
 		if (erroneousElements.add(object) && EcoreUtil.isAncestor(inspectedGrammar, object))
 			validationMessageAcceptor.acceptError(message, object, feature, index, code, issueData);			
 	}
 
+	@Override
 	public void acceptWarning(String message, EObject object, EStructuralFeature feature, int index, String code, String... issueData) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void acceptError(String message, EObject object, int offset, int length, String code, String... issueData) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void acceptWarning(String message, EObject object, int offset, int length, String code, String... issueData) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void acceptInfo(String message, EObject object, EStructuralFeature feature, int index, String code,
 			String... issueData) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void acceptInfo(String message, EObject object, int offset, int length, String code, String... issueData) {
 		throw new UnsupportedOperationException();
 	}

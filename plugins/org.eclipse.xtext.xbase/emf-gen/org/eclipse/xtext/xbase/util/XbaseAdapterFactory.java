@@ -152,6 +152,21 @@ public class XbaseAdapterFactory extends AdapterFactoryImpl
 				return createXStringLiteralAdapter();
 			}
 			@Override
+			public Adapter caseXCollectionLiteral(XCollectionLiteral object)
+			{
+				return createXCollectionLiteralAdapter();
+			}
+			@Override
+			public Adapter caseXListLiteral(XListLiteral object)
+			{
+				return createXListLiteralAdapter();
+			}
+			@Override
+			public Adapter caseXSetLiteral(XSetLiteral object)
+			{
+				return createXSetLiteralAdapter();
+			}
+			@Override
 			public Adapter caseXClosure(XClosure object)
 			{
 				return createXClosureAdapter();
@@ -172,9 +187,19 @@ public class XbaseAdapterFactory extends AdapterFactoryImpl
 				return createXUnaryOperationAdapter();
 			}
 			@Override
+			public Adapter caseXPostfixOperation(XPostfixOperation object)
+			{
+				return createXPostfixOperationAdapter();
+			}
+			@Override
 			public Adapter caseXForLoopExpression(XForLoopExpression object)
 			{
 				return createXForLoopExpressionAdapter();
+			}
+			@Override
+			public Adapter caseXBasicForLoopExpression(XBasicForLoopExpression object)
+			{
+				return createXBasicForLoopExpressionAdapter();
 			}
 			@Override
 			public Adapter caseXAbstractWhileExpression(XAbstractWhileExpression object)
@@ -225,6 +250,11 @@ public class XbaseAdapterFactory extends AdapterFactoryImpl
 			public Adapter caseXReturnExpression(XReturnExpression object)
 			{
 				return createXReturnExpressionAdapter();
+			}
+			@Override
+			public Adapter caseXSynchronizedExpression(XSynchronizedExpression object)
+			{
+				return createXSynchronizedExpressionAdapter();
 			}
 			@Override
 			public Adapter caseJvmIdentifiableElement(JvmIdentifiableElement object)
@@ -464,6 +494,51 @@ public class XbaseAdapterFactory extends AdapterFactoryImpl
 	}
 
 	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XCollectionLiteral <em>XCollection Literal</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.xtext.xbase.XCollectionLiteral
+	 * @generated
+	 */
+	public Adapter createXCollectionLiteralAdapter()
+	{
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XListLiteral <em>XList Literal</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.xtext.xbase.XListLiteral
+	 * @generated
+	 */
+	public Adapter createXListLiteralAdapter()
+	{
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XSetLiteral <em>XSet Literal</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.xtext.xbase.XSetLiteral
+	 * @generated
+	 */
+	public Adapter createXSetLiteralAdapter()
+	{
+		return null;
+	}
+
+	/**
 	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XClosure <em>XClosure</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
@@ -524,6 +599,21 @@ public class XbaseAdapterFactory extends AdapterFactoryImpl
 	}
 
 	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XPostfixOperation <em>XPostfix Operation</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.xtext.xbase.XPostfixOperation
+	 * @generated
+	 */
+	public Adapter createXPostfixOperationAdapter()
+	{
+		return null;
+	}
+
+	/**
 	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XForLoopExpression <em>XFor Loop Expression</em>}'.
 	 * <!-- begin-user-doc -->
 	 * This default implementation returns null so that we can easily ignore cases;
@@ -534,6 +624,21 @@ public class XbaseAdapterFactory extends AdapterFactoryImpl
 	 * @generated
 	 */
 	public Adapter createXForLoopExpressionAdapter()
+	{
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XBasicForLoopExpression <em>XBasic For Loop Expression</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.xtext.xbase.XBasicForLoopExpression
+	 * @generated
+	 */
+	public Adapter createXBasicForLoopExpressionAdapter()
 	{
 		return null;
 	}
@@ -684,6 +789,21 @@ public class XbaseAdapterFactory extends AdapterFactoryImpl
 	 * @generated
 	 */
 	public Adapter createXReturnExpressionAdapter()
+	{
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XSynchronizedExpression <em>XSynchronized Expression</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.xtext.xbase.XSynchronizedExpression
+	 * @generated
+	 */
+	public Adapter createXSynchronizedExpressionAdapter()
 	{
 		return null;
 	}

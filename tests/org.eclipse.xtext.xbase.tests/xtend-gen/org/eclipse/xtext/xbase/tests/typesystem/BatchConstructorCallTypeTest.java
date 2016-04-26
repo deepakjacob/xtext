@@ -32,6 +32,7 @@ public class BatchConstructorCallTypeTest extends AbstractConstructorCallTypeTes
     return this.batchTypeResolver;
   }
   
+  @Override
   public void resolvesConstructorCallsTo(final String expression, final String... types) {
     final String expressionWithQualifiedNames = expression.replace("$$", "org::eclipse::xtext::xbase::lib::");
     final List<XConstructorCall> featureCalls = this.findConstructorCalls(expressionWithQualifiedNames);
@@ -43,17 +44,18 @@ public class BatchConstructorCallTypeTest extends AbstractConstructorCallTypeTes
     IBatchTypeResolver _typeResolver = this.getTypeResolver();
     XConstructorCall _head = IterableExtensions.<XConstructorCall>head(featureCalls);
     final IResolvedTypes resolvedTypes = _typeResolver.resolveTypes(_head);
-    final Procedure2<XConstructorCall,Integer> _function = new Procedure2<XConstructorCall,Integer>() {
-        public void apply(final XConstructorCall featureCall, final Integer index) {
-          final LightweightTypeReference type = resolvedTypes.getActualType(featureCall);
-          StringConcatenation _builder = new StringConcatenation();
-          _builder.append("failed for constructor call at ");
-          _builder.append(index, "");
-          String _get = ((List<String>)Conversions.doWrapArray(types)).get((index).intValue());
-          String _simpleName = type.getSimpleName();
-          Assert.assertEquals(_builder.toString(), _get, _simpleName);
-        }
-      };
+    final Procedure2<XConstructorCall, Integer> _function = new Procedure2<XConstructorCall, Integer>() {
+      @Override
+      public void apply(final XConstructorCall featureCall, final Integer index) {
+        final LightweightTypeReference type = resolvedTypes.getActualType(featureCall);
+        StringConcatenation _builder = new StringConcatenation();
+        _builder.append("failed for constructor call at ");
+        _builder.append(index, "");
+        Object _get = types[(index).intValue()];
+        String _simpleName = type.getSimpleName();
+        Assert.assertEquals(_builder.toString(), _get, _simpleName);
+      }
+    };
     IterableExtensions.<XConstructorCall>forEach(featureCalls, _function);
   }
 }

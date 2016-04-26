@@ -7,6 +7,7 @@ import org.eclipse.xtext.AbstractRule
 import org.eclipse.xtext.Grammar
 import org.eclipse.xtext.TypeRef
 import org.eclipse.xtext.generator.Naming
+import org.eclipse.xtext.xtext.RuleNames
 
 import static extension org.eclipse.xtext.GrammarUtil.*
 
@@ -20,7 +21,7 @@ class GrammarAccess {
 	@Inject Naming naming
 	
 	/**
-	 * Returns the invokation of the element accessor method as full qualified Java statement.
+	 * Returns the invocation of the element accessor method as full qualified Java statement.
 	 * Example: return FowlerDslTestLanguageGrammarAccess.INSTANCE.prStatemachine().ele1AssignmentStates()
 	 * @param ele the element
 	 * @return The java statement
@@ -30,8 +31,8 @@ class GrammarAccess {
 	}
 
 	/**
-	 * Converts an arbitary string to a valid Java identifier
-	 * The string is being split up along the the caracters that are not valid as java 
+	 * Converts an arbitary string to a valid Java identifier.
+	 * The string is split up along the the characters that are not valid as Java 
 	 * identifier. The first character of each segments is made upper case which 
 	 * leads to a camel-case style.
 	 * @param text the string
@@ -39,7 +40,7 @@ class GrammarAccess {
 	 * @return the java identifier
 	 */
 	def String toJavaIdentifier(String text, boolean uppercaseFirst) {
-		GrammarAccessUtil::toJavaIdentifier(text, uppercaseFirst)
+		GrammarAccessUtil.toJavaIdentifier(text, uppercaseFirst)
 	}
 		
 	/** 
@@ -49,7 +50,8 @@ class GrammarAccess {
 	 * @return the identifier
 	 */
 	def String gaRuleIdentifyer(AbstractRule rule) {
-		rule.name.toJavaIdentifier(true)
+		val plainName = RuleNames.getRuleNames(rule).getUniqueRuleName(rule);
+		return toJavaIdentifier(plainName, true);
 	}
 		
 	/**
@@ -60,15 +62,15 @@ class GrammarAccess {
 	 * @return the element's identifier
 	 */
 	def String gaElementIdentifyer(AbstractElement element) {
-		GrammarAccessUtil::getUniqueElementName(element);
+		GrammarAccessUtil.getUniqueElementName(element);
 	}
 	/**
 	 * Returns the full qulified Java class name of a GrammarAccess implementation for a grammar.
-	 * @param grammar 
+	 * @param grammar the grammar
 	 * @return the GrammarAccess' full qualified Java class name
 	 */
 	def String gaFQName(Grammar grammar) {
-		GrammarAccessUtil::getGrammarAccessFQName(grammar, naming)
+		GrammarAccessUtil.getGrammarAccessFQName(grammar, naming)
 	}
 
 	/**
@@ -111,7 +113,7 @@ class GrammarAccess {
 	/**
 	 * Returns the simple class name of a rule's facade. A GrammarAccess implementation has
 	 * a facade for each parser rule, which contains the methods for accessing the rule's elements.
-	 * @param rule
+	 * @param rule ruleName
 	 * @return the simple class name
 	 */	
 	def String gaRuleAccesorClassName(AbstractRule rule) {
@@ -119,7 +121,7 @@ class GrammarAccess {
 	}
 		
 	/**
-	 * Returns the invokation of the rule accessor method as Java statement.
+	 * Returns the invocation of the rule accessor method as Java statement.
 	 * @param rule the rule
 	 * @return The java statement
 	 */	
@@ -128,7 +130,7 @@ class GrammarAccess {
 	}
 	
 	/**
-	 * Returns the invokation of the rule's content accessor method as Java statement.
+	 * Returns the invocation of the rule's content accessor method as Java statement.
 	 * @param rule the rule
 	 * @return The java statement
 	 */	
@@ -137,7 +139,7 @@ class GrammarAccess {
 	}
 		
 	/**
-	 * Returns the invokation of the element accessor method as Java statement.
+	 * Returns the invocation of the element accessor method as Java statement.
 	 * The called method is implemented by the rule's facade.
 	 * Example: ele1AssignmentStates()
 	 * @param ele the element
@@ -148,7 +150,7 @@ class GrammarAccess {
 	}
 		
 	/**
-	 * Returns the invokation of the element accessor method for a GrammarAccess 
+	 * Returns the invocation of the element accessor method for a GrammarAccess 
 	 * as Java statement.
 	 * Example: prStatemachine().ele1AssignmentStates()
 	 * @param ele the element
@@ -159,7 +161,7 @@ class GrammarAccess {
 	}
 	
 	/**
-	 * Returns the invokation of an element or rule accessor, including the .getType() call.
+	 * Returns the invocation of an element or rule accessor, including the .getType() call.
 	 * Example1: getFooRule().getType()
 	 * Example2: getBarRule().getFooAction().getType()
 	 */
@@ -171,7 +173,7 @@ class GrammarAccess {
 		};
 	}
 	/**
-	 * Returns the invokation of an element or rule accessor.
+	 * Returns the invocation of an element or rule accessor.
 	 * Example1: getFooRule()
 	 * Example2: getBarRule().getFooAction()
 	 */
@@ -186,7 +188,7 @@ class GrammarAccess {
 	 *
 	 */
 	def String grammarFragmentToStr(EObject ele, String prefix) {
-		GrammarAccessUtil::serialize(ele, prefix);
+		GrammarAccessUtil.serialize(ele, prefix);
 	}
 	
 }

@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.mwe.core.issues.Issues;
+import org.eclipse.xpand2.XpandExecutionContext;
+import org.eclipse.xpand2.XpandFacade;
 import org.eclipse.xtext.Grammar;
 import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.generator.AbstractGeneratorFragment;
@@ -23,12 +25,15 @@ import org.eclipse.xtext.generator.Binding;
 import org.eclipse.xtext.generator.IGenerator;
 import org.eclipse.xtext.generator.IGeneratorFragment;
 import org.eclipse.xtext.generator.IStubGenerating;
+import org.eclipse.xtext.generator.LanguageConfig;
 import org.eclipse.xtext.generator.Naming;
 import org.eclipse.xtext.generator.xbase.XbaseGeneratorFragment;
 import org.eclipse.xtext.util.Strings;
 
+import com.google.common.collect.Lists;
+
 /**
- * An {@link IGeneratorFragment} to create a formatter for an Xtext language.
+ * An {@link IGeneratorFragment} to create a generator for an Xtext language.
  *
  * @author Sven Efftinge - Initial contribution and API
  * @author Jan Koehnlein
@@ -60,10 +65,12 @@ public class GeneratorFragment extends AbstractGeneratorFragment implements IStu
 		setGenerateStub(isGenerateStub);
 	}		
 	
+	@Override
 	public void setGenerateStub(boolean isGenerateStub) {
 		this.generateStub = isGenerateStub;
 	}
 	
+	@Override
 	public boolean isGenerateStub() {
 		return generateStub;
 	}
@@ -106,8 +113,17 @@ public class GeneratorFragment extends AbstractGeneratorFragment implements IStu
 	}
 	
 	@Override
+	public void addToPluginXmlUi(LanguageConfig config, XpandExecutionContext ctx) {
+		Grammar grammar = config.getGrammar();
+		List<Object> parameters = newArrayList();
+		parameters.addAll(getParameters(grammar));
+		parameters.add(config.getFileExtensions(grammar));
+		XpandFacade.create(ctx).evaluate2(getTemplate() + "::addToPluginXmlUi", grammar, parameters);
+	}
+	
+	@Override
 	protected List<Object> getParameters(Grammar grammar) {
-		return newArrayList((Object)isGenerateStub(grammar), (Object)isGenerateMwe(grammar), (Object)isGenerateJavaMain(grammar), (Object)isGenerateXtendMain(grammar));
+		return Lists.<Object>newArrayList(isGenerateStub(grammar), isGenerateMwe(grammar), isGenerateJavaMain(grammar), isGenerateXtendMain(grammar));
 	}
 	
 	@Override
@@ -119,15 +135,27 @@ public class GeneratorFragment extends AbstractGeneratorFragment implements IStu
 
 	@Override
 	public String[] getImportedPackagesRt(Grammar grammar) {
+		return Strings.EMPTY_ARRAY;
+	}
+	
+	@Override
+	public String[] getRequiredBundlesRt(Grammar grammar) {
 		if (isGenerateStub(grammar))
 			return new String[] {
 					"org.eclipse.xtext.xbase.lib"
 			};
 		return Strings.EMPTY_ARRAY;
 	}
+	
+	@Override
+	public String[] getRequiredBundlesUi(Grammar grammar) {
+		return new String[] {
+				"org.eclipse.xtext.builder"
+		};
+	}
 
 	public static String getGeneratorName(Grammar grammar, Naming naming) {
-		return naming.basePackageRuntime(grammar) + ".generator." + GrammarUtil.getName(grammar) + "Generator";
+		return naming.basePackageRuntime(grammar) + ".generator." + GrammarUtil.getSimpleName(grammar) + "Generator";
 	}
 
 	@Override

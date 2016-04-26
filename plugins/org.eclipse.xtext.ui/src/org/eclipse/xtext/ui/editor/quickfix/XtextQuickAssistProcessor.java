@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -46,13 +47,15 @@ public class XtextQuickAssistProcessor extends AbstractIssueResolutionProviderAd
 	
 	@Inject
 	private ICompletionProposalComparator comparator;
-
+	
 	private String errorMessage;
 
+	@Override
 	public String getErrorMessage() {
 		return errorMessage;
 	}
 
+	@Override
 	public boolean canFix(Annotation annotation) {
 		if (annotation.isMarkedDeleted())
 			return false;
@@ -79,14 +82,21 @@ public class XtextQuickAssistProcessor extends AbstractIssueResolutionProviderAd
 		return false;
 	}
 
+	@Override
 	public boolean canAssist(IQuickAssistInvocationContext invocationContext) {
 		return false;
 	}
 
+	@Override
 	public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext invocationContext) {
 		ISourceViewer sourceViewer = invocationContext.getSourceViewer();
 		if (sourceViewer == null)
 			return new ICompletionProposal[0];
+		if (invocationContext instanceof QuickAssistInvocationContext) {
+			if (((QuickAssistInvocationContext) invocationContext).isCancelled()) {
+				return new ICompletionProposal[0];
+			}
+		}
 		final IDocument document = sourceViewer.getDocument();
 		if (!(document instanceof IXtextDocument))
 			return new ICompletionProposal[0];
@@ -99,6 +109,8 @@ public class XtextQuickAssistProcessor extends AbstractIssueResolutionProviderAd
             selectAndRevealQuickfix(invocationContext, applicableAnnotations, result);
 		} catch (BadLocationException e) {
 			errorMessage = e.getMessage();
+		} catch (OperationCanceledException e) {
+			return new ICompletionProposal[0];
 		}
 		sortQuickfixes(result);
 		return result.toArray(new ICompletionProposal[result.size()]);

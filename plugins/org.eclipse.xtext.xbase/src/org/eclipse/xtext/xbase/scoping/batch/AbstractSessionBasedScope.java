@@ -8,28 +8,40 @@
 package org.eclipse.xtext.xbase.scoping.batch;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.common.types.JvmFeature;
+import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.scoping.impl.AbstractScope;
-import org.eclipse.xtext.util.Strings;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
 import org.eclipse.xtext.xbase.XAssignment;
+import org.eclipse.xtext.xbase.typesystem.override.IResolvedFeatures;
+import org.eclipse.xtext.xbase.util.PropertyUtil;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.inject.Provider;
 
 /**
+ * Abstract scope implementation that is based on an {@link IFeatureScopeSession}.
+ * The scope can only handle {@link XAbstractFeatureCall#getFeature() feature} references.
+ * It does not support case insensitivity.
+ * 
+ * Clients may extend concrete subtypes and adjust the name processing or apply general
+ * filtering by overriding {@link #addToList(IEObjectDescription, List)} or {@link #addToList(List, List)}.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 public abstract class AbstractSessionBasedScope extends AbstractScope {
 
 	protected interface NameAcceptor {
-		// TODO implementations should consider the order indicator in order to shadow properly
+		// TODO implementations may consider the order indicator to implement proper shadowing
 		// TODO define constants for the order indicator
 		void accept(String simpleName, int order);
 	}
@@ -46,6 +58,9 @@ public abstract class AbstractSessionBasedScope extends AbstractScope {
 		this.featureCall = featureCall;
 	}
 	
+	@Override
+	protected abstract List<IEObjectDescription> getAllLocalElements();
+	
 	protected IFeatureScopeSession getSession() {
 		return session;
 	}
@@ -58,20 +73,101 @@ public abstract class AbstractSessionBasedScope extends AbstractScope {
 		acceptor.accept(name.toString(), 1);
 	}
 	
+	protected List<JvmFeature> findAllFeaturesByName(JvmType type, String simpleName, IResolvedFeatures.Provider resolvedFeaturesProvider) {
+		IResolvedFeatures resolvedFeatures = resolvedFeaturesProvider.getResolvedFeatures(type);
+		return resolvedFeatures.getAllFeatures(simpleName);
+	}
+	
+	/**
+	 * Considers the given name to be a property name. If the concrete syntax of the
+	 * processed feature matches a feature call or assignment, a prefix is added to the
+	 * name and that one is used as a variant that should be processed. 
+	 */
 	protected void processAsPropertyNames(QualifiedName name, NameAcceptor acceptor) {
-		if (getFeatureCall() instanceof XAssignment) {
-			String aliasedSetter = "set" + Strings.toFirstUpper(name.toString());
-			acceptor.accept(aliasedSetter, 2);
-		} else {
-			String aliasedGetter = "get" + Strings.toFirstUpper(name.toString());
-			acceptor.accept(aliasedGetter, 2);
-			String aliasedBooleanGetter = "is" + Strings.toFirstUpper(name.toString());
-			acceptor.accept(aliasedBooleanGetter, 2);
+		String nameAsPropertyName = tryGetAsPropertyName(name.toString());
+		if (nameAsPropertyName != null) {
+			if (featureCall == null || featureCall instanceof XAssignment) {
+				String aliasedSetter = "set" + nameAsPropertyName;
+				acceptor.accept(aliasedSetter, 2);
+			}
+			if (!(featureCall instanceof XAssignment)) {
+				if (featureCall == null || !getFeatureCall().isExplicitOperationCallOrBuilderSyntax()) {
+					String aliasedGetter = "get" + nameAsPropertyName;
+					acceptor.accept(aliasedGetter, 2);
+					String aliasedBooleanGetter = "is" + nameAsPropertyName;
+					acceptor.accept(aliasedBooleanGetter, 2);
+				}
+			}
 		}
 	}
 	
+	protected String toProperty(String methodName, JvmFeature feature) {
+		return toProperty(methodName, feature, 0, 1);
+	}
+	
+	protected String toProperty(String methodName, JvmFeature feature, int getterParams, int setterParams) {
+		return PropertyUtil.getPropertyName(feature, methodName, getterParams, setterParams);
+	}
+	
+	/**
+	 * Returns the name as a property name, e.g. a prefix {@code get}, {@code is} or {@code set} 
+	 * can be used with the result of this method.
+	 * If the given name is invalid, the result is <code>null</code>.
+	 */
+	/* @Nullable */
+	protected String tryGetAsPropertyName(String name) {
+		if (name.length() == 1) { // e.g. Point.getX()
+			if (Character.isUpperCase(name.charAt(0))) {
+				// X is not a valid sugar for getX()
+				return null;
+			}
+			// x is a valid sugar for getX
+			return name.toUpperCase(Locale.ENGLISH);
+		} else if (name.length() > 1) {
+			if (Character.isUpperCase(name.charAt(1))) { // e.g. Resource.getURI
+				// if second char is uppercase, the name itself is the sugar variant
+				// URI is the property name for getURI
+				if (Character.isUpperCase(name.charAt(0))) {
+					return name;
+				}
+				// if the first character is not upper case, it's not a valid sugar variant
+				// e.g. uRI is no sugar access for getURI
+				return null;
+			} else if (Character.isUpperCase(name.charAt(0))) {
+				// the first character is upper case, it is not valid property sugar, e.g.
+				// Class.CanonicalName does not map to Class.getCanonicalName
+				return null;
+			} else {
+				// code from java.beans.NameGenerator.capitalize()
+				return name.substring(0, 1).toUpperCase(Locale.ENGLISH) + name.substring(1);
+			}
+		}
+		// length 0 is invalid
+		return null;
+	}
+	
+	/**
+	 * Clients may override to reject certain descriptions from the result. All subtypes of {@link AbstractSessionBasedScope}
+	 * in the framework code will delegate to this method to accumulate descriptions in a list.
+	 * 
+	 * @see #addToList(List, List)
+	 */
+	protected void addToList(IEObjectDescription description, List<IEObjectDescription> result) {
+		result.add(description);
+	}
+	
+	/**
+	 * Clients may override to reject certain descriptions from the result. All subtypes of {@link AbstractSessionBasedScope}
+	 * in the framework code will delegate to this method to accumulate descriptions in a list.
+	 * 
+	 * @see #addToList(IEObjectDescription, List)
+	 */
+	protected void addToList(List<IEObjectDescription> descriptions, List<IEObjectDescription> result) {
+		result.addAll(descriptions);
+	}
+	
 	@Override
-	protected abstract Collection<IEObjectDescription> getLocalElementsByName(QualifiedName name);
+	protected abstract List<IEObjectDescription> getLocalElementsByName(QualifiedName name);
 	
 	@Override
 	public Iterable<IEObjectDescription> getElements(final QualifiedName name) {
@@ -79,6 +175,7 @@ public abstract class AbstractSessionBasedScope extends AbstractScope {
 		if (localElements.isEmpty())
 			return getParent().getElements(name);
 		Iterable<IEObjectDescription> parentElements = getParentElements(new Provider<Iterable<IEObjectDescription>>() {
+			@Override
 			public Iterable<IEObjectDescription> get() {
 				return getParent().getElements(name);
 			}
@@ -92,6 +189,7 @@ public abstract class AbstractSessionBasedScope extends AbstractScope {
 	protected Iterable<IEObjectDescription> getLocalElementsByEObject(final EObject object, final URI uri) {
 		Iterable<IEObjectDescription> localElements = getAllLocalElements();
 		Iterable<IEObjectDescription> result = Iterables.filter(localElements, new Predicate<IEObjectDescription>() {
+			@Override
 			public boolean apply(IEObjectDescription input) {
 				if (input.getEObjectOrProxy() == object)
 					return canBeFoundByNameAndShadowingKey(input);
@@ -141,5 +239,5 @@ public abstract class AbstractSessionBasedScope extends AbstractScope {
 		}
 		return false;
 	}
-
+	
 }

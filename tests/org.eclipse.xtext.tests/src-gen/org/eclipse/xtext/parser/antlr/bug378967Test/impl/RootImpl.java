@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.parser.antlr.bug378967Test.impl;
 
@@ -24,10 +21,10 @@ import org.eclipse.xtext.parser.antlr.bug378967Test.Root;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.parser.antlr.bug378967Test.impl.RootImpl#getElement <em>Element</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

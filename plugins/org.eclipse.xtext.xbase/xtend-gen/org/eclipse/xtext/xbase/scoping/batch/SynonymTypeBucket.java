@@ -8,42 +8,40 @@
 package org.eclipse.xtext.xbase.scoping.batch;
 
 import java.util.List;
-import java.util.Set;
-import org.eclipse.xtend.lib.Data;
+import org.eclipse.xtend.lib.annotations.Data;
 import org.eclipse.xtext.common.types.JvmType;
-import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
+import org.eclipse.xtext.xbase.lib.Pure;
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
 import org.eclipse.xtext.xbase.scoping.batch.TypeBucket;
-import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
+import org.eclipse.xtext.xbase.typesystem.override.IResolvedFeatures;
 
 /**
  * A type bucket that was produced from the synonym of a type.
- * It tracks the conformance hints for a synonym, e.g. boxing or unboxing information.
+ * It tracks the conformance flags for a synonym, e.g. boxing or unboxing information.
  * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 @Data
 @SuppressWarnings("all")
 public class SynonymTypeBucket extends TypeBucket {
-  private final Set<ConformanceHint> _hints;
+  private final int flags;
   
-  public Set<ConformanceHint> getHints() {
-    return this._hints;
-  }
-  
-  public SynonymTypeBucket(final int id, final List<JvmType> types, final Set<ConformanceHint> hints) {
-    super(id, types);
-    this._hints = hints;
+  public SynonymTypeBucket(final int id, final List<? extends JvmType> types, final IResolvedFeatures.Provider resolvedFeaturesProvider, final int flags) {
+    super(id, types, resolvedFeaturesProvider);
+    this.flags = flags;
   }
   
   @Override
+  @Pure
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + ((_hints== null) ? 0 : _hints.hashCode());
+    result = prime * result + this.flags;
     return result;
   }
   
   @Override
+  @Pure
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
@@ -54,17 +52,22 @@ public class SynonymTypeBucket extends TypeBucket {
     if (!super.equals(obj))
       return false;
     SynonymTypeBucket other = (SynonymTypeBucket) obj;
-    if (_hints == null) {
-      if (other._hints != null)
-        return false;
-    } else if (!_hints.equals(other._hints))
+    if (other.flags != this.flags)
       return false;
     return true;
   }
   
   @Override
+  @Pure
   public String toString() {
-    String result = new ToStringHelper().toString(this);
+    String result = new ToStringBuilder(this)
+    	.addAllFields()
+    	.toString();
     return result;
+  }
+  
+  @Pure
+  public int getFlags() {
+    return this.flags;
   }
 }

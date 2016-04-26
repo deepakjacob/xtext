@@ -25,10 +25,12 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.util.jdt.IJavaElementFinder;
-import org.eclipse.xtext.generator.IDerivedResourceMarkers;
-import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
@@ -37,6 +39,7 @@ import org.eclipse.xtext.parsetree.reconstr.impl.NodeIterator;
 import org.eclipse.xtext.resource.FileExtensionProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.ui.editor.XtextEditor;
+import org.eclipse.xtext.ui.generator.IDerivedResourceMarkers;
 import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations;
 
@@ -52,8 +55,6 @@ public class JavaElementDelegate implements IAdaptable {
 
 	private IEditorPart editor;
 	private IResource resource;
-	private IFileEditorInput editorInput;
-
 	@Inject
 	private IDerivedResourceMarkers derivedResourceMarkers;
 
@@ -61,44 +62,41 @@ public class JavaElementDelegate implements IAdaptable {
 	private FileExtensionProvider fileExtensionProvider;
 	
 	@Inject
-	private IQualifiedNameProvider nameProvider;
-	
-	@Inject
 	private IJvmModelAssociations associations;
 	
 	@Inject
 	private IJavaElementFinder elementFinder;
+	@Inject
+	private IWorkbench workbench;
 
 	public void initializeWith(IEditorPart editorInput) {
 		this.editor = editorInput;
 	}
 
 	public void initializeWith(IFileEditorInput editorInput) {
-		this.editorInput = editorInput;
+		this.resource = editorInput.getFile();
+		IWorkbenchWindow activeWorkbenchWindow = workbench.getActiveWorkbenchWindow();
+		if (activeWorkbenchWindow != null) {
+			IWorkbenchPage activePage = activeWorkbenchWindow.getActivePage();
+			this.editor = activePage != null ? activePage.findEditor(editorInput) : null;
+		}
 	}
 
 	public void initializeWith(IResource resource) {
 		this.resource = resource;
 	}
 
+	@Override
 	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
 		if (IJavaElement.class.equals(adapter)) {
-			if (editorInput != null) {
-				IFile file = editorInput.getFile();
-				if (fileExtensionProvider.isValid(file.getFileExtension())) {
-					return getJavaElementForResource(file);
-				}
-			} else if (editor != null) {
-//				IJavaElement javaFile = getJavaElementForEditor(editor);
-//				if (javaFile != null) {
+			if (editor != null) {
 				IJavaElement javaMethod = getJavaElementForXtextEditor(editor);
-				if (javaMethod != null)
+				if (javaMethod != null) {
 					return javaMethod;
-//					return javaFile;
-			} else if (resource != null) {
-				if (fileExtensionProvider.isValid(resource.getFileExtension())) {
-					return getJavaElementForResource(resource);
 				}
+			}
+			if (resource != null && fileExtensionProvider.isValid(resource.getFileExtension())) {
+				return getJavaElementForResource(resource);
 			}
 		}
 		return null;
@@ -150,7 +148,10 @@ public class JavaElementDelegate implements IAdaptable {
 		if (elements.isEmpty()) {
 			return findAssociatedJvmElement(element.eContainer());
 		}
-		return (JvmIdentifiableElement) elements.iterator().next();
+		EObject next = elements.iterator().next();
+		if (next instanceof JvmIdentifiableElement)
+			return (JvmIdentifiableElement) next;
+		return EcoreUtil2.getContainerOfType(next, JvmIdentifiableElement.class);
 	}
 
 	protected EObject findCommonContainer(EObject prevObj, EObject nextObj) {
@@ -190,6 +191,7 @@ public class JavaElementDelegate implements IAdaptable {
 			return null;
 		final int offset = ((ITextSelection) selection).getOffset();
 		IJavaElement func = xtextEditor.getDocument().readOnly(new IUnitOfWork<IJavaElement, XtextResource>() {
+			@Override
 			public IJavaElement exec(XtextResource state) throws Exception {
 				return findJavaElement(state, offset);
 			}

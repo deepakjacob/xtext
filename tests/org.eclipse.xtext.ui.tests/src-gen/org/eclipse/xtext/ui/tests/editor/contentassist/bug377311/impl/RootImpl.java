@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug377311.impl;
 
@@ -29,10 +26,10 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug377311.Root;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug377311.impl.RootImpl#getChilds <em>Childs</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

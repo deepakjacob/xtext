@@ -4,16 +4,19 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.util.AbstractEList;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-public class SynchronizedXtextResourceSet extends XtextResourceSet {
+public class SynchronizedXtextResourceSet extends XtextResourceSet implements ISynchronizable<SynchronizedXtextResourceSet> {
 	private final Object lock = new Object();
 
 	@Override
@@ -30,6 +33,52 @@ public class SynchronizedXtextResourceSet extends XtextResourceSet {
 		}
 	}
 
+	// Befriend the API tooling
+	@Override
+	public EList<Resource> getResources() {
+		return super.getResources();
+	}
+	
+	@Override
+	protected void registerURI(Resource resource) {
+		synchronized (lock) {
+			super.registerURI(resource);
+		}
+	}
+	
+	@Override
+	void updateURI(Resource resource, URI old, Map<URI, Resource> uriResourceMap) {
+		synchronized (lock) {
+			super.updateURI(resource, old, uriResourceMap);
+		}
+	}
+	
+	/**
+	 * Returns a synchronization lock that works for the complete resource set.
+	 * @since 2.4
+	 */
+	/* @NonNull */
+	@Override
+	public Object getLock() {
+		return lock;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @since 2.4
+	 */
+	/* @Nullable */
+	@Override
+	public <Result> Result execute(/* @NonNull */ IUnitOfWork<Result, ? super SynchronizedXtextResourceSet> unit) throws Exception {
+		synchronized (getLock()) {
+			return unit.exec(this);
+		}
+	}
+
+	/**
+	 * @since 2.4
+	 */
 	@Override
 	protected ResourcesList createResourceList() {
 		return new ResourcesList() {

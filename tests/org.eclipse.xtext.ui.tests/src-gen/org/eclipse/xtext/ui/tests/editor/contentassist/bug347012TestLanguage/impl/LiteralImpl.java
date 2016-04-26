@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl;
 
@@ -20,12 +17,12 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.Lit
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl.LiteralImpl#getNum <em>Num</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl.LiteralImpl#getStr <em>Str</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug347012TestLanguage.impl.LiteralImpl#getBool <em>Bool</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

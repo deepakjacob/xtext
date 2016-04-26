@@ -7,18 +7,21 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.ui.editor;
 
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IStorage;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorMatchingStrategy;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.eclipse.xtext.generator.trace.ILocationInResource;
-import org.eclipse.xtext.generator.trace.ITrace;
-import org.eclipse.xtext.generator.trace.ITraceInformation;
+import org.eclipse.xtext.common.types.ui.trace.ITraceForTypeRootProvider;
 import org.eclipse.xtext.ui.editor.XtextEditorInfo;
+import org.eclipse.xtext.ui.generator.trace.IEclipseTrace;
+import org.eclipse.xtext.ui.generator.trace.ILocationInEclipseResource;
 import org.eclipse.xtext.xbase.ui.editor.StacktraceBasedEditorDecider.Decision;
 
 import com.google.inject.Inject;
@@ -33,7 +36,7 @@ public class JavaEditorInputMatcher implements IEditorMatchingStrategy {
 	private static final Logger logger = Logger.getLogger(JavaEditorInputMatcher.class);
 	
 	@Inject
-	private ITraceInformation traceInformation;
+	private ITraceForTypeRootProvider traceInformation;
 	
 	@Inject
 	private XtextEditorInfo editorInfo;
@@ -41,39 +44,47 @@ public class JavaEditorInputMatcher implements IEditorMatchingStrategy {
 	@Inject
 	private StacktraceBasedEditorDecider decisions;
 	
-	public boolean matches(IEditorReference editorRef, IEditorInput newInput) {
+	@Inject
+	private XbaseEditorInputRedirector editorInputRedirector;
+	
+	@Override
+	public boolean matches(IEditorReference editorRef, IEditorInput inputToCheck) {
 		try {
 			if (!editorInfo.getEditorId().equals(editorRef.getId())) {
 				return false;
 			}
+			IEditorInput newInput = editorInputRedirector.findOriginalSourceForOuputFolderCopy(inputToCheck);
 			IEditorInput currentInput = editorRef.getEditorInput();
 			if (newInput.equals(currentInput)) {
+				if (decisions.decideAccordingToCaller() != Decision.FORCE_JAVA) {
+					ITypeRoot newTypeRoot = editorInputRedirector.getTypeRoot(newInput);
+					if (newTypeRoot != null) {
+						IEditorPart existingEditor = editorRef.getEditor(true);
+						if (existingEditor instanceof XbaseEditor) {
+							((XbaseEditor)existingEditor).markNextSelectionAsJavaOffset(newTypeRoot);
+						}
+					}
+				}
 				return true;
 			}
 			if (decisions.decideAccordingToCaller() == Decision.FORCE_JAVA)
 				return false;
-			IFile newResource = ResourceUtil.getFile(newInput);
-			if (newResource == null) {
+			ITypeRoot newTypeRoot = editorInputRedirector.getTypeRoot(newInput);
+			if (newTypeRoot == null) {
 				return false;
 			}
 			IResource currentResource = ResourceUtil.getResource(currentInput);
-			ITrace traceToSource = traceInformation.getTraceToSource(newResource);
+			if (currentResource == null) {
+				return false;
+			}
+			IEclipseTrace traceToSource = traceInformation.getTraceToSource(newTypeRoot);
 			if (traceToSource == null) {
 				return false;
 			}
-			Iterable<ILocationInResource> allLocations = traceToSource.getAllAssociatedLocations();
-			boolean thisIsTheOnlyOne = false;
-			for(ILocationInResource location: allLocations) {
-				// more than one source found - this is unlikely to be the correct editor
-				if (!currentResource.equals(location.getStorage())) {
-					return false;
-				}
-				thisIsTheOnlyOne = true;
-			}
-			if (thisIsTheOnlyOne) {
+			if (isCurrentResource(currentResource, traceToSource)) {
 				IEditorPart existingEditor = editorRef.getEditor(true);
 				if (existingEditor instanceof XbaseEditor) {
-					((XbaseEditor)existingEditor).markNextSelectionAsJavaOffset(newResource);
+					((XbaseEditor)existingEditor).markNextSelectionAsJavaOffset(newTypeRoot);
 					return true;
 				}
 			}
@@ -81,6 +92,15 @@ public class JavaEditorInputMatcher implements IEditorMatchingStrategy {
 			logger.error(e.getMessage(), e);
 		}
 		return false;
+	}
+
+	protected boolean isCurrentResource(IResource currentResource, IEclipseTrace traceToSource) {
+		Iterator<? extends ILocationInEclipseResource> iterator = traceToSource.getAllAssociatedLocations().iterator();
+		if (!iterator.hasNext()) {
+			return false;
+		}
+		IStorage storage = iterator.next().getPlatformResource();
+		return currentResource.equals(storage);
 	}
 
 }

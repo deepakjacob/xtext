@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ecore:EPackage xmi:version="2.0"
-    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="assignmentFinderTest"
-    nsURI="http://www.eclipse.org/2009/tmf/xtext/assignmentfindertestlanguage" nsPrefix="assignmentFinderTest">
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="assignmentFinderTest" nsURI="http://www.eclipse.org/2009/tmf/xtext/assignmentfindertestlanguage"
+    nsPrefix="assignmentFinderTest">
   <eClassifiers xsi:type="ecore:EClass" name="Model">
     <eStructuralFeatures xsi:type="ecore:EReference" name="keywordVal" eType="#//KeywordVal"
         containment="true"/>
@@ -26,30 +25,30 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="KeywordVal">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kw" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kw" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TerminalVal">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnumVal">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="en" eType="#//TestEnum"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="TestEnum">
     <eLiterals name="lit1" literal="lit1"/>
-    <eLiterals name="lit2" literal="lit2"/>
-    <eLiterals name="lit3" literal="lit3"/>
+    <eLiterals name="lit2" value="1" literal="lit2"/>
+    <eLiterals name="lit3" value="2" literal="lit3"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="KeywordBool">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kw" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="kw" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="TerminalBool">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="term" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EnumBool">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="en" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="en" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MixedBool">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="val" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="val" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MixedValue">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="val" eType="#//TestEnum"/>
@@ -59,11 +58,11 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ContainmentRefN">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="val1" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="val2" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="val1" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="val2" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CrossRef">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType ../../../../../../org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType platform:/resource/org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="crossRef" eType="#//CrossRef"/>
   </eClassifiers>
 </ecore:EPackage>

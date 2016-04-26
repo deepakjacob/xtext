@@ -7,17 +7,22 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.resource;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.xtext.parser.IEncodingProvider;
 import org.eclipse.xtext.resource.IContainer.Manager;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.resource.IResourceServiceProviderExtension;
 import org.eclipse.xtext.ui.LanguageSpecific;
 import org.eclipse.xtext.ui.editor.IURIEditorOpener;
 import org.eclipse.xtext.ui.refactoring.IReferenceUpdater;
 import org.eclipse.xtext.ui.util.IJdtHelper;
+import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.inject.Inject;
@@ -25,26 +30,35 @@ import com.google.inject.Inject;
 /**
  * @author Jan Koehnlein - Initial contribution and API
  */
-public class DefaultResourceUIServiceProvider implements IResourceUIServiceProvider {
+public class DefaultResourceUIServiceProvider implements IResourceServiceProviderExtension, IResourceUIServiceProvider, IResourceUIServiceProviderExtension {
 
 	private IResourceServiceProvider delegate;
 	
 	@Inject
 	private IJdtHelper jdtHelper;
+	
+	@Inject
+	private IStorage2UriMapper storage2UriMapper;
+	
+	@Inject(optional=true)
+	private IWorkspace workspace;
 
 	@Inject
 	public DefaultResourceUIServiceProvider(IResourceServiceProvider delegate) {
 		this.delegate = delegate;
 	}
 
+	@Override
 	public Manager getContainerManager() {
 		return delegate.getContainerManager();
 	}
 
+	@Override
 	public org.eclipse.xtext.resource.IResourceDescription.Manager getResourceDescriptionManager() {
 		return delegate.getResourceDescriptionManager();
 	}
 
+	@Override
 	public IResourceValidator getResourceValidator() {
 		return delegate.getResourceValidator();
 	}
@@ -53,6 +67,7 @@ public class DefaultResourceUIServiceProvider implements IResourceUIServiceProvi
 	@ResourceServiceDescriptionLabelProvider
 	private ILabelProvider descriptionLabelProvider;
 
+	@Override
 	public ILabelProvider getLabelProvider() {
 		return descriptionLabelProvider;
 	}
@@ -61,6 +76,7 @@ public class DefaultResourceUIServiceProvider implements IResourceUIServiceProvi
 		this.descriptionLabelProvider = descriptionLabelProvider;
 	}
 
+	@Override
 	public boolean canHandle(URI uri) {
 		boolean result = delegate.canHandle(uri);
 		return result;
@@ -72,6 +88,7 @@ public class DefaultResourceUIServiceProvider implements IResourceUIServiceProvi
 	 * check to filter storages from Java target folders.
 	 * @return <code>true</code> if the <code>uri / storage</code> pair should be processed.
 	 */
+	@Override
 	public boolean canHandle(URI uri, IStorage storage) {
 		if (delegate.canHandle(uri)) {
 			if (isJavaCoreAvailable()) {
@@ -80,6 +97,14 @@ public class DefaultResourceUIServiceProvider implements IResourceUIServiceProvi
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * @since 2.4
+	 */
+	@Override
+	public boolean canBuild(URI uri, IStorage storage) {
+		return canHandle(uri, storage);
 	}
 
 	/**
@@ -102,6 +127,7 @@ public class DefaultResourceUIServiceProvider implements IResourceUIServiceProvi
 	@Inject 
 	private IEncodingProvider encodingProvider;
 	
+	@Override
 	public IEncodingProvider getEncodingProvider() {
 		return encodingProvider;
 	}
@@ -110,6 +136,7 @@ public class DefaultResourceUIServiceProvider implements IResourceUIServiceProvi
 	@LanguageSpecific
 	private IURIEditorOpener uriEditorOpener;
 
+	@Override
 	public IURIEditorOpener getURIEditorOpener() {
 		return uriEditorOpener;
 	}
@@ -117,12 +144,45 @@ public class DefaultResourceUIServiceProvider implements IResourceUIServiceProvi
 	/**
 	 * @deprecated use <code>get(IReferenceUpdater.class)</code> instead
 	 */
+	@Override
 	@Deprecated
 	public IReferenceUpdater getReferenceUpdater() {
 		return get(IReferenceUpdater.class);
 	}
 	
+	@Override
 	public <T> T get(Class<T> t) {
 		return delegate.get(t);
+	}
+
+	/**
+	 * @since 2.9
+	 */
+	@Override
+	public boolean isSource(URI uri) {
+		if (delegate instanceof IResourceServiceProviderExtension) {
+			if (!((IResourceServiceProviderExtension) delegate).isSource(uri))
+				return false;
+		}
+		if (workspace != null) {
+			if (uri.isPlatformResource()) {
+				String projectName = URI.decode(uri.segment(1));
+				IProject project = workspace.getRoot().getProject(projectName);
+				return project.isAccessible();
+			}
+			if (uri.isPlatformPlugin()) {
+				return false;
+			}
+		}
+		Iterable<Pair<IStorage, IProject>> storages = storage2UriMapper.getStorages(uri);
+		for (Pair<IStorage, IProject> pair : storages) {
+			IStorage storage = pair.getFirst();
+			if (storage instanceof IFile) {
+				return ((IFile)storage).isAccessible();
+			} else {
+				return false;
+			}
+		}
+		return true;
 	}
 }

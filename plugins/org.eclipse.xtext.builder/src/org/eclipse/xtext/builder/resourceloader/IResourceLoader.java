@@ -106,6 +106,7 @@ public interface IResourceLoader {
 		Collection<URI> sort(Collection<URI> uris);
 
 		class NoSorting implements Sorter {
+			@Override
 			public Collection<URI> sort(Collection<URI> uris) {
 				return Lists.newArrayList(uris);
 			}
@@ -120,16 +121,6 @@ public interface IResourceLoader {
 		private static final long serialVersionUID = 8499010336607816601L;
 
 		private final URI uri;
-
-		/**
-		 * Instantiates a new load operation exception.
-		 *
-		 * @param uri the uri of the resource that failed to load
-		 * @param exception the exception
-		 */
-		public LoadOperationException(URI uri, Throwable exception) {
-			this(uri, new Exception(exception));
-		}
 
 		/**
 		 * Instantiates a new load operation exception.

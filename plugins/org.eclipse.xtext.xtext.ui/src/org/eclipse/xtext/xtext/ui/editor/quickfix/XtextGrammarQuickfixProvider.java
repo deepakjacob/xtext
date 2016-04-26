@@ -8,6 +8,8 @@
  *******************************************************************************/
 package org.eclipse.xtext.xtext.ui.editor.quickfix;
 
+import static org.eclipse.xtext.xtext.XtextConfigurableIssueCodes.*;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -68,11 +70,11 @@ import org.eclipse.xtext.ui.editor.model.edit.ISemanticModification;
 import org.eclipse.xtext.ui.editor.quickfix.DefaultQuickfixProvider;
 import org.eclipse.xtext.ui.editor.quickfix.Fix;
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor;
+import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.Strings;
 import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.xtext.XtextLinkingDiagnosticMessageProvider;
-import org.eclipse.xtext.xtext.XtextValidator;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Predicate;
@@ -87,6 +89,9 @@ import com.google.inject.Inject;
  * @author Sebastian Zarnekow - Quickfixes for bogus EPackage imports
  */
 public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
+	
+	private static final String GRAMMAR_LANG_DOC = "https://www.eclipse.org/Xtext/documentation/301_grammarlanguage.html";
+
 	private String NULL_QUICKFIX_IMAGE = null;
 	
 //	see https://bugs.eclipse.org/bugs/show_bug.cgi?id=324566
@@ -118,10 +123,11 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 		final String ruleName = issue.getData()[0];
 		acceptor.accept(issue, "Create rule '" + ruleName + "'", "Create rule '" + ruleName + "'", NULL_QUICKFIX_IMAGE,
 				new ISemanticModification() {
+					@Override
 					public void apply(final EObject element, IModificationContext context) throws BadLocationException {
 						AbstractRule abstractRule = EcoreUtil2.getContainerOfType(element, ParserRule.class);
 						ICompositeNode node = NodeModelUtils.getNode(abstractRule);
-						int offset = node.getOffset() + node.getLength();
+						int offset = node.getEndOffset();
 						StringBuilder builder = new StringBuilder("\n\n");
 						if (abstractRule instanceof TerminalRule)
 							builder.append("terminal ");
@@ -132,11 +138,12 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 		createLinkingIssueResolutions(issue, acceptor);
 	}
 
-	@Fix(XtextValidator.INVALID_METAMODEL_NAME)
+	@Fix(INVALID_METAMODEL_NAME)
 	public void fixInvalidMetaModelName(final Issue issue, IssueResolutionAcceptor acceptor) {
 		final String metaModelName = issue.getData()[0];
 		acceptor.accept(issue, "Fix metamodel name '" + metaModelName + "'", "Fix metamodel name '" + metaModelName
 				+ "'", NULL_QUICKFIX_IMAGE, new ISemanticModification() {
+			@Override
 			public void apply(final EObject element, IModificationContext context) {
 				GeneratedMetamodel generatedMetamodel = (GeneratedMetamodel) element;
 				generatedMetamodel.setName(Strings.toFirstLower(generatedMetamodel.getName()));
@@ -144,10 +151,11 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 		});
 	}
 
-	@Fix(XtextValidator.EMPTY_ENUM_LITERAL)
+	@Fix(EMPTY_ENUM_LITERAL)
 	public void fixEmptyEnumLiteral(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(issue, "Fix empty enum literal", "Fix empty enum literal", NULL_QUICKFIX_IMAGE,
 				new ISemanticModification() {
+					@Override
 					public void apply(final EObject element, IModificationContext context) {
 						EnumLiteralDeclaration enumLiteralDeclaration = (EnumLiteralDeclaration) element;
 						Keyword keyword = XtextFactory.eINSTANCE.createKeyword();
@@ -157,17 +165,18 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 				});
 	}
 
-	@Fix(XtextValidator.INVALID_ACTION_USAGE)
+	@Fix(INVALID_ACTION_USAGE)
 	public void fixInvalidActionUsage(final Issue issue, IssueResolutionAcceptor acceptor) {
 		acceptor.accept(issue, "Fix invalid action usage", "Fix invalid action usage", NULL_QUICKFIX_IMAGE,
 				new IModification() {
+					@Override
 					public void apply(IModificationContext context) throws BadLocationException {
 						context.getXtextDocument().replace(issue.getOffset(), issue.getLength(), "");
 					}
 				});
 	}
 	
-	@Fix(XtextValidator.INVALID_PACKAGE_REFERENCE_INHERITED)
+	@Fix(INVALID_PACKAGE_REFERENCE_INHERITED)
 	public void fixImportedPackageFromSuperGrammar(final Issue issue, IssueResolutionAcceptor acceptor) {
 		if (issue.getData().length == 1)
 			acceptor.accept(issue, 
@@ -175,6 +184,7 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 					"Fix the bogus package import\n" +
 					"import '" + issue.getData()[0] + "'", NULL_QUICKFIX_IMAGE,
 					new IModification() {
+						@Override
 						public void apply(IModificationContext context) throws BadLocationException {
 							String replaceString = valueConverterService.toString(issue.getData()[0], "STRING");
 							IXtextDocument document = context.getXtextDocument();
@@ -187,7 +197,7 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 					});
 	}
 	
-	@Fix(XtextValidator.INVALID_PACKAGE_REFERENCE_EXTERNAL)
+	@Fix(INVALID_PACKAGE_REFERENCE_EXTERNAL)
 	public void fixExternalImportedPackage(final Issue issue, IssueResolutionAcceptor acceptor) {
 		if (issue.getData().length == 1)
 			acceptor.accept(issue, 
@@ -195,11 +205,13 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 					"Fix the bogus package import\n" +
 					"import '" + issue.getData()[0] + "'", NULL_QUICKFIX_IMAGE,
 					new IModification() {
+						@Override
 						public void apply(IModificationContext context) throws BadLocationException {
 							String replaceString = valueConverterService.toString(issue.getData()[0], "STRING");
 							IXtextDocument document = context.getXtextDocument();
-							final List<String> importedPackages = document.readOnly(new IUnitOfWork<List<String>, XtextResource>() {
+							final List<String> importedPackages = document.priorityReadOnly(new IUnitOfWork<List<String>, XtextResource>() {
 
+								@Override
 								public List<String> exec(XtextResource state) throws Exception {
 									IResourceDescriptions descriptions = resourceDescriptionsProvider.getResourceDescriptions(state);
 									ResourceSet resourceSet = state.getResourceSet();
@@ -343,7 +355,7 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 											}
 										}
 									}
-									URI genModelURI = EcorePlugin.getEPackageNsURIToGenModelLocationMap().get(nsURI);
+									URI genModelURI = EcorePlugin.getEPackageNsURIToGenModelLocationMap(false).get(nsURI);
 									if (genModelURI != null) {
 										Resource genmodelResource = resourceSet.getResource(genModelURI, true);
 										GenModel genModel = (GenModel) genmodelResource.getContents().get(0);
@@ -373,6 +385,7 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 							if (importedPackages != null && !importedPackages.isEmpty()) {
 								final Shell shell = workbench.getActiveWorkbenchWindow().getShell();
 								shell.getDisplay().asyncExec(new Runnable() {
+									@Override
 									public void run() {
 										String title = "Please update the Ecore2XtextDslProjectContributor that generates the language.";
 										String message = "Please make sure that the Ecore2XtextDslProjectContributor that generates the language is up-to date.\n" +
@@ -383,9 +396,8 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 												MessageDialog.INFORMATION, 
 												new String[] { "Open Documentation", "Close" }, 1);
 										if (dialog.open() == 0) {
-											String url = "http://www.eclipse.org/Xtext/documentation/2_1_0/020-grammar-language.php#package_declarations_3";
 											try {
-												workbench.getBrowserSupport().getExternalBrowser().openURL(new URL(url));
+												workbench.getBrowserSupport().getExternalBrowser().openURL(new URL(GRAMMAR_LANG_DOC));
 											} catch (Exception e) {
 												// ignore
 											}
@@ -397,13 +409,13 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 					});
 	}
 
-	@SuppressWarnings("restriction")
-	@Fix(XtextValidator.INVALID_TERMINALRULE_NAME)
+	@Fix(INVALID_TERMINALRULE_NAME)
 	public void fixTerminalRuleName(final Issue issue, IssueResolutionAcceptor acceptor){
 		if(issue.getData().length == 1){
 			final String upperCase = CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE,issue.getData()[0]).toString();
 			acceptor.accept(issue, "Change name to " + upperCase , "Change name to " + upperCase, "upcase.png", new IModification() {
 
+				@Override
 				public void apply(IModificationContext context) throws Exception {
 					final IXtextDocument xtextDocument = context.getXtextDocument();
 					xtextDocument.replace(issue.getOffset(), issue.getLength(), upperCase);
@@ -412,6 +424,7 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 						public void process(XtextResource state) throws Exception {
 							final EObject terminalRule = state.getEObject(issue.getUriToProblem().fragment());
 							Iterable<RuleCall> candidates = Iterables.filter(Iterables.filter(Lists.newArrayList(state.getAllContents()),RuleCall.class), new Predicate<RuleCall>() {
+								@Override
 								public boolean apply(RuleCall ruleCall) {
 									return ruleCall.getRule() == terminalRule;
 								}
@@ -419,7 +432,8 @@ public class XtextGrammarQuickfixProvider extends DefaultQuickfixProvider {
 							for(RuleCall ruleCall: candidates){
 								List<INode> nodes = NodeModelUtils.findNodesForFeature(ruleCall, XtextPackage.eINSTANCE.getRuleCall_Rule());
 								for(INode node : nodes){
-									xtextDocument.replace(node.getOffset(), node.getLength(), upperCase);
+									ITextRegion textRegion = node.getTextRegion();
+									xtextDocument.replace(textRegion.getOffset(), textRegion.getLength(), upperCase);
 								}
 							}
 						}

@@ -13,6 +13,7 @@ import org.eclipse.xtext.xbase.XbaseStandaloneSetup;
 import org.eclipse.xtext.xbase.jvmmodel.IJvmModelInferrer;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
 import org.eclipse.xtext.xbase.tests.XbaseInjectorProvider;
+import org.eclipse.xtext.xbase.tests.typesystem.XbaseWithLogicalContainerInjectorProvider;
 import org.junit.runner.RunWith;
 
 import com.google.inject.Guice;
@@ -25,6 +26,11 @@ import com.google.inject.Injector;
 @RunWith(XtextRunner.class)
 public abstract class AbstractJvmModelTest extends AbstractXbaseTestCase {
 
+	@Override
+	public final Injector getInjector() {
+		throw new IllegalStateException();
+	}
+	
 	public static class SimpleJvmModelTestInjectorProvider extends XbaseInjectorProvider {
 		@Override
 		protected Injector internalCreateInjector() {
@@ -34,7 +40,7 @@ public abstract class AbstractJvmModelTest extends AbstractXbaseTestCase {
 		public static class SimpleJvmModelTestStandaloneSetup extends XbaseStandaloneSetup {
 			@Override
 			public Injector createInjector() {
-				return Guice.createInjector(new XbaseTestRuntimeModule() {
+				return Guice.createInjector(new XbaseWithLogicalContainerInjectorProvider.XbaseWithLogicalContainerRuntimeModule() {
 					@Override
 					public void configure(com.google.inject.Binder binder) {
 						super.configure(binder);

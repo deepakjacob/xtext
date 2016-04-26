@@ -7,20 +7,20 @@
  *******************************************************************************/
  package org.eclipse.xtext.xbase.compiler
 
-import javax.inject.Inject
+import com.google.inject.Inject
 import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.common.types.JvmAnnotationReference
 import org.eclipse.xtext.common.types.JvmCompoundTypeReference
 import org.eclipse.xtext.common.types.JvmParameterizedTypeReference
+import org.eclipse.xtext.common.types.JvmSpecializedTypeReference
 import org.eclipse.xtext.common.types.JvmTypeReference
+import org.eclipse.xtext.common.types.JvmUnknownTypeReference
 import org.eclipse.xtext.common.types.JvmWildcardTypeReference
 import org.eclipse.xtext.common.types.util.AbstractTypeReferenceVisitor
 import org.eclipse.xtext.diagnostics.Severity
-import org.eclipse.xtext.util.OnChangeEvictingCache
 import org.eclipse.xtext.validation.Issue
 import org.eclipse.xtext.xbase.compiler.output.ErrorTreeAppendable
 import org.eclipse.xtext.xbase.compiler.output.ITreeAppendable
-
-import static java.util.Collections.*
 
 /** 
  * @author Jan Koehnlein
@@ -29,22 +29,16 @@ class ErrorSafeExtensions {
 	
 	@Inject extension TypeReferenceSerializer 
 
-	@Inject OnChangeEvictingCache cache
-
-	def Iterable<Issue> getErrors(EObject element, boolean includeContents) {
-		val IElementIssueProvider issueProvider = cache.get(typeof(IElementIssueProvider).name, element.eResource, [|null])
-		if(issueProvider==null)
-			return emptyList
-		else 
-			issueProvider.getIssues(element, includeContents).filter[severity == Severity::ERROR]
+	@Inject IElementIssueProvider.Factory issueProviderFactory
+	
+	def Iterable<Issue> getErrors(EObject element) {
+		val issueProvider = issueProviderFactory.get(element.eResource)
+		issueProvider.getIssues(element).filter[severity == Severity.ERROR]
 	}
 
-	def boolean hasErrors(EObject element, boolean includeContents) {
-		val IElementIssueProvider issueProvider = cache.get(typeof(IElementIssueProvider).name, element.eResource, [|null])
-		if(issueProvider==null)
-			return false
-		else 
-			issueProvider.getIssues(element, includeContents).exists[it.severity == Severity::ERROR]
+	def boolean hasErrors(EObject element) {
+		val issueProvider = issueProviderFactory.get(element.eResource)
+		issueProvider.getIssues(element).exists[it.severity == Severity.ERROR]
 	}
 	
 	def <T extends EObject> void forEachSafely(ITreeAppendable appendable, Iterable<T> elements, 
@@ -53,16 +47,16 @@ class ErrorSafeExtensions {
 		if(elements.empty)
 			return
 		val loopParams = new LoopParams => loopInitializer
-		val allElementsBroken = elements.filter[it.hasErrors(true)].size == elements.size
+		val allElementsBroken = elements.filter[it.hasErrors()].size == elements.size
 		var currentAppendable = if(allElementsBroken) 
-				appendable.openErrorAppendable(null, elements.head)
+				appendable.openErrorAppendable(null)
 			else 
 				appendable
 		loopParams.appendPrefix(currentAppendable)
 		var isFirst = true
 		var isFirstBroken = true
 		for(element: elements) {
-			if(!element.hasErrors(true)) {
+			if(!element.hasErrors()) {
 				currentAppendable = appendable.closeErrorAppendable(currentAppendable)
 				if(!isFirst)
 					loopParams.appendSeparator(appendable)
@@ -70,7 +64,7 @@ class ErrorSafeExtensions {
 				body.apply(element, appendable)
 			} else {
 				if(!allElementsBroken)
-					currentAppendable = openErrorAppendable(appendable, currentAppendable, element)
+					currentAppendable = openErrorAppendable(appendable, currentAppendable)
 				if(!isFirst || !isFirstBroken)
 					loopParams.appendSeparator(currentAppendable)
 				isFirstBroken = false
@@ -87,9 +81,9 @@ class ErrorSafeExtensions {
 		appendable.closeErrorAppendable(currentAppendable)
 	}	
 	
-	def protected openErrorAppendable(ITreeAppendable parent, ITreeAppendable child, EObject context) {
+	def protected openErrorAppendable(ITreeAppendable parent, ITreeAppendable child) {
 		if(!(child instanceof ErrorTreeAppendable))
-			parent.errorChild(context).append("/* ")
+			parent.errorChild().append("/* ")
 		else 
 			child
 	}
@@ -106,12 +100,19 @@ class ErrorSafeExtensions {
 	
 	def void serializeSafely(JvmTypeReference typeRef, String surrogateType, ITreeAppendable appendable) {
 		if(typeRef == null || typeRef.type == null) {
-			val errorChild = appendable.openErrorAppendable(appendable, typeRef)
-			errorChild.append("type is 'null'")
-			appendable.closeErrorAppendable(errorChild)
+			switch(typeRef) {
+				JvmSpecializedTypeReference: typeRef.equivalent.serializeSafely(surrogateType, appendable)
+				JvmUnknownTypeReference: appendable.append(typeRef.qualifiedName)
+				default: {
+					appendable.append('Object')
+					val errorChild = appendable.openErrorAppendable(appendable)
+					errorChild.append("type is 'null'")
+					appendable.closeErrorAppendable(errorChild)
+				}
+			}
 		} else {
 			if(typeRef.accept(new BrokenTypeRefDetector)) {
-				val errorChild = appendable.openErrorAppendable(appendable, typeRef.eContainer)
+				val errorChild = appendable.openErrorAppendable(appendable)
 				try {
 					serialize(typeRef, typeRef.eContainer, errorChild)
 				} catch(Exception ignoreMe) {}
@@ -123,9 +124,36 @@ class ErrorSafeExtensions {
 			}
 		}
 	}
+	
+	def void serializeSafely(JvmAnnotationReference annotationRef, ITreeAppendable appendable, (ITreeAppendable)=>void onSuccess) {
+		if(annotationRef == null || annotationRef.annotation == null) {
+			val errorChild = appendable.openErrorAppendable(appendable)
+			errorChild.append("annotation is 'null'")
+			appendable.closeErrorAppendable(errorChild)
+		} else {
+			if(annotationRef.annotation.eIsProxy) {
+				val errorChild = appendable.openErrorAppendable(appendable)
+				appendable.append("@")
+				appendable.append(annotationRef.annotation)
+				appendable.closeErrorAppendable(errorChild)
+			} else {
+				appendable.append("@")
+				appendable.append(annotationRef.annotation)
+				onSuccess.apply(appendable)
+			}
+		}
+	}
 }
 
-class BrokenTypeRefDetector extends AbstractTypeReferenceVisitor$InheritanceAware<Boolean> {
+/**
+ * A visitor that detects broken type references. Returns <code>true</code> if a broken reference
+ * was detected.
+ */
+class BrokenTypeRefDetector extends AbstractTypeReferenceVisitor.InheritanceAware<Boolean> {
+	
+	override protected handleNullReference() {
+		true
+	}
 	
 	override doVisitTypeReference(JvmTypeReference it) {
 		type==null || type.eIsProxy

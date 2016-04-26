@@ -11,6 +11,7 @@ import static org.eclipse.ltk.core.refactoring.RefactoringStatus.*;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.emf.common.util.URI;
@@ -18,17 +19,18 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.xtext.CrossReference;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
-import org.eclipse.xtext.parsetree.reconstr.ITransientValueService;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.ILocationInFileProvider;
 import org.eclipse.xtext.resource.IReferenceDescription;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.serializer.sequencer.ITransientValueService;
 import org.eclipse.xtext.ui.refactoring.ElementRenameArguments;
 import org.eclipse.xtext.ui.refactoring.IRefactoringUpdateAcceptor;
 import org.eclipse.xtext.ui.refactoring.impl.RefactoringCrossReferenceSerializer.RefTextEvaluator;
@@ -44,6 +46,8 @@ import com.google.inject.Inject;
  */
 public class DefaultReferenceUpdater extends AbstractReferenceUpdater {
 
+	private static final Logger log = Logger.getLogger(DefaultReferenceUpdater.class);
+	
 	@Inject
 	private ILocationInFileProvider locationInFileProvider;
 
@@ -99,13 +103,18 @@ public class DefaultReferenceUpdater extends AbstractReferenceUpdater {
 		EObject referringElement = resourceSet.getEObject(referringElementNewURI, false);
 		URI targetElementNewURI = elementRenameArguments.getNewElementURI(referenceDescription.getTargetEObjectUri());
 		EObject newTargetElement = resourceSet.getEObject(targetElementNewURI, false);
+		if (newTargetElement == null) {
+			updateAcceptor.getRefactoringStatus().add(RefactoringStatus.ERROR, "Cannot find new target element.", targetElementNewURI);
+			log.error("Cannot find new target element. ReferringElement:" + referringElement + " targetElementNewURI:" + targetElementNewURI);
+			return;
+		}
 		createReferenceUpdate(referringElement, referringResourceURI, referenceDescription.getEReference(),
 				referenceDescription.getIndexInList(), newTargetElement, updateAcceptor);
 	}
 
 	protected void createReferenceUpdate(EObject referringElement, URI referringResourceURI, EReference reference,
 			int indexInList, EObject newTargetElement, IRefactoringUpdateAcceptor updateAcceptor) {
-		if (!transientValueService.isTransient(referringElement, reference, indexInList)) {
+		if (!transientValueService.isValueInListTransient(referringElement, indexInList, reference)) {
 			ITextRegion referenceTextRegion = locationInFileProvider.getFullTextRegion(referringElement, reference,
 					indexInList);
 			CrossReference crossReference = getCrossReference(referringElement, referenceTextRegion.getOffset());
@@ -114,12 +123,27 @@ public class DefaultReferenceUpdater extends AbstractReferenceUpdater {
 						indexInList, newTargetElement);
 				String newReferenceText = crossReferenceSerializer.getCrossRefText(referringElement,
 						crossReference, newTargetElement, refTextComparator, referenceTextRegion, updateAcceptor.getRefactoringStatus());
+				if (newReferenceText == null) {
+					newReferenceText = resolveNameConflict(referringElement, reference, newTargetElement, updateAcceptor);
+				}
+				if (newReferenceText == null) {
+					updateAcceptor.getRefactoringStatus().add(RefactoringStatus.ERROR, "Refactoring introduces a name conflict.", referringElement, referenceTextRegion);
+				}
 				createTextChange(referenceTextRegion, newReferenceText, referringElement, newTargetElement, reference, 
 						referringResourceURI, updateAcceptor);
 			}
 		}
 	}
 	
+	/**
+	 * Return null if it is not possible to resolve a name conflict; otherwise a name which should be used.
+	 * @param updateAcceptor 
+	 * @since 2.6
+	 */
+	protected String resolveNameConflict(EObject referringElement, EReference reference, EObject newTargetElement, IRefactoringUpdateAcceptor updateAcceptor) {
+		return null;
+	}
+
 	/**
 	 * The result is used to determine the best new link text in case of multiple possibilities.
 	 * By default, the shortest text is chosen.
@@ -130,10 +154,12 @@ public class DefaultReferenceUpdater extends AbstractReferenceUpdater {
 			int indexInList, EObject newTargetElement) {
 		// by default choose the shortest text
 		return new RefTextEvaluator() {
+			@Override
 			public boolean isValid(IEObjectDescription target) {
 				return true;
 			}
 			
+			@Override
 			public boolean isBetterThan(String newText, String currentText) {
 				return newText.length() < currentText.length();
 			}

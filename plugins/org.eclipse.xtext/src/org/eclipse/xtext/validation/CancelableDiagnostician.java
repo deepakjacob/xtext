@@ -13,6 +13,7 @@ import org.eclipse.emf.common.util.DiagnosticChain;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EValidator;
 import org.eclipse.emf.ecore.util.Diagnostician;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 
 import com.google.inject.Inject;
@@ -25,26 +26,47 @@ public class CancelableDiagnostician extends Diagnostician {
 	public static final String CANCEL_INDICATOR = CancelableDiagnostician.class + ".CANCEL_INDICATOR";
 	
 	@Inject
+	private OperationCanceledManager operationCanceledManager;
+	
+	@Inject
 	public CancelableDiagnostician(EValidator.Registry registry) {
 		super(registry);
 	}
 	
 	@Override
 	public boolean validate(EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) {
-		if (isCanceled(context))
-			return true;
+		checkCanceled(context);
 		return super.validate(eObject, diagnostics, context);
 	}
-
+	
+	/**
+	 * @since 2.9
+	 */
+	protected void checkCanceled(Map<Object, Object> context) {
+		operationCanceledManager.checkCanceled(getCancelIndicator(context));
+	}
+	
+	/**
+	 * <p>
+	 * Use {@link #checkCanceled} instead to throw a platform specific cancellation exception.
+	 * </p> 
+	 */
+	@Deprecated
 	protected boolean isCanceled(Map<Object, Object> context) {
-		CancelIndicator indicator = context != null ? (CancelIndicator) context.get(CANCEL_INDICATOR) : null;
+		CancelIndicator indicator = getCancelIndicator(context);
 		return indicator != null && indicator.isCanceled();
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	protected CancelIndicator getCancelIndicator(Map<Object, Object> context) {
+		return context != null ? (CancelIndicator) context.get(CANCEL_INDICATOR) : null;
 	}
 	
 	@Override
 	protected boolean doValidateContents(EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) {
-		if (isCanceled(context))
-			return true;
+		checkCanceled(context);
 		return super.doValidateContents(eObject, diagnostics, context);
 	}
 

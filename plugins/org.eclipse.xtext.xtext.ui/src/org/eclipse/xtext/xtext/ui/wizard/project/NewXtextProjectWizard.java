@@ -10,28 +10,32 @@
  *******************************************************************************/
 package org.eclipse.xtext.xtext.ui.wizard.project;
 
-import java.util.Map;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.xtext.ui.wizard.IProjectCreator;
 import org.eclipse.xtext.ui.wizard.IProjectInfo;
 import org.eclipse.xtext.ui.wizard.XtextNewProjectWizard;
+import org.eclipse.xtext.util.JavaVersion;
 import org.eclipse.xtext.xtext.ui.Activator;
+import org.eclipse.xtext.xtext.wizard.BuildSystem;
+import org.eclipse.xtext.xtext.wizard.LanguageDescriptor;
+import org.eclipse.xtext.xtext.wizard.ProjectLayout;
+import org.eclipse.xtext.xtext.wizard.TestedProjectDescriptor;
+import org.eclipse.xtext.xtext.wizard.LanguageDescriptor.FileExtensions;
+import org.eclipse.xtext.xtext.wizard.ProjectDescriptor;
 
 import com.google.inject.Inject;
 
 /**
  * A project wizard to create Xtext projects.
- * 
- * @author KD - Initial contribution and API
- * @author Sven Efftinge
- * @author Michael Clay
  */
 public class NewXtextProjectWizard extends XtextNewProjectWizard {
 
 	private WizardNewXtextProjectCreationPage mainPage;
+	private AdvancedNewProjectPage advancedPage;
 
 	/**
 	 * Constructs a new wizard
@@ -47,45 +51,56 @@ public class NewXtextProjectWizard extends XtextNewProjectWizard {
 	public void addPages() {
 		super.addPages();
 		mainPage = new WizardNewXtextProjectCreationPage("mainPage", this.selection); //$NON-NLS-1$
+		advancedPage = new AdvancedNewProjectPage("advancedPage");
 		addPage(mainPage);
+		addPage(advancedPage);
 	}
 
 	@Override
 	protected IProjectInfo getProjectInfo() {
 		XtextProjectInfo projectInfo = createProjectInfo();
-		projectInfo.setCreateTestProject(true);
-		projectInfo.setCreateFeatureProject(mainPage.isCreateFeatureProject());
-		projectInfo.setFileExtension(mainPage.getFileExtensions());
-		projectInfo.setLanguageName(mainPage.getLanguageName());
-		projectInfo.setProjectName(mainPage.getProjectName());
-		projectInfo.setWorkingSets(mainPage.getSelectedWorkingSets());
-		Map<String, WizardContribution> contributions = WizardContribution.getFromRegistry();
-		projectInfo.setWizardContribution(contributions.get(mainPage.getGeneratorConfig()));
-		projectInfo.setProjectsRootLocation(mainPage.getLocationPath());
-		projectInfo.setWorkbench(getWorkbench());
-		projectInfo.setCreateEclipseRuntimeLaunchConfig(!existsEclipseRuntimeLaunchConfig());
-		String encoding = null;
+		LanguageDescriptor language = projectInfo.getLanguage();
+		language.setFileExtensions(FileExtensions.fromString(mainPage.getFileExtensions()));
+		language.setName(mainPage.getLanguageName());
+		projectInfo.setBaseName(mainPage.getProjectName());
+		projectInfo.setWorkingSets(Arrays.asList(mainPage.getSelectedWorkingSets()));
+		projectInfo.setRootLocation(mainPage.getLocationPath().toString());
+		Charset encoding = null;
 		try {
-			encoding = ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset();
+			encoding = Charset.forName(ResourcesPlugin.getWorkspace().getRoot().getDefaultCharset());
 		}
 		catch (final CoreException e) {
-			encoding = System.getProperty("file.encoding");
+			encoding = Charset.defaultCharset();
 		}
 		projectInfo.setEncoding(encoding);
-		return projectInfo;
-	}
+		projectInfo.setWorkbench(getWorkbench());
+		JavaVersion selectedBree = mainPage.getJavaVersion();
+		// Use old default for wizard as fall back, when something goes wrong
+		if (selectedBree != null) {
+			projectInfo.setJavaVersion(selectedBree);
+		}
 
-	private boolean existsEclipseRuntimeLaunchConfig() {
-		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-		for (IProject p : projects) {
-			try {
-				if (p.isAccessible() && p.getFile(".launch/Launch Runtime Eclipse.launch").exists())
-					return true;
-			} catch (Exception e) {
-				// ignore
+		BuildSystem buildSystem = advancedPage.getPreferredBuildSystem();
+		projectInfo.setPreferredBuildSystem(buildSystem);
+		projectInfo.setSourceLayout(advancedPage.getSourceLayout());
+		
+		projectInfo.getUiProject().setEnabled(advancedPage.isCreateUiProject());
+		if (buildSystem != BuildSystem.NONE) {
+			projectInfo.setProjectLayout(ProjectLayout.HIERARCHICAL);
+		}
+		projectInfo.getIdeProject().setEnabled(advancedPage.isCreateIdeProject());
+		projectInfo.getIntellijProject().setEnabled(advancedPage.isCreateIntellijProject());
+		projectInfo.getWebProject().setEnabled(advancedPage.isCreateWebProject());
+		projectInfo.getSdkProject().setEnabled(advancedPage.isCreateSdkProject());
+		projectInfo.getP2Project().setEnabled(advancedPage.isCreateP2Project());
+		if (advancedPage.isCreateTestProject()) {
+			for (ProjectDescriptor project : projectInfo.getEnabledProjects()) {
+				if (project instanceof TestedProjectDescriptor) {
+					((TestedProjectDescriptor) project).getTestProject().setEnabled(true);
+				}
 			}
 		}
-		return false;
+		return projectInfo;
 	}
 
 	protected XtextProjectInfo createProjectInfo() {

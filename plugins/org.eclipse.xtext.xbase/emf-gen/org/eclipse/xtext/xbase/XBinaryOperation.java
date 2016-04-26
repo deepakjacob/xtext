@@ -13,13 +13,20 @@ package org.eclipse.xtext.xbase;
  * A representation of the model object '<em><b>XBinary Operation</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <!-- begin-model-doc -->
+ * @since 2.7
+ * @noextend This interface is not intended to be extended by clients.
+ * @noimplement This interface is not intended to be implemented by clients.
+ * <!-- end-model-doc -->
+ *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.XBinaryOperation#getLeftOperand <em>Left Operand</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.XBinaryOperation#getRightOperand <em>Right Operand</em>}</li>
+ *   <li>{@link org.eclipse.xtext.xbase.XBinaryOperation#isReassignFirstArgument <em>Reassign First Argument</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.xbase.XbasePackage#getXBinaryOperation()
  * @model
@@ -78,5 +85,31 @@ public interface XBinaryOperation extends XAbstractFeatureCall
 	 * @generated
 	 */
 	void setRightOperand(XExpression value);
+
+	/**
+	 * Returns the value of the '<em><b>Reassign First Argument</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <p>
+	 * If the meaning of the '<em>Reassign First Argument</em>' attribute isn't clear,
+	 * there really should be more of a description here...
+	 * </p>
+	 * <!-- end-user-doc -->
+	 * @return the value of the '<em>Reassign First Argument</em>' attribute.
+	 * @see #setReassignFirstArgument(boolean)
+	 * @see org.eclipse.xtext.xbase.XbasePackage#getXBinaryOperation_ReassignFirstArgument()
+	 * @model
+	 * @generated
+	 */
+	boolean isReassignFirstArgument();
+
+	/**
+	 * Sets the value of the '{@link org.eclipse.xtext.xbase.XBinaryOperation#isReassignFirstArgument <em>Reassign First Argument</em>}' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @param value the new value of the '<em>Reassign First Argument</em>' attribute.
+	 * @see #isReassignFirstArgument()
+	 * @generated
+	 */
+	void setReassignFirstArgument(boolean value);
 
 } // XBinaryOperation

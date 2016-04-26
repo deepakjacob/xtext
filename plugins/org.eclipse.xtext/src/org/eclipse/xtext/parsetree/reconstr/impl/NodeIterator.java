@@ -26,6 +26,8 @@ public class NodeIterator implements TreeIterator<INode> {
 	private INode current;
 
 	private INode next;
+	
+	private INode previous;
 
 	private Set<ICompositeNode> prunedComposites;
 
@@ -33,6 +35,7 @@ public class NodeIterator implements TreeIterator<INode> {
 		prunedComposites = Sets.newHashSet();
 		current = node;
 		next = findNext(node);
+		previous = findPrevious(node);
 	}
 
 	private INode findPrevious(INode node) {
@@ -76,34 +79,41 @@ public class NodeIterator implements TreeIterator<INode> {
 		return findNextSibling(parent);
 	}
 
+	@Override
 	public boolean hasNext() {
 		return next != null;
 	}
 
+	@Override
 	public INode next() {
+		previous = current;
 		current = next;
 		next = findNext(next);
 		return current;
 	}
 
 	public boolean hasPrevious() {
-		return current != null;
+		return previous != null;
 	}
 
 	public INode previous() {
 		next = current;
-		current = findPrevious(current);
-		return next;
+		current = previous;
+		previous = findPrevious(previous);
+		return current;
 	}
 
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public void prune() {
 		if (current instanceof ICompositeNode) {
 			prunedComposites.add((ICompositeNode) current);
 			next = findNext(current);
+			previous = findPrevious(current);
 		}
 	}
 }

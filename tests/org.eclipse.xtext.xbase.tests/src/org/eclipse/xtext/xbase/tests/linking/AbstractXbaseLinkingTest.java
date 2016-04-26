@@ -9,12 +9,14 @@ package org.eclipse.xtext.xbase.tests.linking;
 
 import java.util.List;
 
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmField;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmOperation;
+import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmVisibility;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
 import org.eclipse.xtext.xbase.XAssignment;
@@ -32,15 +34,52 @@ import org.eclipse.xtext.xbase.XMemberFeatureCall;
 import org.eclipse.xtext.xbase.XSwitchExpression;
 import org.eclipse.xtext.xbase.XTryCatchFinallyExpression;
 import org.eclipse.xtext.xbase.XVariableDeclaration;
+import org.eclipse.xtext.xbase.lib.Functions;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import testdata.OverloadedMethods;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
+ * @author Sebastian Zarnekow - Refinements to linking / shadowing
  */
 public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
+	
+	@Test public void testParameterizedInnerTypes_01() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val nested.ParameterizedInnerTypes<String>.Inner x = null }", true);
+		XVariableDeclaration variableDecl = (XVariableDeclaration) block.getExpressions().get(0);
+		JvmType type = variableDecl.getType().getType();
+		assertEquals("nested.ParameterizedInnerTypes$Inner", type.getIdentifier());
+		assertEquals("nested.ParameterizedInnerTypes<java.lang.String>$Inner", variableDecl.getType().getIdentifier());
+	}
+	
+	@Test public void testParameterizedInnerTypes_02() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val nested.ParameterizedInnerTypes.Sub<String>.Inner x = null }", true);
+		XVariableDeclaration variableDecl = (XVariableDeclaration) block.getExpressions().get(0);
+		JvmType type = variableDecl.getType().getType();
+		assertEquals("nested.ParameterizedInnerTypes$Inner", type.getIdentifier());
+		assertEquals("nested.ParameterizedInnerTypes$Sub<java.lang.String>$Inner", variableDecl.getType().getIdentifier());
+	}
+	
+	@Test public void testIdentifierAsTypeLiteral_01() throws Exception {
+		XFeatureCall featureCall = (XFeatureCall) expression("String", true);
+		assertEquals("java.lang.String", featureCall.getFeature().getIdentifier());
+		assertTrue(featureCall.isTypeLiteral());
+	}
+	
+	@Test public void testIdentifierAsTypeLiteral_02() throws Exception {
+		XFeatureCall featureCall = (XFeatureCall) expression("void", true);
+		assertEquals("void", featureCall.getFeature().getIdentifier());
+		assertTrue(featureCall.isTypeLiteral());
+	}
+	
+	@Test public void testIdentifierAsTypeLiteral_03() throws Exception {
+		XFeatureCall featureCall = (XFeatureCall) expression("int", true);
+		assertEquals("int", featureCall.getFeature().getIdentifier());
+		assertTrue(featureCall.isTypeLiteral());
+	}
 	
 	@Test public void testAssignment_1() throws Exception {
 		XBinaryOperation assignment = (XBinaryOperation) expression("new java.util.ArrayList<String>() += 'foo'", true);
@@ -63,7 +102,7 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 	}
 	
 	@Test public void testBinaryOperation_3() throws Exception {
-		XBinaryOperation operation = (XBinaryOperation) expression("(null as char) + '1'", true);
+		XBinaryOperation operation = (XBinaryOperation) expression("(1 as char) + '1'", true);
 		assertEquals("org.eclipse.xtext.xbase.lib.ObjectExtensions.operator_plus(java.lang.Object,java.lang.String)",operation.getFeature().getIdentifier());
 	}
 	
@@ -141,6 +180,26 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		assertTrue(((JvmMember)expression.getFeature()).getVisibility()==JvmVisibility.PRIVATE);
 	}
 	
+	@Test public void testRecursiveClosure() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val (int)=>int fun = [ fun.apply(it) ] }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XClosure closure = (XClosure) variable.getRight();
+		XBlockExpression body = (XBlockExpression) closure.getExpression();
+		XMemberFeatureCall member = (XMemberFeatureCall) body.getExpressions().get(0);
+		XFeatureCall recursive = (XFeatureCall) member.getMemberCallTarget();
+		assertSame(variable, recursive.getFeature());
+	}
+	
+	@Test public void testRecursiveClosure_02() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val (int)=>int fun = [ self.apply(it) ] }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XClosure closure = (XClosure) variable.getRight();
+		XBlockExpression body = (XBlockExpression) closure.getExpression();
+		XMemberFeatureCall member = (XMemberFeatureCall) body.getExpressions().get(0);
+		XFeatureCall recursive = (XFeatureCall) member.getMemberCallTarget();
+		assertEquals(Functions.Function1.class.getName(), recursive.getFeature().getQualifiedName('$'));
+	}
+	
 	@Test public void testConstructorCall_00() throws Exception {
 		XConstructorCall expression = (XConstructorCall) expression("new java.util.ArrayList<String>(42)");
 		assertEquals("java.util.ArrayList.ArrayList(int)", expression.getConstructor().getIdentifier());
@@ -178,6 +237,18 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		XFeatureCall call2 = (XFeatureCall) block.getExpressions().get(2);
 		assertEquals("testdata.FieldAccessSub.stringField",call1.getFeature().getIdentifier());
 		assertEquals("testdata.FieldAccessSub.stringField()",((JvmOperation)call2.getFeature()).getIdentifier());
+	}
+	
+	@Test public void testFeatureCall_1_b() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{" +
+				"  val this = new testdata.FieldAccessSub();" +
+				"  stringField();" +
+				"  stringField;" +
+				"}");
+		XFeatureCall call1 = (XFeatureCall) block.getExpressions().get(1);
+		XFeatureCall call2 = (XFeatureCall) block.getExpressions().get(2);
+		assertEquals("testdata.FieldAccessSub.stringField()",((JvmOperation)call1.getFeature()).getIdentifier());
+		assertEquals("testdata.FieldAccessSub.stringField",call2.getFeature().getIdentifier());
 	}
 	
 	@Test public void testFeatureCall_2() throws Exception {
@@ -274,19 +345,258 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		assertEquals("java.util.ArrayList.addAll(int,java.util.Collection)", ((JvmOperation)memberFeatureCall.getFeature()).getIdentifier());
 	}
 	
+	@Test public void testFeatureCall_10() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression(
+				"{\n" + 
+				"	val list = <String>newArrayList\n" + 
+				"	list.addAll(1, null as String[])\n" + 
+				"	list\n" + 
+				"}");
+		XMemberFeatureCall memberFeatureCall = (XMemberFeatureCall) block.getExpressions().get(1);
+		assertEquals("java.util.ArrayList.addAll(int,java.util.Collection)", ((JvmOperation)memberFeatureCall.getFeature()).getIdentifier());
+	}
+	
+	@Test public void testFeatureCall_11() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression(
+				"{\n" + 
+				"	val list = <String>newArrayList\n" + 
+				"	list.addAll(null as Integer, null as String[])\n" + 
+				"	list\n" + 
+				"}");
+		XMemberFeatureCall memberFeatureCall = (XMemberFeatureCall) block.getExpressions().get(1);
+		assertEquals("java.util.ArrayList.addAll(int,java.util.Collection)", ((JvmOperation)memberFeatureCall.getFeature()).getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_01() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata::MethodOverrides4::staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_02() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata::MethodOverrides4::<java.io.Serializable>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_03() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata::MethodOverrides4::<CharSequence>staticM5()");
+		assertEquals("testdata.MethodOverrides3.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	// TODO here we would expect an error marker since <Object> is no valid type argument
+	@Test public void testStaticFeatureCall_04() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata::MethodOverrides4::<Object>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	// TODO here we would expect an error marker since <String> is ambiguous
+	@Test public void testStaticFeatureCall_05() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata::MethodOverrides4::<String>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_06() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val iterable = testdata::MethodOverrides4::staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_07() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<java.io.Serializable> iterable = testdata::MethodOverrides4::staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Ignore("TODO eager binding of type arguments to expectation")
+	@Test public void testStaticFeatureCall_08() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<CharSequence> iterable = testdata::MethodOverrides4::staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides3.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_09() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<Object> iterable = testdata::MethodOverrides4::staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_10() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4::staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_11() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4::<java.io.Serializable>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_12() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4::<CharSequence>staticM5()");
+		assertEquals("testdata.MethodOverrides3.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	// TODO here we would expect an error marker since <Object> is no valid type argument
+	@Test public void testStaticFeatureCall_13() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4::<Object>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	// TODO here we would expect an error marker since <String> is ambiguous
+	@Test public void testStaticFeatureCall_14() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4::<String>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_15() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val iterable = testdata.MethodOverrides4::staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_16() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<java.io.Serializable> iterable = testdata.MethodOverrides4::staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Ignore("TODO eager binding of type arguments to expectation")
+	@Test public void testStaticFeatureCall_17() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<CharSequence> iterable = testdata.MethodOverrides4::staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides3.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_18() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<Object> iterable = testdata.MethodOverrides4::staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_19() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4.staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_20() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4.<java.io.Serializable>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_21() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4.<CharSequence>staticM5()");
+		assertEquals("testdata.MethodOverrides3.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	// TODO here we would expect an error marker since <Object> is no valid type argument
+	@Test public void testStaticFeatureCall_22() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4.<Object>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	// TODO here we would expect an error marker since <String> is ambiguous
+	@Test public void testStaticFeatureCall_23() throws Exception {
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("testdata.MethodOverrides4.<String>staticM5()");
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_24() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val iterable = testdata.MethodOverrides4.staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_25() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<java.io.Serializable> iterable = testdata.MethodOverrides4.staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Ignore("TODO eager binding of type arguments to expectation")
+	@Test public void testStaticFeatureCall_26() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<CharSequence> iterable = testdata.MethodOverrides4.staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides3.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_27() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<Object> iterable = testdata.MethodOverrides4.staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_28() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val Iterable<Object> iterable = testdata.MethodOverrides4.staticM5() }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("testdata.MethodOverrides4.staticM5()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_29() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val int x = nested.NestedTypes.array }");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("nested.NestedTypes$array", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_30() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val boolean x = nested.NestedTypes.isInterface}");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("nested.NestedTypes.isInterface()", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_31() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val boolean x = nested.NestedTypes.primitive}");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("nested.NestedTypes$primitive", featureCall.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticFeatureCall_32() throws Exception {
+		XBlockExpression block = (XBlockExpression) expression("{ val boolean x = nested.NestedTypes.annotation}");
+		XVariableDeclaration variable = (XVariableDeclaration) block.getExpressions().get(0);
+		XMemberFeatureCall featureCall = (XMemberFeatureCall) variable.getRight();
+		assertEquals("nested.NestedTypes.annotation", featureCall.getFeature().getIdentifier());
+	}
+	
 	@Test public void testGenerics() throws Exception {
 		expression("new testdata.GenericType1<String>() += 'foo'", true);
 	}
 	
 	@Test public void testGenerics_1() throws Exception {
 		expression("(null as testdata.GenericType1<? extends java.lang.String>) += null", true);
-		// linking is ok but should trigger a validation error
-		XExpression expression = expression("(null as testdata.GenericType1<? extends java.lang.String>) += 'foo'", false);
-		EcoreUtil.resolveAll(expression);
-		assertTrue(expression.eResource().getErrors().isEmpty());
 	}
 	
 	@Test public void testGenerics_2() throws Exception {
+		// linking is ok but should trigger a validation error
+		XExpression expression = expression("(null as testdata.GenericType1<? extends java.lang.StringBuffer>) += new StringBuffer", false);
+		EcoreUtil.resolveAll(expression);
+		List<Resource.Diagnostic> errors = expression.eResource().getErrors();
+		assertEquals(errors.toString(), 1, errors.size());
+		assertEquals("Type mismatch: type StringBuffer is not applicable at this location", errors.get(0).getMessage());
+	}
+	
+	@Test public void testGenerics_3() throws Exception {
+		// linking is ok but should trigger a validation error
+		XExpression expression = expression("(null as testdata.GenericType1<? extends java.lang.String>) += 'foo'", false);
+		EcoreUtil.resolveAll(expression);
+		List<Resource.Diagnostic> errors = expression.eResource().getErrors();
+		assertEquals(errors.toString(), 1, errors.size());
+		assertEquals("Type mismatch: type String is not applicable at this location", errors.get(0).getMessage());
+	}
+	
+	@Test public void testGenerics_4() throws Exception {
 		expression("new testdata.GenericType1() += 'foo'", true);
 	}
 	
@@ -329,8 +639,8 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 	}
 	
 	@Test public void testLinkingToInvisibleElements() throws Exception {
-		XMemberFeatureCall expression = (XMemberFeatureCall) expression("new testdata.GenericType1<String>().t.offset");
-		assertEquals("java.lang.String.offset", expression.getFeature().getIdentifier());
+		XMemberFeatureCall expression = (XMemberFeatureCall) expression("new testdata.GenericType1<String>().t.value");
+		assertEquals("java.lang.String.value", expression.getFeature().getIdentifier());
 		assertTrue(((JvmMember)expression.getFeature()).getVisibility()==JvmVisibility.PRIVATE);
 	}
 	
@@ -371,6 +681,21 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		assertEquals(exp1.getFeature().getIdentifier(),exp2.getFeature().getIdentifier());
 	}
 	
+	@Test public void testPropertyAccess_6() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("(null as instanceVsStatic.C).OK");
+		assertEquals("instanceVsStatic.C.isOK()", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testPropertyAccess_7() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("instanceVsStatic::C::OK");
+		assertEquals("instanceVsStatic.C.OK", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testPropertyAccess_8() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("instanceVsStatic.C::OK");
+		assertEquals("instanceVsStatic.C.OK", exp.getFeature().getIdentifier());
+	}
+	
 	@Test public void testPropertySetter_1() throws Exception {
 		XAssignment exp = (XAssignment) expression("new testdata.Properties1().prop1 = 'Text'");
 		assertEquals(((XConstructorCall)exp.getAssignable()).getConstructor().getDeclaringType(), ((JvmField)exp.getFeature()).getDeclaringType());
@@ -379,6 +704,51 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 	@Test public void testPropertySetter_2() throws Exception {
 		XAssignment exp = (XAssignment) expression("new testdata.Properties1().prop2 = 'Text'");
 		assertEquals("testdata.Properties1.setProp2(java.lang.String)", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_1() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("(null as instanceVsStatic.C).toString");
+		assertEquals("java.lang.Object.toString()", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_2() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("(null as instanceVsStatic.C).toString(null)");
+		assertEquals("instanceVsStatic.C.toString(instanceVsStatic.C)", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_3() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("(null as instanceVsStatic.C).m1(1)");
+		assertEquals("instanceVsStatic.C.m1(int)", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_4() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("(null as instanceVsStatic.C).m1(1, 2)");
+		assertEquals("instanceVsStatic.C.m1(instanceVsStatic.C,int)", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_5() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("(null as instanceVsStatic.C).m1(null)");
+		assertEquals("instanceVsStatic.C.m1(int)", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_6() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("(null as instanceVsStatic.C).m2(1)");
+		assertEquals("instanceVsStatic.C.m2(int)", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_7() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("(null as instanceVsStatic.C).m2(1, 2)");
+		assertEquals("instanceVsStatic.C.m2(int)", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_8() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("instanceVsStatic::C::m2(1, 2)");
+		assertEquals("instanceVsStatic.C.m2(instanceVsStatic.C,int,int)", exp.getFeature().getIdentifier());
+	}
+	
+	@Test public void testStaticVsInstance_9() throws Exception {
+		XMemberFeatureCall exp = (XMemberFeatureCall) expression("instanceVsStatic.C::m2(1, 2)");
+		assertEquals("instanceVsStatic.C.m2(instanceVsStatic.C,int,int)", exp.getFeature().getIdentifier());
 	}
 	
 	@Test public void testShadowing_1() throws Exception {
@@ -499,8 +869,8 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 				"   case x : x" +
 		"}");
 		final XCasePart xCasePart = switchExpr.getCases().get(0);
-		assertEquals(switchExpr, ((XFeatureCall) xCasePart.getThen()).getFeature());
-		assertEquals(switchExpr, ((XFeatureCall) xCasePart.getCase()).getFeature());
+		assertEquals(switchExpr.getDeclaredParam(), ((XFeatureCall) xCasePart.getThen()).getFeature());
+		assertEquals(switchExpr.getDeclaredParam(), ((XFeatureCall) xCasePart.getCase()).getFeature());
 	}
 	
 	@Test public void testSwitchExpression_02() throws Exception {
@@ -509,7 +879,16 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 				"    case true : true "+
 				"    default : x" +
 				"}");
-		assertEquals(switchExpr, ((XFeatureCall)switchExpr.getDefault()).getFeature());
+		assertEquals(switchExpr.getDeclaredParam(), ((XFeatureCall)switchExpr.getDefault()).getFeature());
+	}
+	
+	@Test public void testSwitchExpression_03() throws Exception {
+		XSwitchExpression switchExpr = (XSwitchExpression) expression(
+				"switch x : 'foo' as CharSequence {" +
+				"  Comparable : x.toString()" +
+				"}");
+		XMemberFeatureCall then = (XMemberFeatureCall) switchExpr.getCases().get(0).getThen();
+		assertEquals("java.lang.CharSequence.toString()", then.getFeature().getIdentifier());
 	}
 	
 	@Test public void testTryCatch_0() throws Exception {
@@ -556,6 +935,12 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		assertEquals("org.eclipse.xtext.xbase.lib.ListExtensions.map(java.util.List,org.eclipse.xtext.xbase.lib.Functions$Function1)", featureCall.getFeature().getIdentifier());
 	}
 	
+	@Test public void testExtensionMethodOnArray_01() throws Exception {
+		final XBlockExpression block = (XBlockExpression) expression("{ (null as String[]).size }");
+		XAbstractFeatureCall featureCall = (XAbstractFeatureCall) block.getExpressions().get(0);
+		assertEquals("java.util.List.size()", featureCall.getFeature().getIdentifier());
+	}
+	
 	@Test public void testExtensionMethod_Map() throws Exception {
 		XMemberFeatureCall featureCall = (XMemberFeatureCall) expression("newArrayList().map[42]");
 		assertEquals("org.eclipse.xtext.xbase.lib.ListExtensions.map(java.util.List,org.eclipse.xtext.xbase.lib.Functions$Function1)", featureCall.getFeature().getIdentifier());
@@ -566,10 +951,11 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		assertTrue(toString.getFeature().eIsProxy());
 	}
 	
+	@Ignore("isNullOrEmpty is ambiguous - should be flagged as such")
 	@Test public void testMemberCallOnNull_02() throws Exception {
 		XMemberFeatureCall nullOrEmpty = (XMemberFeatureCall) expression("null.isNullOrEmpty");
 		JvmIdentifiableElement feature = nullOrEmpty.getFeature();
-		assertTrue(feature.toString(), feature.eIsProxy());
+		assertFalse(feature.toString(), feature.eIsProxy());
 	}
 	
 	@Test public void testMemberCallOnNull_03() throws Exception {
@@ -593,10 +979,11 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		assertTrue(toString.getFeature().eIsProxy());
 	}
 	
+	@Ignore("isNullOrEmpty is ambiguous - should be flagged as such")
 	@Test public void testMemberCallOnNull_07() throws Exception {
 		XBlockExpression block = (XBlockExpression) expression("{ var x = null x.isNullOrEmpty }");
 		XMemberFeatureCall nullOrEmpty = (XMemberFeatureCall) block.getExpressions().get(1);
-		assertTrue(nullOrEmpty.getFeature().toString(), nullOrEmpty.getFeature().eIsProxy());
+		assertFalse(nullOrEmpty.getFeature().toString(), nullOrEmpty.getFeature().eIsProxy());
 	}
 	
 	@Test public void testMemberCallOnNull_08() throws Exception {
@@ -623,10 +1010,11 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		assertTrue(toString.getFeature().eIsProxy());
 	}
 	
+	@Ignore("isNullOrEmpty is ambiguous - should be flagged as such")
 	@Test public void testMemberCallOnNull_12() throws Exception {
 		XBlockExpression block = (XBlockExpression) expression("{ var this = null isNullOrEmpty }");
 		XFeatureCall nullOrEmpty = (XFeatureCall) block.getExpressions().get(1);
-		assertTrue(nullOrEmpty.getFeature().toString(), nullOrEmpty.getFeature().eIsProxy());
+		assertFalse(nullOrEmpty.getFeature().toString(), nullOrEmpty.getFeature().eIsProxy());
 	}
 	
 	@Test public void testMemberCallOnMultiType_01() throws Exception {
@@ -1031,5 +1419,6 @@ public abstract class AbstractXbaseLinkingTest extends AbstractXbaseTestCase {
 		assertEquals(4, new OverloadedMethods<Object>(chars, strings).usedConstructor);
 		assertEquals(4, new OverloadedMethods<Object>(strings, chars).usedConstructor);
 	}
+
 	
 }

@@ -9,15 +9,22 @@ package org.eclipse.xtext.xbase.typesystem.util;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.eclipse.xtend.lib.annotations.Accessors;
 import org.eclipse.xtext.common.types.TypesFactory;
 import org.eclipse.xtext.common.types.util.Primitives;
 import org.eclipse.xtext.common.types.util.TypeReferences;
+import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations;
+import org.eclipse.xtext.xbase.lib.Pure;
+import org.eclipse.xtext.xbase.scoping.featurecalls.OperatorMapping;
 import org.eclipse.xtext.xbase.typesystem.computation.SynonymTypesProvider;
 import org.eclipse.xtext.xbase.typesystem.conformance.IRawTypeHelper;
 import org.eclipse.xtext.xbase.typesystem.conformance.TypeConformanceComputer;
 import org.eclipse.xtext.xbase.typesystem.references.ArrayTypes;
 import org.eclipse.xtext.xbase.typesystem.references.FunctionTypes;
 import org.eclipse.xtext.xbase.typesystem.util.BoundTypeArgumentMerger;
+import org.eclipse.xtext.xbase.typesystem.util.ExtendedEarlyExitComputer;
+import org.eclipse.xtext.xbase.typesystem.util.HumanReadableTypeNames;
+import org.eclipse.xtext.xbase.util.XExpressionHelper;
 import org.eclipse.xtext.xtype.XtypeFactory;
 
 /**
@@ -25,115 +32,186 @@ import org.eclipse.xtext.xtype.XtypeFactory;
  * TODO JavaDoc
  */
 @Singleton
+@Accessors
 @SuppressWarnings("all")
 public class CommonTypeComputationServices {
   @Inject
-  private TypeReferences _typeReferences;
+  private OperatorMapping operatorMapping;
   
+  @Inject
+  private XExpressionHelper expressionHelper;
+  
+  @Inject
+  private TypeReferences typeReferences;
+  
+  @Inject
+  private TypeConformanceComputer typeConformanceComputer;
+  
+  @Inject
+  private IRawTypeHelper rawTypeHelper;
+  
+  @Inject
+  private Primitives primitives;
+  
+  @Inject
+  private FunctionTypes functionTypes;
+  
+  @Inject
+  private ArrayTypes arrayTypes;
+  
+  @Inject
+  private BoundTypeArgumentMerger boundTypeArgumentMerger;
+  
+  @Inject
+  private SynonymTypesProvider synonymTypesProvider;
+  
+  @Inject
+  private IJvmModelAssociations jvmModelAssociations;
+  
+  @Inject
+  private ExtendedEarlyExitComputer earlyExitComputer;
+  
+  @Inject
+  private HumanReadableTypeNames humanReadableTypeNames;
+  
+  @Inject(optional = true)
+  private XtypeFactory xtypeFactory = XtypeFactory.eINSTANCE;
+  
+  @Inject(optional = true)
+  private TypesFactory typesFactory = TypesFactory.eINSTANCE;
+  
+  @Pure
+  public OperatorMapping getOperatorMapping() {
+    return this.operatorMapping;
+  }
+  
+  public void setOperatorMapping(final OperatorMapping operatorMapping) {
+    this.operatorMapping = operatorMapping;
+  }
+  
+  @Pure
+  public XExpressionHelper getExpressionHelper() {
+    return this.expressionHelper;
+  }
+  
+  public void setExpressionHelper(final XExpressionHelper expressionHelper) {
+    this.expressionHelper = expressionHelper;
+  }
+  
+  @Pure
   public TypeReferences getTypeReferences() {
-    return this._typeReferences;
+    return this.typeReferences;
   }
   
   public void setTypeReferences(final TypeReferences typeReferences) {
-    this._typeReferences = typeReferences;
+    this.typeReferences = typeReferences;
   }
   
-  @Inject
-  private TypeConformanceComputer _typeConformanceComputer;
-  
+  @Pure
   public TypeConformanceComputer getTypeConformanceComputer() {
-    return this._typeConformanceComputer;
+    return this.typeConformanceComputer;
   }
   
   public void setTypeConformanceComputer(final TypeConformanceComputer typeConformanceComputer) {
-    this._typeConformanceComputer = typeConformanceComputer;
+    this.typeConformanceComputer = typeConformanceComputer;
   }
   
-  @Inject
-  private IRawTypeHelper _rawTypeHelper;
-  
+  @Pure
   public IRawTypeHelper getRawTypeHelper() {
-    return this._rawTypeHelper;
+    return this.rawTypeHelper;
   }
   
   public void setRawTypeHelper(final IRawTypeHelper rawTypeHelper) {
-    this._rawTypeHelper = rawTypeHelper;
+    this.rawTypeHelper = rawTypeHelper;
   }
   
-  @Inject
-  private Primitives _primitives;
-  
+  @Pure
   public Primitives getPrimitives() {
-    return this._primitives;
+    return this.primitives;
   }
   
   public void setPrimitives(final Primitives primitives) {
-    this._primitives = primitives;
+    this.primitives = primitives;
   }
   
-  @Inject
-  private FunctionTypes _functionTypes;
-  
+  @Pure
   public FunctionTypes getFunctionTypes() {
-    return this._functionTypes;
+    return this.functionTypes;
   }
   
   public void setFunctionTypes(final FunctionTypes functionTypes) {
-    this._functionTypes = functionTypes;
+    this.functionTypes = functionTypes;
   }
   
-  @Inject
-  private ArrayTypes _arrayTypes;
-  
+  @Pure
   public ArrayTypes getArrayTypes() {
-    return this._arrayTypes;
+    return this.arrayTypes;
   }
   
   public void setArrayTypes(final ArrayTypes arrayTypes) {
-    this._arrayTypes = arrayTypes;
+    this.arrayTypes = arrayTypes;
   }
   
-  @Inject
-  private BoundTypeArgumentMerger _boundTypeArgumentMerger;
-  
+  @Pure
   public BoundTypeArgumentMerger getBoundTypeArgumentMerger() {
-    return this._boundTypeArgumentMerger;
+    return this.boundTypeArgumentMerger;
   }
   
   public void setBoundTypeArgumentMerger(final BoundTypeArgumentMerger boundTypeArgumentMerger) {
-    this._boundTypeArgumentMerger = boundTypeArgumentMerger;
+    this.boundTypeArgumentMerger = boundTypeArgumentMerger;
   }
   
-  @Inject
-  private SynonymTypesProvider _synonymTypesProvider;
-  
+  @Pure
   public SynonymTypesProvider getSynonymTypesProvider() {
-    return this._synonymTypesProvider;
+    return this.synonymTypesProvider;
   }
   
   public void setSynonymTypesProvider(final SynonymTypesProvider synonymTypesProvider) {
-    this._synonymTypesProvider = synonymTypesProvider;
+    this.synonymTypesProvider = synonymTypesProvider;
   }
   
-  @Inject(optional = true)
-  private XtypeFactory _xtypeFactory = XtypeFactory.eINSTANCE;
+  @Pure
+  public IJvmModelAssociations getJvmModelAssociations() {
+    return this.jvmModelAssociations;
+  }
   
+  public void setJvmModelAssociations(final IJvmModelAssociations jvmModelAssociations) {
+    this.jvmModelAssociations = jvmModelAssociations;
+  }
+  
+  @Pure
+  public ExtendedEarlyExitComputer getEarlyExitComputer() {
+    return this.earlyExitComputer;
+  }
+  
+  public void setEarlyExitComputer(final ExtendedEarlyExitComputer earlyExitComputer) {
+    this.earlyExitComputer = earlyExitComputer;
+  }
+  
+  @Pure
+  public HumanReadableTypeNames getHumanReadableTypeNames() {
+    return this.humanReadableTypeNames;
+  }
+  
+  public void setHumanReadableTypeNames(final HumanReadableTypeNames humanReadableTypeNames) {
+    this.humanReadableTypeNames = humanReadableTypeNames;
+  }
+  
+  @Pure
   public XtypeFactory getXtypeFactory() {
-    return this._xtypeFactory;
+    return this.xtypeFactory;
   }
   
   public void setXtypeFactory(final XtypeFactory xtypeFactory) {
-    this._xtypeFactory = xtypeFactory;
+    this.xtypeFactory = xtypeFactory;
   }
   
-  @Inject(optional = true)
-  private TypesFactory _typesFactory = TypesFactory.eINSTANCE;
-  
+  @Pure
   public TypesFactory getTypesFactory() {
-    return this._typesFactory;
+    return this.typesFactory;
   }
   
   public void setTypesFactory(final TypesFactory typesFactory) {
-    this._typesFactory = typesFactory;
+    this.typesFactory = typesFactory;
   }
 }

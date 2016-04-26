@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.contextFinderTest.impl;
 
@@ -21,11 +18,11 @@ import org.eclipse.xtext.serializer.contextFinderTest.ContextFinderTestPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.contextFinderTest.impl.AttributeExclusionTestImpl#getAttr1 <em>Attr1</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.contextFinderTest.impl.AttributeExclusionTestImpl#getAttr2 <em>Attr2</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

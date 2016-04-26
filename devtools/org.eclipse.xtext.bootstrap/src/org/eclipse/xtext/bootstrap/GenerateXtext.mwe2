@@ -17,9 +17,14 @@ var runtimeProject = "../../plugins/${runtimeProjectName}"
 var uiProject = "../../plugins/${uiProjectName}"
 var file.extensions = "xtext,xtext2"
 
+var ideaProjectName = "${runtimeProjectName}.xtext.idea"
+var ideaProjectPath = "../../intellij/${ideaProjectName}"
+
 Workflow {
 	bean = StandaloneSetup {
+		ignoreBrokenProjectFiles = true
 		platformUri = "${runtimeProject}/../.."
+		registerGenModelFile = "platform:/resource/org.eclipse.xtext/org/eclipse/xtext/Xtext.genmodel"
 	}
 
 	component = DirectoryCleaner {
@@ -28,8 +33,11 @@ Workflow {
 	component = DirectoryCleaner {
 		directory = "${uiProject}/src-gen"
 	}
+	component = DirectoryCleaner {
+		directory = "${ideaProjectPath}/src-gen"
+	}
 
-	component = Generator {
+	component = Generator auto-inject {
 		pathRtProject = runtimeProject
 		pathUiProject = uiProject
 		projectNameRt = runtimeProjectName
@@ -38,8 +46,7 @@ Workflow {
 		language = {
 			uri = "platform:/resource/org.eclipse.xtext/src/org/eclipse/xtext/Xtext.xtext"
 			fileExtensions = "${file.extensions}"
-			fragment = grammarAccess.GrammarAccessFragment {}
-			fragment = parseTreeConstructor.ParseTreeConstructorFragment {}
+			fragment = grammarAccess.GrammarAccessFragment auto-inject {}
 			fragment = parser.antlr.XtextAntlrGeneratorFragment {
 				options = {
 					classSplitting = true
@@ -55,20 +62,34 @@ Workflow {
 					classSplitting = true
 				}
 			}
+			fragment = serializer.SerializerFragment {
+				srcGenOnly = true
+			}
 			fragment = compare.CompareFragment {
 				fileExtensions = file.extensions
 			}
 			fragment = refactoring.RefactorElementNameFragment {}
 			fragment = templates.CodetemplatesGeneratorFragment {} 
+    		
+    		fragment = org.eclipse.xtext.idea.generator.IdeaPluginGenerator auto-inject {
+    			runtimeProjectName = runtimeProjectName
+    			runtimeProjectPath = runtimeProject
+	        }
+	        
+	        fragment = org.eclipse.xtext.idea.generator.parser.antlr.XtextAntlrIDEAGeneratorFragment auto-inject {
+				options = {
+					classSplitting = true
+				}
+			}
 		}
 	}
 
-	component = Generator {
+	component = Generator auto-inject {
 		pathRtProject = runtimeProject
 		projectNameRt = runtimeProjectName
 		language = {
 			uri = "platform:/resource/org.eclipse.xtext/src/org/eclipse/xtext/common/Terminals.xtext"
-			fragment = grammarAccess.GrammarAccessFragment {}
+			fragment = grammarAccess.GrammarAccessFragment auto-inject {}
 			fragment = parseTreeConstructor.ParseTreeConstructorFragment {}
 		}
 	}

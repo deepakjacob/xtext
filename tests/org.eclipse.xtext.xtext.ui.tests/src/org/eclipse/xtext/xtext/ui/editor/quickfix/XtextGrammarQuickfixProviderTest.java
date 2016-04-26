@@ -8,6 +8,8 @@
  *******************************************************************************/
 package org.eclipse.xtext.xtext.ui.editor.quickfix;
 
+import static org.eclipse.xtext.xtext.XtextConfigurableIssueCodes.*;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,7 +42,6 @@ import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 import org.eclipse.xtext.validation.CheckMode;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.xtext.XtextLinkingDiagnosticMessageProvider;
-import org.eclipse.xtext.xtext.XtextValidator;
 import org.eclipse.xtext.xtext.ui.Activator;
 import org.junit.Test;
 
@@ -79,20 +80,20 @@ public class XtextGrammarQuickfixProviderTest extends AbstractXtextTests {
 	@Test
 	public void testFixInvalidMetaModelName() throws Exception {
 		XtextEditor xtextEditor = newXtextEditor(PROJECT_NAME, MODEL_FILE, GRAMMAR_WITH_INVALID_MM_NAME);
-		assertAndApplySingleResolution(xtextEditor, XtextValidator.INVALID_METAMODEL_NAME, 1,
+		assertAndApplySingleResolution(xtextEditor, INVALID_METAMODEL_NAME, 1,
 				"Fix metamodel name 'MYDSL'");
 	}
 
 	@Test
 	public void testFixEmptyEnumLiteral() throws Exception {
 		XtextEditor xtextEditor = newXtextEditor(PROJECT_NAME, MODEL_FILE, GRAMMAR_WITH_EMPTY_ENUM_LITERAL);
-		assertAndApplySingleResolution(xtextEditor, XtextValidator.EMPTY_ENUM_LITERAL, 1, "Fix empty enum literal");
+		assertAndApplySingleResolution(xtextEditor, EMPTY_ENUM_LITERAL, 1, "Fix empty enum literal");
 	}
 
 	@Test
 	public void testFixInvalidAction() throws Exception {
 		XtextEditor xtextEditor = newXtextEditor(PROJECT_NAME, MODEL_FILE, GRAMMAR_WITH_INVALID_ACTION_IN_UOG);
-		assertAndApplySingleResolution(xtextEditor, XtextValidator.INVALID_ACTION_USAGE, 0, "Fix invalid action usage");
+		assertAndApplySingleResolution(xtextEditor, INVALID_ACTION_USAGE, 0, "Fix invalid action usage");
 	}
 
 	protected void assertAndApplySingleResolution(XtextEditor xtextEditor, String issueCode, int issueDataCount,
@@ -143,6 +144,7 @@ public class XtextGrammarQuickfixProviderTest extends AbstractXtextTests {
 
 	protected List<Issue> getIssues(IXtextDocument document) {
 		return document.readOnly(new IUnitOfWork<List<Issue>, XtextResource>() {
+			@Override
 			public List<Issue> exec(XtextResource state) throws Exception {
 				return state.getResourceServiceProvider().getResourceValidator().validate(state, CheckMode.ALL, null);
 			}
@@ -150,7 +152,7 @@ public class XtextGrammarQuickfixProviderTest extends AbstractXtextTests {
 	}
 
 	public Injector createInjector() {
-		return Guice.createInjector(Modules2.mixin(new XtextRuntimeModule(), new org.eclipse.xtext.ui.XtextUiModule(
+		return Guice.createInjector(Modules2.mixin(new XtextRuntimeModule(), new org.eclipse.xtext.xtext.ui.internal.XtextUIModuleInternal(
 				Activator.getDefault()), new SharedStateModule()));
 	}
 

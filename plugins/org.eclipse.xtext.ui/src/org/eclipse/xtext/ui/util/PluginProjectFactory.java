@@ -7,6 +7,7 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.util;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,6 +23,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkingSet;
 
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -33,7 +37,13 @@ public class PluginProjectFactory extends JavaProjectFactory {
 	protected List<String> exportedPackages;
 	protected List<String> importedPackages;
 	protected String activatorClassName;
-	
+	/**
+	 * @since 2.8
+	 */
+	protected List<String> developmentTimeBundles;
+	private String breeToUse;
+	private boolean withPluginXml = true;
+
 	public PluginProjectFactory addRequiredBundles(List<String> requiredBundles) {
 		if (this.requiredBundles == null)
 			this.requiredBundles = Lists.newArrayList();
@@ -59,36 +69,40 @@ public class PluginProjectFactory extends JavaProjectFactory {
 		this.activatorClassName = activatorClassName;
 		return this;
 	}
-	
+
 	@Override
 	protected void enhanceProject(IProject project, SubMonitor subMonitor, Shell shell) throws CoreException {
 		super.enhanceProject(project, subMonitor, shell);
-		if (projectNatures.contains("org.eclipse.pde.PluginNature")) {
+		if (projectNatures != null && projectNatures.contains("org.eclipse.pde.PluginNature")) {
 			createManifest(project, subMonitor.newChild(1));
 			createBuildProperties(project, subMonitor.newChild(1));
 		}
 	}
-	
+
 	@Override
 	protected void addMoreClasspathEntriesTo(List<IClasspathEntry> classpathEntries) {
 		super.addMoreClasspathEntriesTo(classpathEntries);
 		classpathEntries.add(JavaCore.newContainerEntry(new Path("org.eclipse.pde.core.requiredPlugins"))); //$NON-NLS-1$
 	}
-	
+
 	protected void createBuildProperties(IProject project, IProgressMonitor progressMonitor) {
-		final StringBuilder content = new StringBuilder("source.. = ");
-		for (final Iterator<String> iterator = folders.iterator(); iterator.hasNext();) {
-			content.append(iterator.next()).append('/');
-			if (iterator.hasNext()) {
-				content.append(",\\\n");
-				//              source.. =
-				content.append("          ");
+		final StringBuilder content = new StringBuilder();
+		Iterable<String> foldersTrailingSlash = Iterables.transform(folders, new Function<String, String>() {
+			@Override
+			public String apply(String input) {
+				return input.replaceFirst("\\./", "") + "/";
 			}
-		}
+		});
+
+		addToBuildProperties(content, foldersTrailingSlash, "source..");
 		content.append("\n");
-		content.append("bin.includes = META-INF/,\\\n");
-		content.append("               .,\\\n");
-		content.append("               plugin.xml");
+		ArrayList<String> binIncludes = Lists.newArrayList("META-INF/", ".");
+		if (isWithPluginXml()) {
+			binIncludes.add("plugin.xml");
+		}
+		addToBuildProperties(content, binIncludes, "bin.includes");
+		content.append("\n");
+		addToBuildProperties(content, developmentTimeBundles, "additional.bundles");
 
 		createFile("build.properties", project, content.toString(), progressMonitor);
 	}
@@ -108,8 +122,8 @@ public class PluginProjectFactory extends JavaProjectFactory {
 		addToContent(content, requiredBundles, "Require-Bundle");
 		addToContent(content, exportedPackages, "Export-Package");
 		addToContent(content, importedPackages, "Import-Package");
-
-		content.append("Bundle-RequiredExecutionEnvironment: J2SE-1.5\n");
+		content.append("Bundle-RequiredExecutionEnvironment: ");
+		content.append(getBreeToUse() + "\n");
 
 		final IFolder metaInf = project.getFolder("META-INF");
 		SubMonitor subMonitor = SubMonitor.convert(progressMonitor, 2);
@@ -123,6 +137,26 @@ public class PluginProjectFactory extends JavaProjectFactory {
 		}
 	}
 
+	private String getBreeToUse() {
+		if (breeToUse == null) {
+			return JREContainerProvider.getDefaultBREE();
+		}
+		return breeToUse;
+	}
+
+	/**
+	 * Use this method to set the Bundle-RequiredExecutionEnvironment (BREE).<br>
+	 * If not set, the compatible system default will be used.
+	 * 
+	 * @see JREContainerProvider#getDefaultBREE()
+	 * @param breeToUse
+	 *            - BREE to use (e.g. JavaSE-1.6)
+	 * @since 2.7
+	 */
+	public void setBreeToUse(String breeToUse) {
+		this.breeToUse = breeToUse;
+	}
+
 	protected void addToContent(final StringBuilder content, List<String> entries, String prefix) {
 		if (entries != null && !entries.isEmpty()) {
 			content.append(prefix).append(": ").append(entries.get(0));
@@ -132,7 +166,25 @@ public class PluginProjectFactory extends JavaProjectFactory {
 			content.append("\n");
 		}
 	}
-	
+
+	/**
+	 * @since 2.8
+	 */
+	protected void addToBuildProperties(StringBuilder content, Iterable<String> entries, String entryName) {
+		if (entries != null && !Iterables.isEmpty(entries)) {
+			String assigment = entryName + " = ";
+			String indent = Strings.repeat(" ", assigment.length());
+			content.append(assigment);
+			for (final Iterator<String> iterator = entries.iterator(); iterator.hasNext();) {
+				content.append(iterator.next());
+				if (iterator.hasNext()) {
+					content.append(",\\\n");
+					content.append(indent);
+				}
+			}
+		}
+	}
+
 	@Override
 	public PluginProjectFactory addBuilderIds(String... builderIds) {
 		return (PluginProjectFactory) super.addBuilderIds(builderIds);
@@ -166,5 +218,29 @@ public class PluginProjectFactory extends JavaProjectFactory {
 	@Override
 	public PluginProjectFactory addWorkingSets(List<IWorkingSet> workingSets) {
 		return (PluginProjectFactory) super.addWorkingSets(workingSets);
+	}
+
+	/**
+	 * @since 2.8
+	 */
+	public PluginProjectFactory addDevelopmentTimeBundles(List<String> devTimeBundles) {
+		if (this.developmentTimeBundles == null)
+			this.developmentTimeBundles = Lists.newArrayList();
+		this.developmentTimeBundles.addAll(devTimeBundles);
+		return this;
+	}
+
+	/**
+	 * @since 2.10
+	 */
+	public boolean isWithPluginXml() {
+		return withPluginXml;
+	}
+
+	/**
+	 * @since 2.10
+	 */
+	public void setWithPluginXml(boolean withPluginXml) {
+		this.withPluginXml = withPluginXml;
 	}
 }

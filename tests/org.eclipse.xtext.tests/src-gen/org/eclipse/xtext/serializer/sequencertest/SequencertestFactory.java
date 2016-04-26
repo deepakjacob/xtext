@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.sequencertest;
 
@@ -366,6 +363,78 @@ public interface SequencertestFactory extends EFactory
    * @generated
    */
   OptionalDouble createOptionalDouble();
+
+  /**
+   * Returns a new object of class '<em>Null Value</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Null Value</em>'.
+   * @generated
+   */
+  NullValue createNullValue();
+
+  /**
+   * Returns a new object of class '<em>Null Cross Ref</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Null Cross Ref</em>'.
+   * @generated
+   */
+  NullCrossRef createNullCrossRef();
+
+  /**
+   * Returns a new object of class '<em>Fragment Caller Type</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Fragment Caller Type</em>'.
+   * @generated
+   */
+  FragmentCallerType createFragmentCallerType();
+
+  /**
+   * Returns a new object of class '<em>Parameter Caller</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Parameter Caller</em>'.
+   * @generated
+   */
+  ParameterCaller createParameterCaller();
+
+  /**
+   * Returns a new object of class '<em>Parameterized</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Parameterized</em>'.
+   * @generated
+   */
+  Parameterized createParameterized();
+
+  /**
+   * Returns a new object of class '<em>Parameter Delegation</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Parameter Delegation</em>'.
+   * @generated
+   */
+  ParameterDelegation createParameterDelegation();
+
+  /**
+   * Returns a new object of class '<em>Delegation</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Delegation</em>'.
+   * @generated
+   */
+  Delegation createDelegation();
+
+  /**
+   * Returns a new object of class '<em>Delegation A</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Delegation A</em>'.
+   * @generated
+   */
+  DelegationA createDelegationA();
 
   /**
    * Returns the package supported by this factory.

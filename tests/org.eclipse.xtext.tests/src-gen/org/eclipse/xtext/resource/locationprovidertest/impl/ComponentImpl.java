@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.resource.locationprovidertest.impl;
 
@@ -32,12 +29,12 @@ import org.eclipse.xtext.resource.locationprovidertest.Transition;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.resource.locationprovidertest.impl.ComponentImpl#getMode <em>Mode</em>}</li>
  *   <li>{@link org.eclipse.xtext.resource.locationprovidertest.impl.ComponentImpl#getTransition <em>Transition</em>}</li>
  *   <li>{@link org.eclipse.xtext.resource.locationprovidertest.impl.ComponentImpl#getName <em>Name</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

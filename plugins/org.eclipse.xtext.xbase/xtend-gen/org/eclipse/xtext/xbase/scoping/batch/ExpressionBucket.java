@@ -8,9 +8,11 @@
 package org.eclipse.xtext.xbase.scoping.batch;
 
 import java.util.Map;
-import org.eclipse.xtend.lib.Data;
+import org.eclipse.xtend.lib.annotations.Data;
 import org.eclipse.xtext.xbase.XExpression;
-import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
+import org.eclipse.xtext.xbase.lib.Pure;
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
+import org.eclipse.xtext.xbase.typesystem.override.IResolvedFeatures;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
@@ -24,34 +26,32 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 @Data
 @SuppressWarnings("all")
 public class ExpressionBucket {
-  private final int _id;
+  private final int id;
   
-  public int getId() {
-    return this._id;
-  }
+  private final Map<XExpression, LightweightTypeReference> extensionProviders;
   
-  private final Map<XExpression,LightweightTypeReference> _extensionProviders;
+  private final IResolvedFeatures.Provider resolvedFeaturesProvider;
   
-  public Map<XExpression,LightweightTypeReference> getExtensionProviders() {
-    return this._extensionProviders;
-  }
-  
-  public ExpressionBucket(final int id, final Map<XExpression,LightweightTypeReference> extensionProviders) {
+  public ExpressionBucket(final int id, final Map<XExpression, LightweightTypeReference> extensionProviders, final IResolvedFeatures.Provider resolvedFeaturesProvider) {
     super();
-    this._id = id;
-    this._extensionProviders = extensionProviders;
+    this.id = id;
+    this.extensionProviders = extensionProviders;
+    this.resolvedFeaturesProvider = resolvedFeaturesProvider;
   }
   
   @Override
+  @Pure
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + _id;
-    result = prime * result + ((_extensionProviders== null) ? 0 : _extensionProviders.hashCode());
+    result = prime * result + this.id;
+    result = prime * result + ((this.extensionProviders== null) ? 0 : this.extensionProviders.hashCode());
+    result = prime * result + ((this.resolvedFeaturesProvider== null) ? 0 : this.resolvedFeaturesProvider.hashCode());
     return result;
   }
   
   @Override
+  @Pure
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
@@ -60,19 +60,43 @@ public class ExpressionBucket {
     if (getClass() != obj.getClass())
       return false;
     ExpressionBucket other = (ExpressionBucket) obj;
-    if (other._id != _id)
+    if (other.id != this.id)
       return false;
-    if (_extensionProviders == null) {
-      if (other._extensionProviders != null)
+    if (this.extensionProviders == null) {
+      if (other.extensionProviders != null)
         return false;
-    } else if (!_extensionProviders.equals(other._extensionProviders))
+    } else if (!this.extensionProviders.equals(other.extensionProviders))
+      return false;
+    if (this.resolvedFeaturesProvider == null) {
+      if (other.resolvedFeaturesProvider != null)
+        return false;
+    } else if (!this.resolvedFeaturesProvider.equals(other.resolvedFeaturesProvider))
       return false;
     return true;
   }
   
   @Override
+  @Pure
   public String toString() {
-    String result = new ToStringHelper().toString(this);
-    return result;
+    ToStringBuilder b = new ToStringBuilder(this);
+    b.add("id", this.id);
+    b.add("extensionProviders", this.extensionProviders);
+    b.add("resolvedFeaturesProvider", this.resolvedFeaturesProvider);
+    return b.toString();
+  }
+  
+  @Pure
+  public int getId() {
+    return this.id;
+  }
+  
+  @Pure
+  public Map<XExpression, LightweightTypeReference> getExtensionProviders() {
+    return this.extensionProviders;
+  }
+  
+  @Pure
+  public IResolvedFeatures.Provider getResolvedFeaturesProvider() {
+    return this.resolvedFeaturesProvider;
   }
 }

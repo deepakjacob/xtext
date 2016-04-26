@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.contextFinderTest;
 
@@ -132,6 +129,24 @@ public interface ContextFinderTestFactory extends EFactory
    * @generated
    */
   ValueExclusionTest createValueExclusionTest();
+
+  /**
+   * Returns a new object of class '<em>Node Exclusion</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Node Exclusion</em>'.
+   * @generated
+   */
+  NodeExclusion createNodeExclusion();
+
+  /**
+   * Returns a new object of class '<em>Node Exclusion List</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Node Exclusion List</em>'.
+   * @generated
+   */
+  NodeExclusionList createNodeExclusionList();
 
   /**
    * Returns a new object of class '<em>Nested Type Recursive Test1</em>'.

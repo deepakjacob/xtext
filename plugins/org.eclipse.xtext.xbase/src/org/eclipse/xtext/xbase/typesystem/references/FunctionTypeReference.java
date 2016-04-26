@@ -9,10 +9,9 @@ package org.eclipse.xtext.xbase.typesystem.references;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.xbase.typesystem.util.IVisibilityHelper;
 import org.eclipse.xtext.xtype.XFunctionTypeRef;
 
 import com.google.common.base.Function;
@@ -23,7 +22,6 @@ import com.google.common.collect.Lists;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class FunctionTypeReference extends ParameterizedTypeReference {
 
 	private List<LightweightTypeReference> parameterTypes;
@@ -33,28 +31,60 @@ public class FunctionTypeReference extends ParameterizedTypeReference {
 		super(owner, type);
 	}
 	
+	/**
+	 * Subclasses <em>must</em> override this method.
+	 */
+	@Override
+	public int getKind() {
+		return KIND_FUNCTION_TYPE_REFERENCE;
+	}
+	
 	@Override
 	protected FunctionTypeReference doCopyInto(ITypeReferenceOwner owner) {
 		FunctionTypeReference result = new FunctionTypeReference(owner, getType());
 		copyTypeArguments(result, owner);
+		return result;
+	}
+	
+	@Override
+	protected void copyTypeArguments(ParameterizedTypeReference result, ITypeReferenceOwner owner) {
+		super.copyTypeArguments(result, owner);
+		FunctionTypeReference casted = (FunctionTypeReference) result;
 		if (parameterTypes != null && !parameterTypes.isEmpty()) {
 			for(LightweightTypeReference typeArgument: parameterTypes) {
-				result.addParameterType(typeArgument.copyInto(owner));
+				casted.addParameterType(typeArgument.copyInto(owner));
 			}
 		}
 		if (returnType != null) {
-			result.setReturnType(returnType.copyInto(owner));
+			casted.setReturnType(returnType.copyInto(owner));
 		}
-		return result;
 	}
 	
 	public List<LightweightTypeReference> getParameterTypes() {
 		return expose(parameterTypes);
 	}
 	
-	@Nullable
+	/* @Nullable */
 	public LightweightTypeReference getReturnType() {
 		return returnType;
+	}
+	
+	@Override
+	public boolean isVisible(IVisibilityHelper visibilityHelper) {
+		if (super.isVisible(visibilityHelper)) {
+			if (returnType != null && !returnType.isVisible(visibilityHelper)) {
+				return false;
+			}
+			if (parameterTypes != null) {
+				for(LightweightTypeReference parameterType: parameterTypes) {
+					if (!parameterType.isVisible(visibilityHelper)) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -62,9 +92,11 @@ public class FunctionTypeReference extends ParameterizedTypeReference {
 		if (super.isOwnedBy(owner)) {
 			if (returnType != null && !returnType.isOwnedBy(owner))
 				return false;
-			for(LightweightTypeReference parameterType: expose(parameterTypes)) {
-				if (!parameterType.isOwnedBy(owner)) {
-					return false;
+			if (parameterTypes != null) {
+				for(LightweightTypeReference parameterType: parameterTypes) {
+					if (!parameterType.isOwnedBy(owner)) {
+						return false;
+					}
 				}
 			}
 			return true;
@@ -76,7 +108,7 @@ public class FunctionTypeReference extends ParameterizedTypeReference {
 	public JvmTypeReference toTypeReference() {
 		XFunctionTypeRef result = getOwner().getServices().getXtypeFactory().createXFunctionTypeRef();
 		result.setType(getType());
-		result.setEquivalent(super.toTypeReference());
+		result.setEquivalent(getEquivalentTypeReference());
 		if (parameterTypes != null) {
 			for(LightweightTypeReference parameterType: parameterTypes) {
 				result.getParamTypes().add(parameterType.toTypeReference());
@@ -86,6 +118,10 @@ public class FunctionTypeReference extends ParameterizedTypeReference {
 			result.setReturnType(returnType.toTypeReference());
 		}
 		return result;
+	}
+
+	protected JvmTypeReference getEquivalentTypeReference() {
+		return super.toTypeReference();
 	}
 	
 	public void addParameterType(LightweightTypeReference parameterType) {
@@ -120,6 +156,15 @@ public class FunctionTypeReference extends ParameterizedTypeReference {
 	}
 	
 	@Override
+	public String getJavaIdentifier() {
+		return getAsStringNoFunctionType(getType().getIdentifier(), JavaIdentifierFunction.INSTANCE);
+	}
+
+	protected String getAsStringNoFunctionType(String type, Function<LightweightTypeReference,String> format) {
+		return super.getAsString(type, format);
+	}
+	
+	@Override
 	public void accept(TypeReferenceVisitor visitor) {
 		visitor.doVisitFunctionTypeReference(this);
 	}
@@ -130,13 +175,13 @@ public class FunctionTypeReference extends ParameterizedTypeReference {
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public <Result> Result accept(TypeReferenceVisitorWithResult<Result> visitor) {
 		return visitor.doVisitFunctionTypeReference(this);
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public <Param, Result> Result accept(TypeReferenceVisitorWithParameterAndResult<Param, Result> visitor, Param param) {
 		return visitor.doVisitFunctionTypeReference(this, param);
 	}

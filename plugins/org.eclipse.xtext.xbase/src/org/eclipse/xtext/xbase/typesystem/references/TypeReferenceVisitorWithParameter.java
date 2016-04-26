@@ -9,19 +9,23 @@ package org.eclipse.xtext.xbase.typesystem.references;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public abstract class TypeReferenceVisitorWithParameter<Param> {
 
+	/**
+	 * @param param some parameter.
+	 */
 	protected void doVisitTypeReference(LightweightTypeReference reference, Param param) {
 		throw new UnsupportedOperationException("Missing implementation for " + reference);
 	}
 	
 	protected void doVisitAnyTypeReference(AnyTypeReference reference, Param param) {
+		doVisitTypeReference(reference, param);
+	}
+	
+	protected void doVisitUnknownTypeReference(UnknownTypeReference reference, Param param) {
 		doVisitTypeReference(reference, param);
 	}
 	
@@ -50,9 +54,17 @@ public abstract class TypeReferenceVisitorWithParameter<Param> {
 	protected void doVisitFunctionTypeReference(FunctionTypeReference reference, Param param) {
 		doVisitParameterizedTypeReference(reference, param);
 	}
+	
+	protected void doVisitInnerFunctionTypeReference(InnerFunctionTypeReference reference, Param param) {
+		doVisitFunctionTypeReference(reference, param);
+	}
 
 	protected void doVisitParameterizedTypeReference(ParameterizedTypeReference reference, Param param) {
 		doVisitTypeReference(reference, param);
+	}
+	
+	protected void doVisitInnerTypeReference(InnerTypeReference reference, Param param) {
+		doVisitParameterizedTypeReference(reference, param);
 	}
 
 	protected void doVisitUnboundTypeReference(UnboundTypeReference reference, Param param) {

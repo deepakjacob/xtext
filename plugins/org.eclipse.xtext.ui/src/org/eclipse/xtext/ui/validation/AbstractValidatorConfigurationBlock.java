@@ -7,17 +7,19 @@
  *******************************************************************************/
 package org.eclipse.xtext.ui.validation;
 
-import org.eclipse.core.resources.IProject;
+import java.util.List;
+
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.CellEditor.LayoutData;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
-import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.eclipse.xtext.Constants;
 import org.eclipse.xtext.ui.preferences.OptionsConfigurationBlock;
 import org.eclipse.xtext.ui.preferences.ScrolledPageContent;
@@ -32,15 +34,15 @@ import com.google.inject.name.Named;
  */
 public abstract class AbstractValidatorConfigurationBlock extends OptionsConfigurationBlock {
 	@Inject
-	private IDialogSettings section;
+	private IDialogSettings dialogSettings;
 	private PixelConverter fPixelConverter;
 	@Inject
 	@Named(Constants.LANGUAGE_NAME)
 	private String languageName;
+	private static final String PROPERTY_PREFIX = "ValidatorConfiguration"; //$NON-NLS-1$
 
-	protected AbstractValidatorConfigurationBlock(IProject project, IPreferenceStore preferenceStore,
-			IWorkbenchPreferenceContainer container) {
-		super(project, preferenceStore, container);
+	protected AbstractValidatorConfigurationBlock() {
+		super();
 	}
 
 	@Override
@@ -59,7 +61,6 @@ public abstract class AbstractValidatorConfigurationBlock extends OptionsConfigu
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, true);
 		gridData.heightHint = fPixelConverter.convertHeightInCharsToPixels(20);
 		commonComposite.setLayoutData(gridData);
-
 		validateSettings(null, null, null);
 		return mainComp;
 
@@ -81,16 +82,68 @@ public abstract class AbstractValidatorConfigurationBlock extends OptionsConfigu
 				+ " compiler problems:");
 		description.setLayoutData(new GridData(GridData.BEGINNING, GridData.CENTER, true, false, nColumns - 1, 1));
 
-		int indentStep = fPixelConverter.convertWidthInCharsToPixels(1);
+		fillSettingsPage(composite, nColumns, 0);
+		addAdditionalComponentsToSettingsPage(composite, nColumns, 0);
 
-		int defaultIndent = indentStep * 0;
-
-		fillSettingsPage(composite, nColumns, defaultIndent);
-		new Label(composite, SWT.NONE);
-		restoreSectionExpansionStates(section);
-
+		new Label(composite, SWT.NONE); // TODO what's this?
+		restoreSectionExpansionStates(getDialogSettings());
 		return sc1;
 
+	}
+
+	/**
+	 * This implementation returns Dialog settings which were bind in {@link org.eclipse.xtext.ui.DefaultUiModule}
+	 * normally {@link org.eclipse.ui.plugin.AbstractUIPlugin#getDialogSettings()}<br>
+	 * Subclasses should override to get special section settings. Here is an example:<br>
+	 * 
+	 * <pre>
+	 *  <code>
+	 *  
+	 * protected IDialogSettings getDialogSettings() {
+	 * 	IDialogSettings dialogSettings = super.getDialogSettings();
+	 * 	IDialogSettings section = dialogSettings.getSection(SETTINGS_SECTION_NAME);
+	 * 	if(section==null) {
+	 * 		return dialogSettings.addNewSection(SETTINGS_SECTION_NAME);
+	 * 	}
+	 * 	return section;
+	 * }
+	 *  </code>
+	 * </pre>
+	 * 
+	 * @return Dialog settings which were bind in {@link org.eclipse.xtext.ui.DefaultUiModule}
+	 * @since 2.7
+	 */
+	protected IDialogSettings getDialogSettings() {
+		return this.dialogSettings;
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	protected void addAdditionalComponentsToSettingsPage(Composite settingsPage, int nColumns, int defaultIndent) {
+	}
+
+	/**
+	 * Computes the common width hint (the largest width) and set it as {@link GridData#widthHint} for all combos, if
+	 * the combo has a {@link GridData} as {@link LayoutData}.
+	 */
+	protected void adjustComboWidth(List<Combo> combos) {
+		int withHint = SWT.DEFAULT;
+		for (Combo comboBox : combos) {
+			comboBox.pack(true);
+			Point computeSize = comboBox.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+			int pixels = computeSize.x;
+			if (pixels > withHint) {
+				withHint = pixels;
+			}
+		}
+		for (Combo comboBox : combos) {
+			Object ld = comboBox.getLayoutData();
+			if (ld instanceof GridData) {
+				GridData layoutData = (GridData) ld;
+				layoutData.widthHint = withHint;
+			}
+		}
 	}
 
 	private String lastSegment(String languageFQN) {
@@ -114,5 +167,11 @@ public abstract class AbstractValidatorConfigurationBlock extends OptionsConfigu
 		return inner;
 	}
 
-
+	/**
+	 * @since 2.8
+	 */
+	@Override
+	public String getPropertyPrefix() {
+		return PROPERTY_PREFIX;
+	}
 }

@@ -7,53 +7,54 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.tests.typesystem
 
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.eclipse.xtext.junit4.XtextRunner
-import org.eclipse.xtext.junit4.InjectWith
-import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference
+import com.google.inject.Inject
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.InternalEObject
+import org.eclipse.xtext.common.types.JvmIdentifiableElement
+import org.eclipse.xtext.xbase.XClosure
+import org.eclipse.xtext.xbase.XExpression
+import org.eclipse.xtext.xbase.XReturnExpression
+import org.eclipse.xtext.xbase.XThrowExpression
+import org.eclipse.xtext.xbase.XbaseFactory
 import org.eclipse.xtext.xbase.typesystem.IBatchTypeResolver
 import org.eclipse.xtext.xbase.typesystem.IResolvedTypes
-import org.eclipse.xtext.xbase.XbaseFactory
-import org.eclipse.emf.ecore.InternalEObject
-import org.eclipse.emf.common.util.URI
-import org.junit.Ignore
-import org.eclipse.xtext.common.types.JvmIdentifiableElement
-import org.eclipse.xtext.xbase.XExpression
-import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference
 import org.eclipse.xtext.xbase.typesystem.references.FunctionTypeReference
-import com.google.inject.Inject
-import org.eclipse.xtext.xbase.XReturnExpression
-import org.eclipse.xtext.xbase.XClosure
-import org.eclipse.xtext.xbase.XThrowExpression
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference
+import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference
+import org.junit.Test
+import org.eclipse.emf.ecore.EObject
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
 abstract class AbstractReturnTypeTest<Reference> extends AbstractTypeResolverTest<Reference> {
 	
-	@Test override void testReturnType_01() throws Exception {
+	@Test override void testReturnExpression_01() throws Exception {
 		"return 'foo'".resolvesTo("String")
 	}
 	
-	@Test override void testReturnType_02() throws Exception {
+	@Test override void testReturnExpression_02() throws Exception {
 		"return try { if (true) 'foo' else 'bar' } finally { String::valueOf('zonk') }".resolvesTo("String")
 	}
 	
-	@Test override void testReturnType_03() throws Exception {
+	@Test override void testReturnExpression_03() throws Exception {
 		"{ val c = [ int i | return i ] c.apply(1) return null }".resolvesTo("null")
 	}
 	
-	@Test override void testReturnType_04() throws Exception {
+	@Test override void testReturnExpression_04() throws Exception {
 		"{ val c = [ int i | i ] c.apply(1) return null }".resolvesTo("null")
 	}
 	
-	@Test override void testReturnType_06() throws Exception {
+	@Test override void testReturnExpression_06() throws Exception {
 		"{ var closure = [| return 'literal'] return closure.apply }".resolvesTo("String")
 	}
 	
-	@Test override void testReturnType_08() throws Exception {
+	@Test override void testReturnExpression_08() throws Exception {
 		"return [| return 'literal'].apply".resolvesTo("String")
+	}
+	
+	@Test override testReturnExpression_10() throws Exception {
+		"return if (true) while(false) ('foo'+'bar').length".resolvesTo("null")
 	}
 	
 	@Test override void testBooleanLiteral_02() throws Exception {
@@ -69,11 +70,37 @@ abstract class AbstractReturnTypeTest<Reference> extends AbstractTypeResolverTes
 	}
 	
 	@Test override testIfExpression_17() throws Exception {
-		"if (true) return 1".resolvesTo("Integer")
+		"if (true) return 1".resolvesTo("int")
+	}
+	
+	@Test override void testIfExpression_19() throws Exception {
+		"if (true) return else null".resolvesTo("void")
+	}
+	
+	@Test override void testIfExpression_23() throws Exception {
+		"{ val x = if (true) return 1 x }".resolvesTo("Integer")
+	}
+	
+	@Test override void testIfExpression_24() throws Exception {
+		"{ val x = if (true) return; x }".resolvesTo("void")
+	}
+	
+	@Test override void testIfExpression_25() throws Exception {
+		"{ val x = if (true) return else null x }".resolvesTo("void")
+	}
+	
+	@Test override void testIfExpression_28() throws Exception {
+		"if (true) return '' else 1".resolvesTo("Comparable<?> & Serializable")
 	}
 	
 	@Test override testSwitchExpression_1() throws Exception {
 		"switch true { case true : return 's' default: null}".resolvesTo("String")
+	}
+	
+	@Test override void testSwitchExpression_2() throws Exception {
+		"switch null {
+		  Object : return null 
+		}".resolvesTo("null")
 	}
 	
 	@Test override testForExpression_05() throws Exception {
@@ -114,6 +141,14 @@ abstract class AbstractReturnTypeTest<Reference> extends AbstractTypeResolverTes
 	
 	@Test def void testWhileExpression_03() throws Exception {
 		"while(if (true) return 1 else false) ''.length".resolvesTo("Integer")
+	}
+	
+	@Test def void testWhileExpression_04() throws Exception {
+		"while(null instanceof String) return ''".resolvesTo("String")
+	}
+	
+	@Test def void testWhileExpression_05() throws Exception {
+		"{ while(null instanceof String) return '' return '' }".resolvesTo("String")
 	}
 	
 	@Test override testTryCatchFinallyExpression_08() throws Exception {
@@ -231,14 +266,28 @@ abstract class AbstractReturnTypeTest<Reference> extends AbstractTypeResolverTes
 			throw new RuntimeException()
 		}".resolvesTo("int")
 	}
-		
+	
+	@Test override void testBlockExpression_09() throws Exception {
+		"{val Object x = if (false) return; x }".resolvesTo("void")
+	}
+    
+    @Test override void testBlockExpression_10() throws Exception {
+		"{ ( if (true) {val Object x = if (false) return; x } ) }".resolvesTo("void")
+	}
+    
+    @Test override void testBlockExpression_11() throws Exception {
+		"{ ( if (true) {val Object x = if (false) return; x } ) {val Object x = if (false) return; x } }".resolvesTo("void")
+	}
+	
+	@Test override void testBlockExpression_12() throws Exception {
+		"{ ( if (true) if (true) return else null ) { if (true) return else null } }".resolvesTo("void")
+	}
+	
 }
 
 /**
  * @author Sebastian Zarnekow
  */
-@RunWith(typeof(XtextRunner))
-@InjectWith(typeof(XbaseNewTypeSystemInjectorProvider))
 abstract class AbstractBatchReturnTypeTest extends AbstractReturnTypeTest<LightweightTypeReference> {
 	
 	override LightweightTypeReference resolvesTo(String expression, String type) {
@@ -246,19 +295,10 @@ abstract class AbstractBatchReturnTypeTest extends AbstractReturnTypeTest<Lightw
 		val xExpression = expression(replacedExpressionText, false /* true */);
 		assertTrue(xExpression.eResource.errors.toString, xExpression.eResource.errors.isEmpty)
 		assertTrue(xExpression.eResource.warnings.toString, xExpression.eResource.warnings.isEmpty)
-		if (!xExpression.hasReturnExpression) {
-			doResolvesTo('''return («replacedExpressionText»)''', type);
-			doResolvesTo('''{ { return («replacedExpressionText») } }''', type);
-			doResolvesTo('''return {«replacedExpressionText»}''', type);
-			doResolvesTo('''{ { return { ( if (true) «replacedExpressionText» ) {«replacedExpressionText»} }''', type);
-		} else {
-			doResolvesTo('''{ «replacedExpressionText» }''', type);
-			doResolvesTo('''{ ( if (true) «replacedExpressionText» ) {«replacedExpressionText»} }''', type);
-		}
 		val resolvedTypes = getTypeResolver.resolveTypes(xExpression)
 		val resolvedType = resolvedTypes.getReturnType(xExpression)
 		assertEquals(replacedExpressionText, type, resolvedType.simpleName);
-		assertTrue(xExpression.eResource.errors.toString, xExpression.eResource.errors.isEmpty)
+		assertTrue(xExpression.eResource.linkingAndSyntaxErrors.toString, xExpression.eResource.linkingAndSyntaxErrors.isEmpty)
 		assertTrue(xExpression.eResource.warnings.toString, xExpression.eResource.warnings.isEmpty)
 		return resolvedType
 	}
@@ -270,7 +310,7 @@ abstract class AbstractBatchReturnTypeTest extends AbstractReturnTypeTest<Lightw
 		assertEquals(expression, type, resolvedType.simpleName);
 	}
 	
-	def hasReturnExpression(XExpression expression) {
+	def boolean hasReturnExpression(XExpression expression) {
 		switch(expression) {
 			XReturnExpression: true
 			XThrowExpression: true
@@ -290,7 +330,7 @@ abstract class AbstractBatchReturnTypeTest extends AbstractReturnTypeTest<Lightw
 	}
 	
 	def String getEquivalent(ParameterizedTypeReference type) {
-		'''«type.type.simpleName»<«type.typeArguments.join(', ') [simpleName]»>'''
+		'''«type.type.simpleName»«type.typeArguments.join('<', ', ', '>') [simpleName]»'''
 	}
 		
 	def void assertExpressionTypeIsResolved(XExpression expression, IResolvedTypes types) {
@@ -309,7 +349,7 @@ abstract class AbstractBatchReturnTypeTest extends AbstractReturnTypeTest<Lightw
 	
 	@Test 
 	def void testNull() throws Exception {
-		val typeResolution = typeResolver.resolveTypes(null)
+		val typeResolution = typeResolver.resolveTypes(null as EObject)
 		assertNotNull(typeResolution);
 		assertEquals(IResolvedTypes::NULL, typeResolution)
 	}
@@ -321,10 +361,6 @@ abstract class AbstractBatchReturnTypeTest extends AbstractReturnTypeTest<Lightw
 		val typeResolution = typeResolver.resolveTypes(proxy)
 		assertNotNull(typeResolution);
 		assertEquals(IResolvedTypes::NULL, typeResolution)
-	}
-	
-	@Ignore("TODO discuss the preference - list or array?") @Test override testIfExpression_10() throws Exception {
-		super.testIfExpression_10()
 	}
 	
 }

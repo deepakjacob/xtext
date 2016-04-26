@@ -17,38 +17,27 @@ XAnnotation :
 	'@' annotationType=[types::JvmAnnotationType | QualifiedName] (=>'('
 		(
 			elementValuePairs+=XAnnotationElementValuePair (',' elementValuePairs+=XAnnotationElementValuePair)* 
-		|	value=XAnnotationElementValue
+		|	value=XAnnotationElementValueOrCommaList
 		)?
 	')')?
 ;
 
 XAnnotationElementValuePair :
-	element=[types::JvmOperation|ValidID] '=' value=XAnnotationElementValue	
+	=>(element=[types::JvmOperation|ValidID] '=') value=XAnnotationElementValue	
 ;
 
-XAnnotationElementValueStringConcatenation returns xbase::XExpression :
-	XAnnotationElementValue ({XAnnotationElementValueBinaryOperation.leftOperand = current} operator='+' rightOperand=XAnnotationElementValue)*
+XAnnotationElementValueOrCommaList returns xbase::XExpression:
+	  =>({xbase::XListLiteral} '#' '[') (elements+=XAnnotationOrExpression (',' elements+=XAnnotationOrExpression )*)? ']'
+	| XAnnotationOrExpression ({xbase::XListLiteral.elements+=current} (',' elements+=XAnnotationOrExpression )+)?
 ;
 
 XAnnotationElementValue returns xbase::XExpression :
+	  =>({xbase::XListLiteral} '#' '[') (elements+=XAnnotationOrExpression (',' elements+=XAnnotationOrExpression )*)? ']'
+	| XAnnotationOrExpression
+;
+
+XAnnotationOrExpression returns xbase::XExpression:
 	XAnnotation |
-	XAnnotationValueArray |
-	XStringLiteral |
-	XBooleanLiteral |
-	XNumberLiteral |
-	XTypeLiteral |
-	XAnnotationValueFieldReference |
-	'(' XAnnotationElementValueStringConcatenation ')'
-;
-
-XAnnotationValueFieldReference returns xbase::XExpression :
-	{xbase::XFeatureCall} 
-	(declaringType=[types::JvmDeclaredType|StaticQualifier])?
-	feature=[types::JvmIdentifiableElement|IdOrSuper] 
-;
-
-XAnnotationValueArray returns xbase::XExpression :
-	{XAnnotationValueArray} 
-	'{' values+=XAnnotationElementValue (',' values+=XAnnotationElementValue)* '}'
+	XExpression
 ;
 

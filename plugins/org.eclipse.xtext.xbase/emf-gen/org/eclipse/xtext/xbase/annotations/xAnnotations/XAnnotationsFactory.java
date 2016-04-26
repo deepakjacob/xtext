@@ -46,24 +46,6 @@ public interface XAnnotationsFactory extends EFactory
 	XAnnotationElementValuePair createXAnnotationElementValuePair();
 
 	/**
-	 * Returns a new object of class '<em>XAnnotation Element Value Binary Operation</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>XAnnotation Element Value Binary Operation</em>'.
-	 * @generated
-	 */
-	XAnnotationElementValueBinaryOperation createXAnnotationElementValueBinaryOperation();
-
-	/**
-	 * Returns a new object of class '<em>XAnnotation Value Array</em>'.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return a new object of class '<em>XAnnotation Value Array</em>'.
-	 * @generated
-	 */
-	XAnnotationValueArray createXAnnotationValueArray();
-
-	/**
 	 * Returns the package supported by this factory.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->

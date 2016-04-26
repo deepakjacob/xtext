@@ -16,28 +16,32 @@
 «EXTENSION org::eclipse::xtext::generator::grammarAccess::GrammarAccess»
 «EXTENSION org::eclipse::xtext::generator::parser::antlr::ContentAssistParser»
 
-«DEFINE parser FOR Grammar»
-«FILE getParserClassName().asPath()+".java" SRC_GEN_UI-»
-/*
+«DEFINE parser(AntlrOptions options, boolean partialParsing, boolean hasIDE) FOR Grammar»
+«FILE getParserClassName().asPath()+".java" SRC_GEN_IDE-»
 «fileHeader()»
-*/
 package «getParserClassName().toJavaPackage()»;
 
+«annotationImports()-»
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 
 import org.antlr.runtime.RecognitionException;
 import org.eclipse.xtext.AbstractElement;
-import org.eclipse.xtext.ui.editor.contentassist.antlr.AbstractContentAssistParser;
+import «getParserSuperClassName(partialParsing, hasIDE)»;
+«IF hasIDE-»
+import org.eclipse.xtext.ide.editor.contentassist.antlr.FollowElement;
+import org.eclipse.xtext.ide.editor.contentassist.antlr.internal.AbstractInternalContentAssistParser;
+«ELSE-»
 import org.eclipse.xtext.ui.editor.contentassist.antlr.FollowElement;
 import org.eclipse.xtext.ui.editor.contentassist.antlr.internal.AbstractInternalContentAssistParser;
+«ENDIF-»
 
 import com.google.inject.Inject;
 
 import «gaFQName()»;
 
-public class «getParserClassName().toSimpleName()» extends AbstractContentAssistParser {
+«classAnnotations()»public class «getParserClassName().toSimpleName()» extends «getParserSuperClassName(partialParsing, hasIDE).toSimpleName()» {
 	
 	@Inject
 	private «gaSimpleName()» grammarAccess;
@@ -57,7 +61,7 @@ public class «getParserClassName().toSimpleName()» extends AbstractContentAssist
 			nameMappings = new HashMap<AbstractElement, String>() {
 				private static final long serialVersionUID = 1L;
 				{
-«EXPAND ruleName FOREACH allAlternatives().union(allGroups()).union(allAssignments()).union(allUnorderedGroups())-»
+«EXPAND ruleName FOREACH originalElement().allAlternatives().union(originalElement().allGroups()).union(originalElement().allAssignments()).union(originalElement().allUnorderedGroups())-»
 				}
 			};
 		}
@@ -68,7 +72,7 @@ public class «getParserClassName().toSimpleName()» extends AbstractContentAssist
 	protected Collection<FollowElement> getFollowElements(AbstractInternalContentAssistParser parser) {
 		try {
 			«getInternalParserClassName()» typedParser = («getInternalParserClassName()») parser;
-			typedParser.«allParserRules().first().entryRuleName()»();
+			typedParser.«allParserRules().first().originalElement().entryRuleName()»();
 			return typedParser.getFollowElements();
 		} catch(RecognitionException ex) {
 			throw new RuntimeException(ex);
@@ -96,17 +100,17 @@ public class «getParserClassName().toSimpleName()» extends AbstractContentAssist
 «ENDDEFINE»
 
 «DEFINE ruleName FOR Alternatives-»
-					put(grammarAccess.«grammarElementAccess()», "rule__«containingRule().gaRuleIdentifyer()»__«gaElementIdentifyer()»");
+					put(grammarAccess.«grammarElementAccess()», "«containingRule().caRuleName()»__«gaElementIdentifyer()»");
 «ENDDEFINE»
 
 «DEFINE ruleName FOR Assignment-»
-					put(grammarAccess.«grammarElementAccess()», "rule__«containingRule().gaRuleIdentifyer()»__«gaElementIdentifyer()»");
+					put(grammarAccess.«grammarElementAccess()», "«containingRule().caRuleName()»__«gaElementIdentifyer()»");
 «ENDDEFINE»
 
 «DEFINE ruleName FOR Group-»
-					put(grammarAccess.«grammarElementAccess()», "rule__«containingRule().gaRuleIdentifyer()»__«gaElementIdentifyer()»__0");
+					put(grammarAccess.«grammarElementAccess()», "«containingRule().caRuleName()»__«gaElementIdentifyer()»__0");
 «ENDDEFINE»
 
 «DEFINE ruleName FOR UnorderedGroup-»
-					put(grammarAccess.«grammarElementAccess()», "rule__«containingRule().gaRuleIdentifyer()»__«gaElementIdentifyer()»");
+					put(grammarAccess.«grammarElementAccess()», "«containingRule().caRuleName()»__«gaElementIdentifyer()»");
 «ENDDEFINE»

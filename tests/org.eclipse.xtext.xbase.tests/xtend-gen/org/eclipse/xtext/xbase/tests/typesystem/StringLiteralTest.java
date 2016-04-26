@@ -15,8 +15,6 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.junit4.InjectWith;
-import org.eclipse.xtext.junit4.XtextRunner;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.xbase.XExpression;
@@ -28,20 +26,16 @@ import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
-import org.eclipse.xtext.xbase.tests.typesystem.XbaseNewTypeSystemInjectorProvider;
 import org.eclipse.xtext.xbase.typesystem.IBatchTypeResolver;
 import org.eclipse.xtext.xbase.typesystem.IResolvedTypes;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@RunWith(value = XtextRunner.class)
-@InjectWith(value = XbaseNewTypeSystemInjectorProvider.class)
 @SuppressWarnings("all")
 public class StringLiteralTest extends AbstractXbaseTestCase {
   @Inject
@@ -57,17 +51,18 @@ public class StringLiteralTest extends AbstractXbaseTestCase {
     Assert.assertEquals(_size, _size_1);
     XStringLiteral _head = IterableExtensions.<XStringLiteral>head(featureCalls);
     final IResolvedTypes resolvedTypes = this.typeResolver.resolveTypes(_head);
-    final Procedure2<XStringLiteral,Integer> _function = new Procedure2<XStringLiteral,Integer>() {
-        public void apply(final XStringLiteral featureCall, final Integer index) {
-          final LightweightTypeReference type = resolvedTypes.getActualType(featureCall);
-          StringConcatenation _builder = new StringConcatenation();
-          _builder.append("failed for feature call at ");
-          _builder.append(index, "");
-          String _get = ((List<String>)Conversions.doWrapArray(types)).get((index).intValue());
-          String _simpleName = type.getSimpleName();
-          Assert.assertEquals(_builder.toString(), _get, _simpleName);
-        }
-      };
+    final Procedure2<XStringLiteral, Integer> _function = new Procedure2<XStringLiteral, Integer>() {
+      @Override
+      public void apply(final XStringLiteral featureCall, final Integer index) {
+        final LightweightTypeReference type = resolvedTypes.getActualType(featureCall);
+        StringConcatenation _builder = new StringConcatenation();
+        _builder.append("failed for literal at ");
+        _builder.append(index, "");
+        Object _get = types[(index).intValue()];
+        String _simpleName = type.getSimpleName();
+        Assert.assertEquals(_builder.toString(), _get, _simpleName);
+      }
+    };
     IterableExtensions.<XStringLiteral>forEach(featureCalls, _function);
   }
   
@@ -77,15 +72,15 @@ public class StringLiteralTest extends AbstractXbaseTestCase {
       TreeIterator<EObject> _eAll = EcoreUtil2.eAll(xExpression);
       Iterator<XStringLiteral> _filter = Iterators.<XStringLiteral>filter(_eAll, XStringLiteral.class);
       final List<XStringLiteral> featureCalls = IteratorExtensions.<XStringLiteral>toList(_filter);
-      final Function1<XStringLiteral,Integer> _function = new Function1<XStringLiteral,Integer>() {
-          public Integer apply(final XStringLiteral it) {
-            ICompositeNode _findActualNodeFor = NodeModelUtils.findActualNodeFor(it);
-            int _offset = _findActualNodeFor.getOffset();
-            return Integer.valueOf(_offset);
-          }
-        };
+      final Function1<XStringLiteral, Integer> _function = new Function1<XStringLiteral, Integer>() {
+        @Override
+        public Integer apply(final XStringLiteral it) {
+          ICompositeNode _findActualNodeFor = NodeModelUtils.findActualNodeFor(it);
+          return Integer.valueOf(_findActualNodeFor.getOffset());
+        }
+      };
       return IterableExtensions.<XStringLiteral, Integer>sortBy(featureCalls, _function);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
@@ -111,19 +106,19 @@ public class StringLiteralTest extends AbstractXbaseTestCase {
   }
   
   @Test
-  @Ignore(value = "Improve typing according to expectation")
+  @Ignore("Improve typing according to expectation")
   public void testMemberCall_02() throws Exception {
     this.resolvesStringLiteralsTo("\'1\'.charValue", "char");
   }
   
   @Test
-  @Ignore(value = "Improve typing according to expectation")
+  @Ignore("Improve typing according to expectation")
   public void testMemberCall_03() throws Exception {
     this.resolvesStringLiteralsTo("\'1\'.compareTo(null as Character)", "char");
   }
   
   @Test
-  @Ignore(value = "Improve typing according to expectation")
+  @Ignore("Improve typing according to expectation")
   public void testBinaryOperation_01() throws Exception {
     this.resolvesStringLiteralsTo("{ var char c = \'1\' \'1\' == c", "char", "char");
   }
@@ -175,7 +170,7 @@ public class StringLiteralTest extends AbstractXbaseTestCase {
   
   @Test
   public void testCharacterExpectation_02() throws Exception {
-    this.resolvesStringLiteralsTo("{ var Character c = \'1\' }", "char");
+    this.resolvesStringLiteralsTo("{ var Character c = \'1\' }", "Character");
   }
   
   @Test
@@ -196,5 +191,10 @@ public class StringLiteralTest extends AbstractXbaseTestCase {
   @Test
   public void testAmbiguousExpectation_03() throws Exception {
     this.resolvesStringLiteralsTo("String::valueOf(\'11\')", "String");
+  }
+  
+  @Test
+  public void testCastToChar_01() throws Exception {
+    this.resolvesStringLiteralsTo("\'a\' as Character", "String");
   }
 }

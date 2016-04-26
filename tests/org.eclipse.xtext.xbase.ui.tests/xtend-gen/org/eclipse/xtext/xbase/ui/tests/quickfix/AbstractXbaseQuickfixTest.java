@@ -1,8 +1,8 @@
 package org.eclipse.xtext.xbase.ui.tests.quickfix;
 
+import com.google.common.base.Objects;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import java.io.InputStream;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -18,9 +18,7 @@ import org.eclipse.xtext.ui.shared.SharedStateModule;
 import org.eclipse.xtext.util.Modules2;
 import org.eclipse.xtext.xbase.XbaseRuntimeModule;
 import org.eclipse.xtext.xbase.lib.Exceptions;
-import org.eclipse.xtext.xbase.lib.Functions.Function0;
-import org.eclipse.xtext.xbase.lib.ObjectExtensions;
-import org.eclipse.xtext.xbase.ui.internal.XtypeActivator;
+import org.eclipse.xtext.xbase.ui.internal.XbaseActivator;
 import org.eclipse.xtext.xbase.ui.tests.AbstractXbaseUITestCase;
 import org.eclipse.xtext.xbase.ui.tests.quickfix.TestQuickfixXbaseUIModule;
 import org.junit.Assert;
@@ -29,39 +27,24 @@ import org.junit.Assert;
 public abstract class AbstractXbaseQuickfixTest extends AbstractXbaseUITestCase implements IJavaProjectProvider {
   private IProject demandCreateProject;
   
-  private static Injector injector = new Function0<Injector>() {
-    public Injector apply() {
-      XbaseRuntimeModule _xbaseRuntimeModule = new XbaseRuntimeModule();
-      SharedStateModule _sharedStateModule = new SharedStateModule();
-      XtypeActivator _instance = XtypeActivator.getInstance();
-      TestQuickfixXbaseUIModule _testQuickfixXbaseUIModule = new TestQuickfixXbaseUIModule(_instance);
-      Module _mixin = Modules2.mixin(_xbaseRuntimeModule, _sharedStateModule, _testQuickfixXbaseUIModule);
-      Injector _createInjector = Guice.createInjector(_mixin);
-      return _createInjector;
-    }
-  }.apply();
+  private static Injector injector = Guice.createInjector(
+    Modules2.mixin(new XbaseRuntimeModule(), new SharedStateModule(), 
+      new TestQuickfixXbaseUIModule(XbaseActivator.getInstance())));
   
+  @Override
   public void tearDown() throws Exception {
-    boolean _notEquals = ObjectExtensions.operator_notEquals(this.demandCreateProject, null);
+    boolean _notEquals = (!Objects.equal(this.demandCreateProject, null));
     if (_notEquals) {
       JavaProjectSetupUtil.deleteProject(this.demandCreateProject);
     }
     super.tearDown();
   }
   
+  @Override
   public IJavaProject getJavaProject(final ResourceSet resourceSet) {
     final String projectName = this.getProjectName();
     IJavaProject javaProject = JavaProjectSetupUtil.findJavaProject(projectName);
-    boolean _or = false;
-    boolean _equals = ObjectExtensions.operator_equals(javaProject, null);
-    if (_equals) {
-      _or = true;
-    } else {
-      boolean _exists = javaProject.exists();
-      boolean _not = (!_exists);
-      _or = (_equals || _not);
-    }
-    if (_or) {
+    if ((Objects.equal(javaProject, null) || (!javaProject.exists()))) {
       try {
         IProject _createPluginProject = AbstractXbaseUITestCase.createPluginProject(projectName);
         this.demandCreateProject = _createPluginProject;
@@ -84,16 +67,16 @@ public abstract class AbstractXbaseQuickfixTest extends AbstractXbaseUITestCase 
   }
   
   protected String getProjectName() {
-    Class<? extends Object> _class = this.getClass();
+    Class<? extends AbstractXbaseQuickfixTest> _class = this.getClass();
     String _simpleName = _class.getSimpleName();
     return (_simpleName + "Project");
   }
   
+  @Override
   public XtextResource getResourceFor(final InputStream stream) {
     try {
       XtextResourceSet _resourceSet = this.getResourceSet();
-      String _plus = ("Test." + this.fileExtension);
-      URI _createURI = URI.createURI(_plus);
+      URI _createURI = URI.createURI(("Test." + this.fileExtension));
       Resource _createResource = _resourceSet.createResource(_createURI);
       final XtextResource result = ((XtextResource) _createResource);
       result.load(stream, null);
@@ -101,8 +84,7 @@ public abstract class AbstractXbaseQuickfixTest extends AbstractXbaseUITestCase 
     } catch (final Throwable _t) {
       if (_t instanceof Exception) {
         final Exception e = (Exception)_t;
-        RuntimeException _runtimeException = new RuntimeException(e);
-        throw _runtimeException;
+        throw new RuntimeException(e);
       } else {
         throw Exceptions.sneakyThrow(_t);
       }
@@ -115,11 +97,12 @@ public abstract class AbstractXbaseQuickfixTest extends AbstractXbaseUITestCase 
       final XtextResourceSet set = this.<XtextResourceSet>get(XtextResourceSet.class);
       IJavaProject _javaProject = this.getJavaProject(set);
       set.setClasspathURIContext(_javaProject);
-      _xblockexpression = (set);
+      _xblockexpression = set;
     }
     return _xblockexpression;
   }
   
+  @Override
   public Injector getInjector() {
     return AbstractXbaseQuickfixTest.injector;
   }

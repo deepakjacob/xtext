@@ -30,11 +30,11 @@ import org.eclipse.xtext.xtype.XImportSection;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.example.domainmodel.domainmodel.impl.DomainModelImpl#getImportSection <em>Import Section</em>}</li>
  *   <li>{@link org.eclipse.xtext.example.domainmodel.domainmodel.impl.DomainModelImpl#getElements <em>Elements</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

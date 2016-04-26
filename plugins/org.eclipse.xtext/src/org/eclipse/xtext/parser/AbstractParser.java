@@ -11,8 +11,8 @@ package org.eclipse.xtext.parser;
 import java.io.Reader;
 
 import org.eclipse.xtext.util.ReplaceRegion;
-import org.eclipse.xtext.util.internal.StopWatches;
-import org.eclipse.xtext.util.internal.StopWatches.StoppedTask;
+import org.eclipse.xtext.util.internal.Stopwatches;
+import org.eclipse.xtext.util.internal.Stopwatches.StoppedTask;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
@@ -25,8 +25,9 @@ public abstract class AbstractParser implements IParser {
 		return false;
 	}
 
+	@Override
 	public final IParseResult parse(Reader reader) {
-		StoppedTask task = StopWatches.forTask("parsing");
+		StoppedTask task = Stopwatches.forTask("AbstractParser.parse");
 		try {
 			task.start();
 			return doParse(reader);
@@ -39,6 +40,7 @@ public abstract class AbstractParser implements IParser {
 
 	protected abstract IParseResult doParse(CharSequence sequence);
 
+	@Override
 	public final IParseResult reparse(IParseResult previousResult, ReplaceRegion replaceRegion) {
 		if (!isReparseSupported()) {
 			final StringBuilder builder = new StringBuilder(previousResult.getRootNode().getText());

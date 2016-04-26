@@ -10,8 +10,6 @@ package org.eclipse.xtext.generator.trace;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 
 import com.google.common.collect.Lists;
@@ -19,22 +17,23 @@ import com.google.common.collect.Lists;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public abstract class AbstractStatefulTraceRegion extends AbstractTraceRegion {
 
 	private final ITextRegionWithLineInformation myRegion;
 	private final List<ILocationData> associatedLocations;
+	private final boolean useForDebugging;
 
-	protected AbstractStatefulTraceRegion(ITextRegionWithLineInformation myRegion, ILocationData associatedLocation, @Nullable AbstractTraceRegion parent) {
-		this(myRegion, Lists.newArrayList(associatedLocation), parent);
+	protected AbstractStatefulTraceRegion(ITextRegionWithLineInformation myRegion, boolean useForDebugging, ILocationData associatedLocation, AbstractTraceRegion parent) {
+		this(myRegion, useForDebugging, Lists.newArrayList(associatedLocation), parent);
 	}
 	
-	protected AbstractStatefulTraceRegion(ITextRegionWithLineInformation myRegion, List<ILocationData> associatedLocations, @Nullable AbstractTraceRegion parent) {
+	protected AbstractStatefulTraceRegion(ITextRegionWithLineInformation myRegion, boolean useForDebugging, List<ILocationData> associatedLocations, AbstractTraceRegion parent) {
 		super(parent);
 		this.myRegion = myRegion;
+		this.useForDebugging = useForDebugging;
 		this.associatedLocations = associatedLocations;
 		if (!isConsistentWithParent()) {
-			throw new IllegalArgumentException("Produced region is inconsisten with parent, this: " + this + ", parent: " + parent);
+			throw new IllegalArgumentException("Produced region is inconsistent with parent, this: " + this + ", parent: " + parent);
 		}
 	}
 	
@@ -61,6 +60,11 @@ public abstract class AbstractStatefulTraceRegion extends AbstractTraceRegion {
 	@Override
 	public ITextRegionWithLineInformation getMyRegion() {
 		return myRegion;
+	}
+	
+	@Override
+	public boolean isUseForDebugging() {
+		return useForDebugging;
 	}
 
 	@Override

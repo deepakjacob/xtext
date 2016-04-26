@@ -1,69 +1,56 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <component id="org.eclipse.xtext.junit4" version="2">
-    <resource path="META-INF/MANIFEST.MF">
-        <filter id="923795461">
+    <resource path="src/org/eclipse/xtext/junit4/GlobalRegistries.java" type="org.eclipse.xtext.junit4.GlobalRegistries">
+        <filter id="640712815">
             <message_arguments>
-                <message_argument value="2.3.0"/>
-                <message_argument value="2.2.1"/>
+                <message_argument value="CompositeEValidator"/>
+                <message_argument value="GlobalRegistries"/>
+                <message_argument value="getCopyAndClearContents()"/>
             </message_arguments>
         </filter>
     </resource>
-    <resource path="src/org/eclipse/xtext/junit4/serializer/AssertNodeModelAcceptor.java" type="org.eclipse.xtext.junit4.serializer.AssertNodeModelAcceptor">
-        <filter id="305365105">
+    <resource path="src/org/eclipse/xtext/junit4/ui/AbstractDamagerRepairerTest.java" type="org.eclipse.xtext.junit4.ui.AbstractDamagerRepairerTest">
+        <filter comment="Need to call @noreference constructor here" id="640708718">
             <message_arguments>
-                <message_argument value="org.eclipse.xtext.junit4.serializer.AssertNodeModelAcceptor"/>
-                <message_argument value="org.eclipse.xtext.junit4_2.3.0"/>
+                <message_argument value="XtextDocument(DocumentTokenSource, ITextEditComposer, OutdatedStateManager, OperationCanceledManager)"/>
+                <message_argument value="AbstractDamagerRepairerTest"/>
             </message_arguments>
         </filter>
     </resource>
-    <resource path="src/org/eclipse/xtext/junit4/serializer/DebugSequenceAcceptor.java" type="org.eclipse.xtext.junit4.serializer.DebugSequenceAcceptor">
-        <filter id="305365105">
+    <resource path="xtend-gen/org/eclipse/xtext/junit4/build/AbstractIncrementalBuilderTest.java" type="org.eclipse.xtext.junit4.build.AbstractIncrementalBuilderTest">
+        <filter id="627060751">
             <message_arguments>
-                <message_argument value="org.eclipse.xtext.junit4.serializer.DebugSequenceAcceptor"/>
-                <message_argument value="org.eclipse.xtext.junit4_2.3.0"/>
+                <message_argument value="IncrementalBuilder"/>
+                <message_argument value="AbstractIncrementalBuilderTest"/>
+                <message_argument value="incrementalBuilder"/>
             </message_arguments>
         </filter>
-    </resource>
-    <resource path="src/org/eclipse/xtext/junit4/serializer/SerializerTester.java" type="org.eclipse.xtext.junit4.serializer.SerializerTester">
-        <filter id="305365105">
+        <filter id="627060751">
             <message_arguments>
-                <message_argument value="org.eclipse.xtext.junit4.serializer.SerializerTester"/>
-                <message_argument value="org.eclipse.xtext.junit4_2.3.0"/>
+                <message_argument value="IndexState"/>
+                <message_argument value="AbstractIncrementalBuilderTest"/>
+                <message_argument value="indexState"/>
             </message_arguments>
         </filter>
-    </resource>
-    <resource path="src/org/eclipse/xtext/junit4/validation/AssertableDiagnostics.java" type="org.eclipse.xtext.junit4.validation.AssertableDiagnostics">
-        <filter id="338792546">
+        <filter id="643842064">
             <message_arguments>
-                <message_argument value="org.eclipse.xtext.junit4.validation.AssertableDiagnostics"/>
-                <message_argument value="diagnostic(int, String, String)"/>
+                <message_argument value="BuildRequest"/>
+                <message_argument value="AbstractIncrementalBuilderTest"/>
+                <message_argument value="newBuildRequest(ProceduresProcedure1&lt;? super BuildRequest&gt;)"/>
             </message_arguments>
         </filter>
-        <filter id="338792546">
+        <filter id="643842064">
             <message_arguments>
-                <message_argument value="org.eclipse.xtext.junit4.validation.AssertableDiagnostics"/>
-                <message_argument value="diagnostic(int, int, String)"/>
+                <message_argument value="IndexState"/>
+                <message_argument value="AbstractIncrementalBuilderTest"/>
+                <message_argument value="build(BuildRequest)"/>
             </message_arguments>
         </filter>
-        <filter id="338792546">
+        <filter id="643846161">
             <message_arguments>
-                <message_argument value="org.eclipse.xtext.junit4.validation.AssertableDiagnostics"/>
-                <message_argument value="diagnostic(int, int, String, String)"/>
-            </message_arguments>
-        </filter>
-        <filter id="1143996420">
-            <message_arguments>
-                <message_argument value="diagnostic(Integer, Integer, String)"/>
-            </message_arguments>
-        </filter>
-        <filter id="1143996420">
-            <message_arguments>
-                <message_argument value="diagnostic(Integer, Integer, String, String)"/>
-            </message_arguments>
-        </filter>
-        <filter id="1143996420">
-            <message_arguments>
-                <message_argument value="diagnostic(Integer, String, String)"/>
+                <message_argument value="BuildRequest"/>
+                <message_argument value="AbstractIncrementalBuilderTest"/>
+                <message_argument value="build(BuildRequest)"/>
             </message_arguments>
         </filter>
     </resource>

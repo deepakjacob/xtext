@@ -8,7 +8,6 @@
 package org.eclipse.xtext.xbase.jvmmodel;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.xtext.common.types.JvmDeclaredType;
 
 import com.google.inject.ImplementedBy;
@@ -40,6 +39,10 @@ import com.google.inject.ImplementedBy;
  * @see IJvmModelAssociator
  * @author Jan Koehnlein - Initial contribution and API
  * @author Sven Efftinge
+ * 
+ * @since 2.7
+ * 
+ * @noimplement This interface should not be implemented directly. Clients should subclass {@link AbstractModelInferrer} instead.
  */
 @ImplementedBy(IJvmModelInferrer.NullImpl.class)
 public interface IJvmModelInferrer {
@@ -72,14 +75,15 @@ public interface IJvmModelInferrer {
 	 *            and only need to to provide the information needed by the language's {@link org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy}.
 	 *            IF not implemented differently this is just the {@link JvmDeclaredType}s with their qualified name, but no members and no other data.
 	 */
-	void infer(EObject e, @NonNull IJvmDeclaredTypeAcceptor acceptor, boolean preIndexingPhase);
+	void infer(EObject e, /* @NonNull */ IJvmDeclaredTypeAcceptor acceptor, boolean preIndexingPhase);
 
 	/**
 	 * A null-implementation.
 	 */
 	public static class NullImpl implements IJvmModelInferrer {
 
-		public void infer(EObject e, @NonNull IJvmDeclaredTypeAcceptor acceptor, boolean preIndexingPhase) {
+		@Override
+		public void infer(EObject e, /* @NonNull */ IJvmDeclaredTypeAcceptor acceptor, boolean preIndexingPhase) {
 		}
 
 	}

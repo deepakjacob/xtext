@@ -22,11 +22,11 @@ import org.eclipse.xtext.example.domainmodel.domainmodel.Feature;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.example.domainmodel.domainmodel.impl.FeatureImpl#getName <em>Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.example.domainmodel.domainmodel.impl.FeatureImpl#getType <em>Type</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -10,13 +10,13 @@ package org.eclipse.xtext.xbase.typesystem.references;
 import java.io.Serializable;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmArrayType;
 import org.eclipse.xtext.common.types.JvmComponentType;
 import org.eclipse.xtext.common.types.JvmGenericArrayTypeReference;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.common.types.TypesPackage;
+import org.eclipse.xtext.xbase.typesystem.util.IVisibilityHelper;
 import org.eclipse.xtext.xbase.typesystem.util.TypeParameterSubstitutor;
 
 import com.google.common.base.Preconditions;
@@ -25,7 +25,6 @@ import com.google.common.collect.Lists;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public class ArrayTypeReference extends LightweightTypeReference {
 
 	private LightweightTypeReference component;
@@ -37,9 +36,23 @@ public class ArrayTypeReference extends LightweightTypeReference {
 //		if (!(component.getType() instanceof JvmComponentType)) {
 //			throw new IllegalArgumentException("Cannot create array reference from non-component type " + component.getIdentifier());
 //		}
+		if (component.isAny()) {
+			throw new IllegalArgumentException("component is invalid: type <any> is not allowed");
+		}
+		if (component.isWildcard()) {
+			throw new IllegalArgumentException("component is invalid: " + component);
+		}
 		if (!component.isOwnedBy(owner)) {
 			throw new IllegalArgumentException("component is not valid in current context");
 		}
+	}
+	
+	/**
+	 * Subclasses <em>must</em> override this method.
+	 */
+	@Override
+	public int getKind() {
+		return KIND_ARRAY_TYPE_REFERENCE;
 	}
 	
 	@Override
@@ -50,37 +63,94 @@ public class ArrayTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
-	public JvmTypeReference toJavaCompliantTypeReference() {
+	public boolean isVisible(IVisibilityHelper visibilityHelper) {
+		return component.isVisible(visibilityHelper);
+	}
+	
+	@Override
+	public JvmTypeReference toJavaCompliantTypeReference(IVisibilityHelper visibilityHelper) {
 		JvmGenericArrayTypeReference result = getTypesFactory().createJvmGenericArrayTypeReference();
-		result.setComponentType(component.toJavaCompliantTypeReference());
+		result.setComponentType(component.toJavaCompliantTypeReference(visibilityHelper));
 		return result;
 	}
 	
 	@Override
 	public JvmArrayType getType() {
-		JvmType componentType = component.getType();
+		JvmType componentType = component.toJavaType().getType();
 		if (componentType instanceof JvmComponentType) {
 			return Preconditions.checkNotNull(((JvmComponentType) componentType).getArrayType());
 		}
-		throw new IllegalStateException("component type seems to be invalid");
+		if (component.isUnknown() || componentType.eIsProxy()) {
+			return null;
+		}
+		throw new IllegalStateException("component type seems to be invalid: " + componentType + " / " + component);
+	}
+	
+	@Override
+	public boolean isUnknown() {
+		return component.isUnknown();
 	}
 	
 	@Override
 	protected List<LightweightTypeReference> getSuperTypes(TypeParameterSubstitutor<?> substitutor) {
 		List<LightweightTypeReference> componentSuperTypes = component.getSuperTypes(substitutor);
+		ITypeReferenceOwner owner = getOwner();
 		if (!componentSuperTypes.isEmpty()) {
 			List<LightweightTypeReference> result = Lists.newArrayListWithCapacity(componentSuperTypes.size());
 			for(LightweightTypeReference componentSuperType: componentSuperTypes) {
-				result.add(new ArrayTypeReference(getOwner(), componentSuperType));
+				result.add(owner.newArrayTypeReference(componentSuperType));
 			}
 			return result;
 		}
-		List<LightweightTypeReference> result = Lists.newArrayListWithCapacity(3);
-		result.add(new ParameterizedTypeReference(getOwner(), findNonNullType(Cloneable.class)));
-		result.add(new ParameterizedTypeReference(getOwner(), findNonNullType(Serializable.class)));
+		List<LightweightTypeReference> result = Lists.newArrayListWithCapacity(2);
+		result.add(owner.newParameterizedTypeReference(findNonNullType(Cloneable.class)));
+		result.add(owner.newParameterizedTypeReference(findNonNullType(Serializable.class)));
 		return result;
 	}
 	
+	@Override
+	/* @Nullable */
+	public LightweightTypeReference getSuperType(JvmType rawType) {
+		if (rawType.eClass() == TypesPackage.Literals.JVM_ARRAY_TYPE) {
+			JvmComponentType rawComponentType = ((JvmArrayType) rawType).getComponentType();
+			LightweightTypeReference result = component.getSuperType(rawComponentType);
+			if (result == null) {
+				return null;
+			}
+			if (result == component)
+				return this;
+			return getOwner().newArrayTypeReference(result);
+		} else if (rawType.eClass() == TypesPackage.Literals.JVM_GENERIC_TYPE) {
+			String identifier = rawType.getIdentifier();
+			if (Object.class.getName().equals(identifier)
+					|| Cloneable.class.getName().equals(identifier)
+					|| Serializable.class.getName().equals(identifier)) {
+				return getOwner().newParameterizedTypeReference(rawType);
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	/* @Nullable */
+	public LightweightTypeReference getSuperType(Class<?> rawType) {
+		if (isType(rawType)) {
+			return this;
+		}
+		Class<?> rawComponentType = rawType.getComponentType();
+		if (rawComponentType == null) {
+			if (Object.class.equals(rawType) || Cloneable.class.equals(rawType) || Serializable.class.equals(rawType)) {
+				return internalFindTopLevelType(rawType);
+			}
+			return null;
+		}
+		LightweightTypeReference resultComponent = component.getSuperType(rawComponentType);
+		if (resultComponent == null) {
+			return null;
+		}
+		return getOwner().newArrayTypeReference(resultComponent);
+	}
+
 	@Override
 	public boolean isResolved() {
 		return component.isResolved();
@@ -89,6 +159,28 @@ public class ArrayTypeReference extends LightweightTypeReference {
 	@Override
 	public boolean isRawType() {
 		return component.isRawType();
+	}
+	
+	@Override
+	public boolean isAnonymous() {
+		return component.isAnonymous();
+	}
+	
+	@Override
+	public LightweightTypeReference getNamedType() {
+		if (isAnonymous()) {
+			return getOwner().newArrayTypeReference(component.getNamedType());
+		}
+		return super.getNamedType();
+	}
+	
+	@Override
+	public LightweightTypeReference getRawTypeReference() {
+		LightweightTypeReference rawComponent = component.getRawTypeReference();
+		if (rawComponent == component) {
+			return this;
+		}
+		return getOwner().newArrayTypeReference(rawComponent);
 	}
 	
 	@Override
@@ -102,15 +194,21 @@ public class ArrayTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
-	public ParameterizedTypeReference tryConvertToListType() {
+	public LightweightTypeReference tryConvertToListType() {
 		ArrayTypes arrayTypes = getServices().getArrayTypes();
 		return arrayTypes.convertToList(this);
 	}
 	
 	@Override
+	/* @Nullable */
+	public ArrayTypeReference tryConvertToArray() {
+		return this;
+	}
+	
+	@Override
 	protected LightweightTypeReference doCopyInto(ITypeReferenceOwner owner) {
 		LightweightTypeReference copiedComponent = component.copyInto(owner);
-		return new ArrayTypeReference(owner, copiedComponent);
+		return owner.newArrayTypeReference(copiedComponent);
 	}
 	
 	@Override
@@ -124,9 +222,20 @@ public class ArrayTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
+	public String getUniqueIdentifier() {
+		return component.getUniqueIdentifier() + "[]";
+	}
+	
+	@Override
+	public String getJavaIdentifier() {
+		return component.getJavaIdentifier() + "[]";
+	}
+	
+	@Override
 	public boolean isType(Class<?> clazz) {
-		if (clazz.isArray()) {
-			return component.isType(clazz.getComponentType());
+		Class<?> clazzComponentType = clazz.getComponentType();
+		if (clazzComponentType != null) {
+			return component.isType(clazzComponentType);
 		}
 		return false;
 	}
@@ -147,13 +256,13 @@ public class ArrayTypeReference extends LightweightTypeReference {
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public <Result> Result accept(TypeReferenceVisitorWithResult<Result> visitor) {
 		return visitor.doVisitArrayTypeReference(this);
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	public <Param, Result> Result accept(TypeReferenceVisitorWithParameterAndResult<Param, Result> visitor, Param param) {
 		return visitor.doVisitArrayTypeReference(this, param);
 	}

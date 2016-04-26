@@ -44,27 +44,38 @@ public class EObjectDiagnosticImpl extends AbstractDiagnostic {
 		this.data = data;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}
 
 	@Override
 	protected INode getNode() {
-		if (problematicObject == null)
+		return doGetNode(problematicObject, problematicFeature, indexOfProblemanticValueInFeature);
+	}
+	
+	protected INode doGetNode(EObject object, EStructuralFeature feature, int idx) {
+		if (object == null)
 			return null;
-		if (problematicFeature == null)
-			return NodeModelUtils.findActualNodeFor(problematicObject);
+		if (feature == null) {
+			INode result = NodeModelUtils.findActualNodeFor(object);
+			if (result != null) {
+				return result;
+			}
+			return doGetNode(object.eContainer(), object.eContainmentFeature(), -1);
+		}
 			
-		List<INode> nodesForFeature = NodeModelUtils.findNodesForFeature(problematicObject, problematicFeature);
+		List<INode> nodesForFeature = NodeModelUtils.findNodesForFeature(object, feature);
 		if (nodesForFeature.isEmpty()) {
-			return NodeModelUtils.findActualNodeFor(problematicObject);
+			return doGetNode(object, null, -1);
 		}
-		if (nodesForFeature.size() == 1 && indexOfProblemanticValueInFeature == -1)
-			return nodesForFeature.get(0);
-		if (nodesForFeature.size() > indexOfProblemanticValueInFeature ) {
-			return nodesForFeature.get(indexOfProblemanticValueInFeature);
+		if (idx == -1 /* INSIGNIFICANT_INDEX */) {
+			idx = 0;
 		}
-		return null;
+		if (nodesForFeature.size() > idx ) {
+			return nodesForFeature.get(idx);
+		}
+		return doGetNode(object, null, -1);
 	}
 
 	@Override

@@ -3,6 +3,9 @@
 	<Match>
 		<Class name="~.*\.antlr\.internal.*" />
 	</Match>
+		<Match>
+		<Class name="~org\.gradle\..*" />
+	</Match>
 	<Match>
 		<Class name="~.*Lexer(\$.*)?" />
 	</Match>
@@ -22,12 +25,30 @@
 		<Method name="setToDefault" />
 		<Bug pattern="ES_COMPARING_STRINGS_WITH_EQ" />
 	</Match>
-	<!-- "==" compare is desired -->
+	<Match>
+		<Class
+			name="org.eclipse.xtext.common.types.xtext.ui.JdtTypesProposalProvider$3" />
+		<Method name="isCandidateMatchingPrefix" />
+		<Bug pattern="ES_COMPARING_STRINGS_WITH_EQ" />
+	</Match>
+	<Match>
+		<Class
+			name="org.eclipse.xtext.naming.QualifiedName" />
+		<Method name="toLowerCase" />
+		<Bug pattern="ES_COMPARING_STRINGS_WITH_EQ" />
+	</Match>
 	<Match>
 		<Class
 			name="org.eclipse.xtext.impl.EnumLiteralDeclarationImpl" />
 		<Method name="getEnumLiteral" />
 		<Bug pattern="EC_UNRELATED_TYPES_USING_POINTER_EQUALITY" />
+	</Match>
+	
+	<!-- someArray.hashCode() is desired -->
+	<Match>
+		<Class
+			name="org.eclipse.xtext.xbase.lib.ArrayExtensions" />
+		<Bug pattern="DMI_INVOKING_HASHCODE_ON_ARRAY" />
 	</Match>
 	
 	<!-- Deprecated -->
@@ -40,27 +61,6 @@
 	
 	<!-- Xtend generated: guava Objects.equal(x,null) should be a valid construct -->
 	<Match>
-		<Class name="org.eclipse.xtext.xbase.jvmmodel.JvmTypeExtensions" />
-		<Bug pattern="EC_NULL_ARG" />
-	</Match>
-	<Match>
-		<Package name="org.eclipse.xtext.generator.serializer" />
-		<Bug pattern="EC_NULL_ARG" />
-	</Match>
-	<Match>
-		<Package name="org.eclipse.xtext.xbase.compiler" />
-		<Bug pattern="EC_NULL_ARG" />
-	</Match>
-	<Match>
-		<Package name="org.eclipse.xtext.xtext.ui.wizard.ecore2xtext" />
-		<Bug pattern="EC_NULL_ARG" />
-	</Match>
-	<Match>
-		<Package name="org.eclipse.xtext.xbase.typesystem.references.LightweightBoundTypeArgument" />
-		<Bug pattern="EC_NULL_ARG" />
-	</Match>
-	<Match>
-		<Class name="org.eclipse.xtext.xbase.formatting.XbaseFormatter2" />
 		<Bug pattern="EC_NULL_ARG" />
 	</Match>
 	
@@ -68,6 +68,19 @@
 	<Match>
 		<Class name="org.eclipse.xtext.util.ITextRegion" />
 		<Bug pattern="IC_SUPERCLASS_USES_SUBCLASS_DURING_INITIALIZATION" />
+	</Match>
+	
+	<!-- Findbugs bug 1032 -->
+	<Match>
+		<Class name="org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker" />
+		<Bug pattern="VO_VOLATILE_INCREMENT" />
+	</Match>
+	
+	
+	<!-- Findbugs bug -->
+	<Match>
+		<Class name="~org.eclipse.xtext.xbase.compiler.InMemoryJavaCompiler\$.*" />
+		<Bug pattern="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS" />
 	</Match>
 	
 	

@@ -21,13 +21,13 @@ import java.util.ArrayList;
 @SuppressWarnings("all")
 public class InternalIgnoreCaseLexerTestLanguageParser extends AbstractInternalAntlrParser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "KEYWORD_2", "KEYWORD_1", "RULE_WS", "RULE_SL_COMMENT"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "Case", "Foo", "RULE_WS", "RULE_SL_COMMENT"
     };
-    public static final int KEYWORD_1=5;
-    public static final int KEYWORD_2=4;
+    public static final int Foo=5;
+    public static final int Case=4;
     public static final int RULE_WS=6;
-    public static final int EOF=-1;
     public static final int RULE_SL_COMMENT=7;
+    public static final int EOF=-1;
 
     // delegates
     // delegators
@@ -43,7 +43,7 @@ public class InternalIgnoreCaseLexerTestLanguageParser extends AbstractInternalA
         
 
     public String[] getTokenNames() { return InternalIgnoreCaseLexerTestLanguageParser.tokenNames; }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g"; }
+    public String getGrammarFileName() { return "InternalIgnoreCaseLexerTestLanguageParser.g"; }
 
 
 
@@ -69,7 +69,7 @@ public class InternalIgnoreCaseLexerTestLanguageParser extends AbstractInternalA
 
 
     // $ANTLR start "entryRuleModel"
-    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:61:1: entryRuleModel returns [EObject current=null] : iv_ruleModel= ruleModel EOF ;
+    // InternalIgnoreCaseLexerTestLanguageParser.g:61:1: entryRuleModel returns [EObject current=null] : iv_ruleModel= ruleModel EOF ;
     public final EObject entryRuleModel() throws RecognitionException {
         EObject current = null;
 
@@ -77,17 +77,17 @@ public class InternalIgnoreCaseLexerTestLanguageParser extends AbstractInternalA
 
 
         try {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:62:2: (iv_ruleModel= ruleModel EOF )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:63:2: iv_ruleModel= ruleModel EOF
+            // InternalIgnoreCaseLexerTestLanguageParser.g:62:2: (iv_ruleModel= ruleModel EOF )
+            // InternalIgnoreCaseLexerTestLanguageParser.g:63:2: iv_ruleModel= ruleModel EOF
             {
              newCompositeNode(grammarAccess.getModelRule()); 
-            pushFollow(FollowSets000.FOLLOW_ruleModel_in_entryRuleModel67);
+            pushFollow(FollowSets000.FOLLOW_1);
             iv_ruleModel=ruleModel();
 
             state._fsp--;
 
              current =iv_ruleModel; 
-            match(input,EOF,FollowSets000.FOLLOW_EOF_in_entryRuleModel77); 
+            match(input,EOF,FollowSets000.FOLLOW_2); 
 
             }
 
@@ -105,7 +105,7 @@ public class InternalIgnoreCaseLexerTestLanguageParser extends AbstractInternalA
 
 
     // $ANTLR start "ruleModel"
-    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:70:1: ruleModel returns [EObject current=null] : (otherlv_0= KEYWORD_2 (otherlv_1= KEYWORD_1 )? ( (lv_value_2_0= KEYWORD_2 ) ) ) ;
+    // InternalIgnoreCaseLexerTestLanguageParser.g:70:1: ruleModel returns [EObject current=null] : (otherlv_0= Case (otherlv_1= Foo )? ( (lv_value_2_0= Case ) ) ) ;
     public final EObject ruleModel() throws RecognitionException {
         EObject current = null;
 
@@ -116,28 +116,28 @@ public class InternalIgnoreCaseLexerTestLanguageParser extends AbstractInternalA
          enterRule(); 
             
         try {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:73:28: ( (otherlv_0= KEYWORD_2 (otherlv_1= KEYWORD_1 )? ( (lv_value_2_0= KEYWORD_2 ) ) ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:74:1: (otherlv_0= KEYWORD_2 (otherlv_1= KEYWORD_1 )? ( (lv_value_2_0= KEYWORD_2 ) ) )
+            // InternalIgnoreCaseLexerTestLanguageParser.g:73:28: ( (otherlv_0= Case (otherlv_1= Foo )? ( (lv_value_2_0= Case ) ) ) )
+            // InternalIgnoreCaseLexerTestLanguageParser.g:74:1: (otherlv_0= Case (otherlv_1= Foo )? ( (lv_value_2_0= Case ) ) )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:74:1: (otherlv_0= KEYWORD_2 (otherlv_1= KEYWORD_1 )? ( (lv_value_2_0= KEYWORD_2 ) ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:75:2: otherlv_0= KEYWORD_2 (otherlv_1= KEYWORD_1 )? ( (lv_value_2_0= KEYWORD_2 ) )
+            // InternalIgnoreCaseLexerTestLanguageParser.g:74:1: (otherlv_0= Case (otherlv_1= Foo )? ( (lv_value_2_0= Case ) ) )
+            // InternalIgnoreCaseLexerTestLanguageParser.g:75:2: otherlv_0= Case (otherlv_1= Foo )? ( (lv_value_2_0= Case ) )
             {
-            otherlv_0=(Token)match(input,KEYWORD_2,FollowSets000.FOLLOW_KEYWORD_2_in_ruleModel115); 
+            otherlv_0=(Token)match(input,Case,FollowSets000.FOLLOW_3); 
 
                 	newLeafNode(otherlv_0, grammarAccess.getModelAccess().getCaseKeyword_0());
                 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:79:1: (otherlv_1= KEYWORD_1 )?
+            // InternalIgnoreCaseLexerTestLanguageParser.g:79:1: (otherlv_1= Foo )?
             int alt1=2;
             int LA1_0 = input.LA(1);
 
-            if ( (LA1_0==KEYWORD_1) ) {
+            if ( (LA1_0==Foo) ) {
                 alt1=1;
             }
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:80:2: otherlv_1= KEYWORD_1
+                    // InternalIgnoreCaseLexerTestLanguageParser.g:80:2: otherlv_1= Foo
                     {
-                    otherlv_1=(Token)match(input,KEYWORD_1,FollowSets000.FOLLOW_KEYWORD_1_in_ruleModel128); 
+                    otherlv_1=(Token)match(input,Foo,FollowSets000.FOLLOW_4); 
 
                         	newLeafNode(otherlv_1, grammarAccess.getModelAccess().getFooKeyword_1());
                         
@@ -147,13 +147,13 @@ public class InternalIgnoreCaseLexerTestLanguageParser extends AbstractInternalA
 
             }
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:84:3: ( (lv_value_2_0= KEYWORD_2 ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:85:1: (lv_value_2_0= KEYWORD_2 )
+            // InternalIgnoreCaseLexerTestLanguageParser.g:84:3: ( (lv_value_2_0= Case ) )
+            // InternalIgnoreCaseLexerTestLanguageParser.g:85:1: (lv_value_2_0= Case )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:85:1: (lv_value_2_0= KEYWORD_2 )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/lexer/parser/antlr/internal/InternalIgnoreCaseLexerTestLanguageParser.g:86:3: lv_value_2_0= KEYWORD_2
+            // InternalIgnoreCaseLexerTestLanguageParser.g:85:1: (lv_value_2_0= Case )
+            // InternalIgnoreCaseLexerTestLanguageParser.g:86:3: lv_value_2_0= Case
             {
-            lv_value_2_0=(Token)match(input,KEYWORD_2,FollowSets000.FOLLOW_KEYWORD_2_in_ruleModel148); 
+            lv_value_2_0=(Token)match(input,Case,FollowSets000.FOLLOW_2); 
 
                     newLeafNode(lv_value_2_0, grammarAccess.getModelAccess().getValueCaSeKeyword_2_0());
                 
@@ -195,11 +195,10 @@ public class InternalIgnoreCaseLexerTestLanguageParser extends AbstractInternalA
 
     
     private static class FollowSets000 {
-        public static final BitSet FOLLOW_ruleModel_in_entryRuleModel67 = new BitSet(new long[]{0x0000000000000000L});
-        public static final BitSet FOLLOW_EOF_in_entryRuleModel77 = new BitSet(new long[]{0x0000000000000002L});
-        public static final BitSet FOLLOW_KEYWORD_2_in_ruleModel115 = new BitSet(new long[]{0x0000000000000030L});
-        public static final BitSet FOLLOW_KEYWORD_1_in_ruleModel128 = new BitSet(new long[]{0x0000000000000010L});
-        public static final BitSet FOLLOW_KEYWORD_2_in_ruleModel148 = new BitSet(new long[]{0x0000000000000002L});
+        public static final BitSet FOLLOW_1 = new BitSet(new long[]{0x0000000000000000L});
+        public static final BitSet FOLLOW_2 = new BitSet(new long[]{0x0000000000000002L});
+        public static final BitSet FOLLOW_3 = new BitSet(new long[]{0x0000000000000030L});
+        public static final BitSet FOLLOW_4 = new BitSet(new long[]{0x0000000000000010L});
     }
 
 

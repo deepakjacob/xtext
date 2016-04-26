@@ -14,9 +14,11 @@ import org.eclipse.xtext.ui.generator.*
 
 var projectName = "org.eclipse.xtext.ui.tests"
 var runtimeProject = "../${projectName}"
+var lineDelimiter = '\n'
 
 Workflow {
 	bean = StandaloneSetup {
+		ignoreBrokenProjectFiles = true
 		platformUri = "${runtimeProject}/../.."
 	} 
 	
@@ -24,7 +26,7 @@ Workflow {
 		directory="${runtimeProject}/src-gen"
 	} 
 	
-	component = Generator {
+	component = Generator auto-inject {
 		pathRtProject = "${runtimeProject}"
 		pathUiProject = "${runtimeProject}"
 		projectNameRt = "${projectName}"
@@ -112,7 +114,7 @@ Workflow {
 		}
 		language = { 
 			uri="classpath:/org/eclipse/xtext/ui/tests/editor/contentassist/BacktrackingContentAssistTestLanguage.xtext"
-			fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragments {
+			fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragmentsWithConversionTimeout {
 				backtrack=true
 			}
 		}
@@ -145,6 +147,18 @@ Workflow {
 			fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragments {}
 		}
 		language = { 
+			uri="classpath:/org/eclipse/xtext/ui/tests/editor/contentassist/ParametersTestLanguage.xtext"
+			fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragments {}
+		}
+		language = { 
+			uri="classpath:/org/eclipse/xtext/ui/tests/editor/contentassist/ParametersTestLanguageEx.xtext"
+			fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragmentsAntlrCA {}
+		}
+		language = { 
+			uri="classpath:/org/eclipse/xtext/ui/tests/editor/contentassist/TwoParametersTestLanguage.xtext"
+			fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragments {}
+		}
+		language = { 
 			uri="classpath:/org/eclipse/xtext/ui/tests/editor/outline/OutlineTestLanguage.xtext"
 			fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragments {}
 			fragment = builder.BuilderIntegrationFragment {}
@@ -174,7 +188,11 @@ Workflow {
 		}
 		language = { 
 			uri="classpath:/org/eclipse/xtext/ui/tests/TestLanguage.xtext"
-			fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragmentsBuilder {}
+			fragment = CompositeGeneratorFragment {
+				fragment = @org.eclipse.xtext.ui.tests.TestLanguagesFragmentsBuilder auto-inject {}
+				fragment = scoping.ImportNamespacesScopingFragment {}
+				fragment = exporting.QualifiedNamesFragment {}
+			}
 		}
 		language = { 
 			uri="classpath:/org/eclipse/xtext/ui/tests/FoldingTestLanguage.xtext"

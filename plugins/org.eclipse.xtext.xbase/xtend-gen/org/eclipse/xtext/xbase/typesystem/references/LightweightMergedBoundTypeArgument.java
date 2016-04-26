@@ -7,46 +7,43 @@
  */
 package org.eclipse.xtext.xbase.typesystem.references;
 
-import org.eclipse.xtend.lib.Data;
-import org.eclipse.xtext.xbase.lib.util.ToStringHelper;
+import org.eclipse.xtend.lib.annotations.Data;
+import org.eclipse.xtext.xbase.lib.Pure;
+import org.eclipse.xtext.xbase.lib.util.ToStringBuilder;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 import org.eclipse.xtext.xbase.typesystem.util.VarianceInfo;
 
 /**
+ * The result of a merge operation where different type bound type arguments are incorporated into
+ * a result.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
- * TODO JavaDoc
  */
 @Data
 @SuppressWarnings("all")
 public class LightweightMergedBoundTypeArgument {
-  private final LightweightTypeReference _typeReference;
+  private final LightweightTypeReference typeReference;
   
-  public LightweightTypeReference getTypeReference() {
-    return this._typeReference;
-  }
-  
-  private final VarianceInfo _variance;
-  
-  public VarianceInfo getVariance() {
-    return this._variance;
-  }
+  private final VarianceInfo variance;
   
   public LightweightMergedBoundTypeArgument(final LightweightTypeReference typeReference, final VarianceInfo variance) {
     super();
-    this._typeReference = typeReference;
-    this._variance = variance;
+    this.typeReference = typeReference;
+    this.variance = variance;
   }
   
   @Override
+  @Pure
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((_typeReference== null) ? 0 : _typeReference.hashCode());
-    result = prime * result + ((_variance== null) ? 0 : _variance.hashCode());
+    result = prime * result + ((this.typeReference== null) ? 0 : this.typeReference.hashCode());
+    result = prime * result + ((this.variance== null) ? 0 : this.variance.hashCode());
     return result;
   }
   
   @Override
+  @Pure
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
@@ -55,22 +52,35 @@ public class LightweightMergedBoundTypeArgument {
     if (getClass() != obj.getClass())
       return false;
     LightweightMergedBoundTypeArgument other = (LightweightMergedBoundTypeArgument) obj;
-    if (_typeReference == null) {
-      if (other._typeReference != null)
+    if (this.typeReference == null) {
+      if (other.typeReference != null)
         return false;
-    } else if (!_typeReference.equals(other._typeReference))
+    } else if (!this.typeReference.equals(other.typeReference))
       return false;
-    if (_variance == null) {
-      if (other._variance != null)
+    if (this.variance == null) {
+      if (other.variance != null)
         return false;
-    } else if (!_variance.equals(other._variance))
+    } else if (!this.variance.equals(other.variance))
       return false;
     return true;
   }
   
   @Override
+  @Pure
   public String toString() {
-    String result = new ToStringHelper().toString(this);
-    return result;
+    ToStringBuilder b = new ToStringBuilder(this);
+    b.add("typeReference", this.typeReference);
+    b.add("variance", this.variance);
+    return b.toString();
+  }
+  
+  @Pure
+  public LightweightTypeReference getTypeReference() {
+    return this.typeReference;
+  }
+  
+  @Pure
+  public VarianceInfo getVariance() {
+    return this.variance;
   }
 }

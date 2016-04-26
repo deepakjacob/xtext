@@ -17,7 +17,7 @@ import org.junit.Test;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-public class PrimitiveMirrorTest extends Assert implements ITypeFactory<Class<?>> {
+public class PrimitiveMirrorTest extends Assert implements ITypeFactory<Class<?>, JvmType> {
 
 	private PrimitiveMirror mirror;
 	private PrimitiveTypeFactory helper;
@@ -50,6 +50,7 @@ public class PrimitiveMirrorTest extends Assert implements ITypeFactory<Class<?>
 		assertEquals(callCount, resource.getContents().size());
 	}
 
+	@Override
 	public JvmType createType(Class<?> clazz) {
 		callCount++;
 		return helper.createType(clazz);

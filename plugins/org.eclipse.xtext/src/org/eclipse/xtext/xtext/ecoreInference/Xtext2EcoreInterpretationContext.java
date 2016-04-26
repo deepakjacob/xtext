@@ -28,7 +28,7 @@ import com.google.common.collect.Sets;
 
 /**
  * Please refer to the
- * <a href="http://www.eclipse.org/Xtext/documentation/latest/xtext.html#metamodelInference">documentation</a>
+ * <a href="https://www.eclipse.org/Xtext/documentation/301_grammarlanguage.html#metamodel-inference">documentation</a>
  * for details.
  * 
  * @author Heiko Behrens - Initial contribution and API
@@ -78,6 +78,7 @@ public class Xtext2EcoreInterpretationContext {
 		EClassifierInfo featureTypeInfo;
 
 		if (GrammarUtil.isBooleanAssignment(assignment)) {
+			checkNoFragmentRuleCall(assignment.getTerminal());
 			EDataType eBoolean = GrammarUtil.findEBoolean(GrammarUtil.getGrammar(assignment));
 			featureTypeInfo = getEClassifierInfoOrThrowException(eBoolean, assignment);
 			isMultivalue = false;
@@ -87,11 +88,23 @@ public class Xtext2EcoreInterpretationContext {
 			if (terminal == null) {
 				throw new TransformationException(TransformationErrorCode.NoSuchTypeAvailable, "Cannot derive type from incomplete assignment.", assignment);
 			}
+			checkNoFragmentRuleCall(terminal);
 			EClassifier type = getTerminalType(terminal);
 			isContainment = isContainmentAssignment(assignment);
 			featureTypeInfo = getEClassifierInfoOrThrowException(type, assignment);
 		}
 		addFeature(featureName, featureTypeInfo, isMultivalue, isContainment, assignment);
+	}
+
+	private void checkNoFragmentRuleCall(AbstractElement terminal) throws TransformationException {
+		if (GrammarUtil.isEObjectFragmentRuleCall(terminal)) {
+			throw new TransformationException(TransformationErrorCode.InvalidFragmentCall, "Cannot call a fragment from an assignment", terminal);
+		}
+		if (terminal instanceof Alternatives) {
+			for(AbstractElement child: ((Alternatives) terminal).getElements()) {
+				checkNoFragmentRuleCall(child);
+			}
+		}
 	}
 
 	public boolean isContainmentAssignment(Assignment assignment) {

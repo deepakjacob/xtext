@@ -1,7 +1,11 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * ******************************************************************************
+ * Copyright (c) 2015 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *  ******************************************************************************
  */
 package org.eclipse.xtext.example.arithmetics.arithmetics;
 
@@ -13,11 +17,11 @@ package org.eclipse.xtext.example.arithmetics.arithmetics;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.example.arithmetics.arithmetics.Multi#getLeft <em>Left</em>}</li>
  *   <li>{@link org.eclipse.xtext.example.arithmetics.arithmetics.Multi#getRight <em>Right</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.example.arithmetics.arithmetics.ArithmeticsPackage#getMulti()
  * @model

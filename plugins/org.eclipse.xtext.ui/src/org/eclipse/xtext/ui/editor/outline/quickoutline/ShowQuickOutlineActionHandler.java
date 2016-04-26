@@ -29,11 +29,12 @@ public class ShowQuickOutlineActionHandler extends AbstractHandler {
 	@Inject
 	private Injector injector;
 	
+	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
 		final XtextEditor xtextEditor = EditorUtils.getActiveXtextEditor(event);
 		if (xtextEditor != null) {
 			final IXtextDocument document = xtextEditor.getDocument();
-			document.readOnly(new IUnitOfWork.Void<XtextResource>()  {
+			document.priorityReadOnly(new IUnitOfWork.Void<XtextResource>()  {
 				@Override
 				public void process(XtextResource state) throws Exception {
 					final QuickOutlinePopup quickOutlinePopup = createPopup(xtextEditor.getEditorSite().getShell());

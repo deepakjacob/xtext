@@ -9,25 +9,36 @@ package org.eclipse.xtext.xbase.compiler;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmType;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
  */
-@NonNullByDefault
-public interface IAppendable {
+public interface IAppendable extends ISourceAppender {
 	
+	@Override
 	IAppendable append(CharSequence string);
 
+	@Override
 	IAppendable append(JvmType type);
 
+	@Override
+	IAppendable append(LightweightTypeReference typeRef);
+
+	@Override
 	IAppendable newLine();
 
+	@Override
 	IAppendable increaseIndentation();
 
+	@Override
 	IAppendable decreaseIndentation();
 	
+	/**
+	 * @deprecated imports are handled by external components 
+	 */
+	@Deprecated
 	List<String> getImports();
 
 	/**
@@ -43,11 +54,20 @@ public interface IAppendable {
 	String declareVariable(Object key, String proposedName);
 	
 	/**
-	 * declares a synthetic variable, where the name is not used in the current or any parent scope.
+	 * Declares a synthetic variable, where the name is not used in the current or any parent scope
+	 * except by other synthetic variables.
 	 */
 	String declareSyntheticVariable(Object key, String proposedName);
-
+	
+	/**
+	 * Declares a variable with unique name, which is not used in the current or any parent scope.
+	 * This is a workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=445949
+	 */
+	String declareUniqueNameVariable(Object key, String proposedName);
+	
 	String getName(Object key);
+	
+	String removeName(Object key) throws IllegalStateException;
 	
 	boolean hasName(Object key);
 	
@@ -63,5 +83,7 @@ public interface IAppendable {
 	String toString();
 	
 	String getContent();
+	
+	GeneratorConfig getGeneratorConfig();
 
 }

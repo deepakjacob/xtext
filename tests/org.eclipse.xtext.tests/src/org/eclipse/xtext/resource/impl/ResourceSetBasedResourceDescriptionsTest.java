@@ -7,6 +7,7 @@
  *******************************************************************************/
 package org.eclipse.xtext.resource.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,7 @@ public class ResourceSetBasedResourceDescriptionsTest extends Assert implements 
 		resourceSet = new ResourceSetImpl();
 		IQualifiedNameProvider qualifiedNameProvider = new IQualifiedNameProvider.AbstractImpl() {
 			
+			@Override
 			public QualifiedName getFullyQualifiedName(EObject obj) {
 				return QualifiedName.create(((ENamedElement) obj).getName());
 			}
@@ -78,6 +80,7 @@ public class ResourceSetBasedResourceDescriptionsTest extends Assert implements 
 		container = new ResourceDescriptionsBasedContainer(resDescs);
 	}
 
+	@Override
 	public IResourceServiceProvider getResourceServiceProvider(URI uri, String contentType) {
 		return new DefaultResourceServiceProvider() {
 			@Override
@@ -200,22 +203,27 @@ public class ResourceSetBasedResourceDescriptionsTest extends Assert implements 
 		return resource;
 	}
 
+	@Override
 	public EObject apply(IEObjectDescription from) {
 		return from.getEObjectOrProxy();
 	}
 
+	@Override
 	public Map<String, Object> getContentTypeToFactoryMap() {
 		return null;
 	}
 
+	@Override
 	public Map<String, Object> getExtensionToFactoryMap() {
 		return null;
 	}
 
+	@Override
 	public Map<String, Object> getProtocolToFactoryMap() {
 		return null;
 	}
 
+	@Override
 	public IResourceServiceProvider getResourceServiceProvider(URI uri) {
 		return getResourceServiceProvider(uri, ContentHandler.UNSPECIFIED_CONTENT_TYPE);
 	}
@@ -238,6 +246,33 @@ public class ResourceSetBasedResourceDescriptionsTest extends Assert implements 
 			index++;
 		}
 		assertEquals(4, resourceSet.getResources().size());
+	}
+	
+	@Test public void testDataBasedResourceSetBasedResourceDescriptions() throws Exception {
+		ResourceDescriptionsData data = new ResourceDescriptionsData(new ArrayList<IResourceDescription>());
+		ResourceDescriptionsData.ResourceSetAdapter.installResourceDescriptionsData(resourceSet, data);
+		resDescs.setContext(resourceSet);
+		
+		Resource resource = createResource();
+		QualifiedName name = QualifiedName.create("SomeName");
+		createNamedElement(name, EcorePackage.Literals.ECLASS, resource);
+		// still empty
+		assertFalse(resDescs.getAllResourceDescriptions().iterator().hasNext());
+		assertTrue(resDescs.isEmpty());
+		assertFalse(resDescs.getExportedObjectsByType(EcorePackage.Literals.ECLASS).iterator().hasNext());
+		assertFalse(resDescs.getExportedObjects(EcorePackage.Literals.ECLASS,name, false).iterator().hasNext());
+		assertFalse(resDescs.getExportedObjects().iterator().hasNext());
+		
+		// add resource description to data
+		IResourceDescription description = resourceDescriptionManager.getResourceDescription(resource);
+		data.addDescription(description.getURI(), description);
+		// now contained
+		assertSame(description, resDescs.getAllResourceDescriptions().iterator().next());
+		assertFalse(resDescs.isEmpty());
+		assertTrue(resDescs.getExportedObjectsByType(EcorePackage.Literals.ECLASS).iterator().hasNext());
+		assertTrue(resDescs.getExportedObjects(EcorePackage.Literals.ECLASS,name, false).iterator().hasNext());
+		assertFalse(resDescs.getExportedObjects(EcorePackage.Literals.EATTRIBUTE,name, false).iterator().hasNext());
+		assertTrue(resDescs.getExportedObjects().iterator().hasNext());
 	}
 	
 }

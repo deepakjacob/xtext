@@ -33,11 +33,13 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.link.LinkedPosition;
+import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationPainter;
 import org.eclipse.jface.text.source.IAnnotationAccess;
@@ -58,9 +60,11 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorRegistry;
@@ -81,18 +85,22 @@ import org.eclipse.ui.texteditor.TextNavigationAction;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.xtext.Constants;
+import org.eclipse.xtext.ui.IImageHelper;
 import org.eclipse.xtext.ui.XtextUIMessages;
+import org.eclipse.xtext.ui.editor.DirtyStateEditorSupport.IDirtyStateEditorSupportClient;
+import org.eclipse.xtext.ui.editor.DirtyStateEditorSupport.IDirtyStateEditorSupportClientExtension;
 import org.eclipse.xtext.ui.editor.actions.IActionContributor;
 import org.eclipse.xtext.ui.editor.bracketmatching.BracketMatchingPreferencesInitializer;
 import org.eclipse.xtext.ui.editor.folding.IFoldingStructureProvider;
 import org.eclipse.xtext.ui.editor.model.CommonWordIterator;
 import org.eclipse.xtext.ui.editor.model.DocumentCharacterIterator;
+import org.eclipse.xtext.ui.editor.model.ITokenTypeToPartitionTypeMapperExtension;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
-import org.eclipse.xtext.ui.editor.model.TerminalsTokenTypeToPartitionMapper;
 import org.eclipse.xtext.ui.editor.model.XtextDocumentProvider;
 import org.eclipse.xtext.ui.editor.model.XtextDocumentUtil;
 import org.eclipse.xtext.ui.editor.preferences.IPreferenceStoreAccess;
 import org.eclipse.xtext.ui.editor.preferences.PreferenceConstants;
+import org.eclipse.xtext.ui.editor.reconciler.XtextReconciler;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingHelper;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.TextAttributeProvider;
 import org.eclipse.xtext.ui.editor.toggleComments.ToggleSLCommentAction;
@@ -110,7 +118,7 @@ import com.google.inject.name.Named;
  * @author Michael Clay
  * @author Dan Stefanescu - Fix for bug 278279
  */
-public class XtextEditor extends TextEditor {
+public class XtextEditor extends TextEditor implements IDirtyStateEditorSupportClient, IDirtyStateEditorSupportClientExtension {
 	public static final String ERROR_ANNOTATION_TYPE = "org.eclipse.xtext.ui.editor.error";
 	public static final String WARNING_ANNOTATION_TYPE = "org.eclipse.xtext.ui.editor.warning";
 	/**
@@ -163,26 +171,44 @@ public class XtextEditor extends TextEditor {
 
 	@Inject
 	private TextAttributeProvider textAttributeProvider;
+	
+	/**
+	 * @since 2.4
+	 */
+	@Inject
+	private ITokenTypeToPartitionTypeMapperExtension tokenTypeToPartitionTypeMapperExtension;
+
+	@Inject 
+	private IImageHelper imageHelper;
+
+	/**
+	 * @since 2.7
+	 */
+	@Inject
+	private DirtyStateEditorSupport dirtyStateEditorSupport;
 
 	private String keyBindingScope;
 
 	private ISelectionChangedListener selectionChangedListener;
 
 	private IPropertyListener dirtyListener = new IPropertyListener() {
+		@Override
 		public void propertyChanged(Object source, int propId) {
 			if (propId == PROP_DIRTY && !isDirty()) {
-				callback.afterSave(XtextEditor.this);
+				dirtyStateEditorSupport.markEditorClean(XtextEditor.this);
 			}
 		}
 	};
 
 	private String languageName;
+	
 
 	public XtextEditor() {
 		if (log.isDebugEnabled())
 			log.debug("Creating Xtext Editor. Instance: [" + this.toString() + "]");
 	}
 
+	@Override
 	public IXtextDocument getDocument() {
 		return XtextDocumentUtil.get(getSourceViewer());
 	}
@@ -217,9 +243,27 @@ public class XtextEditor extends TextEditor {
 		}
 		removePropertyListener(dirtyListener);
 		callback.beforeSetInput(this);
+		removeDirtyStateSupport();
 		super.doSetInput(input);
+		initializeDirtyStateSupport();
 		callback.afterSetInput(this);
 		addPropertyListener(dirtyListener);
+	}
+
+	/**
+	 * @since 2.8
+	 */
+	protected void removeDirtyStateSupport() {
+		if(getSourceViewer() != null && getEditorInput() != null)
+			dirtyStateEditorSupport.removeDirtyStateSupport(this);
+	}
+
+	/**
+	 * @since 2.8
+	 */
+	protected void initializeDirtyStateSupport() {
+		if(getSourceViewer() != null && getEditorInput() != null) 
+			dirtyStateEditorSupport.initializeDirtyStateSupport(this);
 	}
 
 	@Override
@@ -234,8 +278,9 @@ public class XtextEditor extends TextEditor {
 		setSourceViewerConfiguration(sourceViewerConfiguration);
 
 		sourceViewerConfiguration.setEditor(this);
-
-		setPreferenceStore(preferenceStoreAccess.getContextPreferenceStore(input));
+		
+		// Bug 464591 all editor presentation settings (font/color) handled here are in the InstanceScope only
+		setPreferenceStore(preferenceStoreAccess.getPreferenceStore());
 
 		// NOTE: Outline CANNOT be initialized here, since we do not have access
 		// to the source viewer yet (it will be created later).
@@ -273,7 +318,7 @@ public class XtextEditor extends TextEditor {
 		super.doRevertToSaved();
 		callback.afterSave(this);
 	}
-
+	
 	/**
 	 * Set key binding scope. Required for custom key bindings (e.g. F3).
 	 */
@@ -392,11 +437,13 @@ public class XtextEditor extends TextEditor {
 		 */
 		return new IOperationApprover() {
 
+			@Override
 			public IStatus proceedRedoing(IUndoableOperation operation, IOperationHistory history, IAdaptable info) {
 				IStatus status = result.proceedRedoing(operation, history, info);
 				return validateEditorInputState(info, status);
 			}
 
+			@Override
 			public IStatus proceedUndoing(IUndoableOperation operation, IOperationHistory history, IAdaptable info) {
 				IStatus status = result.proceedUndoing(operation, history, info);
 				return validateEditorInputState(info, status);
@@ -461,7 +508,9 @@ public class XtextEditor extends TextEditor {
 		installFoldingSupport(projectionViewer);
 		installHighlightingHelper();
 		installSelectionChangedListener();
+		initializeDirtyStateSupport();
 		callback.afterCreatePartControl(this);
+		forceReconcile();
 	}
 
 	protected ProjectionSupport installProjectionSupport(ProjectionViewer projectionViewer) {
@@ -477,11 +526,12 @@ public class XtextEditor extends TextEditor {
 
 	protected void installFoldingSupport(ProjectionViewer projectionViewer) {
 		foldingStructureProvider.install(this, projectionViewer);
-		projectionViewer.doOperation(ProjectionViewer.TOGGLE);
+		projectionViewer.enableProjection();
 	}
 
 	private void installSelectionChangedListener() {
 		selectionChangedListener = new ISelectionChangedListener() {
+			@Override
 			public void selectionChanged(final SelectionChangedEvent event) {
 				updateStatusLine();
 			}
@@ -507,6 +557,7 @@ public class XtextEditor extends TextEditor {
 
 	@Override
 	public void dispose() {
+		dirtyStateEditorSupport.removeDirtyStateSupport(this);
 		callback.beforeDispose(this);
 		actioncontributor.editorDisposed(this);
 		super.dispose();
@@ -517,6 +568,7 @@ public class XtextEditor extends TextEditor {
 			outlinePage = null;
 		}
 		uninstallFoldingSupport();
+		foldingStructureProvider = null;
 		uninstallHighlightingHelper();
 		uninstallSelectionChangedListener();
 	}
@@ -524,7 +576,6 @@ public class XtextEditor extends TextEditor {
 	protected void uninstallFoldingSupport() {
 		if (foldingStructureProvider != null) {
 			foldingStructureProvider.uninstall();
-			foldingStructureProvider = null;
 		}
 	}
 
@@ -546,17 +597,25 @@ public class XtextEditor extends TextEditor {
 
 	@Override
 	protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
-		super.handlePreferenceStoreChanged(event);
-		if (getSourceViewer() == null)
+		ISourceViewer sourceViewer = getSourceViewer();
+		if (sourceViewer == null || sourceViewer.getTextWidget() == null)
 			return;
-		// TODO (dennis) move preference store constants to ui.core or create a
-		// handlePrefStoreChanged service
+		super.handlePreferenceStoreChanged(event);
+		
+	
 		boolean tokenStyleChanged = event.getProperty().contains(".syntaxColorer.tokenStyles");
 		if (tokenStyleChanged) {
 			textAttributeProvider.propertyChange(event);
-			initializeViewerColors(getSourceViewer());
-			getSourceViewer().invalidateTextPresentation();
+			initializeViewerColors(sourceViewer);
+			sourceViewer.invalidateTextPresentation();
 		}
+	}
+	
+	@Override
+	protected void initializeViewerColors(ISourceViewer viewer) {
+		if (viewer == null || viewer.getTextWidget() == null)
+			return;
+		super.initializeViewerColors(viewer);
 	}
 
 	@Override
@@ -606,7 +665,7 @@ public class XtextEditor extends TextEditor {
 
 	@Override
 	public boolean validateEditorInputState() {
-		return callback.onValidateEditorInputState(this) && super.validateEditorInputState();
+		return dirtyStateEditorSupport.isEditingPossible(this) && callback.onValidateEditorInputState(this) && super.validateEditorInputState();
 	}
 
 	public void updatedTitleImage(Image image) {
@@ -618,7 +677,7 @@ public class XtextEditor extends TextEditor {
 		IEditorRegistry editorRegistry = PlatformUI.getWorkbench().getEditorRegistry();
 		IEditorDescriptor editorDesc = editorRegistry.findEditor(getSite().getId());
 		ImageDescriptor imageDesc = editorDesc != null ? editorDesc.getImageDescriptor() : null;
-		return imageDesc != null ? imageDesc.createImage() : super.getDefaultImage();
+		return imageDesc != null ? imageHelper.getImage(imageDesc) : super.getDefaultImage();
 	}
 
 	/*
@@ -685,6 +744,24 @@ public class XtextEditor extends TextEditor {
 	 */
 	public void setXtextEditorCallback(CompoundXtextEditorCallback callback) {
 		this.callback = callback;
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	public CompoundXtextEditorCallback getXtextEditorCallback() {
+		return callback;
+	}
+	
+	@Override
+	protected boolean isNavigationTarget(Annotation annotation) {
+		boolean result = super.isNavigationTarget(annotation);
+		if (result) {
+			if (annotation.isMarkedDeleted()) {
+				return false;
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -962,6 +1039,7 @@ public class XtextEditor extends TextEditor {
 		/*
 		 * @see org.eclipse.ui.texteditor.IUpdate#update()
 		 */
+		@Override
 		public void update() {
 			setEnabled(isEditorInputModifiable());
 		}
@@ -1180,6 +1258,7 @@ public class XtextEditor extends TextEditor {
 		/*
 		 * @see org.eclipse.ui.texteditor.IUpdate#update()
 		 */
+		@Override
 		public void update() {
 			setEnabled(isEditorInputModifiable());
 		}
@@ -1256,31 +1335,118 @@ public class XtextEditor extends TextEditor {
 				// Should not happen
 			}
 
-			int index = super.getLineStartPosition(document, line, length, offset);
-			if (type.equals(TerminalsTokenTypeToPartitionMapper.COMMENT_PARTITION)
-					|| type.equals(TerminalsTokenTypeToPartitionMapper.SL_COMMENT_PARTITION)) {
-				if (index < length - 1 && line.charAt(index) == '*' && line.charAt(index + 1) != '/') {
-					do {
-						++index;
-					} while (index < length && Character.isWhitespace(line.charAt(index)));
-				} else if (index < length - 1 && line.charAt(index) == '/'
-						&& (line.charAt(index + 1) == '/' || line.charAt(index + 1) == '*')) {
-					index++;
-					do {
-						++index;
-					} while (index < length && Character.isWhitespace(line.charAt(index)));
+			int lineStartPosition = super.getLineStartPosition(document, line, length, offset);
+			if (tokenTypeToPartitionTypeMapperExtension.isMultiLineComment(type)
+					|| tokenTypeToPartitionTypeMapperExtension.isSingleLineComment(type)) {
+				try {
+					IRegion lineInformation = document.getLineInformationOfOffset(offset);
+					int offsetInLine = offset - lineInformation.getOffset();
+					return getCommentLineStartPosition(line, length, offsetInLine, lineStartPosition);
+				} catch(BadLocationException e) {
+					// Should not happen
 				}
-			} else if (type.equals(IDocument.DEFAULT_CONTENT_TYPE)) {
-				if (index < length - 1 && line.charAt(index) == '/'
-						&& (line.charAt(index + 1) == '/' || line.charAt(index + 1) == '*')) {
-					index++;
-					do {
-						++index;
-					} while (index < length && Character.isWhitespace(line.charAt(index)));
+			} 
+			if (type.equals(IDocument.DEFAULT_CONTENT_TYPE)) {
+				if (isStartOfSingleLineComment(line, length, lineStartPosition) && !isStartOfMultiLineComment(line, length, lineStartPosition)) {
+					return getTextStartPosition(line, length, lineStartPosition + 1);
 				}
 			}
-			return index;
+			return lineStartPosition;
 		}
+
+		private int getCommentLineStartPosition(final String line, final int length, int offsetInLine, int lineStartPosition) {
+			if (isMiddleOfMultiLineComment(line, length, lineStartPosition)) {
+				return getTextStartPosition(line, length, lineStartPosition);
+			} 
+			if (isStartOfMultiLineComment(line, length, lineStartPosition)) {
+				int textStartPosition = getTextStartPosition(line, length, lineStartPosition + 2);
+				if (offsetInLine <= textStartPosition) {
+					return lineStartPosition;
+				}
+				return lineStartPosition < textStartPosition ? textStartPosition : lineStartPosition;
+			} 
+			if (isStartOfSingleLineComment(line, length, lineStartPosition)) {
+				return getTextStartPosition(line, length, lineStartPosition + 1);
+			}
+			return lineStartPosition;
+		}
+
+		private boolean isStartOfSingleLineComment(final String line, final int length, int index) {
+			return index < length - 1 && line.charAt(index) == '/'
+					&& (line.charAt(index + 1) == '/' || line.charAt(index + 1) == '*');
+		}
+
+		private boolean isStartOfMultiLineComment(final String line, final int length, int index) {
+			return index < length - 2 && line.charAt(index) == '/'
+					&& (line.charAt(index + 1) == '*' && line.charAt(index + 2) == '*');
+		}
+
+		private boolean isMiddleOfMultiLineComment(final String line, final int length, int index) {
+			return index < length - 1 && line.charAt(index) == '*' && line.charAt(index + 1) != '/';
+		}
+
+		private int getTextStartPosition(final String line, final int length, int index) {
+			int textStartPosition = index;
+			do {
+				++textStartPosition;
+			} while (textStartPosition < length && Character.isWhitespace(line.charAt(textStartPosition)));
+			return textStartPosition;
+		}
+		
 	}
 
+	/**
+	 * @since 2.7
+	 */
+	@Override
+	public Shell getShell() {
+		return getSite().getShell();
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	@Override
+	public void addVerifyListener(VerifyListener listener) {
+		StyledText textWidget = getSourceViewer().getTextWidget();
+		if(textWidget != null) 
+			textWidget.addVerifyListener(listener);
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	@Override
+	public void removeVerifyListener(VerifyListener listener) {
+		StyledText textWidget = getSourceViewer().getTextWidget();
+		if(textWidget != null) 
+			textWidget.removeVerifyListener(listener);
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	@Override
+	public void forceReconcile() {
+		IAdaptable iAdaptable = (IAdaptable) getInternalSourceViewer();
+		if (iAdaptable == null) {
+			return;
+		}
+		Object reconciler = iAdaptable.getAdapter(IReconciler.class);
+		if (reconciler instanceof XtextReconciler)
+			((XtextReconciler)reconciler).forceReconcile();
+	}
+	
+	/**
+	 * @since 2.7
+	 */
+	public DirtyStateEditorSupport getDirtyStateEditorSupport() {
+		return dirtyStateEditorSupport;
+	}
+	@Override
+	protected void editorContextMenuAboutToShow(IMenuManager menu) {
+		super.editorContextMenuAboutToShow(menu);
+		menu.remove(ITextEditorActionConstants.SHIFT_RIGHT);
+		menu.remove(ITextEditorActionConstants.SHIFT_LEFT);
+	}
 }

@@ -7,9 +7,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
-
 import org.eclipse.emf.ecore.impl.EPackageImpl;
-
 import org.eclipse.xtext.builder.trace.DebugLocationData;
 import org.eclipse.xtext.builder.trace.DebugTraceRegion;
 import org.eclipse.xtext.builder.trace.TraceFactory;
@@ -145,6 +143,15 @@ public class TracePackageImpl extends EPackageImpl implements TracePackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EAttribute getDebugTraceRegion_UseForDebugging() {
+		return (EAttribute)debugTraceRegionEClass.getEStructuralFeatures().get(8);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getDebugLocationData() {
 		return debugLocationDataEClass;
 	}
@@ -199,7 +206,7 @@ public class TracePackageImpl extends EPackageImpl implements TracePackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getDebugLocationData_ProjectName() {
+	public EAttribute getDebugLocationData_Path() {
 		return (EAttribute)debugLocationDataEClass.getEStructuralFeatures().get(5);
 	}
 
@@ -208,17 +215,8 @@ public class TracePackageImpl extends EPackageImpl implements TracePackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EAttribute getDebugLocationData_Path() {
-		return (EAttribute)debugLocationDataEClass.getEStructuralFeatures().get(6);
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	public EAttribute getDebugLocationData_EndOffset() {
-		return (EAttribute)debugLocationDataEClass.getEStructuralFeatures().get(7);
+		return (EAttribute)debugLocationDataEClass.getEStructuralFeatures().get(6);
 	}
 
 	/**
@@ -312,6 +310,7 @@ public class TracePackageImpl extends EPackageImpl implements TracePackage {
 		createEReference(debugTraceRegionEClass, DEBUG_TRACE_REGION__NESTED_REGIONS);
 		createEAttribute(debugTraceRegionEClass, DEBUG_TRACE_REGION__MY_END_OFFSET);
 		createEReference(debugTraceRegionEClass, DEBUG_TRACE_REGION__ASSOCIATIONS);
+		createEAttribute(debugTraceRegionEClass, DEBUG_TRACE_REGION__USE_FOR_DEBUGGING);
 
 		debugLocationDataEClass = createEClass(DEBUG_LOCATION_DATA);
 		createEAttribute(debugLocationDataEClass, DEBUG_LOCATION_DATA__LABEL);
@@ -319,7 +318,6 @@ public class TracePackageImpl extends EPackageImpl implements TracePackage {
 		createEAttribute(debugLocationDataEClass, DEBUG_LOCATION_DATA__LENGTH);
 		createEAttribute(debugLocationDataEClass, DEBUG_LOCATION_DATA__LINE_NUMBER);
 		createEAttribute(debugLocationDataEClass, DEBUG_LOCATION_DATA__END_LINE_NUMBER);
-		createEAttribute(debugLocationDataEClass, DEBUG_LOCATION_DATA__PROJECT_NAME);
 		createEAttribute(debugLocationDataEClass, DEBUG_LOCATION_DATA__PATH);
 		createEAttribute(debugLocationDataEClass, DEBUG_LOCATION_DATA__END_OFFSET);
 
@@ -366,6 +364,7 @@ public class TracePackageImpl extends EPackageImpl implements TracePackage {
 		initEReference(getDebugTraceRegion_NestedRegions(), this.getDebugTraceRegion(), null, "nestedRegions", null, 0, -1, DebugTraceRegion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getDebugTraceRegion_MyEndOffset(), ecorePackage.getEInt(), "myEndOffset", null, 0, 1, DebugTraceRegion.class, IS_TRANSIENT, IS_VOLATILE, !IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, IS_DERIVED, IS_ORDERED);
 		initEReference(getDebugTraceRegion_Associations(), this.getDebugLocationData(), null, "associations", null, 0, -1, DebugTraceRegion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getDebugTraceRegion_UseForDebugging(), ecorePackage.getEBoolean(), "useForDebugging", null, 0, 1, DebugTraceRegion.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(debugLocationDataEClass, DebugLocationData.class, "DebugLocationData", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getDebugLocationData_Label(), ecorePackage.getEString(), "label", null, 0, 1, DebugLocationData.class, IS_TRANSIENT, IS_VOLATILE, !IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, IS_DERIVED, IS_ORDERED);
@@ -373,7 +372,6 @@ public class TracePackageImpl extends EPackageImpl implements TracePackage {
 		initEAttribute(getDebugLocationData_Length(), ecorePackage.getEInt(), "length", null, 0, 1, DebugLocationData.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getDebugLocationData_LineNumber(), ecorePackage.getEInt(), "lineNumber", null, 0, 1, DebugLocationData.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getDebugLocationData_EndLineNumber(), ecorePackage.getEInt(), "endLineNumber", null, 0, 1, DebugLocationData.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-		initEAttribute(getDebugLocationData_ProjectName(), ecorePackage.getEString(), "projectName", null, 0, 1, DebugLocationData.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getDebugLocationData_Path(), this.getURI(), "path", null, 0, 1, DebugLocationData.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEAttribute(getDebugLocationData_EndOffset(), ecorePackage.getEInt(), "endOffset", null, 0, 1, DebugLocationData.class, IS_TRANSIENT, IS_VOLATILE, !IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, !IS_UNIQUE, IS_DERIVED, IS_ORDERED);
 

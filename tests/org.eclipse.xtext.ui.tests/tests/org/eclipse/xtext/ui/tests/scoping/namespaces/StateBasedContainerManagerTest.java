@@ -19,6 +19,7 @@ import org.eclipse.xtext.resource.IContainer;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescriptions;
 import org.eclipse.xtext.resource.containers.IAllContainersState;
+import org.eclipse.xtext.resource.containers.ProjectDescriptionBasedContainerManager;
 import org.eclipse.xtext.resource.containers.StateBasedContainerManager;
 import org.eclipse.xtext.ui.containers.WorkspaceProjectsState;
 import org.eclipse.xtext.ui.containers.WorkspaceProjectsStateHelper;
@@ -71,8 +72,10 @@ public class StateBasedContainerManagerTest extends AbstractContainerRelatedTest
 		projectsState.setHelper(helper);
 		containerManager = new StateBasedContainerManager();
 		containerManager.setStateProvider(this);
+		containerManager.setDelegate(new ProjectDescriptionBasedContainerManager());
 	}
 
+	@Override
 	public IAllContainersState get(IResourceDescriptions context) {
 		assertSame(this, context);
 		return projectsState;

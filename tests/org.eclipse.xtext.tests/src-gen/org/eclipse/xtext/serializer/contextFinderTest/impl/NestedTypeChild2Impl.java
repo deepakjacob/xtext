@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.contextFinderTest.impl;
 
@@ -14,8 +11,6 @@ import org.eclipse.xtext.serializer.contextFinderTest.NestedTypeChild2;
  * <!-- begin-user-doc -->
  * An implementation of the model object '<em><b>Nested Type Child2</b></em>'.
  * <!-- end-user-doc -->
- * <p>
- * </p>
  *
  * @generated
  */

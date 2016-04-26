@@ -8,10 +8,10 @@
 package org.eclipse.xtext.parsetree.reconstr.impl;
 
 import org.eclipse.xtext.AbstractRule;
-import org.eclipse.xtext.GrammarUtil;
-import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.ParserRule;
+import org.eclipse.xtext.xtext.RuleNames;
 
+import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 
 /**
@@ -21,14 +21,17 @@ public class DefaultHiddenTokenHelper extends AbstractHiddenTokenHelper {
 
 	private AbstractRule wsRule;
 
+	@Override
 	public boolean isWhitespace(AbstractRule rule) {
 		return rule != null && "WS".equals(rule.getName());
 	}
 
+	@Override
 	public boolean isComment(AbstractRule rule) {
 		return rule != null && ("ML_COMMENT".equals(rule.getName()) || "SL_COMMENT".equals(rule.getName()));
 	}
 
+	@Override
 	@SuppressWarnings("deprecation")
 	public AbstractRule getWhitespaceRuleFor(String whitespace) {
 		return wsRule;
@@ -44,8 +47,8 @@ public class DefaultHiddenTokenHelper extends AbstractHiddenTokenHelper {
 	}
 
 	@Inject
-	private void setGrammar(IGrammarAccess grammar) {
-		wsRule = GrammarUtil.findRuleForName(grammar.getGrammar(), "WS");
+	private void setGrammar(RuleNames names) {
+		wsRule = Iterables.getFirst(names.getRulesBySimpleName("WS"), null);
 	}
 
 }

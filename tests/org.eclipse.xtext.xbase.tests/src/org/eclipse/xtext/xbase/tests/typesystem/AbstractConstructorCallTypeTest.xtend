@@ -164,6 +164,22 @@ abstract class AbstractConstructorCallTypeTest extends AbstractXbaseTestCase {
 		"new java.util.ArrayList<? extends Iterable<? extends String>>()".resolvesConstructorCallsTo("ArrayList<Iterable<? extends String>>")
 	}
 	
+	@Test def void testConstructorTypeParameters_05() throws Exception {
+		"new constructorTypeParameters.KeyValue(null, '')".resolvesConstructorCallsTo("KeyValue")
+	}
+	
+	@Test def void testConstructorTypeParameters_06() throws Exception {
+		"new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableValue, '')".resolvesConstructorCallsTo("KeyValue", "WritableValue<String>")
+	}
+	
+	@Test def void testConstructorTypeParameters_07() throws Exception {
+		"new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableDoubleValue, 1.0)".resolvesConstructorCallsTo("KeyValue", "WritableDoubleValue")
+	}
+	
+	@Test def void testConstructorTypeParameters_08() throws Exception {
+		"new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableValue, 1.0)".resolvesConstructorCallsTo("KeyValue", "WritableValue<Double>")
+	}
+	
 	@Test def void testConstructorTypeInference_01() throws Exception {
 		"{ var Iterable<? extends String> it = new java.util.ArrayList() }".resolvesConstructorCallsTo("ArrayList<String>")
 	}
@@ -986,9 +1002,9 @@ abstract class AbstractConstructorCallTypeTest extends AbstractXbaseTestCase {
 		"{
 			val list = new java.util.ArrayList
 			list.add(new java.util.ArrayList)
-			val Iterable<String> s = list.head.head.head
+			val Iterable<String> s = list.head.flatten.head
 			list.head
-		}".resolvesConstructorCallsTo("ArrayList<ArrayList<Iterable<Iterable<String>>>>", "ArrayList<Iterable<Iterable<String>>>")
+		}".resolvesConstructorCallsTo("ArrayList<ArrayList<Iterable<? extends Iterable<String>>>>", "ArrayList<Iterable<? extends Iterable<String>>>")
 	}
 	
 	@Test def void testDeferredTypeArgumentResolution_146() throws Exception {
@@ -1004,9 +1020,9 @@ abstract class AbstractConstructorCallTypeTest extends AbstractXbaseTestCase {
 		"{
 			val list = new java.util.ArrayList
 			list.add(new java.util.ArrayList)
-			val String s = list.head.head.head
+			val String s = list.head.flatten.head
 			list.head
-		}".resolvesConstructorCallsTo("ArrayList<ArrayList<Iterable<String>>>", "ArrayList<Iterable<String>>")
+		}".resolvesConstructorCallsTo("ArrayList<ArrayList<Iterable<? extends String>>>", "ArrayList<Iterable<? extends String>>")
 	}
 	
 	@Test def void testDeferredTypeArgumentResolution_148() throws Exception {

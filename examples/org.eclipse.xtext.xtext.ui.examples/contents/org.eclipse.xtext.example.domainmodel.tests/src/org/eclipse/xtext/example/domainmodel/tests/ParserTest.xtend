@@ -15,6 +15,8 @@ import org.junit.runner.RunWith
 import org.eclipse.xtext.example.domainmodel.domainmodel.Operation
 import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations
 import org.eclipse.xtext.common.types.JvmOperation
+import org.eclipse.xtext.common.types.TypesPackage
+import org.eclipse.xtext.xbase.validation.IssueCodes
 
 @RunWith(typeof(XtextRunner))
 @InjectWith(typeof(InjectorProviderCustom))
@@ -46,6 +48,22 @@ class ParserTest {
 	}
 	
 	@Test
+	def void testJvmTypeReferencesValidator() {
+		'''
+			import java.util.List
+			package example {
+			  entity MyEntity {
+			    p : List<int>
+			  }
+			}
+		'''.parse.assertError(
+			TypesPackage.Literals.JVM_TYPE_REFERENCE,
+			IssueCodes.INVALID_USE_OF_TYPE,
+			"The primitive 'int' cannot be a type argument"
+		)
+	}
+	
+	@Test
 	def void testParsingAndLinking() {
 		'''
 			package example {
@@ -55,6 +73,18 @@ class ParserTest {
 			    	this.property = s
 			    	return s.toUpperCase
 			    }
+			  }
+			}
+		'''.parse.assertNoErrors
+	}
+	
+	@Test
+	def void testParsingAndLinkingWithImports() {
+		'''
+			import java.util.List
+			package example {
+			  entity MyEntity {
+			    p : List<String>
 			  }
 			}
 		'''.parse.assertNoErrors

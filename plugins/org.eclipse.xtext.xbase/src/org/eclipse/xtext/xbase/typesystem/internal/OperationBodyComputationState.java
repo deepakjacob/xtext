@@ -10,8 +10,6 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmFormalParameter;
 import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.xbase.scoping.batch.IFeatureScopeSession;
@@ -23,14 +21,12 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class OperationBodyComputationState extends AbstractLogicalContainerAwareRootComputationState {
 
 	public OperationBodyComputationState(ResolvedTypes resolvedTypes,
 			IFeatureScopeSession featureScopeSession,
-			JvmOperation operation,
-			LogicalContainerAwareReentrantTypeResolver reentrantTypeResolver) {
-		super(resolvedTypes, featureScopeSession, operation, reentrantTypeResolver);
+			JvmOperation operation) {
+		super(resolvedTypes.pushExpectedExceptions(operation), featureScopeSession, operation);
 		for(JvmFormalParameter parameter: operation.getParameters()) {
 			addLocalToCurrentScope(parameter);
 		}
@@ -43,13 +39,13 @@ public class OperationBodyComputationState extends AbstractLogicalContainerAware
 		if (type != null) {
 			result = returnType ? new TypeExpectation(type, actualState, returnType) : new RootTypeExpectation(type, actualState);
 		} else {
-			result = returnType ? new NoExpectation(actualState, returnType) : new RootNoExpectation(actualState);
+			result = returnType ? new NoExpectation(actualState, returnType) : new RootNoExpectation(actualState, true);
 		}
 		return Collections.singletonList(result);
 	}
 	
 	@Override
-	@Nullable
+	/* @Nullable */
 	protected LightweightTypeReference getExpectedType() {
 		JvmOperation operation = (JvmOperation) getMember();
 		LightweightTypeReference expectedType = ((LogicalContainerAwareReentrantTypeResolver)getResolver()).getReturnTypeOfOverriddenOperation(operation, resolvedTypes, getFeatureScopeSession());
@@ -57,7 +53,7 @@ public class OperationBodyComputationState extends AbstractLogicalContainerAware
 			InferredTypeIndicator.resolveTo(operation.getReturnType(), expectedType.toJavaCompliantTypeReference());
 			return expectedType;
 		}
-		return getResolvedTypes().getExpectedTypeForAssociatedExpression(getMember(), getDefiniteRootExpression());
+		return getResolvedTypes().getExpectedTypeForAssociatedExpression(getMember(), getNonNullRootExpression());
 	}
 	
 	@Override

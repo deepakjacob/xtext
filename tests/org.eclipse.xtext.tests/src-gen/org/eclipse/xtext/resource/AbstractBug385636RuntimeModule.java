@@ -6,7 +6,6 @@ package org.eclipse.xtext.resource;
 import java.util.Properties;
 
 import org.eclipse.xtext.Constants;
-import org.eclipse.xtext.service.DefaultRuntimeModule;
 
 import com.google.inject.Binder;
 import com.google.inject.name.Names;
@@ -14,8 +13,8 @@ import com.google.inject.name.Names;
 /**
  * Manual modifications go to {org.eclipse.xtext.resource.Bug385636RuntimeModule}
  */
- @SuppressWarnings("all")
-public abstract class AbstractBug385636RuntimeModule extends DefaultRuntimeModule {
+@SuppressWarnings("all")
+public abstract class AbstractBug385636RuntimeModule extends org.eclipse.xtext.service.DefaultRuntimeModule {
 
 	protected Properties properties = null;
 
@@ -24,16 +23,16 @@ public abstract class AbstractBug385636RuntimeModule extends DefaultRuntimeModul
 		properties = tryBindProperties(binder, "org/eclipse/xtext/resource/Bug385636.properties");
 		super.configure(binder);
 	}
-
+	
 	public void configureLanguageName(Binder binder) {
 		binder.bind(String.class).annotatedWith(Names.named(Constants.LANGUAGE_NAME)).toInstance("org.eclipse.xtext.resource.Bug385636");
 	}
-
+	
 	public void configureFileExtensions(Binder binder) {
 		if (properties == null || properties.getProperty(Constants.FILE_EXTENSIONS) == null)
 			binder.bind(String.class).annotatedWith(Names.named(Constants.FILE_EXTENSIONS)).toInstance("bug385636");
 	}
-
+	
 	// contributed by org.eclipse.xtext.generator.parser.antlr.XtextAntlrGeneratorFragment
 	public Class<? extends org.eclipse.xtext.parser.IParser> bindIParser() {
 		return org.eclipse.xtext.resource.parser.antlr.Bug385636Parser.class;
@@ -77,11 +76,6 @@ public abstract class AbstractBug385636RuntimeModule extends DefaultRuntimeModul
 	// contributed by org.eclipse.xtext.generator.grammarAccess.GrammarAccessFragment
 	public Class<? extends org.eclipse.xtext.IGrammarAccess> bindIGrammarAccess() {
 		return org.eclipse.xtext.resource.services.Bug385636GrammarAccess.class;
-	}
-
-	// contributed by org.eclipse.xtext.generator.parseTreeConstructor.ParseTreeConstructorFragment
-	public Class<? extends org.eclipse.xtext.parsetree.reconstr.IParseTreeConstructor> bindIParseTreeConstructor() {
-		return org.eclipse.xtext.resource.parseTreeConstruction.Bug385636ParsetreeConstructor.class;
 	}
 
 	// contributed by org.eclipse.xtext.generator.serializer.SerializerFragment

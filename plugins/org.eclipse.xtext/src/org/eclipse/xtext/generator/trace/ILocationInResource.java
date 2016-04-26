@@ -7,13 +7,12 @@
  *******************************************************************************/
 package org.eclipse.xtext.generator.trace;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IStorage;
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.eclipse.xtext.LanguageInfo;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
+import org.eclipse.xtext.workspace.IProjectConfig;
 
 /**
  * Describes the location in a given file or storage. 
@@ -28,33 +27,33 @@ public interface ILocationInResource {
 	/**
 	 * @return the language that this resource belongs to. May be <code>null</code>.
 	 */
-	@Nullable LanguageInfo getLanguage();
+	LanguageInfo getLanguage();
 	
 	/**
 	 * @return the EMF resource URI for this location. May be <code>null</code> if the 
 	 * resource is not an EMF resource.
 	 */
-	@Nullable URI getResourceURI();
+	AbsoluteURI getAbsoluteResourceURI();
 	
 	/**
-	 * @return the more specific {@link org.eclipse.emf.ecore.EObject object} {@link URI}
-	 * for this location. May be <code>null</code> if the resource itself is empty or if this
-	 * resource is not an EMF resource.
+	 * Returns the URI of this resource relative to the classpath if applicable. Otherwise
+	 * the URI relative to the project root.
 	 */
-	@Nullable URI getEObjectURI();
+	SourceRelativeURI getSrcRelativeResourceURI();
 	
 	/**
-	 * @return the storage handle for this location. Never <code>null</code>.
+	 * Returns the contents of the resource. May be <code>null</code>.
 	 */
-	@NonNull IStorage getStorage();
+	InputStream getContents() throws IOException;
 	
 	/**
-	 * @return the project for this location. Never <code>null</code>.
+	 * @return the project configuration for this location. Never <code>null</code>.
 	 */
-	@NonNull IProject getProject();
+	IProjectConfig getProjectConfig();
 	
 	/**
 	 * @return the range in the resource. May be <code>null</code>.
 	 */
-	@Nullable ITextRegionWithLineInformation getTextRegion();
+	ITextRegionWithLineInformation getTextRegion();
+	
 }

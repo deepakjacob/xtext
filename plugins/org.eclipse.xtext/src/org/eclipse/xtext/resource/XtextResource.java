@@ -8,11 +8,14 @@
  *******************************************************************************/
 package org.eclipse.xtext.resource;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +26,6 @@ import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.Constants;
 import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.linking.ILinker;
@@ -35,16 +37,15 @@ import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.parser.antlr.IReferableElementsUnloader;
 import org.eclipse.xtext.resource.impl.ListBasedDiagnosticConsumer;
 import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.IResourceScopeCache;
+import org.eclipse.xtext.util.LazyStringInputStream;
 import org.eclipse.xtext.util.ReplaceRegion;
-import org.eclipse.xtext.util.StringInputStream;
 import org.eclipse.xtext.util.TextRegion;
-import org.eclipse.xtext.util.Tuples;
 import org.eclipse.xtext.validation.IConcreteSyntaxValidator;
 import org.eclipse.xtext.validation.IConcreteSyntaxValidator.IDiagnosticAcceptor;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
 /**
@@ -94,12 +95,22 @@ public class XtextResource extends ResourceImpl {
 	@Named(Constants.LANGUAGE_NAME) 
 	private String languageName;
 	
+	/**
+	 * @since 2.8
+	 */
+	@Inject
+	protected OperationCanceledManager operationCanceledManager;
+	
+	private long modificationStamp = Integer.MIN_VALUE;
+	
 	private IFragmentProvider.Fallback fragmentProviderFallback = new IFragmentProvider.Fallback() {
 		
+		@Override
 		public String getFragment(EObject obj) {
 			return XtextResource.super.getURIFragment(obj);
 		}
 		
+		@Override
 		public EObject getEObject(String fragment) {
 			return XtextResource.super.getEObject(fragment);
 		}
@@ -148,7 +159,7 @@ public class XtextResource extends ResourceImpl {
 		super();
 	}
 
-	@Nullable
+	/* @Nullable */
 	public IParseResult getParseResult() {
 		return parseResult;
 	}
@@ -156,8 +167,18 @@ public class XtextResource extends ResourceImpl {
 	@Override
 	protected void doLoad(InputStream inputStream, Map<?, ?> options) throws IOException {
 		setEncodingFromOptions(options);
-		IParseResult result = parser.parse(new InputStreamReader(inputStream, getEncoding()));
+		IParseResult result = parser.parse(createReader(inputStream));
 		updateInternalState(this.parseResult, result);
+	}
+	
+	/**
+	 * @since 2.5
+	 */
+	protected Reader createReader(InputStream inputStream) throws IOException {
+		if (inputStream instanceof LazyStringInputStream) {
+			return new StringReader(((LazyStringInputStream) inputStream).getString());
+		}
+		return new InputStreamReader(new BufferedInputStream(inputStream), getEncoding());
 	}
 
 	protected void setEncodingFromOptions(Map<?, ?> options) {
@@ -180,7 +201,7 @@ public class XtextResource extends ResourceImpl {
 		try {
 			isUpdating = true;
 			clearInternalState();
-			doLoad(new StringInputStream(newContent, getEncoding()), null);
+			doLoad(new LazyStringInputStream(newContent, getEncoding()), null);
 			setModified(false);
 		} finally {
 			isUpdating = false;
@@ -204,6 +225,21 @@ public class XtextResource extends ResourceImpl {
 	protected void doUnload() {
 		super.doUnload();
 		parseResult = null;
+	}
+	
+	/**
+	 * @since 2.9
+	 */
+	public void relink() {
+		if (!isLoaded()) {
+			throw new IllegalStateException("You can't update an unloaded resource.");
+		}
+		try {
+			isUpdating = true;
+			updateInternalState(parseResult, parseResult);
+		} finally {
+			isUpdating = false;
+		}
 	}
 
 	public void update(int offset, int replacedTextLength, String newText) {
@@ -239,12 +275,20 @@ public class XtextResource extends ResourceImpl {
 	
 	protected void updateInternalState(IParseResult newParseResult) {
 		this.parseResult = newParseResult;
-		if (parseResult.getRootASTElement() != null && !getContents().contains(parseResult.getRootASTElement()))
-			getContents().add(0, parseResult.getRootASTElement());
-		reattachModificationTracker(parseResult.getRootASTElement());
+		EObject newRootASTElement = parseResult.getRootASTElement();
+		if (newRootASTElement != null && !containsRootElement(newRootASTElement))
+			getContents().add(0, newRootASTElement);
+		reattachModificationTracker(newRootASTElement);
 		clearErrorsAndWarnings();
 		addSyntaxErrors();
 		doLinking();
+	}
+
+	/*
+	 * Extracted to allow this to be overriden from the DerivedStateAwareResource
+	 */
+	boolean containsRootElement(EObject newRootASTElement) {
+		return getContents().contains(newRootASTElement);
 	}
 	
 	protected void clearErrorsAndWarnings() {
@@ -285,6 +329,19 @@ public class XtextResource extends ResourceImpl {
 
 	@Override
 	public EObject getEObject(String uriFragment) {
+		return basicGetEObject(uriFragment);
+	}
+
+	/**
+	 * Resolves a fragment to an {@link EObject}. The returned object is not necessarily
+	 * contained in this resource. It may resolve to a different one, instead.
+	 * The result may be <code>null</code>.
+	 * 
+	 * @see ResourceImpl#getEObject(String)
+	 * @see IFragmentProvider
+	 * @since 2.4
+	 */
+	protected EObject basicGetEObject(/* @NonNull */ String uriFragment) {
 		if (fragmentProvider != null) {
 			EObject result = fragmentProvider.getEObject(this, uriFragment, fragmentProviderFallback);
 			return result;
@@ -295,16 +352,12 @@ public class XtextResource extends ResourceImpl {
 
 	@Override
 	public String getURIFragment(final EObject object) {
-		return cache.get(Tuples.pair(object, "fragment"), this, new Provider<String>() {
-			public String get() {
-				if (fragmentProvider != null) {
-					String result = fragmentProvider.getFragment(object, fragmentProviderFallback);
-					return result;
-				}
-				String result = XtextResource.super.getURIFragment(object);
-				return result;
-			}
-		});
+		if (fragmentProvider != null) {
+			String result = fragmentProvider.getFragment(object, fragmentProviderFallback);
+			return result;
+		}
+		String result = XtextResource.super.getURIFragment(object);
+		return result;
 	}
 
 	@Override
@@ -330,9 +383,26 @@ public class XtextResource extends ResourceImpl {
 
 		List<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
 		for (INode error : parseResult.getSyntaxErrors()) {
-			diagnostics.add(new XtextSyntaxDiagnostic(error));
+			addSyntaxDiagnostic(diagnostics, error);
 		}
 		return diagnostics;
+	}
+
+	/**
+	 * @since 2.7
+	 */
+	protected void addSyntaxDiagnostic(List<Diagnostic> diagnostics, INode error) {
+		SyntaxErrorMessage syntaxErrorMessage = error.getSyntaxErrorMessage();
+		if (org.eclipse.xtext.diagnostics.Diagnostic.SYNTAX_DIAGNOSTIC_WITH_RANGE.equals(syntaxErrorMessage.getIssueCode())) {
+			String[] issueData = syntaxErrorMessage.getIssueData();
+			if (issueData.length == 1) {
+				String data = issueData[0];
+				int colon = data.indexOf(':');
+				diagnostics.add(new XtextSyntaxDiagnosticWithRange(error, Integer.valueOf(data.substring(0, colon)), Integer.valueOf(data.substring(colon + 1)), null));
+				return;
+			}
+		}
+		diagnostics.add(new XtextSyntaxDiagnostic(error));
 	}
 
 	public IParser getParser() {
@@ -420,4 +490,22 @@ public class XtextResource extends ResourceImpl {
 	public void setLanguageName(String languageName) {
 		this.languageName = languageName;
 	}
+	
+	/**
+	 * @since 2.4
+	 */
+	public void setModificationStamp(long documentModificationStamp) {
+		this.modificationStamp = documentModificationStamp;
+	}
+	
+	/**
+	 * The modification stamp of the document reflected in the current state of this resource.
+	 * Has to be set externally.
+	 *  
+	 * @since 2.4
+	 */
+	public long getModificationStamp() {
+		return modificationStamp;
+	}
+	
 }

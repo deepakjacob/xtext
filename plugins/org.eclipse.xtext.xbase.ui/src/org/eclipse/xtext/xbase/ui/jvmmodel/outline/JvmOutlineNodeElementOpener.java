@@ -15,12 +15,13 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.access.TypeResource;
 import org.eclipse.xtext.common.types.util.jdt.IJavaElementFinder;
 import org.eclipse.xtext.generator.trace.ILocationInResource;
 import org.eclipse.xtext.generator.trace.ITrace;
-import org.eclipse.xtext.generator.trace.ITraceInformation;
 import org.eclipse.xtext.ui.editor.GlobalURIEditorOpener;
 import org.eclipse.xtext.ui.editor.outline.impl.OutlineNodeElementOpener;
+import org.eclipse.xtext.ui.generator.trace.ITraceForStorageProvider;
 import org.eclipse.xtext.util.TextRegion;
 
 import com.google.inject.Inject;
@@ -36,7 +37,7 @@ public class JvmOutlineNodeElementOpener extends OutlineNodeElementOpener {
 	private IJavaElementFinder javaElementFinder;
 
 	@Inject
-	private ITraceInformation traceInformation;
+	private ITraceForStorageProvider traceInformation;
 
 	@Inject
 	private GlobalURIEditorOpener globalURIEditorOpener;
@@ -44,7 +45,7 @@ public class JvmOutlineNodeElementOpener extends OutlineNodeElementOpener {
 	@Override
 	protected void openEObject(EObject state) {
 		try {
-			if (state instanceof JvmIdentifiableElement) {
+			if (state instanceof JvmIdentifiableElement && state.eResource() instanceof TypeResource) {
 				IJavaElement javaElement = javaElementFinder.findElementFor((JvmIdentifiableElement) state);
 				if (javaElement instanceof IMember) {
 					IResource resource = javaElement.getResource();
@@ -54,7 +55,7 @@ public class JvmOutlineNodeElementOpener extends OutlineNodeElementOpener {
 							ISourceRange sourceRange = ((IMember) javaElement).getSourceRange();
 							ILocationInResource sourceInformation = traceToSource.getBestAssociatedLocation(new TextRegion(sourceRange.getOffset(), sourceRange.getLength()));
 							if (sourceInformation != null) {
-								globalURIEditorOpener.open(sourceInformation.getResourceURI(), javaElement, true);
+								globalURIEditorOpener.open(sourceInformation.getAbsoluteResourceURI().getURI(), javaElement, true);
 								return;
 							}
 						}

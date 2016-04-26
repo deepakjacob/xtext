@@ -56,6 +56,46 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 		super.expression(expression, resolve)
 	}
 	
+	@Test def void testVariableDeclaration_01() throws Exception {
+		"{ var com.google.inject.Provider<CharSequence> p = [ new StringBuilder ] }".resolvesClosuresTo("()=>StringBuilder").withEquivalents("Provider<CharSequence>")
+	}
+	
+	@Test def void testVariableDeclaration_02() throws Exception {
+		"{ var com.google.inject.Provider<? extends CharSequence> p = [ new StringBuilder ] }".resolvesClosuresTo("()=>StringBuilder").withEquivalents("Provider<CharSequence>")
+	}
+	
+	@Test def void testVariableDeclaration_03() throws Exception {
+		"{ var com.google.inject.Provider<? super CharSequence> p = [ new StringBuilder ] }".resolvesClosuresTo("()=>StringBuilder").withEquivalents("Provider<CharSequence>")
+	}
+	
+	@Test def void testSpecializedSubInterface_01() throws Exception {
+		"closures::Client::invokeSubIntf [ length.toString ]".resolvesClosuresTo("(CharSequence)=>String").withEquivalents("SubIntf")
+	}
+	
+	@Test def void testSpecializedSubInterface_02() throws Exception {
+		"closures::Client::invokeIntf [ it ]".resolvesClosuresTo("(Object)=>Object").withEquivalents("Intf<Object>")
+	}
+	
+	@Test def void testSpecializedSubInterface_03() throws Exception {
+		"closures::Client::invokeIntf [ String it | it ]".resolvesClosuresTo("(String)=>String").withEquivalents("Intf<String>")
+	}
+	
+	@Test def void testSpecializedSubInterface_04() throws Exception {
+		"closures::Client::<String>invokeIntf [ it ]".resolvesClosuresTo("(String)=>String").withEquivalents("Intf<String>")
+	}
+	
+	@Test def void testSpecializedSubInterface_05() throws Exception {
+		"closures::Client::invokeConstrainedIntf [ it ]".resolvesClosuresTo("(CharSequence)=>CharSequence").withEquivalents("Intf<CharSequence>")
+	}
+	
+	@Test def void testSpecializedSubInterface_06() throws Exception {
+		"closures::Client::invokeParameterizedSubIntf [ it ]".resolvesClosuresTo("(CharSequence)=>CharSequence").withEquivalents("ParameterizedSubIntf<CharSequence>")
+	}
+	
+	@Test def void testSpecializedSubInterface_07() throws Exception {
+		"closures::Client::invokeConcreteParameterizedSubIntf [ it ]".resolvesClosuresTo("(String)=>String").withEquivalents("ParameterizedSubIntf<String>")
+	}
+	
 	@Test def void testIfExpression_01() throws Exception {
 		"if (true) [|''] else [|'']".resolvesClosuresTo("()=>String", "()=>String").withEquivalents("Function0<String>", "Function0<String>")
 	}
@@ -180,6 +220,18 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 			.withEquivalents("FileFilter", "FileFilter")
 	}
 	
+	@Test def void testIfExpression_25() throws Exception {
+		"{ 
+			val Iterable<Object> branch = 
+			  if (true) 
+			    [|<Object>newArrayList().iterator]
+			  else
+			    newArrayList('a').toArray
+		}"
+			.resolvesClosuresTo("()=>Iterator<Object>")
+			.withEquivalents("Iterable<Object>")
+	}
+	
 	@Test def void testSwitchExpression_01() throws Exception {
 		"switch null {
             case null : [Object it | it]
@@ -278,7 +330,7 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 	
 	@Test def void testOverloadedOperators_14() throws Exception {
 		"(0..Math::sqrt(1l).intValue).filter[ i | if (true) return 1l % i == 0 ].isEmpty"
-			.resolvesClosuresTo("(Integer)=>Boolean")
+			.resolvesClosuresTo("(Integer)=>boolean")
 			.withEquivalents("Function1<Integer, Boolean>")
 	}
 	
@@ -290,7 +342,7 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 	
 	@Test def void testOverloadedOperators_16() throws Exception {
 		"(1..2).map[ if (true) toString.length ].reduce[ i1, i2| if (true) return i1 + i2 ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>Integer")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>int")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 	
@@ -308,13 +360,13 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 	
 	@Test def void testOverloadedOperators_19() throws Exception {
 		"(1..2).map[ if (true) toString.length ].reduce[ i1, i2| if (true) return i1 + i2 else return 1 ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>int")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>int")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 	
 	@Test def void testOverloadedOperators_20() throws Exception {
 		"(1..2).map[ if (true) toString.length ].reduce[ i1, i2| if (true) return i1 + i2 else return null ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>Integer")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>Integer")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 	
@@ -376,7 +428,7 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 	
 	@Test def void testOverloadedOperators_30() throws Exception {
 		"(1..2).map[ return if (true) toString.length ].reduce[ i1, i2| if (true) return i1 + i2 ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>Integer")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>int")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 	
@@ -388,25 +440,25 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 	
 	@Test def void testOverloadedOperators_32() throws Exception {
 		"(1..2).map[ return if (true) toString.length ].reduce[ i1, i2| if (true) return i1 + i2 else return 1 ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>int")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>int")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 	
 	@Test def void testOverloadedOperators_33() throws Exception {
 		"(1..2).map[ return if (true) toString.length ].reduce[ i1, i2| if (true) return i1 + i2 else return null ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>Integer")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>Integer")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 	
 	@Test def void testOverloadedOperators_34() throws Exception {
 		"(1..2).map[ if (true) return toString.length ].reduce[ i1, i2| if (true) return i1 + i2 else return 1 ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>int")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>int")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 	
 	@Test def void testOverloadedOperators_35() throws Exception {
 		"(1..2).map[ if (true) return toString.length ].reduce[ i1, i2| if (true) return i1 + i2 else return null ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>Integer")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>Integer")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 	
@@ -418,7 +470,7 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 	
 	@Test def void testOverloadedOperators_37() throws Exception {
 		"(1..2).map[ if (true) return toString.length ].reduce[ i1, i2| if (true) return i1 + i2 ]"
-			.resolvesClosuresTo("(Integer)=>Integer", "(Integer, Integer)=>Integer")
+			.resolvesClosuresTo("(Integer)=>int", "(Integer, Integer)=>int")
 			.withEquivalents("Function1<Integer, Integer>", "Function2<Integer, Integer, Integer>")
 	}
 
@@ -593,6 +645,14 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 		"{ 
 			val fun = [ x | x ]
 			val java.util.List<String> list = newArrayList(fun.apply(null))
+			fun
+		}".resolvesClosuresTo("(String[])=>String[]").withEquivalents("Function1<String[], String[]>")
+	}
+	
+	@Test def void testClosure_09_2() throws Exception {
+		"{ 
+			val fun = [ x | x ]
+			val java.util.List<String> list = newArrayList(fun.apply(null), fun.apply(null))
 			fun
 		}".resolvesClosuresTo("(String)=>String").withEquivalents("Function1<String, String>")
 	}
@@ -791,6 +851,14 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 			val fun = [ x | return x ]
 			val java.util.List<String> list = newArrayList(fun.apply(null))
 			fun
+		}".resolvesClosuresTo("(String[])=>String[]").withEquivalents("Function1<String[], String[]>")
+	}
+	
+	@Test def void testClosure_37_02() throws Exception {
+		"{ 
+			val fun = [ x | return x ]
+			val java.util.List<String> list = newArrayList(fun.apply(null), fun.apply(null))
+			fun
 		}".resolvesClosuresTo("(String)=>String").withEquivalents("Function1<String, String>")
 	}
 	
@@ -896,7 +964,7 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 	}
 	
 	@Test def void testClosure_52() throws Exception {
-		"[return].apply()".resolvesClosuresTo("(Object)=>Object").withEquivalents("Procedure1<Object>")
+		"[return].apply()".resolvesClosuresTo("(Object)=>void").withEquivalents("Procedure1<Object>")
 	}
 	
 	@Test def void testClosure_54() throws Exception {
@@ -926,6 +994,29 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 	
 	@Test def void testClosure_58() throws Exception {
 		'(null as Iterable<? super String>).map(e| return e)'.resolvesClosuresTo("(Object)=>Object").withEquivalents("Function1<Object, Object>")
+	}
+	
+	@Test def void testClosure_59() throws Exception {
+		'{ 
+			val java.util.List<CharSequence> res = null
+			val Iterable<? extends Object> obj = null
+			res += obj.map[""]
+		}'.resolvesClosuresTo("(Object)=>String").withEquivalents("Function1<Object, String>")
+	}
+	
+	@Test def void testClosure_60() throws Exception {
+		'{ 
+			val Iterable<? extends Object> obj = null
+			val Iterable<CharSequence> res = obj.map[""]
+		}'.resolvesClosuresTo("(Object)=>String").withEquivalents("Function1<Object, CharSequence>")
+	}
+	
+	@Test def void testClosure_61() throws Exception {
+		'{ 
+			val java.util.List<? super CharSequence> res = null
+			val Iterable<? extends Object> obj = null
+			res += obj.map[""]
+		}'.resolvesClosuresTo("(Object)=>String").withEquivalents("Function1<Object, String>")
 	}
 	
 	@Test def void testEMap_01() throws Exception {
@@ -1404,7 +1495,6 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 			.withEquivalents("Function1<String, Integer>", "Function1<Integer, Integer>")
 	}
 	
-	@Ignore("Too slow")
 	@Test def void testFeatureCall_055() throws Exception {
 		"newArrayList('').map[ length + 1 * 5 - length + 1 * 5 ].map [ it / 5 + 1 / it ).head"
 			.resolvesClosuresTo("(String)=>int", "(Integer)=>int")
@@ -1856,7 +1946,6 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 			.withEquivalents("Function1<String, Integer>", "Function1<Integer, Integer>")
 	}
 	
-	@Ignore("Too slow")
 	@Test def void testFeatureCall_125() throws Exception {
 		"newArrayList('').map[ return length + 1 * 5 - length + 1 * 5 ].map [ return it / 5 + 1 / it ).head"
 			.resolvesClosuresTo("(String)=>int", "(Integer)=>int")
@@ -2138,7 +2227,7 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 			val list = new java.util.ArrayList
 			list.<String, CharSequence>map[s| s]
 			list
-		}".resolvesClosuresTo("(CharSequence)=>CharSequence").withEquivalents("Function1<CharSequence, CharSequence>")
+		}".resolvesClosuresTo("(String)=>String").withEquivalents("Function1<String, CharSequence>")
 	}
 	
 	@Test def void testDeferredTypeArgumentResolution_16() throws Exception {
@@ -2146,7 +2235,7 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 			val list = new java.util.ArrayList
 			list.<String, Object>map[s| s]
 			list
-		}".resolvesClosuresTo("(Object)=>Object").withEquivalents("Function1<Object, Object>")
+		}".resolvesClosuresTo("(String)=>String").withEquivalents("Function1<String, Object>")
 	}
 
 	@Test def void testClosureWithReturnExpression_01() throws Exception {
@@ -2177,5 +2266,27 @@ abstract class AbstractClosureTypeTest extends AbstractXbaseTestCase {
 		"[ int i1, int i2| if (true) return i1 else return null ].apply(1, 1)"
 			.resolvesClosuresTo("(int, int)=>Integer")
 			.withEquivalents("Function2<Integer, Integer, Integer>")
-	}	
+	}
+	
+	@Test def void testAbstractIterator_01() throws Exception {
+		"{ var com.google.common.collect.AbstractIterator<String> iter = [| return self.endOfData ] }"
+			.resolvesClosuresTo("()=>String")
+			.withEquivalents("AbstractIterator<String>")
+	}
+	
+	@Test def void testAbstractIterator_02() throws Exception {
+		"{ 
+			var com.google.common.collect.AbstractIterator<java.util.Iterator<String>> iter = [|
+				if (true) {
+					val com.google.common.collect.AbstractIterator<String> result = [|
+						return self.endOfData
+					]
+					return result
+				}
+				return self.endOfData
+			]
+		}"
+			.resolvesClosuresTo("()=>Iterator<String>", "()=>String")
+			.withEquivalents("AbstractIterator<Iterator<String>>", "AbstractIterator<String>")
+	}
 }

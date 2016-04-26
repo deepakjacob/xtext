@@ -28,8 +28,7 @@ import com.google.common.base.Objects;
 	 * @return <code>true</code> if {@code a} and {@code b} are not equal.
 	 */
 	@Pure
-//	disabled inlining, since Findbugs is too loud about warnings when b is null.
-//	@Inline(value="(!$3.equal($1, $2))", imported=Objects.class)
+	@Inline(value="(!$3.equal($1, $2))", imported=Objects.class)
 	public static boolean operator_notEquals(Object a, Object b) {
 		return !Objects.equal(a, b);
 	}
@@ -45,8 +44,7 @@ import com.google.common.base.Objects;
 	 * @return <code>true</code> if {@code a} and {@code b} are equal.
 	 */
 	@Pure
-//	disabled inlining, since Findbugs is too loud about warnings when b is null.
-//	@Inline(value="$3.equal($1, $2)", imported=Objects.class)
+	@Inline(value="$3.equal($1, $2)", imported=Objects.class)
 	public static boolean operator_equals(Object a, Object b) {
 		return Objects.equal(a, b);
 	}
@@ -63,9 +61,43 @@ import com.google.common.base.Objects;
 	 * @return Java's <code>a == b</code>
 	 */
 	@Pure
-	@Inline("$1 == $2")
+	@Inline(value = "($1 == $2)", constantExpression = true)
 	public static boolean identityEquals(Object a, Object b) {
 		return a == b;
+	}
+
+	/**
+	 * The <code>identity equals</code> operator. This is the equivalent to Java's <code>==</code>
+	 * operator.
+	 * 
+	 * @param a
+	 *            an object.
+	 * @param b
+	 *            another object.
+	 * @return Java's <code>a == b</code>
+	 * @since 2.4
+	 */
+	@Pure
+	@Inline(value = "($1 == $2)", constantExpression = true)
+	public static boolean operator_tripleEquals(Object a, Object b) {
+		return a == b;
+	}
+	
+	/**
+	 * The <code>identity not equals</code> operator. This is the equivalent to Java's <code>!=</code>
+	 * operator.
+	 * 
+	 * @param a
+	 *            an object.
+	 * @param b
+	 *            another object.
+	 * @return Java's <code>a != b</code>
+	 * @since 2.4
+	 */
+	@Pure
+	@Inline(value = "($1 != $2)", constantExpression = true)
+	public static boolean operator_tripleNotEquals(Object a, Object b) {
+		return a != b;
 	}
 
 	/**
@@ -127,6 +159,9 @@ import com.google.common.base.Objects;
 	/**
 	 * The elvis operator <code>?:</code> is a short hand notation for
 	 * providing default value in case an expression evaluates to <code>null</code>.
+	 * 
+	 * Not that the Xtend compiler will inline calls to this not call this method with a short-circuit semantic.
+	 * That is the second argument is only evaluated if the first one evaluates to <code>null</code>.
 	 * 
 	 * Example:
 	 * <code>person.name?:'Hans'</code>

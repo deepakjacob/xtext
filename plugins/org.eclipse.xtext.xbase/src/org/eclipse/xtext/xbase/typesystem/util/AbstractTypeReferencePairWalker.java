@@ -12,20 +12,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.common.types.JvmTypeParameterDeclarator;
+import org.eclipse.xtext.util.Strings;
 import org.eclipse.xtext.xbase.typesystem.references.AnyTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ArrayTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.CompoundTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
+import org.eclipse.xtext.xbase.typesystem.references.InnerFunctionTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.InnerTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightMergedBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.ParameterizedTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.TypeReferenceVisitorWithParameter;
 import org.eclipse.xtext.xbase.typesystem.references.UnboundTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.UnknownTypeReference;
 import org.eclipse.xtext.xbase.typesystem.references.WildcardTypeReference;
 
 import com.google.common.collect.Sets;
@@ -34,7 +36,6 @@ import com.google.common.collect.Sets;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString implementation
  */
-@NonNullByDefault
 public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisitorWithParameter<LightweightTypeReference> {
 
 	protected class ArrayTypeReferenceTraverser extends	TypeReferenceVisitorWithParameter<ArrayTypeReference> {
@@ -51,7 +52,20 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 					JvmTypeParameter typeParameter = (JvmTypeParameter) type;
 					processTypeParameter(typeParameter, declaration);
 				}
+			} else {
+				LightweightTypeReference declarationAsList = declaration.tryConvertToListType();
+				outerVisit(declarationAsList, reference);
 			}
+		}
+		
+		@Override
+		protected void doVisitAnyTypeReference(AnyTypeReference reference, ArrayTypeReference param) {
+			// nothing to do
+		}
+		
+		@Override
+		protected void doVisitUnknownTypeReference(UnknownTypeReference reference, ArrayTypeReference param) {
+			// nothing to do
 		}
 		
 		@Override
@@ -60,13 +74,25 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 				processTypeParameter(reference.getTypeParameter(), declaration);
 			}
 		}
+		
+		@Override
+		protected void doVisitWildcardTypeReference(WildcardTypeReference reference, ArrayTypeReference declaration) {
+			LightweightTypeReference lowerBound = reference.getLowerBound();
+			if (lowerBound != null) {
+				outerVisit(declaration, lowerBound, declaration, expectedVariance, VarianceInfo.IN);
+			} else {
+				for(LightweightTypeReference upperBound: reference.getUpperBounds()) {
+					outerVisit(declaration, upperBound, declaration, expectedVariance, VarianceInfo.OUT);
+				}
+			}
+		}
 	}
 	
 	protected class CompoundTypeReferenceTraverser extends TypeReferenceVisitorWithParameter<CompoundTypeReference> {
 		@Override
 		protected void doVisitTypeReference(LightweightTypeReference reference, CompoundTypeReference declaration) {
 			List<LightweightTypeReference> components = declaration.getMultiTypeComponents();
-			if (components.isEmpty()) {
+			if (!components.isEmpty()) {
 				for (LightweightTypeReference component: components) {
 					outerVisit(component, reference);
 				}
@@ -99,6 +125,15 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 						outerVisit(declaredUpperBound, actualLowerBound, declaration, VarianceInfo.OUT, VarianceInfo.IN);
 					}
 				}
+			}
+		}
+		
+		@Override
+		protected void doVisitCompoundTypeReference(CompoundTypeReference reference, WildcardTypeReference param) {
+			if (!reference.isSynonym()) {
+				doVisitTypeReference(reference, param);
+			} else {
+				super.doVisitCompoundTypeReference(reference, param);
 			}
 		}
 		
@@ -159,13 +194,31 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 					processTypeParameter(typeParameter, reference);
 				}
 			} else if (type instanceof JvmTypeParameterDeclarator
-					&& !((JvmTypeParameterDeclarator) type).getTypeParameters().isEmpty()) {
+					&& !((JvmTypeParameterDeclarator) type).getTypeParameters().isEmpty()
+					&& !declaration.getTypeArguments().isEmpty()) {
 				doVisitMatchingTypeParameters(reference, declaration);
 			}
+		}
+		
+		@Override
+		protected void doVisitInnerTypeReference(InnerTypeReference reference, ParameterizedTypeReference declaration) {
+			super.doVisitInnerTypeReference(reference, declaration);
+			outerVisit(declaration, reference.getOuter());
+		}
+		
+		@Override
+		protected void doVisitInnerFunctionTypeReference(InnerFunctionTypeReference reference, ParameterizedTypeReference declaration) {
+			super.doVisitInnerFunctionTypeReference(reference, declaration);
+			outerVisit(declaration, reference.getOuter());
 		}
 
 		@Override
 		protected void doVisitAnyTypeReference(AnyTypeReference reference, ParameterizedTypeReference param) {
+			// nothing to do
+		}
+		
+		@Override
+		protected void doVisitUnknownTypeReference(UnknownTypeReference reference, ParameterizedTypeReference param) {
 			// nothing to do
 		}
 
@@ -177,11 +230,13 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 			TypeParameterSubstitutor<?> declaredSubstitutor = createTypeParameterSubstitutor(declaredMapping);
 			Set<JvmTypeParameter> actualBoundParameters = actualMapping.keySet();
 			Set<JvmTypeParameter> visited = Sets.newHashSet();
-			for (JvmTypeParameter actualBoundParameter : actualBoundParameters) {
+			outer: for (JvmTypeParameter actualBoundParameter : actualBoundParameters) {
 				if (visited.add(actualBoundParameter)) {
 					LightweightMergedBoundTypeArgument declaredBoundArgument = declaredMapping.get(actualBoundParameter);
 					while(declaredBoundArgument == null && actualBoundParameter != null) {
 						actualBoundParameter = findMappedParameter(actualBoundParameter, actualMapping, visited);
+						if (actualBoundParameter == null)
+							continue outer;
 						declaredBoundArgument = declaredMapping.get(actualBoundParameter);
 					}
 					if (declaredBoundArgument != null) {
@@ -194,7 +249,14 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 							declaredTypeReference = declaredSubstitutor.substitute(declaredTypeReference);
 						}
 						LightweightTypeReference actual = actualSubstitutor.substitute(actualMapping.get(actualBoundParameter).getTypeReference());
-						outerVisit(declaredTypeReference, actual, declaration, VarianceInfo.INVARIANT, VarianceInfo.INVARIANT);
+						if (!actual.isResolved() || !declaredTypeReference.isResolved() || !Strings.equal(actual.getIdentifier(), declaredTypeReference.getIdentifier())) {
+							if (reference.getType() != actual.getType() 
+									|| declaredTypeReference.getType() != declaration.getType() 
+									|| !reference.getIdentifier().equals(actual.getIdentifier())
+									|| !declaredTypeReference.getIdentifier().equals(declaration.getIdentifier())) {
+								outerVisit(declaredTypeReference, actual, declaration, VarianceInfo.INVARIANT, VarianceInfo.INVARIANT);
+							}
+						}
 					}
 				}
 			}
@@ -206,7 +268,12 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 			return collector.getTypeParameterMapping(reference);
 		}
 		
-		protected boolean shouldProcessInContextOf(JvmTypeParameter declaredTypeParameter, Set<JvmTypeParameter> boundParameters, Set<JvmTypeParameter> visited) {
+		/**
+		 * @param typeParameter the considered type parameter.
+		 * @param boundParameters all bound type parameters.
+		 * @param visited the parameters that were already visited.
+		 */
+		protected boolean shouldProcessInContextOf(JvmTypeParameter typeParameter, Set<JvmTypeParameter> boundParameters, Set<JvmTypeParameter> visited) {
 			return true;
 		}
 
@@ -249,8 +316,11 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 
 	private Object origin;
 	
+	private final Set<String> recursionGuard;
+	
 	protected AbstractTypeReferencePairWalker(ITypeReferenceOwner owner) {
 		this.owner = owner;
+		this.recursionGuard = Sets.newHashSetWithExpectedSize(3);
 		parameterizedTypeReferenceTraverser = createParameterizedTypeReferenceTraverser();
 		wildcardTypeReferenceTraverser = createWildcardTypeReferenceTraverser();
 		arrayTypeReferenceTraverser = createArrayTypeReferenceTraverser();
@@ -258,10 +328,19 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 		unboundTypeReferenceTraverser = createUnboundTypeReferenceTraverser();
 	}
 	
+	/**
+	 * @param typeParameter the to-be-processed type parameter.
+	 * @param reference the reference that is bound to the given type parameter.
+	 */
 	protected void processTypeParameter(JvmTypeParameter typeParameter, LightweightTypeReference reference) {
 	}
 	
-	protected boolean shouldProcess(JvmTypeParameter type) {
+	/**
+	 * Allows to veto the processing of a given type parameter.
+	 * @param typeParameter the to-be-processed type parameter.
+	 * @return always <code>true</code>.
+	 */
+	protected boolean shouldProcess(JvmTypeParameter typeParameter) {
 		return true;
 	}
 	
@@ -316,6 +395,11 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 	protected void doVisitAnyTypeReference(AnyTypeReference reference, LightweightTypeReference param) {
 		// nothing to do
 	}
+	
+	@Override
+	protected void doVisitUnknownTypeReference(UnknownTypeReference reference, LightweightTypeReference param) {
+		// nothing to do
+	}
 
 	protected void outerVisit(LightweightTypeReference declaredType, LightweightTypeReference actualType, Object origin, VarianceInfo expectedVariance, VarianceInfo actualVariance) {
 		VarianceInfo oldExpectedVariance = this.expectedVariance;
@@ -334,7 +418,20 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 	}
 	
 	protected void outerVisit(LightweightTypeReference declaredType, LightweightTypeReference actualType) {
-		declaredType.accept(this, actualType);
+		if (declaredType == actualType)
+			return;
+		String declaredKey = declaredType.getUniqueIdentifier();
+		String actualKey = actualType.getUniqueIdentifier();
+		if (!declaredKey.equals(actualKey)) {
+			final String key = declaredKey + "//" + actualKey;
+			if (recursionGuard.add(key)) {
+				try {
+					declaredType.accept(this, actualType);
+				} finally {
+					recursionGuard.remove(key);
+				}
+			}
+		}
 	}
 
 	public void processPairedReferences(LightweightTypeReference declaredType, LightweightTypeReference actualType) {
@@ -360,7 +457,7 @@ public abstract class AbstractTypeReferencePairWalker extends TypeReferenceVisit
 		return new StandardTypeParameterSubstitutor(mapping, owner);
 	}
 	
-	@Nullable
+	/* @Nullable */
 	protected JvmTypeParameter findMappedParameter(JvmTypeParameter parameter,
 			Map<JvmTypeParameter, LightweightMergedBoundTypeArgument> mapping, Collection<JvmTypeParameter> visited) {
 		for(Map.Entry<JvmTypeParameter, LightweightMergedBoundTypeArgument> entry: mapping.entrySet()) {

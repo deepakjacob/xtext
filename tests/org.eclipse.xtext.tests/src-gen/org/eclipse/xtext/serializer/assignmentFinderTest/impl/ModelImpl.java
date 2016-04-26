@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.assignmentFinderTest.impl;
 
@@ -33,6 +30,7 @@ import org.eclipse.xtext.serializer.assignmentFinderTest.TerminalVal;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.assignmentFinderTest.impl.ModelImpl#getKeywordVal <em>Keyword Val</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.assignmentFinderTest.impl.ModelImpl#getTerminalVal <em>Terminal Val</em>}</li>
@@ -45,7 +43,6 @@ import org.eclipse.xtext.serializer.assignmentFinderTest.TerminalVal;
  *   <li>{@link org.eclipse.xtext.serializer.assignmentFinderTest.impl.ModelImpl#getContainmentRef <em>Containment Ref</em>}</li>
  *   <li>{@link org.eclipse.xtext.serializer.assignmentFinderTest.impl.ModelImpl#getCrossRef <em>Cross Ref</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

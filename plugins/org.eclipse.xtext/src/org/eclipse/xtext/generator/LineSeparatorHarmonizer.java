@@ -10,7 +10,6 @@ package org.eclipse.xtext.generator;
 import java.io.CharArrayWriter;
 
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.formatting.IWhitespaceInformationProvider;
 
 import com.google.inject.Inject;
@@ -21,12 +20,12 @@ import com.google.inject.Inject;
  * @author Jan Koehnlein - Initial contribution and API
  * @since 2.3
  */
-@NonNullByDefault
 public class LineSeparatorHarmonizer implements IFilePostProcessor {
 
 	@Inject
 	private IWhitespaceInformationProvider whitespaceInformationProvider;
 
+	@Override
 	public CharSequence postProcess(URI fileURI, CharSequence content) {
 		String lineSeparator = whitespaceInformationProvider.getLineSeparatorInformation(fileURI).getLineSeparator();
 		return replaceLineSeparators(content, lineSeparator);

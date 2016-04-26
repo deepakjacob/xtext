@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<genmodel:GenModel xmi:version="2.0"
-    xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
-    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/org.eclipse.xtext.tests/src-gen"
-    editDirectory="/org.eclipse.xtext.tests.edit/src" editorDirectory="/org.eclipse.xtext.tests.editor/src"
-    modelPluginID="org.eclipse.xtext.tests" forceOverwrite="true" modelName="SequencerTestLanguage"
-    updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    complianceLevel="5.0" copyrightFields="false" editPluginID="org.eclipse.xtext.tests.edit"
-    editorPluginID="org.eclipse.xtext.tests.editor" runtimeVersion="2.5" usedGenPackages="../../../../../../org.eclipse.emf.ecore/model/Ecore.genmodel#//ecore">
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" modelDirectory="/org.eclipse.xtext.tests/src-gen" editDirectory="/org.eclipse.xtext.tests.edit/src"
+    editorDirectory="/org.eclipse.xtext.tests.editor/src" modelPluginID="org.eclipse.xtext.tests"
+    forceOverwrite="true" modelName="SequencerTestLanguage" updateClasspath="false"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" complianceLevel="6.0"
+    copyrightFields="false" editPluginID="org.eclipse.xtext.tests.edit" editorPluginID="org.eclipse.xtext.tests.editor"
+    runtimeVersion="2.9" usedGenPackages="platform:/resource/org.eclipse.emf.ecore/model/Ecore.genmodel#//ecore">
   <genPackages prefix="Sequencertest" basePackage="org.eclipse.xtext.serializer" disposableProviderFactory="true"
       ecorePackage="SequencerTestLanguage.ecore#/">
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="SequencerTestLanguage.ecore#//DefEnum">
@@ -40,6 +39,13 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x26"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x27"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x28"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x29"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x30"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x31"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x32"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x33"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x34"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//Model/x35"/>
     </genClasses>
     <genClasses ecoreClass="SequencerTestLanguage.ecore#//SimpleGroup">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//SimpleGroup/val1"/>
@@ -188,6 +194,38 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//OptionalDouble/double0"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//OptionalDouble/double1"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//OptionalDouble/double2"/>
+    </genClasses>
+    <genClasses ecoreClass="SequencerTestLanguage.ecore#//NullValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//NullValue/value"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//NullValue/foo"/>
+    </genClasses>
+    <genClasses ecoreClass="SequencerTestLanguage.ecore#//NullCrossRef">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//NullCrossRef/ref"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//NullCrossRef/foo"/>
+    </genClasses>
+    <genClasses ecoreClass="SequencerTestLanguage.ecore#//FragmentCallerType">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//FragmentCallerType/val1"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//FragmentCallerType/val"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//FragmentCallerType/fragVal"/>
+    </genClasses>
+    <genClasses ecoreClass="SequencerTestLanguage.ecore#//ParameterCaller">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//ParameterCaller/p"/>
+    </genClasses>
+    <genClasses ecoreClass="SequencerTestLanguage.ecore#//Parameterized">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//Parameterized/v1"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//Parameterized/v2"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//Parameterized/v3"/>
+    </genClasses>
+    <genClasses ecoreClass="SequencerTestLanguage.ecore#//ParameterDelegation">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//ParameterDelegation/p"/>
+    </genClasses>
+    <genClasses ecoreClass="SequencerTestLanguage.ecore#//Delegation">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//Delegation/p"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute SequencerTestLanguage.ecore#//Delegation/np"/>
+    </genClasses>
+    <genClasses ecoreClass="SequencerTestLanguage.ecore#//DelegationA">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//DelegationA/left"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference SequencerTestLanguage.ecore#//DelegationA/rc2"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

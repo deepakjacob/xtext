@@ -20,6 +20,19 @@ public class StaticFeatureDescription extends BucketedEObjectDescription {
 	public StaticFeatureDescription(QualifiedName qualifiedName, JvmFeature feature, int bucketId,
 			boolean visible) {
 		super(qualifiedName, feature, bucketId, visible);
+		if (!feature.isStatic()) {
+			throw new IllegalArgumentException(String.valueOf(feature));
+		}
+	}
+	
+	@Override
+	public boolean isStatic() {
+		return true;
+	}
+	
+	@Override
+	public boolean isExtension() {
+		return false;
 	}
 
 }

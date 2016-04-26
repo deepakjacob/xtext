@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl;
 
@@ -21,13 +18,13 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.Vis
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.ModifiersImpl#isFinal <em>Final</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.ModifiersImpl#isAbstract <em>Abstract</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.ModifiersImpl#isExtern <em>Extern</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.ModifiersImpl#getVisibility <em>Visibility</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

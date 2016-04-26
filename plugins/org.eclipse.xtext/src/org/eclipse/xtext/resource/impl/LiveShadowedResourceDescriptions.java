@@ -41,7 +41,7 @@ import com.google.inject.Inject;
  * @since 2.1
  */
 public class LiveShadowedResourceDescriptions extends ResourceSetBasedResourceDescriptions {
-
+	
 	@Inject
 	private ResourceSetBasedResourceDescriptions localDescriptions;
 
@@ -66,6 +66,7 @@ public class LiveShadowedResourceDescriptions extends ResourceSetBasedResourceDe
 	@Override
 	public Iterable<IResourceDescription> getAllResourceDescriptions() {
 		Iterable<IResourceDescription> notInLiveResourceSet = Iterables.filter(globalDescriptions.getAllResourceDescriptions(), new Predicate<IResourceDescription>() {
+			@Override
 			public boolean apply(IResourceDescription input) {
 				return !isExistingOrRenamedResourceURI(input.getURI());
 			}
@@ -110,6 +111,7 @@ public class LiveShadowedResourceDescriptions extends ResourceSetBasedResourceDe
 	@Override
 	public Iterable<IEObjectDescription> getExportedObjects() {
 		return Iterables.concat(Iterables.transform(getAllResourceDescriptions(), new Function<ISelectable, Iterable<IEObjectDescription>>() {
+			@Override
 			public Iterable<IEObjectDescription> apply(ISelectable from) {
 				if (from != null)
 					return from.getExportedObjects();
@@ -128,6 +130,7 @@ public class LiveShadowedResourceDescriptions extends ResourceSetBasedResourceDe
 	protected Iterable<IEObjectDescription> joinIterables(Iterable<IEObjectDescription> liveDescriptions,
 			Iterable<IEObjectDescription> persistentDescriptions) {
 		Iterable<IEObjectDescription> filteredPersistent = Iterables.filter(persistentDescriptions, new Predicate<IEObjectDescription>() {
+			@Override
 			public boolean apply(IEObjectDescription input) {
 				URI resourceURI = input.getEObjectURI().trimFragment();
 				if (isExistingOrRenamedResourceURI(resourceURI))
@@ -147,10 +150,38 @@ public class LiveShadowedResourceDescriptions extends ResourceSetBasedResourceDe
 
 	@Override
 	public Iterable<IEObjectDescription> getExportedObjectsByObject(EObject object) {
-		URI resourceURI = EcoreUtil2.getNormalizedResourceURI(object);
+		URI resourceURI = EcoreUtil2.getPlatformResourceOrNormalizedURI(object).trimFragment();
 		if (localDescriptions.hasDescription(resourceURI))
 			return localDescriptions.getExportedObjectsByObject(object);
 		return globalDescriptions.getExportedObjectsByObject(object);
+	}
+	
+	/**
+	 * @since 2.6
+	 */
+	public IResourceDescriptions getLocalDescriptions() {
+		return localDescriptions;
+	}
+	
+	/**
+	 * @since 2.6
+	 */
+	public IResourceDescriptions getGlobalDescriptions() {
+		return globalDescriptions;
+	}
+	
+	/**
+	 * @since 2.6
+	 */
+	public void setGlobalDescriptions(IResourceDescriptions globalDescriptions) {
+		this.globalDescriptions = globalDescriptions;
+	}
+	
+	/**
+	 * @since 2.6
+	 */
+	public void setLocalDescriptions(ResourceSetBasedResourceDescriptions localDescriptions) {
+		this.localDescriptions = localDescriptions;
 	}
 
 }

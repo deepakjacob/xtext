@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.builder.clustering.ClusteringBuilderState;
 import org.eclipse.xtext.builder.impl.BuildData;
 import org.eclipse.xtext.builder.impl.QueuedBuildData;
@@ -23,8 +22,10 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescription.Delta;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
+import org.eclipse.xtext.ui.shared.internal.EagerContributionInitializer;
 import org.eclipse.xtext.ui.shared.internal.SharedModule;
 import org.eclipse.xtext.util.Modules2;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +41,11 @@ public class Bug349445Test extends Assert implements PersistedStateProvider, IMa
 
 	private IBuilderState testMe;
 	private int loadCalled;
+	private Injector injector;
 
 	@Before
 	public void setUp() throws Exception {
-		Injector injector = Guice.createInjector(Modules2.mixin(new SharedModule(), new AbstractModule() {
+		injector = Guice.createInjector(Modules2.mixin(new SharedModule(null), new AbstractModule() {
 			@Override
 			protected void configure() {
 				bind(PersistedStateProvider.class).toInstance(Bug349445Test.this);
@@ -55,8 +57,14 @@ public class Bug349445Test extends Assert implements PersistedStateProvider, IMa
 		testMe = injector.getInstance(ClusteringBuilderState.class);
 	}
 	
+	@After
+	public void tearDown() throws Exception {
+		EagerContributionInitializer initializer = injector.getInstance(EagerContributionInitializer.class);
+		initializer.discard();
+	}
+	
 	@Test public void testUpdate() {
-		testMe.update(new BuildData(null, null, new ToBeBuilt(), new QueuedBuildData()), null);
+		testMe.update(new BuildData(null, null, new ToBeBuilt(), new QueuedBuildData(null)), null);
 		assertEquals(1, loadCalled);
 	}
 	
@@ -100,32 +108,39 @@ public class Bug349445Test extends Assert implements PersistedStateProvider, IMa
 		assertEquals(1, loadCalled);
 	}
 	
-	public void updateMarkers(Delta resourceDescriptionDeltas, @Nullable ResourceSet resourceSet,
+	@Override
+	public void updateMarkers(Delta resourceDescriptionDeltas, /* @Nullable */ ResourceSet resourceSet,
 			IProgressMonitor monitor) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Iterable<IResourceDescription> load() {
 		loadCalled++;
 		return Collections.emptyList();
 	}
 
+	@Override
 	public IResourceServiceProvider getResourceServiceProvider(URI uri, String contentType) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public IResourceServiceProvider getResourceServiceProvider(URI uri) {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Map<String, Object> getContentTypeToFactoryMap() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Map<String, Object> getExtensionToFactoryMap() {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public Map<String, Object> getProtocolToFactoryMap() {
 		throw new UnsupportedOperationException();
 	}

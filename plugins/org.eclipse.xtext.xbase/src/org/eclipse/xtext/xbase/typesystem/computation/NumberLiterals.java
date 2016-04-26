@@ -51,11 +51,18 @@ public class NumberLiterals {
 				throw new IllegalArgumentException("Invalid number literal base " + getBase(literal));
 		}
 	}
-
+	
 	public String toJavaLiteral(XNumberLiteral literal) {
-		if (getJavaType(literal).isPrimitive())
-			return literal.getValue().replace("_", "").replace("#", "");
-		else
+		return toJavaLiteral(literal, true);
+	}
+	
+	public String toJavaLiteral(XNumberLiteral literal, boolean removeUnderscores) {
+		if (getJavaType(literal).isPrimitive()) {
+			if (removeUnderscores)
+				return literal.getValue().replace("_", "").replace("#", "");
+			else
+				return literal.getValue().replace("#", "");
+		} else
 			return null;
 	}
 
@@ -121,7 +128,7 @@ public class NumberLiterals {
 		return (explicitType == null) ? (isFloatingPoint(literal)) ? Double.TYPE : Integer.TYPE : explicitType;
 	}
 
-	public Number numberValue(XNumberLiteral literal, Class<? extends Number> numberType) {
+	public Number numberValue(XNumberLiteral literal, Class<?> numberType) {
 		if (numberType == Integer.TYPE || numberType == Integer.class) {
 			BigInteger asBigInt = toBigInteger(literal);
 			BigInteger shiftRight = asBigInt.shiftRight(32);
@@ -138,6 +145,8 @@ public class NumberLiterals {
 			return asBigInt.longValue();
 		} else if (numberType == Float.TYPE || numberType == Float.class)
 			return Float.parseFloat(getDigits(literal));
+		else if (numberType == Byte.TYPE || numberType == Byte.class)
+			return Byte.parseByte(getDigits(literal));
 		else if (numberType == BigInteger.class)
 			return toBigInteger(literal);
 		else if (numberType == BigDecimal.class)

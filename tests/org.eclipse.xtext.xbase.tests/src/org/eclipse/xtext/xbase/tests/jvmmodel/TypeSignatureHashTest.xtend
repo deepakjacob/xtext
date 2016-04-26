@@ -10,14 +10,13 @@
 import com.google.inject.Inject
 import org.eclipse.emf.ecore.EcoreFactory
 import org.eclipse.xtext.common.types.JvmDeclaredType
+import org.eclipse.xtext.common.types.descriptions.JvmDeclaredTypeSignatureHashProvider
 import org.eclipse.xtext.common.types.util.TypeReferences
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
-import org.eclipse.xtext.xbase.resource.JvmDeclaredTypeSignatureHashProvider
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.junit.Test
 
-import static org.junit.Assert.*
-import static extension org.eclipse.xtext.util.Strings.*;
+import static extension org.eclipse.xtext.util.Strings.*
 
 /**
  * The remaining tests are in xtend.core.tests, as it is a lot easier to specify JvmModels in Xtend ;-)
@@ -37,8 +36,8 @@ class TypeSignatureHashTest extends AbstractXbaseTestCase {
 		val eObject = EcoreFactory::eINSTANCE.createEObject
 		val bar = eObject.toClass('Bar')
 		val foo = eObject.toClass('Foo') [
-				members += bar
-			]
+			members += bar
+		]
 		val hash = foo.hash
 		bar.members += eObject.toConstructor() []
 		assertEquals(hash, foo.hash)

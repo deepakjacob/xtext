@@ -16,13 +16,12 @@ import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.xbase.XConstructorCall;
 import org.eclipse.xtext.xbase.XExpression;
-import org.eclipse.xtext.xbase.XbasePackage.Literals;
+import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
@@ -58,26 +57,27 @@ public abstract class AbstractConstructorCallTypeTest extends AbstractXbaseTestC
     try {
       final XExpression xExpression = this.expression(expression, false);
       Resource _eResource = xExpression.eResource();
-      EList<Diagnostic> _errors = _eResource.getErrors();
+      EList<Resource.Diagnostic> _errors = _eResource.getErrors();
       boolean _isEmpty = _errors.isEmpty();
       Assert.assertTrue(_isEmpty);
       TreeIterator<EObject> _eAll = EcoreUtil2.eAll(xExpression);
       Iterator<XConstructorCall> _filter = Iterators.<XConstructorCall>filter(_eAll, XConstructorCall.class);
       final List<XConstructorCall> closures = IteratorExtensions.<XConstructorCall>toList(_filter);
-      final Function1<XConstructorCall,Integer> _function = new Function1<XConstructorCall,Integer>() {
-          public Integer apply(final XConstructorCall it) {
-            List<INode> _findNodesForFeature = NodeModelUtils.findNodesForFeature(it, Literals.XCONSTRUCTOR_CALL__CONSTRUCTOR);
-            INode _head = IterableExtensions.<INode>head(_findNodesForFeature);
-            int _offset = _head.getOffset();
-            return Integer.valueOf(_offset);
-          }
-        };
+      final Function1<XConstructorCall, Integer> _function = new Function1<XConstructorCall, Integer>() {
+        @Override
+        public Integer apply(final XConstructorCall it) {
+          List<INode> _findNodesForFeature = NodeModelUtils.findNodesForFeature(it, XbasePackage.Literals.XCONSTRUCTOR_CALL__CONSTRUCTOR);
+          INode _head = IterableExtensions.<INode>head(_findNodesForFeature);
+          return Integer.valueOf(_head.getOffset());
+        }
+      };
       return IterableExtensions.<XConstructorCall, Integer>sortBy(closures, _function);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }
   
+  @Override
   protected XExpression expression(final CharSequence expression, final boolean resolve) throws Exception {
     XExpression _xblockexpression = null;
     {
@@ -85,11 +85,9 @@ public abstract class AbstractConstructorCallTypeTest extends AbstractXbaseTestC
       boolean _add = AbstractConstructorCallTypeTest.seenExpressions.add(string);
       boolean _not = (!_add);
       if (_not) {
-        String _plus = ("Duplicate expression under test: " + expression);
-        Assert.fail(_plus);
+        Assert.fail(("Duplicate expression under test: " + expression));
       }
-      XExpression _expression = super.expression(expression, resolve);
-      _xblockexpression = (_expression);
+      _xblockexpression = super.expression(expression, resolve);
     }
     return _xblockexpression;
   }
@@ -217,6 +215,26 @@ public abstract class AbstractConstructorCallTypeTest extends AbstractXbaseTestC
   @Test
   public void testConstructorTypeParameters_04() throws Exception {
     this.resolvesConstructorCallsTo("new java.util.ArrayList<? extends Iterable<? extends String>>()", "ArrayList<Iterable<? extends String>>");
+  }
+  
+  @Test
+  public void testConstructorTypeParameters_05() throws Exception {
+    this.resolvesConstructorCallsTo("new constructorTypeParameters.KeyValue(null, \'\')", "KeyValue");
+  }
+  
+  @Test
+  public void testConstructorTypeParameters_06() throws Exception {
+    this.resolvesConstructorCallsTo("new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableValue, \'\')", "KeyValue", "WritableValue<String>");
+  }
+  
+  @Test
+  public void testConstructorTypeParameters_07() throws Exception {
+    this.resolvesConstructorCallsTo("new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableDoubleValue, 1.0)", "KeyValue", "WritableDoubleValue");
+  }
+  
+  @Test
+  public void testConstructorTypeParameters_08() throws Exception {
+    this.resolvesConstructorCallsTo("new constructorTypeParameters.KeyValue(new constructorTypeParameters.WritableValue, 1.0)", "KeyValue", "WritableValue<Double>");
   }
   
   @Test
@@ -761,7 +779,7 @@ public abstract class AbstractConstructorCallTypeTest extends AbstractXbaseTestC
   
   @Test
   public void testDeferredTypeArgumentResolution_145() throws Exception {
-    this.resolvesConstructorCallsTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval Iterable<String> s = list.head.head.head\n\t\t\tlist.head\n\t\t}", "ArrayList<ArrayList<Iterable<Iterable<String>>>>", "ArrayList<Iterable<Iterable<String>>>");
+    this.resolvesConstructorCallsTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval Iterable<String> s = list.head.flatten.head\n\t\t\tlist.head\n\t\t}", "ArrayList<ArrayList<Iterable<? extends Iterable<String>>>>", "ArrayList<Iterable<? extends Iterable<String>>>");
   }
   
   @Test
@@ -771,7 +789,7 @@ public abstract class AbstractConstructorCallTypeTest extends AbstractXbaseTestC
   
   @Test
   public void testDeferredTypeArgumentResolution_147() throws Exception {
-    this.resolvesConstructorCallsTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval String s = list.head.head.head\n\t\t\tlist.head\n\t\t}", "ArrayList<ArrayList<Iterable<String>>>", "ArrayList<Iterable<String>>");
+    this.resolvesConstructorCallsTo("{\n\t\t\tval list = new java.util.ArrayList\n\t\t\tlist.add(new java.util.ArrayList)\n\t\t\tval String s = list.head.flatten.head\n\t\t\tlist.head\n\t\t}", "ArrayList<ArrayList<Iterable<? extends String>>>", "ArrayList<Iterable<? extends String>>");
   }
   
   @Test

@@ -7,48 +7,51 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.common.types.JvmDeclaredType;
-import org.eclipse.xtext.common.types.JvmIdentifiableElement;
-import org.eclipse.xtext.xbase.jvmmodel.ILogicalContainerProvider;
+import java.util.List;
 
-import com.google.inject.Inject;
+import org.apache.log4j.Logger;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.common.types.JvmType;
+import org.eclipse.xtext.common.types.xtext.JvmMemberInitializableResource;
+import org.eclipse.xtext.resource.DerivedStateAwareResource;
+
+import com.google.common.collect.Lists;
 
 /**
+ * A type resolver that knows about derived JvmTypes that are added to the resource contents.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
- * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class LogicalContainerAwareBatchTypeResolver extends DefaultBatchTypeResolver {
 	
-	@Inject
-	private ILogicalContainerProvider logicalContainerProvider;
+	private static final Logger LOG = Logger.getLogger(LogicalContainerAwareBatchTypeResolver.class);
 	
 	@Override
-	protected EObject getEntryPoint(EObject object) {
-		JvmIdentifiableElement logicalContainer = logicalContainerProvider.getNearestLogicalContainer(object);
-		if (logicalContainer == null) {
-			if (object instanceof JvmIdentifiableElement) {
-				logicalContainer = (JvmIdentifiableElement) object;
-			} else {
-				EObject container = object.eContainer();
-				if (container != null) {
-					return getEntryPoint(container);
-				}
-				throw new IllegalStateException("object is not contained in a logical container: " + object);
+	protected void validateResourceState(Resource resource) {
+		super.validateResourceState(resource);
+		if (resource instanceof DerivedStateAwareResource && ((DerivedStateAwareResource) resource).isInitializing()) {
+			LOG.error("Discouraged attempt to compute types during model inference. Resource was : "+resource.getURI(), new Exception());
+		}
+		if (resource instanceof JvmMemberInitializableResource && ((JvmMemberInitializableResource) resource).isInitializingJvmMembers()) {
+			LOG.error("Discouraged attempt to compute types during JvmMember initialization. Resource was : "+resource.getURI(), new Exception());
+		}
+	}
+	
+	@Override
+	protected List<EObject> getEntryPoints(EObject object) {
+		Resource resource = object.eResource();
+		List<EObject> contents = resource.getContents();
+		List<EObject> result = Lists.newArrayList();
+		for(EObject content: contents) {
+			if (content instanceof JvmType) {
+				result.add(content);
 			}
 		}
-		JvmDeclaredType declaredType = EcoreUtil2.getContainerOfType(logicalContainer, JvmDeclaredType.class);
-		if (declaredType != null) {
-			while(declaredType.getDeclaringType() != null) {
-				declaredType = declaredType.getDeclaringType();
-			}
-		} else {
-			throw new IllegalStateException("logicalContainer is not contained in a declaredType");
+		if (result.isEmpty()) {
+			return super.getEntryPoints(object);
 		}
-		return declaredType;
+		return result;
 	}
 
 }

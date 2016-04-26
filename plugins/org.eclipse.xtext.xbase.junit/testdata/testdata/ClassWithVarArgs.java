@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
+@SuppressWarnings("unused")
 public class ClassWithVarArgs {
 
 	private boolean varArgConstructor;
@@ -88,6 +89,16 @@ public class ClassWithVarArgs {
 	
 	public String logInfo2(String msg, Object... args) {
 		return String.format("logInfo2(%s, args...)", msg);
+	}
+	
+	private List<String> values;
+	
+	public void setValues(String ... values) {
+		this.values = stringsToList(values);
+	}
+	
+	public List<String> getValues() {
+		return values;
 	}
 	
 }

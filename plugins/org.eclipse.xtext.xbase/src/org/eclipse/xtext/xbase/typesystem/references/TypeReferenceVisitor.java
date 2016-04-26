@@ -9,12 +9,9 @@ package org.eclipse.xtext.xbase.typesystem.references;
 
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public abstract class TypeReferenceVisitor {
 
 	protected void doVisitTypeReference(LightweightTypeReference reference) {
@@ -22,6 +19,10 @@ public abstract class TypeReferenceVisitor {
 	}
 	
 	protected void doVisitAnyTypeReference(AnyTypeReference reference) {
+		doVisitTypeReference(reference);
+	}
+	
+	protected void doVisitUnknownTypeReference(UnknownTypeReference reference) {
 		doVisitTypeReference(reference);
 	}
 	
@@ -50,9 +51,17 @@ public abstract class TypeReferenceVisitor {
 	protected void doVisitFunctionTypeReference(FunctionTypeReference reference) {
 		doVisitParameterizedTypeReference(reference);
 	}
+	
+	protected void doVisitInnerFunctionTypeReference(InnerFunctionTypeReference reference) {
+		doVisitFunctionTypeReference(reference);
+	}
 
 	protected void doVisitParameterizedTypeReference(ParameterizedTypeReference reference) {
 		doVisitTypeReference(reference);
+	}
+	
+	protected void doVisitInnerTypeReference(InnerTypeReference reference) {
+		doVisitParameterizedTypeReference(reference);
 	}
 
 	protected void doVisitUnboundTypeReference(UnboundTypeReference reference) {

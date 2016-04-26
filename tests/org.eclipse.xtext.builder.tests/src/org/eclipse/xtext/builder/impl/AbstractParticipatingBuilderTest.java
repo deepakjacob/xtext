@@ -9,7 +9,6 @@ package org.eclipse.xtext.builder.impl;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.xtext.builder.IXtextBuilderParticipant;
 import org.eclipse.xtext.builder.tests.Activator;
 import org.eclipse.xtext.builder.tests.DelegatingBuilderParticipant;
@@ -25,7 +24,6 @@ public abstract class AbstractParticipatingBuilderTest extends AbstractBuilderTe
 	private boolean logging = false;
 	protected int invocationCount = 0;
 	private IBuildContext context;
-	private OperationCanceledException cancelWith;
 	
 	@Override
 	public void setUp() throws Exception {
@@ -45,13 +43,11 @@ public abstract class AbstractParticipatingBuilderTest extends AbstractBuilderTe
 		super.tearDown();
 	}
 	
+	@Override
 	public void build(IBuildContext context, IProgressMonitor monitor) throws CoreException {
 		if (logging) {
 			invocationCount++;
 			this.context = context;
-		}
-		if (cancelWith != null) {
-			throw cancelWith;
 		}
 	}
 	
@@ -79,10 +75,6 @@ public abstract class AbstractParticipatingBuilderTest extends AbstractBuilderTe
 	public void reset() {
 		invocationCount = 0;
 		context = null;
-		cancelWith = null;
 	}
 
-	public void cancel(OperationCanceledException cancelWith) {
-		this.cancelWith = cancelWith;
-	}
 }

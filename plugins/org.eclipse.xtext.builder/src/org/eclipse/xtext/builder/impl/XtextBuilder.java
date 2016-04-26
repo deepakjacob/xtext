@@ -7,9 +7,13 @@
  *******************************************************************************/
 package org.eclipse.xtext.builder.impl;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.eclipse.core.internal.jobs.InternalJob;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
@@ -20,21 +24,25 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.xtext.builder.IXtextBuilderParticipant.BuildType;
 import org.eclipse.xtext.builder.builderState.IBuilderState;
+import org.eclipse.xtext.builder.debug.IBuildLogger;
 import org.eclipse.xtext.resource.IResourceDescription.Delta;
+import org.eclipse.xtext.resource.IResourceServiceProvider;
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider;
+import org.eclipse.xtext.service.OperationCanceledError;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.ui.XtextProjectHelper;
 import org.eclipse.xtext.ui.resource.IResourceSetProvider;
-import org.eclipse.xtext.util.internal.StopWatches;
-import org.eclipse.xtext.util.internal.StopWatches.StoppedTask;
+import org.eclipse.xtext.util.internal.Stopwatches;
+import org.eclipse.xtext.util.internal.Stopwatches.StoppedTask;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 /**
@@ -57,6 +65,9 @@ public class XtextBuilder extends IncrementalProjectBuilder {
 
 	@Inject
 	private IResourceSetProvider resourceSetProvider;
+	
+	@Inject
+	private IResourceServiceProvider.Registry resourceServiceProvideRegistry;
 
 	@Inject
 	private RegistryBuilderParticipant participant;
@@ -64,16 +75,63 @@ public class XtextBuilder extends IncrementalProjectBuilder {
 	@Inject
 	private QueuedBuildData queuedBuildData;
 
+	@Inject
+	private IBuildLogger buildLogger;
+	
+	@Inject 
+	private OperationCanceledManager operationCanceledManager;
+	
 	public IResourceSetProvider getResourceSetProvider() {
 		return resourceSetProvider;
 	}
+	
+	/**
+	 * This is a fix for https://bugs.eclipse.org/bugs/show_bug.cgi?id=459525
+	 * 
+	 * It turns a specific job from egit into a system job, so it won't interrupt the autobuild.
+	 * 
+	 */
+	private final static JobChangeAdapter MAKE_EGIT_JOB_SYSTEM = new JobChangeAdapter() {
+		private boolean fixedTheJob = false;
+		@Override
+		public void scheduled(IJobChangeEvent event) {
+			if (fixedTheJob)
+				return;
+			Job job = event.getJob();
+			if (job == null)
+				return;
+			Class<? extends Job> jobClazz = job.getClass();
+			if (!job.isSystem() && jobClazz.getName().equals("org.eclipse.egit.core.internal.indexdiff.IndexDiffCacheEntry$5")) {
+				try {
+					Field field = InternalJob.class.getDeclaredField("flags");
+					field.setAccessible(true);
+					field.set(job, ((Integer)field.get(job)).intValue() | 0x0100 /*InternalJob.M_SYSTEM*/);
+					if (log.isInfoEnabled()) {
+						log.info("Made job '"+job+"' a system job.");
+					}
+					fixedTheJob = true;
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+		}
+	};
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
+	protected IProject[] build(final int kind, Map args, IProgressMonitor monitor) throws CoreException {
+		if (IBuildFlag.FORGET_BUILD_STATE_ONLY.isSet(args)) {
+			forgetLastBuiltState();
+			return getProject().getReferencedProjects();
+		}
+		Job.getJobManager().addJobChangeListener(MAKE_EGIT_JOB_SYSTEM);
 		long startTime = System.currentTimeMillis();
-		StoppedTask task = StopWatches.forTask("build");
+		StoppedTask task = Stopwatches.forTask(String.format("XtextBuilder.build[%s]", getKindAsString(kind)));
 		try {
+			queuedBuildData.createCheckpoint();
+			if(shouldCancelBuild(kind)) {
+				throw new OperationCanceledException("Build has been interrupted");
+			}
 			task.start();
 			if (monitor != null) {
 				final String taskName = Messages.XtextBuilder_Building + getProject().getName() + ": "; //$NON-NLS-1$
@@ -81,6 +139,14 @@ public class XtextBuilder extends IncrementalProjectBuilder {
 					@Override
 					public void subTask(String name) {
 						super.subTask(taskName + name);
+					}
+					
+					@Override
+					public boolean isCanceled() {
+						boolean shouldCancelBuild = shouldCancelBuild(kind);
+						if (shouldCancelBuild)
+							buildLogger.log("interrupted");
+						return shouldCancelBuild || super.isCanceled();
 					}
 				};
 			}
@@ -99,17 +165,67 @@ public class XtextBuilder extends IncrementalProjectBuilder {
 			log.error(e.getMessage(), e);
 			throw e;
 		} catch (OperationCanceledException e) {
-			forgetLastBuiltState();
-			throw e;
+			handleCanceled(e);
+		} catch (OperationCanceledError err) {
+			handleCanceled(err);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+			buildLogger.log(e.getClass().getSimpleName() + " while building " + getProject().getName() + ": " + e.getMessage() + " (see logs for details)");
+			forgetLastBuiltState();
 		} finally {
+			queuedBuildData.discardCheckpoint();
 			if (monitor != null)
 				monitor.done();
-			log.info("Build " + getProject().getName() + " in " + (System.currentTimeMillis() - startTime) + " ms");
+			String message = "Build " + getProject().getName() + " in " + (System.currentTimeMillis() - startTime) + " ms";
+			log.info(message);
+			buildLogger.log(message);
 			task.stop();
+			Job.getJobManager().removeJobChangeListener(MAKE_EGIT_JOB_SYSTEM);
 		}
 		return getProject().getReferencedProjects();
+	}
+
+	private boolean shouldCancelBuild(int buildKind) {
+		return buildKind == IncrementalProjectBuilder.AUTO_BUILD && isInterrupted();
+	}
+
+	private void handleCanceled(Throwable t) {
+		// If the cancelation happens due to an external interruption, don't pass an 
+		// OperationCanceledException on to the BuildManager as it would force a full 
+		// build in the next round. Instead, save the resource deltas to be reprocessed 
+		// next time.
+		// @see https://bugs.eclipse.org/bugs/show_bug.cgi?id=454716
+		if(!isInterrupted())
+			operationCanceledManager.propagateIfCancelException(t);
+		buildLogger.log("Build interrupted.");
+		queuedBuildData.rollback();
+		doRememberLastBuiltState();
+	}
+	
+	private void doRememberLastBuiltState() {
+		try {
+			Method method = getClass().getMethod("rememberLastBuiltState");
+			method.invoke(this);
+		} catch (Exception e) {
+			// not available prior to Eclipse 3.7. Sorry: full build next time
+			throw new OperationCanceledException();
+		}
+	}
+	
+	private String getKindAsString(int kind) {
+		if (kind == FULL_BUILD) {
+			return "FULL";
+		}
+		if (kind == CLEAN_BUILD) {
+			return "CLEAN";
+		}
+		if (kind == INCREMENTAL_BUILD) {
+			return "INCREMENTAL";
+		}
+		if (kind == AUTO_BUILD) {
+			return "AUTO";
+		}
+		return "UNKOWN:" + kind;
 	}
 
 	/**
@@ -120,9 +236,14 @@ public class XtextBuilder extends IncrementalProjectBuilder {
 	protected void incrementalBuild(IResourceDelta delta, final IProgressMonitor monitor) throws CoreException {
 		final SubMonitor progress = SubMonitor.convert(monitor, Messages.XtextBuilder_CollectingResources, 10);
 		progress.subTask(Messages.XtextBuilder_CollectingResources);
+		
+		if (queuedBuildData.needRebuild(getProject())) {
+			needRebuild();
+		}
 
 		final ToBeBuilt toBeBuilt = new ToBeBuilt();
 		IResourceDeltaVisitor visitor = new IResourceDeltaVisitor() {
+			@Override
 			public boolean visit(IResourceDelta delta) throws CoreException {
 				if (progress.isCanceled())
 					throw new OperationCanceledException();
@@ -152,24 +273,28 @@ public class XtextBuilder extends IncrementalProjectBuilder {
 	 *        reported and that the operation cannot be cancelled.
 	 */
 	protected void doBuild(ToBeBuilt toBeBuilt, IProgressMonitor monitor, BuildType type) throws CoreException {
+		buildLogger.log("Building " + getProject().getName());
 		// return early if there's nothing to do.
 		// we reuse the isEmpty() impl from BuildData assuming that it doesnT access the ResourceSet which is still null 
 		// and would be expensive to create.
-		if (new BuildData(getProject().getName(), null, toBeBuilt, queuedBuildData).isEmpty())
+		boolean indexingOnly = type == BuildType.RECOVERY;
+		if (new BuildData(getProject().getName(), null, toBeBuilt, queuedBuildData, indexingOnly).isEmpty())
 			return;
-		
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 		ResourceSet resourceSet = getResourceSetProvider().get(getProject());
 		resourceSet.getLoadOptions().put(ResourceDescriptionsProvider.NAMED_BUILDER_SCOPE, Boolean.TRUE);
-		if (resourceSet instanceof ResourceSetImpl) {
-			((ResourceSetImpl) resourceSet).setURIResourceMap(Maps.<URI, Resource> newHashMap());
-		}
-		BuildData buildData = new BuildData(getProject().getName(), resourceSet, toBeBuilt, queuedBuildData);
+		BuildData buildData = new BuildData(getProject().getName(), resourceSet, toBeBuilt, queuedBuildData, indexingOnly);
 		ImmutableList<Delta> deltas = builderState.update(buildData, progress.newChild(1));
-		if (participant != null) {
-			participant.build(new BuildContext(this, resourceSet, deltas, type),
+		if (participant != null && !indexingOnly) {
+			SourceLevelURICache sourceLevelURIs = buildData.getSourceLevelURICache();
+			Set<URI> sources = sourceLevelURIs.getSources();
+			participant.build(new BuildContext(this, resourceSet, deltas, sources, type),
 					progress.newChild(1));
-			getProject().getWorkspace().checkpoint(false);
+			try {
+				getProject().getWorkspace().checkpoint(false);
+			} catch(NoClassDefFoundError e) { // guard against broken Eclipse installations / bogus project configuration
+				log.error(e.getMessage(), e);
+			}
 		} else {
 			progress.worked(1);
 		}
@@ -213,6 +338,9 @@ public class XtextBuilder extends IncrementalProjectBuilder {
 		SubMonitor progress = SubMonitor.convert(monitor, 10);
 		try {
 			ToBeBuilt toBeBuilt = toBeBuiltComputer.removeProject(getProject(), progress.newChild(2));
+			if (monitor.isCanceled()) {
+				throw new OperationCanceledException();
+			}
 			doClean(toBeBuilt, progress.newChild(8));
 		} finally {
 			if (monitor != null)
@@ -229,9 +357,12 @@ public class XtextBuilder extends IncrementalProjectBuilder {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
 		ImmutableList<Delta> deltas = builderState.clean(toBeBuilt.getToBeDeleted(), progress.newChild(1));
 		if (participant != null) {
+			Set<URI> sourceURIs = new SourceLevelURICache().getSourcesFrom(toBeBuilt.getToBeDeleted(), resourceServiceProvideRegistry);
+			
 			participant.build(new BuildContext(this, 
 					getResourceSetProvider().get(getProject()), 
 					deltas,
+					sourceURIs,
 					BuildType.CLEAN), 
 					progress.newChild(1));
 		} else {

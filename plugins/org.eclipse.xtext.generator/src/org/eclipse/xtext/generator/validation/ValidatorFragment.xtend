@@ -10,17 +10,21 @@ package org.eclipse.xtext.generator.validation
 
 import com.google.inject.Inject
 import java.util.Set
+import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.GeneratedMetamodel
 import org.eclipse.xtext.Grammar
 import org.eclipse.xtext.generator.BindFactory
 import org.eclipse.xtext.generator.Binding
 import org.eclipse.xtext.generator.Generator
 import org.eclipse.xtext.generator.IInheriting
+import org.eclipse.xtext.generator.IStubGenerating
+import org.eclipse.xtext.generator.Naming
 import org.eclipse.xtext.generator.Xtend2ExecutionContext
 import org.eclipse.xtext.generator.Xtend2GeneratorFragment
 
 import static org.eclipse.xtext.GrammarUtil.*
-import javax.inject.Named
+
+import static extension org.eclipse.xtext.generator.IInheriting.Util.*
 
 /**
  * Generates an Xtend-based model validator.
@@ -28,17 +32,17 @@ import javax.inject.Named
  * @author Jan Koehnlein
  * @since 2.4
  */
-class ValidatorFragment extends Xtend2GeneratorFragment implements IInheriting {
+class ValidatorFragment extends Xtend2GeneratorFragment implements IInheriting, IStubGenerating {
+
+	@Inject extension Naming
 	
 	@Inject extension ValidatorNaming
 	
-	@Property boolean inheritImplementation
+	@Accessors boolean inheritImplementation = true
 
-	@Property boolean generateXtendStub
+	@Accessors boolean generateStub = true
 
 	@Inject Grammar grammar
-	
-	@Inject@Named("fileHeader") String fileHeader
 	
 	val composedChecks = <String>newArrayList
 	
@@ -48,7 +52,7 @@ class ValidatorFragment extends Xtend2GeneratorFragment implements IInheriting {
 	
 	override Set<Binding> getGuiceBindingsRt(Grammar grammar) {
 			val bindFactory = new BindFactory()
-		if(generateXtendStub) {
+		if(generateStub) {
 			bindFactory.addTypeToTypeEagerSingleton(
 					grammar.validatorName,
 					grammar.validatorName)
@@ -61,16 +65,14 @@ class ValidatorFragment extends Xtend2GeneratorFragment implements IInheriting {
 	}
 	
 	override generate(Xtend2ExecutionContext ctx) {
-		ctx.writeFile(Generator::SRC_GEN, abstractValidatorName.asPath + ".java", '''
-			/*
-			 «fileHeader»
-			 */
+		ctx.writeFile(Generator.SRC_GEN, abstractValidatorName.asPath + ".java", '''
+			«fileHeader»
 			package «abstractValidatorName.packageName»;
 			
+			«annotationImports»
 			import java.util.ArrayList;
 			import java.util.List;
 			import org.eclipse.emf.ecore.EPackage;
-			import «getValidatorSuperClassName(isInheritImplementation)»;
 			«IF !composedChecks.isEmpty»
 			import org.eclipse.xtext.validation.ComposedChecks;
 			«ENDIF»
@@ -78,11 +80,11 @@ class ValidatorFragment extends Xtend2GeneratorFragment implements IInheriting {
 			«IF !composedChecks.isEmpty»
 			@ComposedChecks(validators= {«FOR validator: composedChecks SEPARATOR ", "»«validator».class«ENDFOR»})
 			«ENDIF»
-			public class «abstractValidatorName.toSimpleName» extends «getValidatorSuperClassName(isInheritImplementation).toSimpleName» {
+			«classAnnotations»public class «abstractValidatorName.toSimpleName» extends «getValidatorSuperClassName(isInheritImplementation)» {
 			
 				@Override
 				protected List<EPackage> getEPackages() {
-				    List<EPackage> result = new ArrayList<EPackage>();
+				    List<EPackage> result = new ArrayList<EPackage>(«IF isInheritImplementation && grammar.nonTerminalsSuperGrammar !== null»super.getEPackages()«ENDIF»);
 				    «FOR e: generatedPackagesToValidate»
 				    result.add(«e.generatedEPackageName».eINSTANCE);
 				    «ENDFOR»
@@ -93,28 +95,27 @@ class ValidatorFragment extends Xtend2GeneratorFragment implements IInheriting {
 				}
 			}
 		''')
-		if(generateXtendStub) {
-			ctx.writeFile(Generator::SRC, grammar.validatorName.asPath + '.xtend', '''
-				/*
-				 «fileHeader»
-				 */
+		if(generateStub) {
+			ctx.writeFile(Generator.SRC, grammar.validatorName.asPath + '.xtend', '''
+				«fileHeader»
 				package «grammar.validatorName.packageName»
+				
 				//import org.eclipse.xtext.validation.Check
 				
 				/**
-				 * Custom validation rules. 
+				 * This class contains custom validation rules. 
 				 *
-				 * see http://www.eclipse.org/Xtext/documentation.html#validation
+				 * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#validation
 				 */
 				class «grammar.validatorName.toSimpleName» extends «abstractValidatorName.toSimpleName()» {
 
 				//  public static val INVALID_NAME = 'invalidName'
-
+				//
 				//	@Check
 				//	def checkGreetingStartsWithCapital(Greeting greeting) {
-				//		if (!Character::isUpperCase(greeting.name.charAt(0))) {
+				//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
 				//			warning('Name should start with a capital', 
-				//					MyDslPackage$Literals::GREETING__NAME,
+				//					MyDslPackage.Literals.GREETING__NAME,
 				//					INVALID_NAME)
 				//		}
 				//	}
@@ -124,13 +125,13 @@ class ValidatorFragment extends Xtend2GeneratorFragment implements IInheriting {
 	}
 
 	def getGeneratedPackagesToValidate() {
-		grammar.metamodelDeclarations.filter(typeof(GeneratedMetamodel)).map[EPackage]
+		grammar.metamodelDeclarations.filter(GeneratedMetamodel).map[EPackage]
 	}
 
 	def protected getRegistryPackagesToValidate() {
 		val packages = allEPackagesToValidate(grammar)
 		packages.removeAll(
-			allMetamodelDeclarations(grammar).filter(typeof(GeneratedMetamodel)).map[EPackage].toList
+			allMetamodelDeclarations(grammar).filter(GeneratedMetamodel).map[EPackage].toList
 		)
 		packages
 	}

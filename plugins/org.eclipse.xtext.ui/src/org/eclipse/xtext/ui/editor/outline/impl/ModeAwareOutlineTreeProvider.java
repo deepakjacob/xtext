@@ -9,24 +9,30 @@ package org.eclipse.xtext.ui.editor.outline.impl;
 
 import java.util.List;
 
+import org.eclipse.xtext.ui.editor.outline.IOutlineTreeProvider;
+
 /**
  * @author Jan Koehnlein - Initial contribution and API
  * @since 2.2
  */
-public abstract class ModeAwareOutlineTreeProvider extends DefaultOutlineTreeProvider {
+public abstract class ModeAwareOutlineTreeProvider extends DefaultOutlineTreeProvider implements IOutlineTreeProvider.ModeAware {
 
 	private int currentModeIndex = 0;
 	
+	@Override
 	public abstract List<OutlineMode> getOutlineModes();
 	
+	@Override
 	public OutlineMode getCurrentMode() {
 		return getOutlineModes().get(currentModeIndex);
 	}
 	
+	@Override
 	public OutlineMode getNextMode() {
 		return getOutlineModes().get((currentModeIndex + 1) % getOutlineModes().size());
 	}
 	
+	@Override
 	public void setCurrentMode(OutlineMode outlineMode) {
 		int newIndex = getOutlineModes().indexOf(outlineMode);
 		if(newIndex != -1)

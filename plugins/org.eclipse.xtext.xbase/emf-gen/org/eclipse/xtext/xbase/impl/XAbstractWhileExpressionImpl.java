@@ -25,11 +25,11 @@ import org.eclipse.xtext.xbase.XbasePackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XAbstractWhileExpressionImpl#getPredicate <em>Predicate</em>}</li>
  *   <li>{@link org.eclipse.xtext.xbase.impl.XAbstractWhileExpressionImpl#getBody <em>Body</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -7,9 +7,6 @@ a * Copyright (c) 2012 itemis AG (http://www.itemis.eu) and others.
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.xtext.xbase.typesystem.conformance.ConformanceHint;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
@@ -17,39 +14,32 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class RootNoExpectation extends AbstractRootTypeExpectation {
 
-	public RootNoExpectation(AbstractTypeComputationState state) {
+	private boolean voidAllowed;
+
+	public RootNoExpectation(AbstractTypeComputationState state, boolean voidAllowed) {
 		super(state);
+		this.voidAllowed = voidAllowed;
 	}
 
-	@Nullable
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getExpectedType() {
 		return null;
 	}
 
+	@Override
 	public boolean isNoTypeExpectation() {
-		return true;
+		return voidAllowed;
 	}
 	
 	@Override
 	public boolean isVoidTypeAllowed() {
-		return true;
+		return voidAllowed;
 	}
 	
-//	@Override
-//	public void acceptActualType(LightweightTypeReference type, ConformanceHint... hints) {
-//		// TODO resolve all unbound type parameters
-////		AbstractTypeComputationState state = getState();
-////		if (hint contains RAW) {
-////		UnboundTypeParameterSubstitutor substitutor = new UnboundTypeParameterSubstitutor(
-////				Collections.<JvmTypeParameter, LightweightTypeReference>emptyMap(), state.getServices());
-////		LightweightTypeReference substitute = substitutor.substitute(type);
-////		}
-//		super.acceptActualType(type, hints);
-//	}
-	
+	@Override
 	public RootNoExpectation copyInto(ITypeReferenceOwner referenceOwner) {
 		return this;
 	}

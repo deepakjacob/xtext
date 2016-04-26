@@ -37,6 +37,7 @@ public class ResourceValidatorImplTest extends AbstractXtextTests {
 		with(new LangATestLanguageStandaloneSetup());
 		EValidator.Registry.INSTANCE.put(LangATestLanguagePackage.eINSTANCE, new EValidator(){
 
+			@Override
 			public boolean validate(EObject eObject, DiagnosticChain diagnostics, Map<Object, Object> context) {
 				if (eObject instanceof Type) {
 					String name = ((Type)eObject).getName();
@@ -48,11 +49,13 @@ public class ResourceValidatorImplTest extends AbstractXtextTests {
 				return true;
 			}
 
+			@Override
 			public boolean validate(EClass eClass, EObject eObject, DiagnosticChain diagnostics,
 					Map<Object, Object> context) {
 				return validate(eObject,diagnostics,context);
 			}
 
+			@Override
 			public boolean validate(EDataType eDataType, Object value, DiagnosticChain diagnostics,
 					Map<Object, Object> context) {
 				return false;
@@ -70,7 +73,8 @@ public class ResourceValidatorImplTest extends AbstractXtextTests {
 		XtextResource resource = getResourceAndExpect(new StringInputStream("type foo extends Bar"), 1);
 		List<Issue> list = getValidator().validate(resource, CheckMode.NORMAL_AND_FAST, null);
 		assertEquals(1,list.size());
-		assertTrue(list.get(0).isSyntaxError());
+		assertTrue(!list.get(0).isSyntaxError());
+		assertEquals(org.eclipse.xtext.diagnostics.Diagnostic.LINKING_DIAGNOSTIC, list.get(0).getCode());
 	}
 	
 	@Test public void testSemanticError() throws Exception {

@@ -89,16 +89,15 @@ public class JavaValidatorFragment extends AbstractInheritingGeneratorFragment {
 	}
 
 	public static String getValidatorName(Grammar g, String prefix, Naming n) {
-		return n.basePackageRuntime(g) + ".validation." + prefix + GrammarUtil.getName(g) + "JavaValidator";
+		return n.basePackageRuntime(g) + ".validation." + prefix + GrammarUtil.getSimpleName(g) + "JavaValidator";
 	}
 
 	protected String getValidatorSuperClassName(Grammar grammar) {
-		Grammar superGrammar = getSuperGrammar(grammar);
-		if (superGrammar != null) {
-			return getSuperClassName(getValidatorName(superGrammar, "", getNaming()),
-					getDefaultValidatorSuperClassName());
-		}
-		return getDefaultValidatorSuperClassName();
+		Grammar superGrammar = Util.getNonTerminalsSuperGrammar(grammar);
+		if (isInheritImplementation() && superGrammar != null) 
+			return getValidatorName(superGrammar, "", getNaming());
+		else 
+			return getDefaultValidatorSuperClassName();
 	}
 
 	protected String getDefaultValidatorSuperClassName() {

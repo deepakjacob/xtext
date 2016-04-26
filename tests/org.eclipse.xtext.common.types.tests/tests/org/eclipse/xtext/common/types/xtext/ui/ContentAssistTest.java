@@ -8,12 +8,14 @@
 package org.eclipse.xtext.common.types.xtext.ui;
 
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.xtext.ISetup;
 import org.eclipse.xtext.common.types.access.jdt.IJavaProjectProvider;
 import org.eclipse.xtext.common.types.access.jdt.MockJavaProjectProvider;
 import org.eclipse.xtext.common.types.tests.AbstractActivator;
 import org.eclipse.xtext.common.types.xtext.ui.ui.ContentAssistTestLanguageUiModule;
 import org.eclipse.xtext.junit4.ui.AbstractContentAssistProcessorTest;
+import org.eclipse.xtext.junit4.ui.ContentAssistProcessorTestBuilder;
 import org.eclipse.xtext.ui.shared.SharedStateModule;
 import org.eclipse.xtext.util.Modules2;
 import org.junit.BeforeClass;
@@ -25,6 +27,9 @@ import com.google.inject.Injector;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
+ */
+/**
+ * @author dhuebner - Initial contribution and API
  */
 public class ContentAssistTest extends AbstractContentAssistProcessorTest {
 
@@ -50,30 +55,63 @@ public class ContentAssistTest extends AbstractContentAssistProcessorTest {
 		};
 	}
 	
+	/**
+	 * The same as with JdtBasedTypeFactory.isJdtGreaterOrEqual(new Version(3.6.0))
+	 * 
+	 */
 	protected boolean isJDT_3_6_orLater() {
-		Version jdtVersion = JavaCore.getPlugin().getBundle().getVersion();
-		if (jdtVersion.compareTo(new Version(3, 6, 0)) >= 0) {
-			return true;
+		Version installed = JavaCore.getPlugin().getBundle().getVersion();
+		int minMajor = 3;
+		int minMinor = 6;
+		if (installed.getMajor() < minMajor) {
+			return false;
 		}
-		return false;
+		if (installed.getMajor() == minMajor && installed.getMinor() < minMinor) {
+			return false;
+		}
+		return true;
 	}
 	
-	@Test public void testDefaultArrayList_01() throws Exception {
-		//TODO use our own types, since ArrayList has changed in Java7
-		newBuilder().append("default ArrayLis").assertText("java.util.ArrayList", "com.google.common.collect.ArrayListMultimap");
+	protected boolean isJava6(){
+		return System.getProperty("java.version","1.6.0").startsWith("1.6");
 	}
 	
-	@Test public void testDefaultArrayList_02() throws Exception {
-		//TODO use our own types, since ArrayList has changed in Java7
-		newBuilder().append("import java.util.* default ArrayLis").assertText("ArrayList", "com.google.common.collect.ArrayListMultimap");
+	@Test
+	public void testDefaultArrayList_01() throws Exception {
+		//FIXME use our own types, since ArrayList has changed in Java7 and Java8
+		ContentAssistProcessorTestBuilder builder = newBuilder().append("default ArrayLis");
+		if (isJava6()) {
+			builder.assertText("java.util.ArrayList", "com.google.common.collect.ArrayListMultimap");
+		} else {
+			builder.assertText("java.util.ArrayList", "java.util.ArrayList.Itr", "java.util.ArrayList.ListItr",
+					"java.util.ArrayList.SubList", "com.google.common.collect.ArrayListMultimap");
+		}
+	}
+
+	@Test
+	public void testDefaultArrayList_02() throws Exception {
+		//FIXME use our own types, since ArrayList has changed in Java7 and Java8
+		ContentAssistProcessorTestBuilder builder = newBuilder().append("import java.util.* default ArrayLis");
+		if (isJava6()) {
+			builder.assertText("ArrayList", "com.google.common.collect.ArrayListMultimap");
+		} else {
+			builder.assertText("ArrayList", "ArrayList.Itr", "ArrayList.ListItr", "ArrayList.SubList",
+					"com.google.common.collect.ArrayListMultimap");
+		}
 	}
 
 	@Test public void testCustomArrayList_01() throws Exception {
-		newBuilder().append("custom ArrayLis").assertText("java.util.ArrayList", "com.google.common.collect.ArrayListMultimap");
+		newBuilder().append("custom ArrayLis").assertText(
+				"java.util.ArrayList",
+				"java.util.Arrays.ArrayList",
+				"com.google.common.collect.ArrayListMultimap");
 	}
 	
 	@Test public void testCustomArrayList_02() throws Exception {
-		newBuilder().append("import java.util.* custom ArrayLis").assertText("ArrayList", "com.google.common.collect.ArrayListMultimap");
+		newBuilder().append("import java.util.* custom ArrayLis").assertText(
+				"ArrayList",
+				"Arrays.ArrayList",
+				"com.google.common.collect.ArrayListMultimap");
 	}
 	
 	@Test public void testDefaultBlockingQueue_01() throws Exception {
@@ -102,16 +140,20 @@ public class ContentAssistTest extends AbstractContentAssistProcessorTest {
 	
 	@Test public void testSubtypeArrayList_01() throws Exception {
 		if (isJDT_3_6_orLater())
-			newBuilder().append("subtype ArrayLis").assertText("java.util.ArrayList");
-		else // hierarchy scope is broken in 3.5.2 thus we accept all types with valid prefix
-			newBuilder().append("subtype ArrayLis").assertText("java.util.ArrayList", "com.google.common.collect.ArrayListMultimap");
+			newBuilder().append("subtype ArrayLis").assertText("java.util.ArrayList", "java.util.Arrays.ArrayList");
 	}
 	
 	@Test public void testSubtypeArrayList_02() throws Exception {
 		if (isJDT_3_6_orLater())
-			newBuilder().append("import java.util.* subtype ArrayLis").assertText("ArrayList");
-		else // hierarchy scope is broken in 3.5.2 thus we accept all types with valid prefix
-			newBuilder().append("import java.util.* subtype ArrayLis").assertText("ArrayList", "com.google.common.collect.ArrayListMultimap");
+			newBuilder().append("import java.util.* subtype ArrayLis").assertText("ArrayList", "Arrays.ArrayList");
+	}
+	
+	@Test public void testSubtypeHashSet_01() throws Exception {
+		newBuilder().append("subtype HashSe").assertText("java.util.HashSet");
+	}
+	
+	@Test public void testSubtypeHashSet_02() throws Exception {
+		newBuilder().append("import java.util.* subtype HashSe").assertText("HashSet");
 	}
 
 	@Test public void testSubtypeBlockingQueue_01() throws Exception {
@@ -124,6 +166,19 @@ public class ContentAssistTest extends AbstractContentAssistProcessorTest {
 	
 	@Test public void testSubtypeBlockingQueue_03() throws Exception {
 		newBuilder().append("import java.* subtype concurrent.BlockingQ").assertText("util.concurrent.BlockingQueue");
+	}
+	
+	/**
+	 * see https://bugs.eclipse.org/bugs/show_bug.cgi?id=438191
+	 */
+	@Test public void testSubtypeProposals() throws Exception {
+		if (isJDT_3_6_orLater()) {
+			ICompletionProposal[] proposals = newBuilder().append("import java.util.* subtype I").computeCompletionProposals();
+			for (ICompletionProposal iCompletionProposal : proposals) {
+				String displayString = iCompletionProposal.getDisplayString();
+				assertFalse(displayString, displayString.contains(Iterable.class.getSimpleName()));
+			}
+		}
 	}
 	
 	@Test public void testMap_01() throws Exception {

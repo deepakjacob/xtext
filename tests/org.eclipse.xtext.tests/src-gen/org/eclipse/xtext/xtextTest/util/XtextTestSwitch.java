@@ -1,14 +1,11 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.xtextTest.util;
 
-import java.util.List;
-
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+
+import org.eclipse.emf.ecore.util.Switch;
 
 import org.eclipse.xtext.xtextTest.*;
 
@@ -25,7 +22,7 @@ import org.eclipse.xtext.xtextTest.*;
  * @see org.eclipse.xtext.xtextTest.XtextTestPackage
  * @generated
  */
-public class XtextTestSwitch<T>
+public class XtextTestSwitch<T> extends Switch<T>
 {
   /**
    * The cached model package
@@ -50,15 +47,17 @@ public class XtextTestSwitch<T>
   }
 
   /**
-   * Calls <code>caseXXX</code> for each class of the model until one returns a non null result; it yields that result.
+   * Checks whether this is a switch for the given package.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return the first non-null result returned by a <code>caseXXX</code> call.
+   * @param ePackage the package in question.
+   * @return whether this is a switch for the given package.
    * @generated
    */
-  public T doSwitch(EObject theEObject)
+  @Override
+  protected boolean isSwitchFor(EPackage ePackage)
   {
-    return doSwitch(theEObject.eClass(), theEObject);
+    return ePackage == modelPackage;
   }
 
   /**
@@ -68,29 +67,7 @@ public class XtextTestSwitch<T>
    * @return the first non-null result returned by a <code>caseXXX</code> call.
    * @generated
    */
-  protected T doSwitch(EClass theEClass, EObject theEObject)
-  {
-    if (theEClass.eContainer() == modelPackage)
-    {
-      return doSwitch(theEClass.getClassifierID(), theEObject);
-    }
-    else
-    {
-      List<EClass> eSuperTypes = theEClass.getESuperTypes();
-      return
-        eSuperTypes.isEmpty() ?
-          defaultCase(theEObject) :
-          doSwitch(eSuperTypes.get(0), theEObject);
-    }
-  }
-
-  /**
-   * Calls <code>caseXXX</code> for each class of the model until one returns a non null result; it yields that result.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the first non-null result returned by a <code>caseXXX</code> call.
-   * @generated
-   */
+  @Override
   protected T doSwitch(int classifierID, EObject theEObject)
   {
     switch (classifierID)
@@ -140,6 +117,13 @@ public class XtextTestSwitch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case XtextTestPackage.PARAMETER:
+      {
+        Parameter parameter = (Parameter)theEObject;
+        T result = caseParameter(parameter);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case XtextTestPackage.TYPE_REF:
       {
         TypeRef typeRef = (TypeRef)theEObject;
@@ -178,6 +162,13 @@ public class XtextTestSwitch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case XtextTestPackage.NAMED_ARGUMENT:
+      {
+        NamedArgument namedArgument = (NamedArgument)theEObject;
+        T result = caseNamedArgument(namedArgument);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case XtextTestPackage.ASSIGNMENT:
       {
         Assignment assignment = (Assignment)theEObject;
@@ -191,6 +182,14 @@ public class XtextTestSwitch<T>
         CrossReference crossReference = (CrossReference)theEObject;
         T result = caseCrossReference(crossReference);
         if (result == null) result = caseAbstractElement(crossReference);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case XtextTestPackage.GROUP:
+      {
+        Group group = (Group)theEObject;
+        T result = caseGroup(group);
+        if (result == null) result = caseAbstractElement(group);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -236,6 +235,14 @@ public class XtextTestSwitch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case XtextTestPackage.EOF:
+      {
+        EOF eof = (EOF)theEObject;
+        T result = caseEOF(eof);
+        if (result == null) result = caseAbstractElement(eof);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case XtextTestPackage.ENUM_RULE:
       {
         EnumRule enumRule = (EnumRule)theEObject;
@@ -260,11 +267,19 @@ public class XtextTestSwitch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case XtextTestPackage.GROUP:
+      case XtextTestPackage.CONDITIONAL_BRANCH:
       {
-        Group group = (Group)theEObject;
-        T result = caseGroup(group);
-        if (result == null) result = caseAbstractElement(group);
+        ConditionalBranch conditionalBranch = (ConditionalBranch)theEObject;
+        T result = caseConditionalBranch(conditionalBranch);
+        if (result == null) result = caseAbstractElement(conditionalBranch);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case XtextTestPackage.UNORDERED_GROUP:
+      {
+        UnorderedGroup unorderedGroup = (UnorderedGroup)theEObject;
+        T result = caseUnorderedGroup(unorderedGroup);
+        if (result == null) result = caseAbstractElement(unorderedGroup);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -377,6 +392,22 @@ public class XtextTestSwitch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>Parameter</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Parameter</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseParameter(Parameter object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>Type Ref</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -457,6 +488,22 @@ public class XtextTestSwitch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>Named Argument</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Named Argument</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseNamedArgument(NamedArgument object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>Assignment</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -484,6 +531,22 @@ public class XtextTestSwitch<T>
    * @generated
    */
   public T caseCrossReference(CrossReference object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Group</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Group</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseGroup(Group object)
   {
     return null;
   }
@@ -569,6 +632,22 @@ public class XtextTestSwitch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>EOF</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>EOF</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseEOF(EOF object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>Enum Rule</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -617,17 +696,33 @@ public class XtextTestSwitch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>Group</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Conditional Branch</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Group</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Conditional Branch</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseGroup(Group object)
+  public T caseConditionalBranch(ConditionalBranch object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Unordered Group</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Unordered Group</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseUnorderedGroup(UnorderedGroup object)
   {
     return null;
   }
@@ -659,6 +754,7 @@ public class XtextTestSwitch<T>
    * @see #doSwitch(org.eclipse.emf.ecore.EObject)
    * @generated
    */
+  @Override
   public T defaultCase(EObject object)
   {
     return null;

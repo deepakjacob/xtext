@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.assignmentFinderTest;
 
@@ -14,10 +11,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.serializer.assignmentFinderTest.KeywordVal#getKw <em>Kw</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.serializer.assignmentFinderTest.AssignmentFinderTestPackage#getKeywordVal()
  * @model

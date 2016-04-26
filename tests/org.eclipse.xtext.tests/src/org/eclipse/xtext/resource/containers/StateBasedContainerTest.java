@@ -45,12 +45,14 @@ public class StateBasedContainerTest extends ResourceDescriptionsBasedContainerT
 		return new StateBasedContainer(this, this);
 	}
 
+	@Override
 	public Collection<URI> getContents() {
 		if (simulateEmpty)
 			return Collections.emptyList();
 		return Collections.singleton(uri);
 	}
 
+	@Override
 	public boolean contains(URI uri) {
 		if (simulateEmpty)
 			return false;
@@ -61,7 +63,7 @@ public class StateBasedContainerTest extends ResourceDescriptionsBasedContainerT
 	@Test public void testBug352214() {
 		container.getResourceDescriptions(); // initialize uri map
 		ResourceDescriptionChangeEvent event = new ResourceDescriptionChangeEvent(Collections.<IResourceDescription.Delta>singletonList(
-				new ChangedResourceDescriptionDelta(resourceDescription, null)), null);
+				new ChangedResourceDescriptionDelta(resourceDescription, null)));
 		simulateEmpty = true;
 		container.descriptionsChanged(event);
 		assertEquals(0, container.getResourceDescriptionCount());

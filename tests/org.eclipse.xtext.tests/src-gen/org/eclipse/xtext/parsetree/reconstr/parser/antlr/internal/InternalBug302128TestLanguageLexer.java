@@ -35,15 +35,15 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         super(input,state);
 
     }
-    public String getGrammarFileName() { return "../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g"; }
+    public String getGrammarFileName() { return "InternalBug302128TestLanguage.g"; }
 
     // $ANTLR start "T__12"
     public final void mT__12() throws RecognitionException {
         try {
             int _type = T__12;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:11:7: ( '.' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:11:9: '.'
+            // InternalBug302128TestLanguage.g:11:7: ( '.' )
+            // InternalBug302128TestLanguage.g:11:9: '.'
             {
             match('.'); 
 
@@ -62,8 +62,8 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = T__13;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:12:7: ( '-' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:12:9: '-'
+            // InternalBug302128TestLanguage.g:12:7: ( '-' )
+            // InternalBug302128TestLanguage.g:12:9: '-'
             {
             match('-'); 
 
@@ -82,10 +82,10 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = RULE_VALUE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:210:12: ( ( '=' | '+=' | '-=' ) ( options {greedy=false; } : . )* '\\n' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:210:14: ( '=' | '+=' | '-=' ) ( options {greedy=false; } : . )* '\\n'
+            // InternalBug302128TestLanguage.g:210:12: ( ( '=' | '+=' | '-=' ) ( options {greedy=false; } : . )* '\\n' )
+            // InternalBug302128TestLanguage.g:210:14: ( '=' | '+=' | '-=' ) ( options {greedy=false; } : . )* '\\n'
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:210:14: ( '=' | '+=' | '-=' )
+            // InternalBug302128TestLanguage.g:210:14: ( '=' | '+=' | '-=' )
             int alt1=3;
             switch ( input.LA(1) ) {
             case '=':
@@ -112,14 +112,14 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
             switch (alt1) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:210:15: '='
+                    // InternalBug302128TestLanguage.g:210:15: '='
                     {
                     match('='); 
 
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:210:19: '+='
+                    // InternalBug302128TestLanguage.g:210:19: '+='
                     {
                     match("+="); 
 
@@ -127,7 +127,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
                     }
                     break;
                 case 3 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:210:24: '-='
+                    // InternalBug302128TestLanguage.g:210:24: '-='
                     {
                     match("-="); 
 
@@ -137,7 +137,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
             }
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:210:30: ( options {greedy=false; } : . )*
+            // InternalBug302128TestLanguage.g:210:30: ( options {greedy=false; } : . )*
             loop2:
             do {
                 int alt2=2;
@@ -153,7 +153,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:210:58: .
+            	    // InternalBug302128TestLanguage.g:210:58: .
             	    {
             	    matchAny(); 
 
@@ -182,11 +182,11 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = RULE_SL_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:212:17: ( '#' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:212:19: '#' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
+            // InternalBug302128TestLanguage.g:212:17: ( '#' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )? )
+            // InternalBug302128TestLanguage.g:212:19: '#' (~ ( ( '\\n' | '\\r' ) ) )* ( ( '\\r' )? '\\n' )?
             {
             match('#'); 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:212:23: (~ ( ( '\\n' | '\\r' ) ) )*
+            // InternalBug302128TestLanguage.g:212:23: (~ ( ( '\\n' | '\\r' ) ) )*
             loop3:
             do {
                 int alt3=2;
@@ -199,7 +199,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
                 switch (alt3) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:212:23: ~ ( ( '\\n' | '\\r' ) )
+            	    // InternalBug302128TestLanguage.g:212:23: ~ ( ( '\\n' | '\\r' ) )
             	    {
             	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='\t')||(input.LA(1)>='\u000B' && input.LA(1)<='\f')||(input.LA(1)>='\u000E' && input.LA(1)<='\uFFFF') ) {
             	        input.consume();
@@ -219,7 +219,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
                 }
             } while (true);
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:212:39: ( ( '\\r' )? '\\n' )?
+            // InternalBug302128TestLanguage.g:212:39: ( ( '\\r' )? '\\n' )?
             int alt5=2;
             int LA5_0 = input.LA(1);
 
@@ -228,9 +228,9 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
             }
             switch (alt5) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:212:40: ( '\\r' )? '\\n'
+                    // InternalBug302128TestLanguage.g:212:40: ( '\\r' )? '\\n'
                     {
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:212:40: ( '\\r' )?
+                    // InternalBug302128TestLanguage.g:212:40: ( '\\r' )?
                     int alt4=2;
                     int LA4_0 = input.LA(1);
 
@@ -239,7 +239,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
                     }
                     switch (alt4) {
                         case 1 :
-                            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:212:40: '\\r'
+                            // InternalBug302128TestLanguage.g:212:40: '\\r'
                             {
                             match('\r'); 
 
@@ -271,10 +271,10 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ID;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:214:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:214:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalBug302128TestLanguage.g:214:9: ( ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )* )
+            // InternalBug302128TestLanguage.g:214:11: ( '^' )? ( 'a' .. 'z' | 'A' .. 'Z' | '_' ) ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:214:11: ( '^' )?
+            // InternalBug302128TestLanguage.g:214:11: ( '^' )?
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -283,7 +283,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
             }
             switch (alt6) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:214:11: '^'
+                    // InternalBug302128TestLanguage.g:214:11: '^'
                     {
                     match('^'); 
 
@@ -301,7 +301,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
                 recover(mse);
                 throw mse;}
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:214:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
+            // InternalBug302128TestLanguage.g:214:40: ( 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' )*
             loop7:
             do {
                 int alt7=2;
@@ -314,7 +314,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
                 switch (alt7) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:
+            	    // InternalBug302128TestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
@@ -350,10 +350,10 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = RULE_INT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:216:10: ( ( '0' .. '9' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:216:12: ( '0' .. '9' )+
+            // InternalBug302128TestLanguage.g:216:10: ( ( '0' .. '9' )+ )
+            // InternalBug302128TestLanguage.g:216:12: ( '0' .. '9' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:216:12: ( '0' .. '9' )+
+            // InternalBug302128TestLanguage.g:216:12: ( '0' .. '9' )+
             int cnt8=0;
             loop8:
             do {
@@ -367,7 +367,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
                 switch (alt8) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:216:13: '0' .. '9'
+            	    // InternalBug302128TestLanguage.g:216:13: '0' .. '9'
             	    {
             	    matchRange('0','9'); 
 
@@ -399,10 +399,10 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = RULE_STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:13: ( ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalBug302128TestLanguage.g:218:13: ( ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' ) )
+            // InternalBug302128TestLanguage.g:218:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:15: ( '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
+            // InternalBug302128TestLanguage.g:218:15: ( '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"' | '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\'' )
             int alt11=2;
             int LA11_0 = input.LA(1);
 
@@ -420,10 +420,10 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
             }
             switch (alt11) {
                 case 1 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:16: '\"' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
+                    // InternalBug302128TestLanguage.g:218:16: '\"' ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )* '\"'
                     {
                     match('\"'); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:20: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\"' ) ) )*
+                    // InternalBug302128TestLanguage.g:218:20: ( '\\\\' . | ~ ( ( '\\\\' | '\"' ) ) )*
                     loop9:
                     do {
                         int alt9=3;
@@ -439,23 +439,15 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
                         switch (alt9) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:21: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalBug302128TestLanguage.g:218:21: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:66: ~ ( ( '\\\\' | '\"' ) )
+                    	    // InternalBug302128TestLanguage.g:218:28: ~ ( ( '\\\\' | '\"' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='!')||(input.LA(1)>='#' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -480,10 +472,10 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
                     }
                     break;
                 case 2 :
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:86: '\\'' ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
+                    // InternalBug302128TestLanguage.g:218:48: '\\'' ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )* '\\''
                     {
                     match('\''); 
-                    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:91: ( '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' ) | ~ ( ( '\\\\' | '\\'' ) ) )*
+                    // InternalBug302128TestLanguage.g:218:53: ( '\\\\' . | ~ ( ( '\\\\' | '\\'' ) ) )*
                     loop10:
                     do {
                         int alt10=3;
@@ -499,23 +491,15 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
                         switch (alt10) {
                     	case 1 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:92: '\\\\' ( 'b' | 't' | 'n' | 'f' | 'r' | 'u' | '\"' | '\\'' | '\\\\' )
+                    	    // InternalBug302128TestLanguage.g:218:54: '\\\\' .
                     	    {
                     	    match('\\'); 
-                    	    if ( input.LA(1)=='\"'||input.LA(1)=='\''||input.LA(1)=='\\'||input.LA(1)=='b'||input.LA(1)=='f'||input.LA(1)=='n'||input.LA(1)=='r'||(input.LA(1)>='t' && input.LA(1)<='u') ) {
-                    	        input.consume();
-
-                    	    }
-                    	    else {
-                    	        MismatchedSetException mse = new MismatchedSetException(null,input);
-                    	        recover(mse);
-                    	        throw mse;}
-
+                    	    matchAny(); 
 
                     	    }
                     	    break;
                     	case 2 :
-                    	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:218:137: ~ ( ( '\\\\' | '\\'' ) )
+                    	    // InternalBug302128TestLanguage.g:218:61: ~ ( ( '\\\\' | '\\'' ) )
                     	    {
                     	    if ( (input.LA(1)>='\u0000' && input.LA(1)<='&')||(input.LA(1)>='(' && input.LA(1)<='[')||(input.LA(1)>=']' && input.LA(1)<='\uFFFF') ) {
                     	        input.consume();
@@ -558,12 +542,12 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ML_COMMENT;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:220:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:220:19: '/*' ( options {greedy=false; } : . )* '*/'
+            // InternalBug302128TestLanguage.g:220:17: ( '/*' ( options {greedy=false; } : . )* '*/' )
+            // InternalBug302128TestLanguage.g:220:19: '/*' ( options {greedy=false; } : . )* '*/'
             {
             match("/*"); 
 
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:220:24: ( options {greedy=false; } : . )*
+            // InternalBug302128TestLanguage.g:220:24: ( options {greedy=false; } : . )*
             loop12:
             do {
                 int alt12=2;
@@ -588,7 +572,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
                 switch (alt12) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:220:52: .
+            	    // InternalBug302128TestLanguage.g:220:52: .
             	    {
             	    matchAny(); 
 
@@ -618,10 +602,10 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = RULE_WS;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:222:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:222:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalBug302128TestLanguage.g:222:9: ( ( ' ' | '\\t' | '\\r' | '\\n' )+ )
+            // InternalBug302128TestLanguage.g:222:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             {
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:222:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
+            // InternalBug302128TestLanguage.g:222:11: ( ' ' | '\\t' | '\\r' | '\\n' )+
             int cnt13=0;
             loop13:
             do {
@@ -635,7 +619,7 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
 
                 switch (alt13) {
             	case 1 :
-            	    // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:
+            	    // InternalBug302128TestLanguage.g:
             	    {
             	    if ( (input.LA(1)>='\t' && input.LA(1)<='\n')||input.LA(1)=='\r'||input.LA(1)==' ' ) {
             	        input.consume();
@@ -675,8 +659,8 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
         try {
             int _type = RULE_ANY_OTHER;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:224:16: ( . )
-            // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:224:18: .
+            // InternalBug302128TestLanguage.g:224:16: ( . )
+            // InternalBug302128TestLanguage.g:224:18: .
             {
             matchAny(); 
 
@@ -691,75 +675,75 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
     // $ANTLR end "RULE_ANY_OTHER"
 
     public void mTokens() throws RecognitionException {
-        // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:8: ( T__12 | T__13 | RULE_VALUE | RULE_SL_COMMENT | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_WS | RULE_ANY_OTHER )
+        // InternalBug302128TestLanguage.g:1:8: ( T__12 | T__13 | RULE_VALUE | RULE_SL_COMMENT | RULE_ID | RULE_INT | RULE_STRING | RULE_ML_COMMENT | RULE_WS | RULE_ANY_OTHER )
         int alt14=10;
         alt14 = dfa14.predict(input);
         switch (alt14) {
             case 1 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:10: T__12
+                // InternalBug302128TestLanguage.g:1:10: T__12
                 {
                 mT__12(); 
 
                 }
                 break;
             case 2 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:16: T__13
+                // InternalBug302128TestLanguage.g:1:16: T__13
                 {
                 mT__13(); 
 
                 }
                 break;
             case 3 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:22: RULE_VALUE
+                // InternalBug302128TestLanguage.g:1:22: RULE_VALUE
                 {
                 mRULE_VALUE(); 
 
                 }
                 break;
             case 4 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:33: RULE_SL_COMMENT
+                // InternalBug302128TestLanguage.g:1:33: RULE_SL_COMMENT
                 {
                 mRULE_SL_COMMENT(); 
 
                 }
                 break;
             case 5 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:49: RULE_ID
+                // InternalBug302128TestLanguage.g:1:49: RULE_ID
                 {
                 mRULE_ID(); 
 
                 }
                 break;
             case 6 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:57: RULE_INT
+                // InternalBug302128TestLanguage.g:1:57: RULE_INT
                 {
                 mRULE_INT(); 
 
                 }
                 break;
             case 7 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:66: RULE_STRING
+                // InternalBug302128TestLanguage.g:1:66: RULE_STRING
                 {
                 mRULE_STRING(); 
 
                 }
                 break;
             case 8 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:78: RULE_ML_COMMENT
+                // InternalBug302128TestLanguage.g:1:78: RULE_ML_COMMENT
                 {
                 mRULE_ML_COMMENT(); 
 
                 }
                 break;
             case 9 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:94: RULE_WS
+                // InternalBug302128TestLanguage.g:1:94: RULE_WS
                 {
                 mRULE_WS(); 
 
                 }
                 break;
             case 10 :
-                // ../org.eclipse.xtext.tests/src-gen/org/eclipse/xtext/parsetree/reconstr/parser/antlr/internal/InternalBug302128TestLanguage.g:1:102: RULE_ANY_OTHER
+                // InternalBug302128TestLanguage.g:1:102: RULE_ANY_OTHER
                 {
                 mRULE_ANY_OTHER(); 
 
@@ -779,17 +763,13 @@ public class InternalBug302128TestLanguageLexer extends Lexer {
     static final String DFA14_minS =
         "\1\0\1\uffff\1\75\1\0\1\75\1\uffff\1\101\2\uffff\2\0\1\52\13\uffff";
     static final String DFA14_maxS =
-        "\1\uffff\1\uffff\1\75\1\uffff\1\75\1\uffff\1\172\2\uffff\2\uffff"+
-        "\1\52\13\uffff";
+        "\1\uffff\1\uffff\1\75\1\uffff\1\75\1\uffff\1\172\2\uffff\2\uffff\1\52\13\uffff";
     static final String DFA14_acceptS =
-        "\1\uffff\1\1\3\uffff\1\4\1\uffff\1\5\1\6\3\uffff\1\11\1\12\1\1\1"+
-        "\3\1\2\1\4\1\5\1\6\1\7\1\10\1\11";
+        "\1\uffff\1\1\3\uffff\1\4\1\uffff\1\5\1\6\3\uffff\1\11\1\12\1\1\1\3\1\2\1\4\1\5\1\6\1\7\1\10\1\11";
     static final String DFA14_specialS =
         "\1\1\2\uffff\1\2\5\uffff\1\3\1\0\14\uffff}>";
     static final String[] DFA14_transitionS = {
-            "\11\15\2\14\2\15\1\14\22\15\1\14\1\15\1\11\1\5\3\15\1\12\3\15"+
-            "\1\4\1\15\1\2\1\1\1\13\12\10\3\15\1\3\3\15\32\7\3\15\1\6\1\7"+
-            "\1\15\32\7\uff85\15",
+            "\11\15\2\14\2\15\1\14\22\15\1\14\1\15\1\11\1\5\3\15\1\12\3\15\1\4\1\15\1\2\1\1\1\13\12\10\3\15\1\3\3\15\32\7\3\15\1\6\1\7\1\15\32\7\uff85\15",
             "",
             "\1\17",
             "\0\17",

@@ -12,6 +12,7 @@ import static org.eclipse.xtext.junit4.ui.util.JavaProjectSetupUtil.*;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -73,9 +74,10 @@ public class LinkedModelCalculatorIntegrationTest extends AbstractEditorTest {
 		String initialModel2 = "E { ref A } F { ref E ref A}";
 		IFile file1 = createFile(pathToFile1, initialModel1);
 		createFile(pathToFile2, initialModel2);
-		waitForAutoBuild();
+		waitForBuild();
 		XtextEditor editor = openEditor(file1);
 		EObject a = editor.getDocument().readOnly(new IUnitOfWork<EObject, XtextResource>() {
+			@Override
 			public EObject exec(XtextResource state) throws Exception {
 				return state.getContents().get(0).eContents().get(0);
 			}
@@ -85,7 +87,7 @@ public class LinkedModelCalculatorIntegrationTest extends AbstractEditorTest {
 		IRenameElementContext renameElementContext = new IRenameElementContext.Impl(uri, a.eClass(), editor, editor
 				.getSelectionProvider().getSelection(), uriToFile1);
 		LinkedPositionGroup linkedPositionGroup = linkedModelCalculator.getLinkedPositionGroup(renameElementContext,
-				null);
+				new NullProgressMonitor()).get();
 		LinkedPosition[] positions = linkedPositionGroup.getPositions();
 		assertEquals(3, positions.length);
 		int[] offsets = { 0, 10, 24 };
@@ -99,10 +101,11 @@ public class LinkedModelCalculatorIntegrationTest extends AbstractEditorTest {
 		createFile(pathToFile1, initialModel1);
 		String initialModel2 = "E { ref A } F { ref E ref A}";
 		IFile file2 = createFile(pathToFile2, initialModel2);
-		waitForAutoBuild();
+		waitForBuild();
 		XtextEditor editor = openEditor(file2);
 		EObject a = editor.getDocument().readOnly(new IUnitOfWork<EObject, XtextResource>() {
 
+			@Override
 			public EObject exec(XtextResource state) throws Exception {
 				return ((Element) state.getContents().get(0).eContents().get(0)).getReferenced().get(0);
 			}
@@ -114,7 +117,7 @@ public class LinkedModelCalculatorIntegrationTest extends AbstractEditorTest {
 		IRenameElementContext renameElementContext = new IRenameElementContext.Impl(uri, a.eClass(), editor, editor
 				.getSelectionProvider().getSelection(), uriToFile2);
 		LinkedPositionGroup linkedPositionGroup = linkedModelCalculator.getLinkedPositionGroup(renameElementContext,
-				null);
+				new NullProgressMonitor()).get();
 		LinkedPosition[] positions = linkedPositionGroup.getPositions();
 		assertEquals(2, positions.length);
 

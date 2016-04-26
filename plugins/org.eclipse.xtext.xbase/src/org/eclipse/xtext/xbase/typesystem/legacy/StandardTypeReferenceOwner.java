@@ -7,14 +7,10 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.legacy;
 
-import java.util.Collections;
-import java.util.List;
-
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.xtext.common.types.JvmTypeParameter;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
-import org.eclipse.xtext.xbase.typesystem.references.LightweightBoundTypeArgument;
 import org.eclipse.xtext.xbase.typesystem.util.CommonTypeComputationServices;
 
 /**
@@ -22,40 +18,21 @@ import org.eclipse.xtext.xbase.typesystem.util.CommonTypeComputationServices;
  * It is not capable of handling reference resolution or unbound type argument hints.
  * 
  * @author Sebastian Zarnekow - Initial contribution and API
+ * @deprecated use org.eclipse.xtext.xbase.typesystem.references.StandardTypeReferenceOwner instead.
  */
-@NonNullByDefault
-public class StandardTypeReferenceOwner implements ITypeReferenceOwner {
+@Deprecated
+public class StandardTypeReferenceOwner extends org.eclipse.xtext.xbase.typesystem.references.StandardTypeReferenceOwner {
 
-	private CommonTypeComputationServices services;
-	private ResourceSet context;
+	public StandardTypeReferenceOwner(CommonTypeComputationServices services, EObject context) {
+		super(services, context);
+	}
+
+	public StandardTypeReferenceOwner(CommonTypeComputationServices services, Resource context) {
+		super(services, context);
+	}
 
 	public StandardTypeReferenceOwner(CommonTypeComputationServices services, ResourceSet context) {
-		this.services = services;
-		this.context = context;
-	}
-	
-	public CommonTypeComputationServices getServices() {
-		return services;
+		super(services, context);
 	}
 
-	public ResourceSet getContextResourceSet() {
-		return context;
-	}
-
-	public void acceptHint(Object handle, LightweightBoundTypeArgument boundTypeArgument) {
-		throw new UnsupportedOperationException();
-	}
-
-	public List<LightweightBoundTypeArgument> getAllHints(Object handle) {
-		throw new UnsupportedOperationException();
-	}
-
-	public boolean isResolved(Object handle) {
-		throw new UnsupportedOperationException();
-	}
-	
-	public List<JvmTypeParameter> getDeclaredTypeParameters() {
-		return Collections.emptyList();
-	}
-	
 }

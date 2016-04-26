@@ -7,28 +7,43 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.computation;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
+import org.eclipse.xtext.common.types.JvmOperation;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
 
 /**
+ * Allows to bulk-assign types for {@link JvmIdentifiableElement identifiable elements},
+ * e.g. assign the types for the parametes of an inferred {@link JvmOperation operation}.
+ * 
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-@NonNullByDefault
 public interface ITypeAssigner {
 
-	void assignType(JvmIdentifiableElement element, LightweightTypeReference expectedType);
+	/**
+	 * The given element is tagged with the given type. If this type is <code>null</code>,
+	 * it is treated like an error type.
+	 */
+	void assignType(JvmIdentifiableElement element, /* @Nullable */ LightweightTypeReference actualType);
 	
 	/**
-	 * TODO JavaDoc
-	 *  - actualDeclaredType == the type on the lambda parameter
-	 *  - expected type == the type of the parameter on the implementing operation
+	 * Returns the forked state that knows about the newly assigned types.
 	 */
-	void assignType(JvmIdentifiableElement element, LightweightTypeReference actualDeclaredType, LightweightTypeReference expectedType);
-	
 	ITypeComputationState getForkedState();
 	
+	/**
+	 * Returns the current owner.
+	 */
+	ITypeReferenceOwner getReferenceOwner();
+	
+	/**
+	 * Can be used to convert {@link JvmTypeReference JvmTypeReferences} in the context of
+	 * the newly forked state.
+	 * 
+	 * @param reference the reference to convert.
+	 * @return the converted reference.
+	 */
 	LightweightTypeReference toLightweightTypeReference(JvmTypeReference reference);
 	
 }

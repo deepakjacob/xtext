@@ -41,7 +41,7 @@ import com.google.inject.Injector;
  * &#064;Check
  * void checkName(ParserRule rule) {
  * 	if (!toFirstUpper(rule.getName()).equals(rule.getName())) {
- * 		warning(&quot;Name should start with a capital.&quot;, XtextPackage.ABSTRACT_RULE__NAME);
+ * 		warning(&quot;Name should start with a capital.&quot;, XtextPackage.Literals.ABSTRACT_RULE__NAME);
  * 	}
  * }
  * </pre>
@@ -78,12 +78,15 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 
 	}
 
-	static class MethodWrapper {
-		public final Method method;
+	/**
+	 * @since 2.6
+	 */
+	protected static class MethodWrapper {
+		private final Method method;
 		private final String s;
 		private final AbstractDeclarativeValidator instance;
 
-		public MethodWrapper(AbstractDeclarativeValidator instance, Method m) {
+		protected MethodWrapper(AbstractDeclarativeValidator instance, Method m) {
 			this.instance = instance;
 			this.method = m;
 			this.s = m.getName() + ":" + m.getParameterTypes()[0].getName();
@@ -118,19 +121,20 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 				} catch (IllegalAccessException e) {
 					log.error(e.getMessage(), e);
 				} catch (InvocationTargetException e) {
-					// ignore GuardException, check is just not evaluated if
-					// guard is false
-					// ignore NullPointerException, as not having to check for
-					// NPEs all the time is a convenience feature
 					Throwable targetException = e.getTargetException();
-					if (!(targetException instanceof GuardException)
-							&& !(targetException instanceof NullPointerException))
-						Exceptions.throwUncheckedException(targetException);
+					handleInvocationTargetException(targetException, state);
 				}
 			} finally {
 				if (wasNull)
 					instance.state.set(null);
 			}
+		}
+		
+		protected void handleInvocationTargetException(Throwable targetException, State state) {
+			// ignore GuardException, check is just not evaluated if guard is false
+			// ignore NullPointerException, as not having to check for NPEs all the time is a convenience feature
+			if (!(targetException instanceof GuardException) && !(targetException instanceof NullPointerException))
+				Exceptions.throwUncheckedException(targetException);
 		}
 
 		@Override
@@ -139,6 +143,14 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 				return false;
 			MethodWrapper mw = (MethodWrapper) obj;
 			return s.equals(mw.s) && instance == mw.instance;
+		}
+		
+		public AbstractDeclarativeValidator getInstance() {
+			return instance;
+		}
+		
+		public Method getMethod() {
+			return method;
 		}
 	}
 
@@ -208,12 +220,19 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 		Method[] methods = clazz.getDeclaredMethods();
 		for (Method method : methods) {
 			if (method.getAnnotation(Check.class) != null && method.getParameterTypes().length == 1) {
-				result.add(new MethodWrapper(instanceToUse, method));
+				result.add(createMethodWrapper(instanceToUse, method));
 			}
 		}
 		Class<? extends AbstractDeclarativeValidator> superClass = getSuperClass(clazz);
 		if (superClass != null)
 			collectMethodsImpl(instanceToUse, superClass, visitedClasses, result);
+	}
+
+	/**
+	 * @since 2.6
+	 */
+	protected MethodWrapper createMethodWrapper(AbstractDeclarativeValidator instanceToUse, Method method) {
+		return new MethodWrapper(instanceToUse, method);
 	}
 
 	protected AbstractDeclarativeValidator newInstance(Class<? extends AbstractDeclarativeValidator> clazz) {
@@ -226,6 +245,7 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 
 	private final SimpleCache<Class<?>, List<MethodWrapper>> methodsForType = new SimpleCache<Class<?>, List<MethodWrapper>>(
 			new Function<Class<?>, List<MethodWrapper>>() {
+				@Override
 				public List<MethodWrapper> apply(Class<?> param) {
 					List<MethodWrapper> result = new ArrayList<MethodWrapper>();
 					for (MethodWrapper mw : checkMethods) {
@@ -311,10 +331,6 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 		info(message, state.get().currentObject, feature, index, code, issueData);
 	}
 
-	protected void info(String message, EObject source, EStructuralFeature feature, int index) {
-		info(message, source, feature, index, null);
-	}
-
 	/**
 	 * @since 2.0
 	 */
@@ -322,10 +338,32 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 		info(message, state.get().currentObject, feature, ValidationMessageAcceptor.INSIGNIFICANT_INDEX, code,
 				issueData);
 	}
+	
+	/**
+	 * @since 2.4
+	 */
+	protected void info(String message, EObject source, EStructuralFeature feature) {
+		info(message, source, feature, ValidationMessageAcceptor.INSIGNIFICANT_INDEX, null);
+	}
 
+	protected void info(String message, EObject source, EStructuralFeature feature, int index) {
+		info(message, source, feature, index, null);
+	}
+	
+	/**
+	 * @since 2.4
+	 */
 	protected void info(String message, EObject source, EStructuralFeature feature, int index, String code,
 			String... issueData) {
 		getMessageAcceptor().acceptInfo(message, source, feature, index, code, issueData);
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	protected void info(String message, EObject source, EStructuralFeature feature, String code,
+			String... issueData) {
+		getMessageAcceptor().acceptInfo(message, source, feature, ValidationMessageAcceptor.INSIGNIFICANT_INDEX, code, issueData);
 	}
 
 	protected void warning(String message, EStructuralFeature feature) {
@@ -406,15 +444,30 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 	/**
 	 * @since 2.4
 	 */
-	protected void addIssue(EObject source, String issueCode, String message, EStructuralFeature feature, String... issueData) {
-		addIssue(source, issueCode, message, feature, INSIGNIFICANT_INDEX, issueData);
+	protected void addIssueToState(String issueCode, String message, EStructuralFeature feature) {
+		addIssue(message, state.get().currentObject, feature, issueCode, (String[]) null);
 	}
 	
 	/**
 	 * @since 2.4
 	 */
-	protected void addIssue(EObject source, String issueCode, String message, EStructuralFeature feature,
-			int index, String... issueData) {
+	protected void addIssue(String message, EObject source, String issueCode) {
+		addIssue(message, source, null, issueCode, (String[]) null);
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	protected void addIssue(String message, EObject source, EStructuralFeature feature, String issueCode,
+			String... issueData) {
+		addIssue(message, source, feature, INSIGNIFICANT_INDEX, issueCode, issueData);
+	}
+
+	/**
+	 * @since 2.4
+	 */
+	protected void addIssue(String message, EObject source, EStructuralFeature feature, int index, String issueCode,
+			String... issueData) {
 		Severity severity = getIssueSeverities(getContext(), getCurrentObject()).getSeverity(issueCode);
 		if (severity != null) {
 			switch (severity) {
@@ -432,7 +485,35 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 			}
 		}
 	}
+	/**
+	 * @since 2.4
+	 */
+	protected void addIssue(String message, EObject source, int offset,  int length, String issueCode){
+		addIssue(message, source, offset, length, issueCode, (String[])null);
+	}
 	
+	/**
+	 * @since 2.4
+	 */
+	protected void addIssue(String message, EObject source, int offset,  int length, String issueCode, String... issueData) {
+		Severity severity = getIssueSeverities(getContext(), getCurrentObject()).getSeverity(issueCode);
+		if (severity != null) {
+			switch (severity) {
+				case WARNING:
+					getMessageAcceptor().acceptWarning(message, source, offset, length, issueCode, issueData);
+					break;
+				case INFO:
+					getMessageAcceptor().acceptInfo(message, source,  offset, length, issueCode, issueData);
+					break;
+				case ERROR:
+					getMessageAcceptor().acceptError(message, source, offset, length, issueCode, issueData);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
 	/**
 	 * @since 2.4
 	 */
@@ -440,7 +521,7 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 		IssueSeverities severities = getIssueSeverities(getContext(), getCurrentObject());
 		return severities.isIgnored(issueCode);
 	}
-	
+
 	/**
 	 * @since 2.4
 	 */
@@ -467,6 +548,7 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 	// Implementation of the Validation message acceptor below
 	//////////////////////////////////////////////////////////
 
+	@Override
 	public void acceptError(String message, EObject object, EStructuralFeature feature, int index, String code,
 			String... issueData) {
 		checkIsFromCurrentlyCheckedResource(object);
@@ -492,29 +574,34 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 		}
 	}
 
+	@Override
 	public void acceptWarning(String message, EObject object, EStructuralFeature feature, int index, String code,
 			String... issueData) {
 		checkIsFromCurrentlyCheckedResource(object);
 		state.get().chain.add(createDiagnostic(Severity.WARNING, message, object, feature, index, code, issueData));
 	}
 
+	@Override
 	public void acceptInfo(String message, EObject object, EStructuralFeature feature, int index, String code,
 			String... issueData) {
 		checkIsFromCurrentlyCheckedResource(object);
 		state.get().chain.add(createDiagnostic(Severity.INFO, message, object, feature, index, code, issueData));
 	}
 
+	@Override
 	public void acceptError(String message, EObject object, int offset, int length, String code, String... issueData) {
 		checkIsFromCurrentlyCheckedResource(object);
 		this.state.get().hasErrors = true;
 		state.get().chain.add(createDiagnostic(Severity.ERROR, message, object, offset, length, code, issueData));
 	}
 
+	@Override
 	public void acceptWarning(String message, EObject object, int offset, int length, String code, String... issueData) {
 		checkIsFromCurrentlyCheckedResource(object);
 		state.get().chain.add(createDiagnostic(Severity.WARNING, message, object, offset, length, code, issueData));
 	}
 
+	@Override
 	public void acceptInfo(String message, EObject object, int offset, int length, String code, String... issueData) {
 		checkIsFromCurrentlyCheckedResource(object);
 		state.get().chain.add(createDiagnostic(Severity.INFO, message, object, offset, length, code, issueData));
@@ -562,5 +649,5 @@ public abstract class AbstractDeclarativeValidator extends AbstractInjectableVal
 	public ValidationMessageAcceptor getMessageAcceptor() {
 		return messageAcceptor;
 	}
-	
+
 }

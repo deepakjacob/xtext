@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl;
 
@@ -32,12 +29,12 @@ import org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.Uno
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.SimpleClassDeclarationImpl#getModifiers <em>Modifiers</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.SimpleClassDeclarationImpl#getName <em>Name</em>}</li>
  *   <li>{@link org.eclipse.xtext.ui.tests.editor.contentassist.bug360834TestLanguage.impl.SimpleClassDeclarationImpl#getMembers <em>Members</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

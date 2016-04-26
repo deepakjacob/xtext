@@ -15,7 +15,14 @@ import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmDeclaredType;
 import org.eclipse.xtext.common.types.JvmGenericType;
@@ -26,9 +33,10 @@ import org.eclipse.xtext.common.types.TypesFactory;
 import org.eclipse.xtext.common.types.access.IJvmTypeProvider;
 import org.eclipse.xtext.common.types.access.IMirror;
 import org.eclipse.xtext.common.types.access.TypeResource;
-import org.eclipse.xtext.common.types.access.impl.AbstractTypeProviderTest;
 import org.eclipse.xtext.common.types.access.impl.PrimitiveMirror;
 import org.eclipse.xtext.common.types.access.impl.URIHelperConstants;
+import org.eclipse.xtext.common.types.testSetups.AbstractMethods;
+import org.eclipse.xtext.common.types.testSetups.Bug347739ThreeTypeParamsSuperSuper;
 import org.eclipse.xtext.common.types.util.jdt.JavaElementFinder;
 import org.junit.After;
 import org.junit.Ignore;
@@ -37,7 +45,7 @@ import org.junit.Test;
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-public class JdtTypeProviderTest extends AbstractTypeProviderTest {
+public class JdtTypeProviderTest extends AbstractJdtTypeProviderTest {
 
 	private ResourceSet resourceSet;
 	private JdtTypeProvider typeProvider;
@@ -230,15 +238,77 @@ public class JdtTypeProviderTest extends AbstractTypeProviderTest {
 	@Override
 	@Test
 	@Ignore("TODO This one fails due to a bug in JDT for binary types")
-	public void testFindTypeByName_$StartsWithDollar() {
-		super.testFindTypeByName_$StartsWithDollar();
+	public void testFindTypeByName_$StartsWithDollar_01() {
+		super.testFindTypeByName_$StartsWithDollar_01();
+	}
+	
+	@Override
+	protected void doTestInnerType_WrappedIterator_02(JvmGenericType wrappedIterator) {
+		assertNotNull(wrappedIterator);
+	}
+	
+	@Override
+	protected void doTestInnerType_WrappedIterator_03(JvmGenericType wrappedIterator) {
+		// TODO This one fails due to a bug in JDT for parameter annotations of binary, inner constructor
+		assertNotNull(wrappedIterator);
 	}
 
 	// tests for the presence of the bug above
+	@Override
 	@Test
 	public void testFindTypeByName_$StartsWithDollar_02() {
 		String typeName = "org.eclipse.xtext.common.types.testSetups.$StartsWithDollar";
 		JvmGenericType type = (JvmGenericType) getTypeProvider().findTypeByName(typeName);
 		assertNull(type);
+	}
+	
+	@Override
+	@Test public void testEnum_07() throws Exception {
+		if (isParameterNamesAvailable()) {
+			super.testEnum_07();
+		}
+	}
+	
+	@Test public void testEnum_08() throws Exception {
+		if (!isParameterNamesAvailable()) {
+			doTestEnum_07("arg2");
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private boolean isParameterNamesAvailable() throws Exception {
+		ASTParser parser = ASTParser.newParser(AST.JLS3);
+		parser.setIgnoreMethodBodies(true);
+		IJavaProject javaProject = projectProvider.getJavaProject(resourceSet);
+		parser.setProject(javaProject);
+		IType type = javaProject.findType("org.eclipse.xtext.common.types.testSetups.TestEnum");
+		IBinding[] bindings = parser.createBindings(new IJavaElement[] { type }, null);
+		ITypeBinding typeBinding = (ITypeBinding) bindings[0];
+		IMethodBinding[] methods = typeBinding.getDeclaredMethods();
+		for(IMethodBinding method: methods) {
+			if (method.isConstructor()) {
+				IMethod element = (IMethod) method.getJavaElement();
+				if (element.exists()) {
+					String[] parameterNames = element.getParameterNames();
+					if (parameterNames.length == 1 && parameterNames[0].equals("string")) {
+						return true;
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	@Test
+	public void testParameterNames_01() {
+		doTestParameterName(Bug347739ThreeTypeParamsSuperSuper.class, "getToken(A)", "arg0");
+	}
+	@Override
+	@Test
+	public void testParameterNames_02() {
+		doTestParameterName(AbstractMethods.class, "abstractMethodWithParameter(java.lang.String)", "arg0");
 	}
 }

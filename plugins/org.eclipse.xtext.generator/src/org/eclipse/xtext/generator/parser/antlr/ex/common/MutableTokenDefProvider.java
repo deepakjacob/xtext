@@ -7,29 +7,25 @@
  *******************************************************************************/
 package org.eclipse.xtext.generator.parser.antlr.ex.common;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
-
-import org.eclipse.xtext.parser.antlr.AntlrTokenDefProvider;
+import java.nio.charset.Charset;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  */
-public class MutableTokenDefProvider extends AntlrTokenDefProvider {
+public class MutableTokenDefProvider extends org.eclipse.xtext.xtext.generator.parser.antlr.MutableTokenDefProvider {
 
-	public void writeTokenFile(PrintWriter out) throws IOException {
-		for(Map.Entry<Integer, String> entry: getTokenDefMap().entrySet()) {
-			out.print(entry.getValue());
-			out.print('=');
-			out.println(entry.getKey());
-		}
-		out.close();
+	/**
+	 * @since 2.7
+	 */
+	public MutableTokenDefProvider(KeywordHelper keywordHelper, Charset encoding) {
+		super(keywordHelper, encoding);
 	}
-
-	@Override
-	protected void setTokenDefMap(Map<Integer, String> tokenDefMap) {
-		this.tokenDefMap = tokenDefMap;
+	
+	/**
+	 * @deprecated use {@link #MutableTokenDefProvider(KeywordHelper, Charset)} instead.
+	 */
+	@Deprecated
+	public MutableTokenDefProvider() {
+		this(null, Charset.defaultCharset());
 	}
-
 }

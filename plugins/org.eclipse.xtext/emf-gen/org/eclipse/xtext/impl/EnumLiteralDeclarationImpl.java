@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: EnumLiteralDeclarationImpl.java,v 1.1 2010/04/06 14:09:51 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -25,11 +21,11 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.impl.EnumLiteralDeclarationImpl#getEnumLiteral <em>Enum Literal</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.EnumLiteralDeclarationImpl#getLiteral <em>Literal</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

@@ -41,6 +41,7 @@ public abstract class AbstractBuilderTest extends Assert implements IResourceDes
 			if (introManager.getIntro() != null) {
 				Display.getDefault().asyncExec(new Runnable() {
 					
+					@Override
 					public void run() {
 						introManager.closeIntro(introManager.getIntro());
 					}
@@ -52,13 +53,14 @@ public abstract class AbstractBuilderTest extends Assert implements IResourceDes
 	@After
 	public void tearDown() throws Exception {
 		cleanWorkspace();
-		waitForAutoBuild();
+		reallyWaitForAutoBuild();
 		events.clear();
 		getBuilderState().removeListener(this);
 		assertEquals(0, countResourcesInIndex());
 		assertEquals(0, root().getProjects().length);
 	}
 
+	@Override
 	public void descriptionsChanged(Event event) {
 		this.events.add(event);
 	}

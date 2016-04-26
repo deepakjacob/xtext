@@ -10,11 +10,8 @@ package org.eclipse.xtext.xbase.typesystem.internal;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.common.types.JvmField;
-import org.eclipse.xtext.common.types.JvmMember;
-import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.scoping.batch.IFeatureScopeSession;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeComputationResult;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
@@ -23,42 +20,36 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API 
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class FieldTypeComputationState extends AbstractLogicalContainerAwareRootComputationState {
 
 	public FieldTypeComputationState(ResolvedTypes resolvedTypes, IFeatureScopeSession featureScopeSession,
-			JvmField field, LogicalContainerAwareReentrantTypeResolver reentrantTypeResolver) {
-		super(resolvedTypes, featureScopeSession, field, reentrantTypeResolver);
+			JvmField field) {
+		super(resolvedTypes, featureScopeSession, field);
 	}
 
 	@Override
 	protected List<AbstractTypeExpectation> getExpectations(AbstractTypeComputationState actualState, boolean returnType) {
 		LightweightTypeReference type = getExpectedType();
-		AbstractTypeExpectation result = returnType ? new TypeExpectation(type, actualState, returnType) : new RootTypeExpectation(type, actualState);
+		AbstractTypeExpectation result = returnType 
+				? new TypeExpectation(type, actualState, returnType)
+				: new RootTypeExpectation(type, actualState);
 		return Collections.singletonList(result);
 	}
 
 	@Override
-	@Nullable
+	/* @Nullable */
 	protected LightweightTypeReference getExpectedType() {
-		return getResolvedTypes().getExpectedTypeForAssociatedExpression(getMember(), getDefiniteRootExpression());
+		return getResolvedTypes().getExpectedTypeForAssociatedExpression(getMember(), getNonNullRootExpression());
 	}
 	
 	@Override
 	protected ITypeComputationResult createNoTypeResult() {
-		JvmField field = (JvmField) getMember();
-		JvmTypeReference type = field.getType();
-		if (type != null) {
-			final LightweightTypeReference result = resolvedTypes.getConverter().toLightweightReference(type);
-			if (result != null) {
-				return new NoTypeResult(getMember(), result.getOwner()) {
-					@Override
-					public LightweightTypeReference getActualExpressionType() {
-						return result;
-					}
-				};
-			}
-		}
 		return new NoTypeResult(getMember(), resolvedTypes.getReferenceOwner());
+	}
+	
+	@Override
+	protected ExpressionTypeComputationState createExpressionComputationState(XExpression expression, StackedResolvedTypes typeResolution) {
+		return new RootExpressionTypeComputationStateWithNonVoidExpectation(typeResolution, getFeatureScopeSession(), this, expression, getExpectedType());
+		
 	}
 }

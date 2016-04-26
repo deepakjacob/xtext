@@ -46,6 +46,7 @@ public class MarkerCreator {
 		if(issue.getOffset() != null && issue.getLength() != null)
 			marker.setAttribute(IMarker.CHAR_END, issue.getOffset()+issue.getLength());
 		marker.setAttribute(IMarker.LINE_NUMBER, issue.getLineNumber());
+		marker.setAttribute(Issue.COLUMN_KEY, issue.getColumn());
 		marker.setAttribute(IMarker.MESSAGE, issue.getMessage());
 
 		if (issue.getUriToProblem()!=null) 
@@ -66,7 +67,8 @@ public class MarkerCreator {
 				return IMarker.SEVERITY_WARNING;
 			case INFO : 
 				return IMarker.SEVERITY_INFO;
+			default:
+				throw new IllegalArgumentException(String.valueOf(issue.getSeverity()));
 		}
-		throw new IllegalArgumentException();
 	}
 }

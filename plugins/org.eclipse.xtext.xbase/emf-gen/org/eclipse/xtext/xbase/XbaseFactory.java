@@ -136,6 +136,24 @@ public interface XbaseFactory extends EFactory
 	XStringLiteral createXStringLiteral();
 
 	/**
+	 * Returns a new object of class '<em>XList Literal</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>XList Literal</em>'.
+	 * @generated
+	 */
+	XListLiteral createXListLiteral();
+
+	/**
+	 * Returns a new object of class '<em>XSet Literal</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>XSet Literal</em>'.
+	 * @generated
+	 */
+	XSetLiteral createXSetLiteral();
+
+	/**
 	 * Returns a new object of class '<em>XClosure</em>'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -172,6 +190,15 @@ public interface XbaseFactory extends EFactory
 	XUnaryOperation createXUnaryOperation();
 
 	/**
+	 * Returns a new object of class '<em>XPostfix Operation</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>XPostfix Operation</em>'.
+	 * @generated
+	 */
+	XPostfixOperation createXPostfixOperation();
+
+	/**
 	 * Returns a new object of class '<em>XFor Loop Expression</em>'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -179,6 +206,15 @@ public interface XbaseFactory extends EFactory
 	 * @generated
 	 */
 	XForLoopExpression createXForLoopExpression();
+
+	/**
+	 * Returns a new object of class '<em>XBasic For Loop Expression</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>XBasic For Loop Expression</em>'.
+	 * @generated
+	 */
+	XBasicForLoopExpression createXBasicForLoopExpression();
 
 	/**
 	 * Returns a new object of class '<em>XDo While Expression</em>'.
@@ -260,6 +296,15 @@ public interface XbaseFactory extends EFactory
 	 * @generated
 	 */
 	XReturnExpression createXReturnExpression();
+
+	/**
+	 * Returns a new object of class '<em>XSynchronized Expression</em>'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return a new object of class '<em>XSynchronized Expression</em>'.
+	 * @generated
+	 */
+	XSynchronizedExpression createXSynchronizedExpression();
 
 	/**
 	 * Returns the package supported by this factory.

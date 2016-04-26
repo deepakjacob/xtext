@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.xtext.ui.refactoring.ui.DefaultRenameSupport;
 import org.eclipse.xtext.ui.refactoring.ui.IRenameSupport;
-import org.eclipse.xtext.ui.refactoring.ui.SaveHelper;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -58,12 +57,7 @@ public class JdtRenameSupport implements IRenameSupport {
 		}
 	}
 
-	@Inject
-	private SaveHelper saveHelper;
-
 	private RenameSupport renameSupport;
-
-	private JdtRefactoringContext renameParticipantContext;
 
 	/**
 	 * @deprecated Use DI and {@link #initialize(JdtRefactoringContext, RenameJavaElementDescriptor)} instead.
@@ -78,10 +72,10 @@ public class JdtRenameSupport implements IRenameSupport {
 
 	protected void initialize(JdtRefactoringContext renameParticipantContext,
 			RenameJavaElementDescriptor renameDescriptor) throws CoreException {
-		this.renameParticipantContext = renameParticipantContext;
 		renameSupport = RenameSupport.create(renameDescriptor);
 	}
 
+	@Override
 	public void startRefactoringWithDialog(boolean previewOnly) throws InterruptedException {
 		try {
 			renameSupport.openDialog(getShell(), previewOnly);
@@ -90,10 +84,9 @@ public class JdtRenameSupport implements IRenameSupport {
 		}
 	}
 
+	@Override
 	public void startDirectRefactoring() throws InterruptedException {
 		try {
-			if (saveHelper != null && renameParticipantContext != null)
-				saveHelper.saveEditors(renameParticipantContext);
 			renameSupport.perform(getShell(), PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 		} catch (InvocationTargetException e) {
 			throw new WrappedException(e);

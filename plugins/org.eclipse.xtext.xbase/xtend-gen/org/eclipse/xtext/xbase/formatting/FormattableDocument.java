@@ -1,12 +1,15 @@
 package org.eclipse.xtext.xbase.formatting;
 
+import com.google.common.base.Objects;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.apache.log4j.Logger;
+import org.eclipse.xtend.lib.annotations.Accessors;
 import org.eclipse.xtend2.lib.StringConcatenation;
+import org.eclipse.xtext.formatting2.IFormattableDocument;
 import org.eclipse.xtext.xbase.formatting.BasicFormatterPreferenceKeys;
 import org.eclipse.xtext.xbase.formatting.FormattingData;
 import org.eclipse.xtext.xbase.formatting.FormattingPreferenceValues;
@@ -15,95 +18,65 @@ import org.eclipse.xtext.xbase.formatting.TextReplacement;
 import org.eclipse.xtext.xbase.formatting.WhitespaceData;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Conversions;
-import org.eclipse.xtext.xbase.lib.Functions.Function0;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
 import org.eclipse.xtext.xbase.lib.Functions.Function2;
 import org.eclipse.xtext.xbase.lib.IntegerRange;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
-import org.eclipse.xtext.xbase.lib.ObjectExtensions;
 import org.eclipse.xtext.xbase.lib.Pair;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
+import org.eclipse.xtext.xbase.lib.Pure;
 
+/**
+ * @deprecated use {@link IFormattableDocument}
+ */
+@Deprecated
 @SuppressWarnings("all")
 public class FormattableDocument {
-  private final static Logger log = new Function0<Logger>() {
-    public Logger apply() {
-      Logger _logger = Logger.getLogger(FormattableDocument.class);
-      return _logger;
-    }
-  }.apply();
+  private final static Logger log = Logger.getLogger(FormattableDocument.class);
   
-  private final FormattingPreferenceValues _cfg;
+  @Accessors
+  private final FormattingPreferenceValues cfg;
   
-  public FormattingPreferenceValues getCfg() {
-    return this._cfg;
-  }
+  @Accessors
+  private final String document;
   
-  private final String _document;
+  @Accessors
+  private final TreeMap<Integer, FormattingData> formattings;
   
-  public String getDocument() {
-    return this._document;
-  }
+  @Accessors
+  private Throwable rootTrace = null;
   
-  private final TreeMap<Integer,FormattingData> _formattings;
-  
-  public TreeMap<Integer,FormattingData> getFormattings() {
-    return this._formattings;
-  }
-  
-  private Throwable _rootTrace = null;
-  
-  public Throwable getRootTrace() {
-    return this._rootTrace;
-  }
-  
-  public void setRootTrace(final Throwable rootTrace) {
-    this._rootTrace = rootTrace;
-  }
-  
-  private boolean _conflictOccurred = false;
-  
-  public boolean isConflictOccurred() {
-    return this._conflictOccurred;
-  }
-  
-  public void setConflictOccurred(final boolean conflictOccurred) {
-    this._conflictOccurred = conflictOccurred;
-  }
+  @Accessors
+  private boolean conflictOccurred = false;
   
   public FormattableDocument(final FormattingPreferenceValues cfg, final String document) {
-    this._cfg = cfg;
-    this._document = document;
-    TreeMap<Integer,FormattingData> _treeMap = new TreeMap<Integer,FormattingData>();
-    this._formattings = _treeMap;
+    this.cfg = cfg;
+    this.document = document;
+    TreeMap<Integer, FormattingData> _treeMap = new TreeMap<Integer, FormattingData>();
+    this.formattings = _treeMap;
   }
   
   public FormattableDocument(final FormattableDocument fmt) {
-    FormattingPreferenceValues _cfg = fmt.getCfg();
-    this._cfg = _cfg;
-    String _document = fmt.getDocument();
-    this._document = _document;
-    TreeMap<Integer,FormattingData> _formattings = fmt.getFormattings();
-    TreeMap<Integer,FormattingData> _treeMap = new TreeMap<Integer,FormattingData>(_formattings);
-    this._formattings = _treeMap;
+    this.cfg = fmt.cfg;
+    this.document = fmt.document;
+    TreeMap<Integer, FormattingData> _treeMap = new TreeMap<Integer, FormattingData>(fmt.formattings);
+    this.formattings = _treeMap;
   }
   
   public boolean isDebugConflicts() {
-    Throwable _rootTrace = this.getRootTrace();
-    boolean _notEquals = ObjectExtensions.operator_notEquals(_rootTrace, null);
-    return _notEquals;
+    return (!Objects.equal(this.rootTrace, null));
   }
   
   protected FormattingData addFormatting(final FormattingData data) {
     FormattingData _xifexpression = null;
-    boolean _notEquals = ObjectExtensions.operator_notEquals(data, null);
+    boolean _notEquals = (!Objects.equal(data, null));
     if (_notEquals) {
       FormattingData _xblockexpression = null;
       {
         int _length = data.getLength();
         boolean _lessThan = (_length < 0);
         if (_lessThan) {
-          final Pair<String,String> text = this.getTextAround(data);
+          final Pair<String, String> text = this.getTextAround(data);
           StringConcatenation _builder = new StringConcatenation();
           _builder.append("lenght of text-edit can not be negative:");
           _builder.newLine();
@@ -118,22 +91,20 @@ public class FormattableDocument {
           _builder.append("---------------------------------------------------------------------------------");
           _builder.newLine();
           FormattableDocument.log.error(_builder);
-          IllegalStateException _illegalStateException = new IllegalStateException("Length of text edit can not be negative");
-          throw _illegalStateException;
+          throw new IllegalStateException("Length of text edit can not be negative");
         }
         int _length_1 = data.getLength();
         boolean _greaterThan = (_length_1 > 0);
         if (_greaterThan) {
-          String _document = this.getDocument();
           int _offset = data.getOffset();
           int _offset_1 = data.getOffset();
           int _length_2 = data.getLength();
           int _plus = (_offset_1 + _length_2);
-          final String oldText = _document.substring(_offset, _plus);
+          final String oldText = this.document.substring(_offset, _plus);
           boolean _isWhitespace = this.isWhitespace(oldText);
           boolean _not = (!_isWhitespace);
           if (_not) {
-            final Pair<String,String> text_1 = this.getTextAround(data);
+            final Pair<String, String> text_1 = this.getTextAround(data);
             StringConcatenation _builder_1 = new StringConcatenation();
             _builder_1.append("Can not edit non-whitespace:");
             _builder_1.newLine();
@@ -150,32 +121,26 @@ public class FormattableDocument {
             _builder_1.append("---------------------------------------------------------------------------------");
             _builder_1.newLine();
             FormattableDocument.log.error(_builder_1);
-            String _plus_1 = ("Can non format non-whitespace: " + oldText);
-            IllegalStateException _illegalStateException_1 = new IllegalStateException(_plus_1);
-            throw _illegalStateException_1;
+            throw new IllegalStateException(("Can non format non-whitespace: " + oldText));
           }
         }
-        TreeMap<Integer,FormattingData> _formattings = this.getFormattings();
         int _offset_2 = data.getOffset();
-        final FormattingData old = _formattings.get(Integer.valueOf(_offset_2));
+        final FormattingData old = this.formattings.get(Integer.valueOf(_offset_2));
         FormattingData _xifexpression_1 = null;
-        boolean _equals = ObjectExtensions.operator_equals(old, null);
+        boolean _equals = Objects.equal(old, null);
         if (_equals) {
           _xifexpression_1 = data;
         } else {
-          FormattingData _merge = this.merge(old, data);
-          _xifexpression_1 = _merge;
+          _xifexpression_1 = this.merge(old, data);
         }
         final FormattingData newData = _xifexpression_1;
         FormattingData _xifexpression_2 = null;
-        boolean _notEquals_1 = ObjectExtensions.operator_notEquals(newData, null);
+        boolean _notEquals_1 = (!Objects.equal(newData, null));
         if (_notEquals_1) {
-          TreeMap<Integer,FormattingData> _formattings_1 = this.getFormattings();
           int _offset_3 = data.getOffset();
-          FormattingData _put = _formattings_1.put(Integer.valueOf(_offset_3), newData);
-          _xifexpression_2 = _put;
+          _xifexpression_2 = this.formattings.put(Integer.valueOf(_offset_3), newData);
         }
-        _xblockexpression = (_xifexpression_2);
+        _xblockexpression = _xifexpression_2;
       }
       _xifexpression = _xblockexpression;
     }
@@ -186,6 +151,8 @@ public class FormattableDocument {
     FormattingData _xblockexpression = null;
     {
       FormattingData old = null;
+      int increaseIndentationChange = 0;
+      int decreaseIndentationChange = 0;
       int indentationChange = 0;
       boolean _isEmpty = data2.isEmpty();
       if (_isEmpty) {
@@ -205,129 +172,116 @@ public class FormattableDocument {
         }
       }
       FormattingData _xifexpression = null;
-      boolean _notEquals = ObjectExtensions.operator_notEquals(old, null);
+      boolean _notEquals = (!Objects.equal(old, null));
       if (_notEquals) {
-        FormattingData _switchResult = null;
-        boolean _matched = false;
-        if (!_matched) {
-          if (old instanceof NewLineData) {
-            final NewLineData _newLineData = (NewLineData)old;
-            _matched=true;
-            int _offset = _newLineData.getOffset();
-            int _length = _newLineData.getLength();
-            Throwable _trace = _newLineData.getTrace();
-            int _newLines = _newLineData.getNewLines();
-            NewLineData _newLineData_1 = new NewLineData(_offset, _length, indentationChange, _trace, _newLines);
-            _switchResult = _newLineData_1;
-          }
-        }
-        if (!_matched) {
-          if (old instanceof WhitespaceData) {
-            final WhitespaceData _whitespaceData = (WhitespaceData)old;
-            _matched=true;
-            int _offset = _whitespaceData.getOffset();
-            int _length = _whitespaceData.getLength();
-            Throwable _trace = _whitespaceData.getTrace();
-            String _space = _whitespaceData.getSpace();
-            WhitespaceData _whitespaceData_1 = new WhitespaceData(_offset, _length, indentationChange, _trace, _space);
-            _switchResult = _whitespaceData_1;
-          }
-        }
-        _xifexpression = _switchResult;
-      } else {
         FormattingData _xblockexpression_1 = null;
         {
-          this.setConflictOccurred(true);
+          if ((indentationChange > 0)) {
+            increaseIndentationChange = indentationChange;
+          } else {
+            decreaseIndentationChange = indentationChange;
+          }
+          FormattingData _switchResult = null;
+          boolean _matched = false;
+          if (old instanceof NewLineData) {
+            _matched=true;
+            int _offset = ((NewLineData)old).getOffset();
+            int _length = ((NewLineData)old).getLength();
+            Throwable _trace = ((NewLineData)old).getTrace();
+            Integer _newLines = ((NewLineData)old).getNewLines();
+            _switchResult = new NewLineData(_offset, _length, increaseIndentationChange, decreaseIndentationChange, _trace, _newLines);
+          }
+          if (!_matched) {
+            if (old instanceof WhitespaceData) {
+              _matched=true;
+              int _offset = ((WhitespaceData)old).getOffset();
+              int _length = ((WhitespaceData)old).getLength();
+              Throwable _trace = ((WhitespaceData)old).getTrace();
+              String _space = ((WhitespaceData)old).getSpace();
+              _switchResult = new WhitespaceData(_offset, _length, increaseIndentationChange, decreaseIndentationChange, _trace, _space);
+            }
+          }
+          _xblockexpression_1 = _switchResult;
+        }
+        _xifexpression = _xblockexpression_1;
+      } else {
+        Object _xblockexpression_2 = null;
+        {
+          this.conflictOccurred = true;
           boolean _isDebugConflicts = this.isDebugConflicts();
           if (_isDebugConflicts) {
             this.reportConflict(data1, data2);
           }
-          _xblockexpression_1 = (null);
+          _xblockexpression_2 = null;
         }
-        _xifexpression = _xblockexpression_1;
+        _xifexpression = ((FormattingData)_xblockexpression_2);
       }
-      _xblockexpression = (_xifexpression);
+      _xblockexpression = _xifexpression;
     }
     return _xblockexpression;
   }
   
-  protected Pair<String,String> getTextAround(final FormattingData data1) {
-    Pair<String,String> _xblockexpression = null;
+  protected Pair<String, String> getTextAround(final FormattingData data1) {
+    Pair<String, String> _xblockexpression = null;
     {
       IntegerRange _upTo = new IntegerRange(0, 5);
       int _offset = data1.getOffset();
-      final Function2<Integer,Integer,Integer> _function = new Function2<Integer,Integer,Integer>() {
-          public Integer apply(final Integer last, final Integer i) {
-            int _xifexpression = (int) 0;
-            boolean _greaterThan = ((last).intValue() > 0);
-            if (_greaterThan) {
-              String _document = FormattableDocument.this.getDocument();
-              int _minus = ((last).intValue() - 1);
-              int _lastIndexOf = _document.lastIndexOf("\n", _minus);
-              _xifexpression = _lastIndexOf;
-            } else {
-              int _minus_1 = (-1);
-              _xifexpression = _minus_1;
-            }
-            return Integer.valueOf(_xifexpression);
+      final Function2<Integer, Integer, Integer> _function = new Function2<Integer, Integer, Integer>() {
+        @Override
+        public Integer apply(final Integer last, final Integer i) {
+          int _xifexpression = (int) 0;
+          if (((last).intValue() > 0)) {
+            _xifexpression = FormattableDocument.this.document.lastIndexOf("\n", ((last).intValue() - 1));
+          } else {
+            _xifexpression = (-1);
           }
-        };
+          return Integer.valueOf(_xifexpression);
+        }
+      };
       final Integer back = IterableExtensions.<Integer, Integer>fold(_upTo, Integer.valueOf(_offset), _function);
       IntegerRange _upTo_1 = new IntegerRange(0, 5);
       int _offset_1 = data1.getOffset();
-      final Function2<Integer,Integer,Integer> _function_1 = new Function2<Integer,Integer,Integer>() {
-          public Integer apply(final Integer last, final Integer i) {
-            int _xifexpression = (int) 0;
-            boolean _greaterThan = ((last).intValue() > 0);
-            if (_greaterThan) {
-              String _document = FormattableDocument.this.getDocument();
-              int _plus = ((last).intValue() + 1);
-              int _indexOf = _document.indexOf("\n", _plus);
-              _xifexpression = _indexOf;
-            } else {
-              int _minus = (-1);
-              _xifexpression = _minus;
-            }
-            return Integer.valueOf(_xifexpression);
+      final Function2<Integer, Integer, Integer> _function_1 = new Function2<Integer, Integer, Integer>() {
+        @Override
+        public Integer apply(final Integer last, final Integer i) {
+          int _xifexpression = (int) 0;
+          if (((last).intValue() > 0)) {
+            _xifexpression = FormattableDocument.this.document.indexOf("\n", ((last).intValue() + 1));
+          } else {
+            _xifexpression = (-1);
           }
-        };
+          return Integer.valueOf(_xifexpression);
+        }
+      };
       final Integer forward = IterableExtensions.<Integer, Integer>fold(_upTo_1, Integer.valueOf(_offset_1), _function_1);
       Integer _xifexpression = null;
-      boolean _greaterEqualsThan = ((back).intValue() >= 0);
-      if (_greaterEqualsThan) {
+      if (((back).intValue() >= 0)) {
         _xifexpression = back;
       } else {
-        _xifexpression = 0;
+        _xifexpression = Integer.valueOf(0);
       }
       final Integer fiveLinesBackOffset = _xifexpression;
       Integer _xifexpression_1 = null;
-      boolean _greaterEqualsThan_1 = ((forward).intValue() >= 0);
-      if (_greaterEqualsThan_1) {
+      if (((forward).intValue() >= 0)) {
         _xifexpression_1 = forward;
       } else {
-        String _document = this.getDocument();
-        int _length = _document.length();
-        _xifexpression_1 = _length;
+        _xifexpression_1 = Integer.valueOf(this.document.length());
       }
       final Integer fiveLinesForwardOffset = _xifexpression_1;
-      String _document_1 = this.getDocument();
       int _offset_2 = data1.getOffset();
-      final String prefix = _document_1.substring((fiveLinesBackOffset).intValue(), _offset_2);
-      String _document_2 = this.getDocument();
+      final String prefix = this.document.substring((fiveLinesBackOffset).intValue(), _offset_2);
       int _offset_3 = data1.getOffset();
-      int _length_1 = data1.getLength();
-      int _plus = (_offset_3 + _length_1);
-      final String postfix = _document_2.substring(_plus, (fiveLinesForwardOffset).intValue());
-      Pair<String,String> _mappedTo = Pair.<String, String>of(prefix, postfix);
-      _xblockexpression = (_mappedTo);
+      int _length = data1.getLength();
+      int _plus = (_offset_3 + _length);
+      final String postfix = this.document.substring(_plus, (fiveLinesForwardOffset).intValue());
+      _xblockexpression = Pair.<String, String>of(prefix, postfix);
     }
     return _xblockexpression;
   }
   
   protected void reportConflict(final FormattingData data1, final FormattingData data2) {
-    final Pair<String,String> text = this.getTextAround(data1);
-    Throwable _rootTrace = this.getRootTrace();
-    StackTraceElement[] _stackTrace = _rootTrace.getStackTrace();
+    final Pair<String, String> text = this.getTextAround(data1);
+    StackTraceElement[] _stackTrace = this.rootTrace.getStackTrace();
     int _size = ((List<StackTraceElement>)Conversions.doWrapArray(_stackTrace)).size();
     final int traceStart = (_size - 1);
     Throwable _trace = data1.getTrace();
@@ -379,24 +333,24 @@ public class FormattableDocument {
   }
   
   public FormattingData operator_add(final FormattingData data) {
-    FormattingData _addFormatting = this.addFormatting(data);
-    return _addFormatting;
+    return this.addFormatting(data);
   }
   
   public void operator_add(final Iterable<FormattingData> data) {
-    boolean _notEquals = ObjectExtensions.operator_notEquals(data, null);
+    boolean _notEquals = (!Objects.equal(data, null));
     if (_notEquals) {
       final Procedure1<FormattingData> _function = new Procedure1<FormattingData>() {
-          public void apply(final FormattingData it) {
-            FormattableDocument.this.addFormatting(it);
-          }
-        };
+        @Override
+        public void apply(final FormattingData it) {
+          FormattableDocument.this.addFormatting(it);
+        }
+      };
       IterableExtensions.<FormattingData>forEach(data, _function);
     }
   }
   
-  public void operator_add(final Function1<? super FormattableDocument,? extends Iterable<FormattingData>> data) {
-    boolean _notEquals = ObjectExtensions.operator_notEquals(data, null);
+  public void operator_add(final Function1<? super FormattableDocument, ? extends Iterable<FormattingData>> data) {
+    boolean _notEquals = (!Objects.equal(data, null));
     if (_notEquals) {
       Iterable<FormattingData> _apply = data.apply(this);
       this.operator_add(_apply);
@@ -404,10 +358,8 @@ public class FormattableDocument {
   }
   
   public List<TextReplacement> renderToEdits() {
-    String _document = this.getDocument();
-    int _length = _document.length();
-    List<TextReplacement> _renderToEdits = this.renderToEdits(0, _length);
-    return _renderToEdits;
+    int _length = this.document.length();
+    return this.renderToEdits(0, _length);
   }
   
   public List<TextReplacement> renderToEdits(final int offset, final int length) {
@@ -416,75 +368,67 @@ public class FormattableDocument {
       final ArrayList<TextReplacement> replacements = CollectionLiterals.<TextReplacement>newArrayList();
       int oldOffset = offset;
       int indentation = 0;
-      TreeMap<Integer,FormattingData> _formattings = this.getFormattings();
-      Collection<FormattingData> _values = _formattings.values();
+      Collection<FormattingData> _values = this.formattings.values();
       for (final FormattingData f : _values) {
         {
           int _indentationChange = f.getIndentationChange();
           int _plus = (indentation + _indentationChange);
           indentation = _plus;
-          boolean _and = false;
-          int _offset = f.getOffset();
-          boolean _greaterEqualsThan = (_offset >= offset);
-          if (!_greaterEqualsThan) {
-            _and = false;
-          } else {
-            int _offset_1 = f.getOffset();
-            int _length = f.getLength();
-            int _plus_1 = (_offset_1 + _length);
-            int _plus_2 = (offset + length);
-            boolean _lessEqualsThan = (_plus_1 <= _plus_2);
-            _and = (_greaterEqualsThan && _lessEqualsThan);
-          }
-          if (_and) {
-            int _offset_2 = f.getOffset();
-            final int textlength = (_offset_2 - oldOffset);
+          if (((f.getOffset() >= offset) && ((f.getOffset() + f.getLength()) <= (offset + length)))) {
+            int _offset = f.getOffset();
+            final int textlength = (_offset - oldOffset);
             boolean _matched = false;
-            if (!_matched) {
-              if (f instanceof WhitespaceData) {
-                final WhitespaceData _whitespaceData = (WhitespaceData)f;
-                _matched=true;
-                String _space = _whitespaceData.getSpace();
-                boolean _notEquals = ObjectExtensions.operator_notEquals(_space, null);
-                if (_notEquals) {
-                  final String replacement = _whitespaceData.getSpace();
-                  int _offset_3 = _whitespaceData.getOffset();
-                  int _length_1 = _whitespaceData.getLength();
-                  TextReplacement _textReplacement = new TextReplacement(_offset_3, _length_1, replacement);
-                  replacements.add(_textReplacement);
-                }
+            if (f instanceof WhitespaceData) {
+              _matched=true;
+              String _space = ((WhitespaceData)f).getSpace();
+              boolean _notEquals = (!Objects.equal(_space, null));
+              if (_notEquals) {
+                final String replacement = ((WhitespaceData)f).getSpace();
+                int _offset_1 = ((WhitespaceData)f).getOffset();
+                int _length = ((WhitespaceData)f).getLength();
+                TextReplacement _textReplacement = new TextReplacement(_offset_1, _length, replacement);
+                replacements.add(_textReplacement);
               }
             }
             if (!_matched) {
               if (f instanceof NewLineData) {
-                final NewLineData _newLineData = (NewLineData)f;
                 _matched=true;
-                int _newLines = _newLineData.getNewLines();
-                String _wrap = this.getWrap(_newLines);
-                String _indentation = this.getIndentation(indentation);
+                int _xifexpression = (int) 0;
+                int _increaseIndentationChange = ((NewLineData)f).getIncreaseIndentationChange();
+                int _decreaseIndentationChange = ((NewLineData)f).getDecreaseIndentationChange();
+                int _multiply = (_decreaseIndentationChange * (-1));
+                boolean _equals = (_increaseIndentationChange == _multiply);
+                if (_equals) {
+                  int _increaseIndentationChange_1 = ((NewLineData)f).getIncreaseIndentationChange();
+                  _xifexpression = (indentation + _increaseIndentationChange_1);
+                } else {
+                  _xifexpression = indentation;
+                }
+                final int computedIndentation = _xifexpression;
+                Integer _newLines = ((NewLineData)f).getNewLines();
+                String _wrap = this.getWrap((_newLines).intValue());
+                String _indentation = this.getIndentation(computedIndentation);
                 final String replacement = (_wrap + _indentation);
-                int _offset_3 = _newLineData.getOffset();
-                int _length_1 = _newLineData.getLength();
-                TextReplacement _textReplacement = new TextReplacement(_offset_3, _length_1, replacement);
+                int _offset_1 = ((NewLineData)f).getOffset();
+                int _length = ((NewLineData)f).getLength();
+                TextReplacement _textReplacement = new TextReplacement(_offset_1, _length, replacement);
                 replacements.add(_textReplacement);
               }
             }
-            int _length_1 = f.getLength();
-            int _plus_3 = (textlength + _length_1);
-            oldOffset = _plus_3;
+            int _length = f.getLength();
+            int _plus_1 = (textlength + _length);
+            oldOffset = _plus_1;
           }
         }
       }
-      _xblockexpression = (replacements);
+      _xblockexpression = replacements;
     }
     return _xblockexpression;
   }
   
   public String renderToString() {
-    String _document = this.getDocument();
-    int _length = _document.length();
-    String _renderToString = this.renderToString(0, _length);
-    return _renderToString;
+    int _length = this.document.length();
+    return this.renderToString(0, _length);
   }
   
   public String renderToString(final int offset, final int length) {
@@ -492,19 +436,18 @@ public class FormattableDocument {
     {
       final List<TextReplacement> edits = this.renderToEdits(offset, length);
       int lastOffset = offset;
-      StringBuilder _stringBuilder = new StringBuilder();
-      final StringBuilder newDocument = _stringBuilder;
-      final Function1<TextReplacement,Integer> _function = new Function1<TextReplacement,Integer>() {
-          public Integer apply(final TextReplacement it) {
-            return Integer.valueOf(offset);
-          }
-        };
+      final StringBuilder newDocument = new StringBuilder();
+      final Function1<TextReplacement, Integer> _function = new Function1<TextReplacement, Integer>() {
+        @Override
+        public Integer apply(final TextReplacement it) {
+          return Integer.valueOf(offset);
+        }
+      };
       List<TextReplacement> _sortBy = IterableExtensions.<TextReplacement, Integer>sortBy(edits, _function);
       for (final TextReplacement edit : _sortBy) {
         {
-          String _document = this.getDocument();
           int _offset = edit.getOffset();
-          final String text = _document.substring(lastOffset, _offset);
+          final String text = this.document.substring(lastOffset, _offset);
           newDocument.append(text);
           String _text = edit.getText();
           newDocument.append(_text);
@@ -514,12 +457,9 @@ public class FormattableDocument {
           lastOffset = _plus;
         }
       }
-      String _document = this.getDocument();
-      int _plus = (offset + length);
-      final String text = _document.substring(lastOffset, _plus);
+      final String text = this.document.substring(lastOffset, (offset + length));
       newDocument.append(text);
-      String _string = newDocument.toString();
-      _xblockexpression = (_string);
+      _xblockexpression = newDocument.toString();
     }
     return _xblockexpression;
   }
@@ -528,15 +468,14 @@ public class FormattableDocument {
     int _length = doc.length();
     int _minus = (_length - 1);
     IntegerRange _upTo = new IntegerRange(0, _minus);
-    final Function1<Integer,Boolean> _function = new Function1<Integer,Boolean>() {
-        public Boolean apply(final Integer it) {
-          char _charAt = doc.charAt((it).intValue());
-          boolean _isWhitespace = Character.isWhitespace(_charAt);
-          return Boolean.valueOf(_isWhitespace);
-        }
-      };
-    boolean _forall = IterableExtensions.<Integer>forall(_upTo, _function);
-    return _forall;
+    final Function1<Integer, Boolean> _function = new Function1<Integer, Boolean>() {
+      @Override
+      public Boolean apply(final Integer it) {
+        char _charAt = doc.charAt((it).intValue());
+        return Boolean.valueOf(Character.isWhitespace(_charAt));
+      }
+    };
+    return IterableExtensions.<Integer>forall(_upTo, _function);
   }
   
   public int lineLengthBefore(final int offset) {
@@ -545,8 +484,7 @@ public class FormattableDocument {
       int currentIndentation = 0;
       NewLineData lastWrap = null;
       int lastIndentation = 0;
-      TreeMap<Integer,FormattingData> _formattings = this.getFormattings();
-      Collection<FormattingData> _values = _formattings.values();
+      Collection<FormattingData> _values = this.formattings.values();
       for (final FormattingData f : _values) {
         int _offset = f.getOffset();
         boolean _lessThan = (_offset < offset);
@@ -555,7 +493,7 @@ public class FormattableDocument {
           int _plus = (currentIndentation + _indentationChange);
           currentIndentation = _plus;
           if ((f instanceof NewLineData)) {
-            lastWrap = ((NewLineData) f);
+            lastWrap = ((NewLineData)f);
             lastIndentation = currentIndentation;
           }
         }
@@ -564,51 +502,49 @@ public class FormattableDocument {
       int _length = lastWrap.getLength();
       int lastOffset = (_offset_1 + _length);
       int lineStart = lastOffset;
-      TreeMap<Integer,FormattingData> _formattings_1 = this.getFormattings();
       int _offset_2 = lastWrap.getOffset();
       int _plus_1 = (_offset_2 + 1);
-      SortedMap<Integer,FormattingData> _subMap = _formattings_1.subMap(Integer.valueOf(_plus_1), Integer.valueOf(offset));
+      SortedMap<Integer, FormattingData> _subMap = this.formattings.subMap(Integer.valueOf(_plus_1), Integer.valueOf(offset));
       Collection<FormattingData> _values_1 = _subMap.values();
       for (final FormattingData f_1 : _values_1) {
         {
-          String _document = this.getDocument();
           int _offset_3 = f_1.getOffset();
-          final String text = _document.substring(lastOffset, _offset_3);
+          final String text = this.document.substring(lastOffset, _offset_3);
           final int index = text.lastIndexOf("\n");
-          boolean _greaterEqualsThan = (index >= 0);
-          if (_greaterEqualsThan) {
-            int _plus_2 = (index + lastOffset);
-            lineStart = _plus_2;
+          if ((index >= 0)) {
+            lineStart = (index + lastOffset);
             currentIndentation = 0;
           }
           int _offset_4 = f_1.getOffset();
           int _length_1 = f_1.getLength();
-          int _plus_3 = (_offset_4 + _length_1);
-          lastOffset = _plus_3;
+          int _plus_2 = (_offset_4 + _length_1);
+          lastOffset = _plus_2;
         }
       }
       int lengthDiff = 0;
-      TreeMap<Integer,FormattingData> _formattings_2 = this.getFormattings();
       int _offset_3 = lastWrap.getOffset();
       int _plus_2 = (_offset_3 + 1);
-      SortedMap<Integer,FormattingData> _subMap_1 = _formattings_2.subMap(Integer.valueOf(_plus_2), Integer.valueOf(offset));
+      SortedMap<Integer, FormattingData> _subMap_1 = this.formattings.subMap(Integer.valueOf(_plus_2), Integer.valueOf(offset));
       Collection<FormattingData> _values_2 = _subMap_1.values();
       for (final FormattingData f_2 : _values_2) {
         if ((f_2 instanceof WhitespaceData)) {
-          String _space = ((WhitespaceData) f_2).getSpace();
-          int _length_1 = _space==null?0:_space.length();
-          Integer _elvis = ObjectExtensions.<Integer>operator_elvis(Integer.valueOf(_length_1), Integer.valueOf(0));
-          int _length_2 = f_2.getLength();
-          int _minus = ((_elvis).intValue() - _length_2);
-          int _plus_3 = (lengthDiff + _minus);
-          lengthDiff = _plus_3;
+          final String space = ((WhitespaceData)f_2).getSpace();
+          int _xifexpression = (int) 0;
+          boolean _equals = Objects.equal(space, null);
+          if (_equals) {
+            _xifexpression = 0;
+          } else {
+            _xifexpression = space.length();
+          }
+          final int length = _xifexpression;
+          int _length_1 = ((WhitespaceData)f_2).getLength();
+          int _minus = ((lengthDiff + length) - _length_1);
+          lengthDiff = _minus;
         }
       }
-      int _minus_1 = (offset - lineStart);
       int _indentationLenght = this.getIndentationLenght(currentIndentation);
-      int _plus_4 = (_minus_1 + _indentationLenght);
-      int _plus_5 = (_plus_4 + lengthDiff);
-      _xblockexpression = (_plus_5);
+      int _plus_3 = ((offset - lineStart) + _indentationLenght);
+      _xblockexpression = (_plus_3 + lengthDiff);
     }
     return _xblockexpression;
   }
@@ -616,11 +552,9 @@ public class FormattableDocument {
   public String lookahead(final int offset, final int length, final Procedure1<? super FormattableDocument> format) {
     String _xblockexpression = null;
     {
-      FormattableDocument _formattableDocument = new FormattableDocument(this);
-      final FormattableDocument lookahead = _formattableDocument;
+      final FormattableDocument lookahead = new FormattableDocument(this);
       format.apply(lookahead);
-      String _renderToString = lookahead.renderToString(offset, length);
-      _xblockexpression = (_renderToString);
+      _xblockexpression = lookahead.renderToString(offset, length);
     }
     return _xblockexpression;
   }
@@ -634,74 +568,65 @@ public class FormattableDocument {
       int _lineLengthBefore = this.lineLengthBefore(offset);
       int _length = lookahead.length();
       final int line = (_lineLengthBefore + _length);
-      FormattingPreferenceValues _cfg = this.getCfg();
-      int _get = _cfg.get(BasicFormatterPreferenceKeys.maxLineWidth);
+      int _get = this.cfg.get(BasicFormatterPreferenceKeys.maxLineWidth);
       return (line <= _get);
     }
   }
   
+  @Override
   public String toString() {
     String _xblockexpression = null;
     {
       int lastOffset = 0;
-      StringBuilder _stringBuilder = new StringBuilder();
-      final StringBuilder debugTrace = _stringBuilder;
+      final StringBuilder debugTrace = new StringBuilder();
       List<TextReplacement> _renderToEdits = this.renderToEdits();
       for (final TextReplacement edit : _renderToEdits) {
         {
-          String _document = this.getDocument();
           int _offset = edit.getOffset();
-          final String text = _document.substring(lastOffset, _offset);
+          final String text = this.document.substring(lastOffset, _offset);
           debugTrace.append(text);
           StringConcatenation _builder = new StringConcatenation();
           _builder.append("[");
-          String _document_1 = this.getDocument();
           int _offset_1 = edit.getOffset();
           int _offset_2 = edit.getOffset();
           int _length = edit.getLength();
           int _plus = (_offset_2 + _length);
-          String _substring = _document_1.substring(_offset_1, _plus);
+          String _substring = this.document.substring(_offset_1, _plus);
           _builder.append(_substring, "");
           _builder.append("|");
           String _text = edit.getText();
           _builder.append(_text, "");
           _builder.append("]");
-          debugTrace.append(_builder.toString());
+          debugTrace.append(_builder);
           int _offset_3 = edit.getOffset();
           int _length_1 = edit.getLength();
           int _plus_1 = (_offset_3 + _length_1);
           lastOffset = _plus_1;
         }
       }
-      String _document = this.getDocument();
-      String _document_1 = this.getDocument();
-      int _length = _document_1.length();
-      final String text = _document.substring(lastOffset, _length);
+      int _length = this.document.length();
+      final String text = this.document.substring(lastOffset, _length);
       debugTrace.append(text);
-      String _string = debugTrace.toString();
-      _xblockexpression = (_string);
+      _xblockexpression = debugTrace.toString();
     }
     return _xblockexpression;
   }
   
   public String getIndentation(final int levels) {
     String _xifexpression = null;
-    boolean _greaterThan = (levels > 0);
-    if (_greaterThan) {
+    if ((levels > 0)) {
       String _xblockexpression = null;
       {
-        FormattingPreferenceValues _cfg = this.getCfg();
-        final String indent = _cfg.get(BasicFormatterPreferenceKeys.indentation);
-        int _minus = (levels - 1);
-        IntegerRange _upTo = new IntegerRange(0, _minus);
-        final Function1<Integer,String> _function = new Function1<Integer,String>() {
-            public String apply(final Integer it) {
-              return indent;
-            }
-          };
+        final String indent = this.cfg.get(BasicFormatterPreferenceKeys.indentation);
+        IntegerRange _upTo = new IntegerRange(0, (levels - 1));
+        final Function1<Integer, String> _function = new Function1<Integer, String>() {
+          @Override
+          public String apply(final Integer it) {
+            return indent;
+          }
+        };
         Iterable<String> _map = IterableExtensions.<Integer, String>map(_upTo, _function);
-        String _join = IterableExtensions.join(_map);
-        _xblockexpression = (_join);
+        _xblockexpression = IterableExtensions.join(_map);
       }
       _xifexpression = _xblockexpression;
     } else {
@@ -711,35 +636,63 @@ public class FormattableDocument {
   }
   
   public int getIndentationLenght(final int levels) {
-    FormattingPreferenceValues _cfg = this.getCfg();
-    int _get = _cfg.get(BasicFormatterPreferenceKeys.indentationLength);
-    int _multiply = (levels * _get);
-    return _multiply;
+    int _get = this.cfg.get(BasicFormatterPreferenceKeys.indentationLength);
+    return (levels * _get);
   }
   
   public String getWrap(final int levels) {
     String _xifexpression = null;
-    boolean _greaterThan = (levels > 0);
-    if (_greaterThan) {
+    if ((levels > 0)) {
       String _xblockexpression = null;
       {
-        FormattingPreferenceValues _cfg = this.getCfg();
-        final String sep = _cfg.get(BasicFormatterPreferenceKeys.lineSeparator);
-        int _minus = (levels - 1);
-        IntegerRange _upTo = new IntegerRange(0, _minus);
-        final Function1<Integer,String> _function = new Function1<Integer,String>() {
-            public String apply(final Integer it) {
-              return sep;
-            }
-          };
+        final String sep = this.cfg.get(BasicFormatterPreferenceKeys.lineSeparator);
+        IntegerRange _upTo = new IntegerRange(0, (levels - 1));
+        final Function1<Integer, String> _function = new Function1<Integer, String>() {
+          @Override
+          public String apply(final Integer it) {
+            return sep;
+          }
+        };
         Iterable<String> _map = IterableExtensions.<Integer, String>map(_upTo, _function);
-        String _join = IterableExtensions.join(_map);
-        _xblockexpression = (_join);
+        _xblockexpression = IterableExtensions.join(_map);
       }
       _xifexpression = _xblockexpression;
     } else {
       _xifexpression = "";
     }
     return _xifexpression;
+  }
+  
+  @Pure
+  public FormattingPreferenceValues getCfg() {
+    return this.cfg;
+  }
+  
+  @Pure
+  public String getDocument() {
+    return this.document;
+  }
+  
+  @Pure
+  public TreeMap<Integer, FormattingData> getFormattings() {
+    return this.formattings;
+  }
+  
+  @Pure
+  public Throwable getRootTrace() {
+    return this.rootTrace;
+  }
+  
+  public void setRootTrace(final Throwable rootTrace) {
+    this.rootTrace = rootTrace;
+  }
+  
+  @Pure
+  public boolean isConflictOccurred() {
+    return this.conflictOccurred;
+  }
+  
+  public void setConflictOccurred(final boolean conflictOccurred) {
+    this.conflictOccurred = conflictOccurred;
   }
 }

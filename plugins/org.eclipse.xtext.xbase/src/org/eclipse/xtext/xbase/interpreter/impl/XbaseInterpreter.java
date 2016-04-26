@@ -8,6 +8,9 @@
 package org.eclipse.xtext.xbase.interpreter.impl;
 
 import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Maps.*;
+import static com.google.common.collect.Sets.*;
+import static org.eclipse.xtext.util.Strings.*;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -17,9 +20,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmExecutable;
@@ -35,14 +42,14 @@ import org.eclipse.xtext.common.types.access.impl.ClassFinder;
 import org.eclipse.xtext.common.types.util.JavaReflectAccess;
 import org.eclipse.xtext.common.types.util.Primitives;
 import org.eclipse.xtext.common.types.util.Primitives.Primitive;
-import org.eclipse.xtext.common.types.util.TypeReferences;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.util.CancelIndicator;
-import org.eclipse.xtext.util.PolymorphicDispatcher;
+import org.eclipse.xtext.util.ReflectionUtil;
 import org.eclipse.xtext.xbase.XAbstractFeatureCall;
 import org.eclipse.xtext.xbase.XAssignment;
+import org.eclipse.xtext.xbase.XBasicForLoopExpression;
 import org.eclipse.xtext.xbase.XBinaryOperation;
 import org.eclipse.xtext.xbase.XBlockExpression;
 import org.eclipse.xtext.xbase.XBooleanLiteral;
@@ -53,15 +60,19 @@ import org.eclipse.xtext.xbase.XClosure;
 import org.eclipse.xtext.xbase.XConstructorCall;
 import org.eclipse.xtext.xbase.XDoWhileExpression;
 import org.eclipse.xtext.xbase.XExpression;
+import org.eclipse.xtext.xbase.XFeatureCall;
 import org.eclipse.xtext.xbase.XForLoopExpression;
 import org.eclipse.xtext.xbase.XIfExpression;
 import org.eclipse.xtext.xbase.XInstanceOfExpression;
+import org.eclipse.xtext.xbase.XListLiteral;
 import org.eclipse.xtext.xbase.XMemberFeatureCall;
 import org.eclipse.xtext.xbase.XNullLiteral;
 import org.eclipse.xtext.xbase.XNumberLiteral;
 import org.eclipse.xtext.xbase.XReturnExpression;
+import org.eclipse.xtext.xbase.XSetLiteral;
 import org.eclipse.xtext.xbase.XStringLiteral;
 import org.eclipse.xtext.xbase.XSwitchExpression;
+import org.eclipse.xtext.xbase.XSynchronizedExpression;
 import org.eclipse.xtext.xbase.XThrowExpression;
 import org.eclipse.xtext.xbase.XTryCatchFinallyExpression;
 import org.eclipse.xtext.xbase.XTypeLiteral;
@@ -69,20 +80,24 @@ import org.eclipse.xtext.xbase.XVariableDeclaration;
 import org.eclipse.xtext.xbase.XWhileExpression;
 import org.eclipse.xtext.xbase.XbasePackage;
 import org.eclipse.xtext.xbase.featurecalls.IdentifiableSimpleNameProvider;
-import org.eclipse.xtext.xbase.impl.FeatureCallToJavaMapping;
 import org.eclipse.xtext.xbase.interpreter.IEvaluationContext;
 import org.eclipse.xtext.xbase.interpreter.IEvaluationResult;
 import org.eclipse.xtext.xbase.interpreter.IExpressionInterpreter;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.Functions;
+import org.eclipse.xtext.xbase.lib.ObjectExtensions;
+import org.eclipse.xtext.xbase.lib.Pair;
 import org.eclipse.xtext.xbase.lib.Procedures;
-import org.eclipse.xtext.xbase.typing.ITypeProvider;
-import org.eclipse.xtext.xbase.typing.NumberLiterals;
+import org.eclipse.xtext.xbase.scoping.featurecalls.OperatorMapping;
+import org.eclipse.xtext.xbase.typesystem.IBatchTypeResolver;
+import org.eclipse.xtext.xbase.typesystem.IResolvedTypes;
+import org.eclipse.xtext.xbase.typesystem.computation.NumberLiterals;
+import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
+import org.eclipse.xtext.xbase.typesystem.references.StandardTypeReferenceOwner;
+import org.eclipse.xtext.xbase.typesystem.util.CommonTypeComputationServices;
 import org.eclipse.xtext.xbase.util.XExpressionHelper;
+import org.eclipse.xtext.xbase.util.XSwitchExpressions;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -102,19 +117,6 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		}
 	}
 	
-	protected static class PrefixMethodFilter extends PolymorphicDispatcher.MethodNameFilter {
-
-		public PrefixMethodFilter(String prefix, int minParams, int maxParams) {
-			super(prefix, minParams, maxParams);
-		}
-
-		@Override
-		public boolean apply(Method param) {
-			return param.getName().startsWith(methodName) && param.getParameterTypes().length >= minParams
-					&& param.getParameterTypes().length <= maxParams;
-		}
-	}
-
 	public XbaseInterpreter() {
 	}
 
@@ -125,6 +127,9 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		setClassLoader(loader);
 	}
 
+	@Inject
+	private CommonTypeComputationServices services;
+	
 	@Inject
 	private IdentifiableSimpleNameProvider featureNameProvider;
 
@@ -139,27 +144,21 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 	private JavaReflectAccess javaReflectAccess;
 	
 	@Inject
-	private FeatureCallToJavaMapping callToJavaMapping;
-	
-	@Inject
-	private ITypeProvider typeProvider;
-	
-	@Inject
-	private TypeReferences typeRefs;
-	
-	@Inject
-	private Primitives primitives;
-	
-	@Inject
 	private XExpressionHelper expressionHelper;
 	
 	@Inject
 	private NumberLiterals numberLiterals;
+
+	@Inject
+	private IBatchTypeResolver typeResolver;
+	
+	@Inject
+	private XSwitchExpressions switchExpressions;
 	
 	private ClassFinder classFinder;
 
 	private ClassLoader classLoader;
-
+	
 	@Inject
 	public void setClassLoader(ClassLoader classLoader) {
 		this.classFinder = new ClassFinder(classLoader);
@@ -175,6 +174,7 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		}
 	}
 
+	@Override
 	public IEvaluationResult evaluate(XExpression expression) {
 		return evaluate(expression, createContext(), CancelIndicator.NullImpl);
 	}
@@ -183,6 +183,7 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		return contextProvider.get();
 	}
 	
+	@Override
 	public IEvaluationResult evaluate(XExpression expression, IEvaluationContext context, CancelIndicator indicator) {
 		try {
 			Object result = internalEvaluate(expression, context,indicator!=null?indicator:CancelIndicator.NullImpl);
@@ -200,62 +201,73 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		if (indicator.isCanceled())
 			throw new InterpreterCanceledException();
 		Object result = doEvaluate(expression, context, indicator);
-		final JvmTypeReference expectedType = typeProvider.getExpectedType(expression);
-		result = wrapOrUnwrapArray(result, expectedType);
+		final LightweightTypeReference expectedType = typeResolver.resolveTypes(expression).getExpectedType(expression);
+		if(expectedType != null)
+			result = wrapOrUnwrapArray(result, expectedType);
 		return result;
 	}
 	
 	/**
 	 * don't call this directly. Always call evaluate() internalEvaluate()
 	 */
-	protected Object doEvaluate(XExpression assignment, IEvaluationContext context, CancelIndicator indicator) {
-		if (assignment instanceof XAssignment) {
-	      return _doEvaluate((XAssignment)assignment, context, indicator);
-	    } else if (assignment instanceof XDoWhileExpression) {
-	      return _doEvaluate((XDoWhileExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XMemberFeatureCall) {
-	      return _doEvaluate((XMemberFeatureCall)assignment, context, indicator);
-	    } else if (assignment instanceof XWhileExpression) {
-	      return _doEvaluate((XWhileExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XAbstractFeatureCall) {
-	      return _doEvaluate((XAbstractFeatureCall)assignment, context, indicator);
-	    } else if (assignment instanceof XBlockExpression) {
-	      return _doEvaluate((XBlockExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XBooleanLiteral) {
-	      return _doEvaluate((XBooleanLiteral)assignment, context, indicator);
-	    } else if (assignment instanceof XCastedExpression) {
-	      return _doEvaluate((XCastedExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XClosure) {
-	      return _doEvaluate((XClosure)assignment, context, indicator);
-	    } else if (assignment instanceof XConstructorCall) {
-	      return _doEvaluate((XConstructorCall)assignment, context, indicator);
-	    } else if (assignment instanceof XForLoopExpression) {
-	      return _doEvaluate((XForLoopExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XIfExpression) {
-	      return _doEvaluate((XIfExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XInstanceOfExpression) {
-	      return _doEvaluate((XInstanceOfExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XNullLiteral) {
-	      return _doEvaluate((XNullLiteral)assignment, context, indicator);
-	    } else if (assignment instanceof XNumberLiteral) {
-	      return _doEvaluate((XNumberLiteral)assignment, context, indicator);
-	    } else if (assignment instanceof XReturnExpression) {
-	      return _doEvaluate((XReturnExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XStringLiteral) {
-	      return _doEvaluate((XStringLiteral)assignment, context, indicator);
-	    } else if (assignment instanceof XSwitchExpression) {
-	      return _doEvaluate((XSwitchExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XThrowExpression) {
-	      return _doEvaluate((XThrowExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XTryCatchFinallyExpression) {
-	      return _doEvaluate((XTryCatchFinallyExpression)assignment, context, indicator);
-	    } else if (assignment instanceof XTypeLiteral) {
-	      return _doEvaluate((XTypeLiteral)assignment, context, indicator);
-	    } else if (assignment instanceof XVariableDeclaration) {
-	      return _doEvaluate((XVariableDeclaration)assignment, context, indicator);
+	protected Object doEvaluate(XExpression expression, IEvaluationContext context, CancelIndicator indicator) {
+		if (expression instanceof XAssignment) {
+	      return _doEvaluate((XAssignment)expression, context, indicator);
+	    } else if (expression instanceof XDoWhileExpression) {
+	      return _doEvaluate((XDoWhileExpression)expression, context, indicator);
+	    } else if (expression instanceof XMemberFeatureCall) {
+	      return _doEvaluate((XMemberFeatureCall)expression, context, indicator);
+	    } else if (expression instanceof XWhileExpression) {
+	      return _doEvaluate((XWhileExpression)expression, context, indicator);
+	    } else if (expression instanceof XFeatureCall) {
+	    	return _doEvaluate((XFeatureCall)expression, context, indicator);
+	    } else if (expression instanceof XAbstractFeatureCall) {
+	    	return _doEvaluate((XAbstractFeatureCall)expression, context, indicator);
+	    } else if (expression instanceof XBlockExpression) {
+	      return _doEvaluate((XBlockExpression)expression, context, indicator);
+	    } else if (expression instanceof XSynchronizedExpression) {
+		  return _doEvaluate((XSynchronizedExpression)expression, context, indicator);
+		} else if (expression instanceof XBooleanLiteral) {
+	      return _doEvaluate((XBooleanLiteral)expression, context, indicator);
+	    } else if (expression instanceof XCastedExpression) {
+	      return _doEvaluate((XCastedExpression)expression, context, indicator);
+	    } else if (expression instanceof XClosure) {
+	      return _doEvaluate((XClosure)expression, context, indicator);
+	    } else if (expression instanceof XConstructorCall) {
+	      return _doEvaluate((XConstructorCall)expression, context, indicator);
+	    } else if (expression instanceof XForLoopExpression) {
+	      return _doEvaluate((XForLoopExpression)expression, context, indicator);
+	    } else if (expression instanceof XBasicForLoopExpression) {
+		  return _doEvaluate((XBasicForLoopExpression)expression, context, indicator);
+		} else if (expression instanceof XIfExpression) {
+	      return _doEvaluate((XIfExpression)expression, context, indicator);
+	    } else if (expression instanceof XInstanceOfExpression) {
+	      return _doEvaluate((XInstanceOfExpression)expression, context, indicator);
+	    } else if (expression instanceof XNullLiteral) {
+	      return _doEvaluate((XNullLiteral)expression, context, indicator);
+	    } else if (expression instanceof XNumberLiteral) {
+	      return _doEvaluate((XNumberLiteral)expression, context, indicator);
+	    } else if (expression instanceof XReturnExpression) {
+	      return _doEvaluate((XReturnExpression)expression, context, indicator);
+	    } else if (expression instanceof XStringLiteral) {
+	      return _doEvaluate((XStringLiteral)expression, context, indicator);
+	    } else if (expression instanceof XSwitchExpression) {
+	      return _doEvaluate((XSwitchExpression)expression, context, indicator);
+	    } else if (expression instanceof XThrowExpression) {
+	      return _doEvaluate((XThrowExpression)expression, context, indicator);
+	    } else if (expression instanceof XTryCatchFinallyExpression) {
+	      return _doEvaluate((XTryCatchFinallyExpression)expression, context, indicator);
+	    } else if (expression instanceof XTypeLiteral) {
+	      return _doEvaluate((XTypeLiteral)expression, context, indicator);
+	    } else if (expression instanceof XVariableDeclaration) {
+		      return _doEvaluate((XVariableDeclaration)expression, context, indicator);
+	    } else if (expression instanceof XListLiteral) {
+		      return _doEvaluate((XListLiteral)expression, context, indicator);
+	    } else if (expression instanceof XSetLiteral) {
+		      return _doEvaluate((XSetLiteral)expression, context, indicator);
 	    } else {
 	      throw new IllegalArgumentException("Unhandled parameter types: " +
-	        Arrays.<Object>asList(assignment, context, indicator).toString());
+	        Arrays.<Object>asList(expression, context, indicator).toString());
 	    }
 	}
 
@@ -278,6 +290,10 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 	 * @param indicator unused in this context but required for dispatching
 	 */
 	protected Object _doEvaluate(XStringLiteral literal, IEvaluationContext context, CancelIndicator indicator) {
+		LightweightTypeReference type = typeResolver.resolveTypes(literal).getActualType(literal);
+		if (type != null && (type.isType(Character.TYPE) || type.isType(Character.class))) {
+			return literal.getValue().charAt(0);
+		}
 		return literal.getValue();
 	}
 
@@ -285,8 +301,24 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 	 * @param context unused in this context but required for dispatching
 	 * @param indicator unused in this context but required for dispatching
 	 */
+	@SuppressWarnings("unchecked")
 	protected Object _doEvaluate(XNumberLiteral literal, IEvaluationContext context, CancelIndicator indicator) {
-		return numberLiterals.numberValue(literal, numberLiterals.getJavaType(literal));
+		IResolvedTypes resolvedTypes = typeResolver.resolveTypes(literal);
+		LightweightTypeReference expectedType = resolvedTypes.getExpectedType(literal);
+		Class<? extends Number> type = numberLiterals.getJavaType(literal);
+		if (expectedType != null && expectedType.isSubtypeOf(Number.class)) {
+			try {
+				Class<?> expectedClassType = getJavaType(expectedType.toJavaCompliantTypeReference().getType());
+				if (expectedClassType.isPrimitive()) {
+					expectedClassType = ReflectionUtil.getObjectType(expectedClassType);
+				}
+				if (Number.class != expectedClassType && Number.class.isAssignableFrom(expectedClassType)) {
+					type = (Class<? extends Number>) expectedClassType;
+				}
+			} catch (ClassNotFoundException e) {
+			}
+		}
+		return numberLiterals.numberValue(literal, type);
 	}
 
 	/**
@@ -310,12 +342,67 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 				throw new EvaluationException(new ClassNotFoundException());
 			throw new EvaluationException(new ClassNotFoundException(nodesForFeature.get(0).getText()));
 		}
-		try {
-			Class<?> result = classFinder.forName(literal.getType().getQualifiedName() + Joiner.on("").join(literal.getArrayDimensions()));
-			return result;
-		} catch (ClassNotFoundException cnfe) {
-			throw new EvaluationException(cnfe);
+		JvmType type = literal.getType();
+		Object result = translateJvmTypeToResult(type, literal.getArrayDimensions().size());
+		return result;
+	}
+
+	protected Object _doEvaluate(XListLiteral literal, IEvaluationContext context, CancelIndicator indicator) {
+		IResolvedTypes resolveTypes = typeResolver.resolveTypes(literal);
+		LightweightTypeReference type = resolveTypes.getActualType(literal);
+		List<Object> list = newArrayList();
+		for(XExpression element: literal.getElements()) {
+			if (indicator.isCanceled())
+				throw new InterpreterCanceledException();
+			list.add(internalEvaluate(element, context, indicator));
 		}
+		if(type != null && type.isArray()) {
+			try {
+				LightweightTypeReference componentType = type.getComponentType();
+				return Conversions.unwrapArray(list, getJavaType(componentType.getType()));
+			} catch (ClassNotFoundException e) {
+			}
+		}
+		return Collections.unmodifiableList(list);
+	}
+
+	protected Class<?> getJavaType(JvmType type) throws ClassNotFoundException {
+		return classFinder.forName(type.getQualifiedName());
+	}
+
+	protected Object _doEvaluate(XSetLiteral literal, IEvaluationContext context, CancelIndicator indicator) {
+		if(isType(literal, Map.class)) {
+			Map<Object, Object> map = newHashMap();
+			for(XExpression element: literal.getElements()) {
+				if (indicator.isCanceled())
+					throw new InterpreterCanceledException();
+				if (expressionHelper.isOperatorFromExtension(element, OperatorMapping.MAPPED_TO, ObjectExtensions.class)) {
+					map.put(internalEvaluate(((XBinaryOperation)element).getLeftOperand(), context, indicator),
+							internalEvaluate(((XBinaryOperation)element).getRightOperand(), context, indicator));
+				} else if (isType(element, Pair.class)) {
+					Pair<?, ?> pair = (Pair<?, ?>) internalEvaluate(element, context, indicator);
+					map.put(pair == null ? null : pair.getKey(), pair == null ? null : pair.getValue());
+				}
+			}
+			return Collections.unmodifiableMap(map);
+		} else {
+			Set<Object> set = newHashSet();
+			for(XExpression element: literal.getElements()) {
+				if (indicator.isCanceled())
+					throw new InterpreterCanceledException();
+				set.add(internalEvaluate(element, context, indicator));
+			}
+			return Collections.unmodifiableSet(set);
+		}
+	}
+
+	protected boolean isType(XExpression element, Class<?> clazz) {
+		return resolveType(element, clazz) != null;
+	}
+
+	protected LightweightTypeReference resolveType(XExpression element, Class<?> clazz) {
+		LightweightTypeReference elementType = typeResolver.resolveTypes(element).getActualType(element);
+		return elementType != null && elementType.isType(clazz) ? elementType : null;
 	}
 
 	protected Object _doEvaluate(XClosure closure, IEvaluationContext context, CancelIndicator indicator) {
@@ -361,13 +448,18 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		return result;
 	}
 
+	protected Object _doEvaluate(XSynchronizedExpression expression, IEvaluationContext context, CancelIndicator indicator) {
+		internalEvaluate(expression.getParam(), context, indicator);
+		return internalEvaluate(expression.getExpression(), context, indicator);
+	}
+
 	protected Object _doEvaluate(XIfExpression ifExpression, IEvaluationContext context, CancelIndicator indicator) {
 		Object conditionResult = internalEvaluate(ifExpression.getIf(), context, indicator);
 		if (Boolean.TRUE.equals(conditionResult)) {
 			return internalEvaluate(ifExpression.getThen(), context, indicator);
 		} else {
 			if (ifExpression.getElse() == null)
-				return null;
+				return getDefaultObjectValue(typeResolver.resolveTypes(ifExpression).getActualType(ifExpression));
 			return internalEvaluate(ifExpression.getElse(), context, indicator);
 		}
 	}
@@ -375,7 +467,7 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 	protected Object _doEvaluate(XSwitchExpression switchExpression, IEvaluationContext context, CancelIndicator indicator) {
 		IEvaluationContext forkedContext = context.fork();
 		Object conditionResult = internalEvaluate(switchExpression.getSwitch(), forkedContext, indicator);
-		String simpleName = featureNameProvider.getSimpleName(switchExpression);
+		String simpleName = featureNameProvider.getSimpleName(switchExpression.getDeclaredParam());
 		if (simpleName != null) {
 			forkedContext.newValue(QualifiedName.create(simpleName), conditionResult);
 		}
@@ -389,16 +481,18 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 					throw new EvaluationException(new NoClassDefFoundError(typeName));
 				}
 			}
-			if (expectedType != null && conditionResult == null)
+			if (expectedType != null && switchExpression.getSwitch() == null)
 				throw new IllegalStateException("Switch without expression or implicit 'this' may not use type guards");
 			if (expectedType == null || expectedType.isInstance(conditionResult)) {
 				if (casePart.getCase() != null) {
 					Object casePartResult = internalEvaluate(casePart.getCase(), forkedContext, indicator);
 					if (Boolean.TRUE.equals(casePartResult) || eq(conditionResult, casePartResult)) {
-						return internalEvaluate(casePart.getThen(), forkedContext, indicator);
+						XExpression then = switchExpressions.getThen(casePart, switchExpression);
+						return internalEvaluate(then, forkedContext, indicator);
 					}
 				} else {
-					return internalEvaluate(casePart.getThen(), forkedContext, indicator);
+					XExpression then = switchExpressions.getThen(casePart, switchExpression);
+					return internalEvaluate(then, forkedContext, indicator);
 				}
 			}
 		}
@@ -406,26 +500,99 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 			Object defaultResult = internalEvaluate(switchExpression.getDefault(), forkedContext, indicator);
 			return defaultResult;
 		}
-		return null;
+		return getDefaultObjectValue(typeResolver.resolveTypes(switchExpression).getActualType(switchExpression));
 	}
 
 	protected Object _doEvaluate(XCastedExpression castedExpression, IEvaluationContext context, CancelIndicator indicator) {
 		Object result = internalEvaluate(castedExpression.getTarget(), context, indicator);
-		result = wrapOrUnwrapArray(result, castedExpression.getType());
+		StandardTypeReferenceOwner owner = new StandardTypeReferenceOwner(services, castedExpression);
+		LightweightTypeReference targetType = owner.toLightweightTypeReference(castedExpression.getType());
+		result = wrapOrUnwrapArray(result, targetType);
 		result = coerceArgumentType(result, castedExpression.getType());
-		String typeName = castedExpression.getType().getType().getQualifiedName();
-		Class<?> expectedType = null;
-		try {
-			expectedType = classFinder.forName(typeName);
-		} catch (ClassNotFoundException e) {
-			throw new EvaluationException(new NoClassDefFoundError(typeName));
+		JvmType castType = castedExpression.getType().getType();
+		if (castType instanceof JvmPrimitiveType) {
+			if (result == null) {
+				throwNullPointerException(castedExpression, "Cannot cast null to primitive " + castType.getIdentifier());
+			}
+			return castToPrimitiveType(result, services.getPrimitives().primitiveKind((JvmPrimitiveType) castType));
+		} else {
+			String typeName = castType.getQualifiedName();
+			Class<?> expectedType = null;
+			try {
+				expectedType = getJavaType(castType);
+			} catch (ClassNotFoundException e) {
+				throw new EvaluationException(new NoClassDefFoundError(typeName));
+			}
+			try {
+				expectedType.cast(result);
+			} catch (ClassCastException e) {
+				throw new EvaluationException(new ClassCastException(typeName));
+			}
+			return result;
 		}
-		try {
-			expectedType.cast(result);
-		} catch (ClassCastException e) {
-			throw new EvaluationException(e);
+	}
+
+	protected Object castToPrimitiveType(Object castMe, Primitives.Primitive kind) {
+		if (com.google.common.primitives.Primitives.isWrapperType(castMe.getClass())) {
+			if (kind == Primitives.Primitive.Boolean) {
+				if (castMe instanceof Boolean) {
+					return castMe;
+				}
+			} else if (kind == Primitives.Primitive.Char) {
+				if (castMe instanceof Character) {
+					return ((Character) castMe).charValue();
+				} else if (castMe instanceof Byte) {
+					return (char) ((Byte) castMe).byteValue();
+				} else if (castMe instanceof Short) {
+					return (char) ((Short) castMe).shortValue();
+				} else if (castMe instanceof Long) {
+					return (char) ((Long) castMe).longValue();
+				} else if (castMe instanceof Integer) {
+					return (char) ((Integer) castMe).intValue();
+				} else if (castMe instanceof Float) {
+					return (char) ((Float) castMe).floatValue();
+				} else if (castMe instanceof Double) {
+					return (char) ((Double) castMe).doubleValue();
+				}
+			} else if (castMe instanceof Number) {
+				Number number = (Number) castMe;
+				switch(kind) {
+					case Byte:
+						return number.byteValue();
+					case Short:
+						return number.shortValue();
+					case Long: 
+						return number.longValue();
+					case Int:
+						return number.intValue();
+					case Float:
+						return number.floatValue();
+					case Double:
+						return number.doubleValue();
+					default:
+						throw new IllegalStateException("Unexpected cast type 'void'");
+				}
+			} else if (castMe instanceof Character) {
+				char c = ((Character) castMe).charValue();
+				switch(kind) {
+					case Byte:
+						return (byte) c;
+					case Short:
+						return (short) c;
+					case Long: 
+						return (long) c;
+					case Int:
+						return (int) c;
+					case Float:
+						return (float) c;
+					case Double:
+						return (double) c;
+					default:
+						throw new IllegalStateException("Unexpected cast type 'void'");
+				}
+			}
 		}
-		return result;
+		throw new EvaluationException(new ClassCastException(castMe.getClass().getName() + "!=" + kind.name().toLowerCase()));
 	}
 
 	protected Object _doEvaluate(XThrowExpression throwExpression, IEvaluationContext context, CancelIndicator indicator) {
@@ -492,12 +659,17 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 				+ " but got: " + result.getClass().getCanonicalName()));
 	}
 
-	protected Object wrapOrUnwrapArray(Object result, JvmTypeReference expectedType) {
-		if (typeRefs.isInstanceOf(expectedType, Iterable.class)) {
+	protected Object wrapOrUnwrapArray(Object result, LightweightTypeReference expectedType) {
+		if (expectedType.isArray() && !(result instanceof Object[])) {
+			Class<?> arrayType;
+			try {
+				arrayType = getJavaType(expectedType.getComponentType().getType());
+				return Conversions.unwrapArray(result, arrayType);
+			} catch (ClassNotFoundException e) {
+				return result;
+			}
+		} else if (!expectedType.isArray() && expectedType.isSubtypeOf(Iterable.class)) {
 			return Conversions.doWrapArray(result);
-		} else if (typeRefs.isArray(expectedType)) {
-			Class<?> arrayType = getJavaReflectAccess().getRawType(expectedType.getType());
-			return Conversions.unwrapArray(result, arrayType.getComponentType());
 		}
 		return result;
 	}
@@ -521,6 +693,23 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 			Object next = iter.next();
 			forkedContext.assignValue(paramName, next);
 			internalEvaluate(forLoop.getEachExpression(), forkedContext, indicator);
+		}
+		return null;
+	}
+	
+	protected Object _doEvaluate(XBasicForLoopExpression forLoop, IEvaluationContext context, CancelIndicator indicator) {
+		IEvaluationContext forkedContext = context.fork();
+		for (XExpression initExpression : forLoop.getInitExpressions()) {
+			internalEvaluate(initExpression, forkedContext, indicator);
+		}
+		XExpression expression = forLoop.getExpression();
+		Object condition = expression == null ? Boolean.TRUE : internalEvaluate(expression, forkedContext, indicator);
+		while (Boolean.TRUE.equals(condition)) {
+			internalEvaluate(forLoop.getEachExpression(), forkedContext, indicator);
+			for (XExpression updateExpression : forLoop.getUpdateExpressions()) {
+				internalEvaluate(updateExpression, forkedContext, indicator);
+			}
+			condition = expression == null ? Boolean.TRUE : internalEvaluate(expression, forkedContext, indicator);
 		}
 		return null;
 	}
@@ -561,39 +750,37 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 	}
 
 	protected Object _doEvaluate(final XMemberFeatureCall featureCall, final IEvaluationContext context, final CancelIndicator indicator) {
-		if (featureCall.isSpreading()) {
-			Object memberCallTarget = internalEvaluate(featureCall.getMemberCallTarget(), context, indicator);
-			if (memberCallTarget == null)
-				return throwNullPointerException(featureCall.getMemberCallTarget(), "iterable evaluated to 'null'");
-			if (memberCallTarget instanceof Iterable) {
-				class Spread implements Function<Object, Object> {
-					public Object apply(Object from) {
-						Object result = invokeFeature(featureCall.getFeature(), featureCall, from, context, indicator);
-						return result;
-					}
-				}
-				Iterable<?> iterable = (Iterable<?>) memberCallTarget;
-				return Lists.newArrayList(Iterables.transform(iterable, new Spread()));
-			} else {
-				return throwClassCastException(featureCall.getMemberCallTarget(), memberCallTarget,
-						java.lang.Iterable.class);
-			}
+		if (featureCall.isTypeLiteral()) {
+			JvmType type = (JvmType) featureCall.getFeature();
+			Object result = translateJvmTypeToResult(type, 0);
+			return result;
 		} else {
 			XExpression receiver = getActualReceiver(featureCall); //, featureCall.getFeature(), featureCall.getImplicitReceiver());
 			Object receiverObj = receiver==null?null:internalEvaluate(receiver, context, indicator);
 			if (featureCall.isNullSafe() && receiverObj==null) {
-				return getDefaultObjectValue(typeProvider.getType(featureCall));
+				return getDefaultObjectValue(typeResolver.resolveTypes(featureCall).getActualType(featureCall));
 			}
 			return invokeFeature(featureCall.getFeature(), featureCall, receiverObj, context, indicator);
 		}
 	}
 
-	protected Object getDefaultObjectValue(JvmTypeReference type) {
-		if(!primitives.isPrimitive(type))
+	protected Object translateJvmTypeToResult(JvmType type, int arrayDims) {
+		try {
+			String arrayDimensions = "";
+			for (int i=0;i<arrayDims;i++)
+				arrayDimensions+="[]";
+			return classFinder.forName(type.getQualifiedName()+arrayDimensions);
+		} catch (ClassNotFoundException e) {
+			throw new EvaluationException(e);
+		}
+	}
+
+	protected Object getDefaultObjectValue(LightweightTypeReference type) {
+		if(!type.isPrimitive())
 			return null;
 		else {
 			JvmPrimitiveType primitive = (JvmPrimitiveType) type.getType();
-			switch (primitives.primitiveKind(primitive)) {
+			switch (services.getPrimitives().primitiveKind(primitive)) {
 				case Byte :
 					return Byte.valueOf((byte)0);
 				case Short :
@@ -624,7 +811,7 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 			return Boolean.FALSE;
 
 		Class<?> expectedType = null;
-		String className = instanceOf.getType().getQualifiedName();
+		String className = instanceOf.getType().getType().getQualifiedName();
 		try {
 			expectedType = classFinder.forName(className);
 		} catch (ClassNotFoundException cnfe) {
@@ -638,8 +825,8 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		if (variableDecl.getRight()!=null) {
 			initialValue = internalEvaluate(variableDecl.getRight(), context, indicator);
 		} else {
-			if (primitives.isPrimitive(variableDecl.getType())) {
-				Primitive primitiveKind = primitives.primitiveKind((JvmPrimitiveType) variableDecl.getType().getType());
+			if (services.getPrimitives().isPrimitive(variableDecl.getType())) {
+				Primitive primitiveKind = services.getPrimitives().primitiveKind((JvmPrimitiveType) variableDecl.getType().getType());
 				switch(primitiveKind) {
 					case Boolean:
 						initialValue = Boolean.FALSE; break;
@@ -668,15 +855,30 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		return null;
 	}
 
+	protected Object _doEvaluate(XFeatureCall featureCall, IEvaluationContext context, CancelIndicator indicator) {
+		if (featureCall.isTypeLiteral()) {
+			JvmType type = (JvmType) featureCall.getFeature();
+			Object result = translateJvmTypeToResult(type, 0);
+			return result;
+		} else {
+			return _doEvaluate((XAbstractFeatureCall) featureCall, context, indicator);
+		}
+	}
+	
 	protected Object _doEvaluate(XAbstractFeatureCall featureCall, IEvaluationContext context, CancelIndicator indicator) {
-		if (expressionHelper.isShortCircuiteBooleanOperation(featureCall)) {
+		if (expressionHelper.isShortCircuitOperation(featureCall)) {
 			XExpression leftOperand = ((XBinaryOperation)featureCall).getLeftOperand();
 			Object result = internalEvaluate(leftOperand, context, indicator);
-			final boolean isAND = featureCall.getConcreteSyntaxFeatureName().equals(expressionHelper.getAndOperator());
-			if (isAND && !(Boolean)result) {
-				return false;
-			} else if (!isAND && (Boolean)result) {
-				return true;
+			String operatorName = featureCall.getConcreteSyntaxFeatureName();
+			if (equal(expressionHelper.getElvisOperator() ,operatorName)) {
+				if(result != null)
+					return result;
+			} else if (equal(expressionHelper.getAndOperator(), operatorName)) {
+				if (!(Boolean)result) 
+					return false;
+			} else if (equal(expressionHelper.getOrOperator(), operatorName)) {
+				if((Boolean) result)
+					return true;
 			}
 			JvmOperation operation = (JvmOperation) featureCall.getFeature();
 			XExpression receiver = getActualReceiver(featureCall);
@@ -691,19 +893,96 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 			}
 			return invokeOperation(operation, receiver, argumentValues, context, indicator);
 		}
+		if (isGetAndAssign(featureCall)) {
+			return evaluateGetAndAssign(featureCall, context, indicator);
+		}
 		XExpression receiver = getActualReceiver(featureCall);
 		Object receiverObj = receiver==null?null:internalEvaluate(receiver, context, indicator);
-		return invokeFeature(featureCall.getFeature(), featureCall, receiverObj, context, indicator);
+		Object result = invokeFeature(featureCall.getFeature(), featureCall, receiverObj, context, indicator);
+		if (featureCall instanceof XBinaryOperation) {
+			XBinaryOperation binaryOperation = (XBinaryOperation) featureCall;
+			if (binaryOperation.isReassignFirstArgument()) {
+				XAbstractFeatureCall leftOperand = (XAbstractFeatureCall) binaryOperation.getLeftOperand();
+				assignValueTo(leftOperand.getFeature(), featureCall, result, context, indicator);
+			}
+		}
+		return result;
+	}
+
+	protected boolean isGetAndAssign(XAbstractFeatureCall featureCall) {
+		return expressionHelper.isGetAndAssign(featureCall);
+	}
+
+	protected Object evaluateGetAndAssign(XAbstractFeatureCall featureCall, IEvaluationContext context, CancelIndicator indicator) {
+		XAbstractFeatureCall operand = (XAbstractFeatureCall) featureCall.getActualArguments().get(0);
+		
+		Object originalValue = internalEvaluate(operand, context, indicator);
+		Object value = applyGetAndAssignOperator(originalValue, featureCall.getConcreteSyntaxFeatureName());
+		
+		assignValueTo(operand.getFeature(), featureCall, value, context, indicator);
+		return originalValue;
+	}
+
+	protected Object applyGetAndAssignOperator(Object originalValue, String operatorName) {
+		if (originalValue instanceof Double) {
+			Double value = (Double) originalValue;
+			if (equal(OperatorMapping.MINUS_MINUS.toString(), operatorName)) {
+				return (double) (value - 1);	
+			}
+			return (double) (value + 1);
+		} 
+		if (originalValue instanceof Float) {
+			Float value = (Float) originalValue;
+			if (equal(OperatorMapping.MINUS_MINUS.toString(), operatorName)) {
+				return (float) (value - 1);	
+			}
+			return (float) (value + 1);
+		} 
+		if (originalValue instanceof Long) {
+			Long value = (Long) originalValue;
+			if (equal(OperatorMapping.MINUS_MINUS.toString(), operatorName)) {
+				return (long) (value - 1);	
+			}
+			return (long) (value + 1);
+		}
+		if (originalValue instanceof Integer) {
+			Integer value = (Integer) originalValue;
+			if (equal(OperatorMapping.MINUS_MINUS.toString(), operatorName)) {
+				return value - 1;	
+			}
+			return value + 1;
+		} 
+		if (originalValue instanceof Short) {
+			Short value = (Short) originalValue;
+			if (equal(OperatorMapping.MINUS_MINUS.toString(), operatorName)) {
+				return (short) (value - 1);	
+			}
+			return (short) (value + 1);
+		} if (originalValue instanceof Byte) {
+			Byte value = (Byte) originalValue;
+			if (equal(OperatorMapping.MINUS_MINUS.toString(), operatorName)) {
+				return (byte) (value - 1);	
+			}
+			return (byte) (value + 1);
+		} 
+		if (originalValue instanceof Character) {
+			Character value = (Character) originalValue;
+			if (equal(OperatorMapping.MINUS_MINUS.toString(), operatorName)) {
+				return (char) (value - 1);	
+			}
+			return (char) (value + 1);
+		}
+		throw new IllegalStateException("Unexpected value: " + originalValue);
 	}
 
 	protected List<XExpression> getActualArguments(XAbstractFeatureCall featureCall) {
-		return callToJavaMapping.getActualArguments(featureCall);
+		return featureCall.getActualArguments();
 	}
 
 	protected XExpression getActualReceiver(XAbstractFeatureCall featureCall) {
-		return callToJavaMapping.getActualReceiver(featureCall);
+		return featureCall.getActualReceiver();
 	}
-
+	
 	protected Object invokeFeature(JvmIdentifiableElement feature, XAbstractFeatureCall featureCall, Object receiverObj,
 			IEvaluationContext context, CancelIndicator indicator) {
 		if (feature instanceof JvmField) {
@@ -793,15 +1072,32 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 			if (Modifier.isStatic(method.getModifiers()) && receiver!=null) {
 				throw new IllegalArgumentException("A static method can't be invoked on a receiver.");
 			}
-			method.setAccessible(true);
-			Object result = method.invoke(receiver, argumentValues.toArray(new Object[argumentValues.size()]));
-			return result;
+			if (receiver != null && Proxy.isProxyClass(receiver.getClass())) {
+				InvocationHandler invocationHandler = Proxy.getInvocationHandler(receiver);
+				try {
+					Object result = invocationHandler.invoke(receiver, method, argumentValues.toArray(new Object[argumentValues.size()]));
+					return result;
+				} catch(Throwable throwable) {
+					throw new InvocationTargetException(throwable);
+				}
+			} else {
+				method.setAccessible(true);
+				Object result = method.invoke(receiver, argumentValues.toArray(new Object[argumentValues.size()]));
+				return result;
+			}
 		} catch (EvaluationException e) {
 			throw e;
 		} catch (InvocationTargetException targetException) {
-			if (targetException.getCause() instanceof InterpreterCanceledException)
-				throw (InterpreterCanceledException) targetException.getCause();
-			throw new EvaluationException(targetException.getTargetException());
+			Throwable cause = targetException.getCause();
+			if (cause instanceof InterpreterCanceledException)
+				throw (InterpreterCanceledException) cause;
+			if (cause instanceof UndeclaredThrowableException) {
+				cause = cause.getCause();
+			}
+			if (cause instanceof EvaluationException) {
+				throw (EvaluationException) cause;
+			}
+			throw new EvaluationException(cause);
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not invoke method: " + operation.getIdentifier()
 					+ " on instance: " + receiver, e);
@@ -908,18 +1204,22 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 	}
 
 	protected Object _doEvaluate(XAssignment assignment, IEvaluationContext context, CancelIndicator indicator) {
+		JvmIdentifiableElement feature = assignment.getFeature();
+		if (feature instanceof JvmOperation && ((JvmOperation) feature).isVarArgs()) {
+			return _doEvaluate((XAbstractFeatureCall) assignment, context, indicator);
+		}
 		Object value = internalEvaluate(assignment.getValue(), context, indicator);
-		Object assign = assignValueTo(assignment.getFeature(), assignment, value, context, indicator);
+		Object assign = assignValueTo(feature, assignment, value, context, indicator);
 		return assign;
 	}
 	
-	protected Object assignValueTo(JvmIdentifiableElement feature, XAssignment assignment, Object value, IEvaluationContext context, CancelIndicator indicator) {
+	protected Object assignValueTo(JvmIdentifiableElement feature, XAbstractFeatureCall assignment, Object value, IEvaluationContext context, CancelIndicator indicator) {
 		if (feature instanceof XVariableDeclaration) {
-			return _assigneValueTo((XVariableDeclaration) feature, assignment, value, context, indicator);
+			return _assignValueTo((XVariableDeclaration) feature, assignment, value, context, indicator);
 		} else if (feature instanceof JvmField) {
-			return _assigneValueTo((JvmField) feature, assignment, value, context, indicator);
+			return _assignValueTo((JvmField) feature, assignment, value, context, indicator);
 		} else if (feature instanceof JvmOperation) {
-			return _assigneValueTo((JvmOperation) feature, assignment, value, context, indicator);
+			return _assignValueTo((JvmOperation) feature, assignment, value, context, indicator);
 		} else {
 			throw new IllegalArgumentException("Couldn't invoke 'assignValueTo' for feature "+feature+"");
 		}
@@ -929,7 +1229,7 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 	 * @param assignment unused in this context but required for dispatching
 	 * @param indicator unused in this context but required for dispatching
 	 */
-	protected Object _assigneValueTo(XVariableDeclaration variable, XAssignment assignment, Object value,
+	protected Object _assignValueTo(XVariableDeclaration variable, XAbstractFeatureCall assignment, Object value,
 			IEvaluationContext context, CancelIndicator indicator) {
 		if (variable.getType() != null) {
 			JvmTypeReference type = variable.getType();
@@ -941,7 +1241,7 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		return value;
 	}
 
-	protected Object _assigneValueTo(JvmField jvmField, XAssignment assignment, Object value,
+	protected Object _assignValueTo(JvmField jvmField, XAbstractFeatureCall assignment, Object value,
 			IEvaluationContext context, CancelIndicator indicator) {
 		Object receiver = getReceiver(assignment, context, indicator);
 		if (receiver == null)
@@ -963,17 +1263,19 @@ public class XbaseInterpreter implements IExpressionInterpreter {
 		}
 	}
 
-	protected Object getReceiver(XAssignment assignment, IEvaluationContext context, CancelIndicator indicator) {
+	protected Object getReceiver(XAbstractFeatureCall assignment, IEvaluationContext context, CancelIndicator indicator) {
 		XExpression receiver = getActualReceiver(assignment);
 		Object result = receiver == null ? null : internalEvaluate(receiver, context, indicator);
 		return result;
 	}
 
-	protected Object _assigneValueTo(JvmOperation jvmOperation, XAssignment assignment, Object value,
+	protected Object _assignValueTo(JvmOperation jvmOperation, XAbstractFeatureCall assignment, Object value,
 			IEvaluationContext context, CancelIndicator indicator) {
 		List<Object> argumentValues;
-		if (assignment.getImplicitReceiver() != null && assignment.getAssignable() != null) {
-			XExpression implicitArgument = assignment.getAssignable();
+		if (assignment.getImplicitReceiver() != null 
+				&& assignment instanceof XAssignment 
+				&& ((XAssignment) assignment).getAssignable() != null) {
+			XExpression implicitArgument = ((XAssignment) assignment).getAssignable();
 			Object argResult = internalEvaluate(implicitArgument, context, indicator);
 			JvmTypeReference firstParameterType = jvmOperation.getParameters().get(0).getParameterType();
 			Object firstValue = coerceArgumentType(argResult, firstParameterType);

@@ -63,10 +63,11 @@ import org.eclipse.xtext.validation.Issue;
 
 /**
  * @author Holger Schill - Initial contribution and API most of the code is copied from
- * @link{org.eclipse.jface.internal.text.html.BrowserInformationControl due to visibility problems. The methods and
+ *{@link org.eclipse.jface.internal.text.html.BrowserInformationControl} due to visibility problems. The methods and
  *                                                                      fields that are modified are marked
  * @since 2.3
  */
+@SuppressWarnings("restriction")
 public class XbaseInformationControl extends AbstractInformationControl implements IInformationControlExtension2,
 		IDelayedInputChangeProvider, IXtextBrowserInformationControl {
 
@@ -122,6 +123,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 			}
 		});
 		fBrowser.addOpenWindowListener(new OpenWindowListener() {
+			@Override
 			public void open(WindowEvent event) {
 				event.required = true; // Cancel opening of new windows
 			}
@@ -141,14 +143,13 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 		resourceProvider = new HoverEditedResourceProvider();
 		embeddedEditor = xbaseHoverConfiguration.getEditorFactory().newEditor(resourceProvider).readOnly()
 				.processIssuesBy(new IValidationIssueProcessor() {
+					@Override
 					public void processIssues(List<Issue> issues, IProgressMonitor monitor) {
 					}
 				}).withParent(detailPaneComposite);
 		Control viewerControl = embeddedEditor.getViewer().getControl();
 		viewerControl.setBackground(display.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
 		viewerControl.setForeground(display.getSystemColor(SWT.COLOR_INFO_FOREGROUND));
-		// FIXME: No arguments need when https://bugs.eclipse.org/bugs/show_bug.cgi?id=368827 is solved
-		embeddedEditorAccess = embeddedEditor.createPartialEditor("", "a", "", false);
 		embeddedEditor.getDocument().setValidationJob(null);
 		createTextLayout();
 	}
@@ -170,9 +171,10 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	public class HoverEditedResourceProvider implements IEditedResourceProvider {
 		private XtextResourceSet xtextResourceSet;
 
+		@Override
 		public XtextResource createResource() {
 			final String SYNTHETIC_SCHEME = "synthetic";
-			xtextResourceSet = new XtextResourceSet();
+			xtextResourceSet = xbaseHoverConfiguration.createResourceSet();
 			if (fInput != null) {
 				XtextResourceSet resourceSet = (XtextResourceSet) fInput.getElement().eResource().getResourceSet();
 				xtextResourceSet.setClasspathURIContext(resourceSet.getClasspathURIContext());
@@ -192,8 +194,9 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	/**
 	 * Xbase - modification added detailPane
 	 */
+	@Override
 	public void setInput(Object input) {
-		Assert.isLegal(input == null || input instanceof String || input instanceof XtextBrowserInformationControlInput);
+		Assert.isLegal(input == null || input instanceof String || input instanceof XtextBrowserInformationControlInput, String.valueOf(input));
 
 		if (input instanceof String) {
 			setInformation((String) input);
@@ -246,11 +249,14 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 			unsugaredExpression = castedInput.getUnsugaredExpression();
 			if(unsugaredExpression != null && unsugaredExpression.length() > 0){
 				EObject element = fInput.getElement();
-				if(element != null && element.eResource() != null && element.eResource().getResourceSet() != null)
+				if(element != null && element.eResource() != null && element.eResource().getResourceSet() != null){
+					// FIXME: No arguments need when https://bugs.eclipse.org/bugs/show_bug.cgi?id=368827 is solved
+					// THEN move to createContent as it was before
+					if(embeddedEditorAccess == null)
+						embeddedEditorAccess = embeddedEditor.createPartialEditor("", "INITIAL CONTENT", "", false);
 					resourceProvider.setContext(((XtextResourceSet) element.eResource().getResourceSet()).getClasspathURIContext());
-				else
+				} else
 					return;
-				embeddedEditorAccess.updateModel("", "a", "");
 				embeddedEditorAccess.updateModel(castedInput.getPrefix() , unsugaredExpression ,castedInput.getSuffix());
 			}
 		}
@@ -352,6 +358,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	/**
 	 * Xbase - modification
 	 */
+	@Override
 	public XtextBrowserInformationControlInput getInput() {
 		return fInput;
 	}
@@ -494,6 +501,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 
 		// Make sure the display wakes from sleep after timeout:
 		display.timerExec(100, new Runnable() {
+			@Override
 			public void run() {
 				fCompleted = true;
 			}
@@ -581,6 +589,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	 *            the location listener
 	 * @since 3.4
 	 */
+	@Override
 	public void addLocationListener(LocationListener listener) {
 		fBrowser.addLocationListener(listener);
 	}
@@ -588,6 +597,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	/*
 	 * @see IInformationControlExtension#hasContents()
 	 */
+	@Override
 	public boolean hasContents() {
 		return fBrowserHasContent;
 	}
@@ -600,6 +610,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	 *            the listener to add
 	 * @since 3.4
 	 */
+	@Override
 	public void addInputChangeListener(IInputChangedListener inputChangeListener) {
 		Assert.isNotNull(inputChangeListener);
 		fInputChangeListeners.add(inputChangeListener);
@@ -621,6 +632,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	 * @see org.eclipse.jface.text.IDelayedInputChangeProvider#setDelayedInputChangeListener(org.eclipse.jface.text.IInputChangedListener)
 	 * @since 3.4
 	 */
+	@Override
 	public void setDelayedInputChangeListener(IInputChangedListener inputChangeListener) {
 		fDelayedInputChangeListener = inputChangeListener;
 	}
@@ -631,6 +643,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	 * @return <code>true</code> if a delayed input change listener is currently registered
 	 * @since 3.4
 	 */
+	@Override
 	public boolean hasDelayedInputChangeListener() {
 		return fDelayedInputChangeListener != null;
 	}
@@ -642,6 +655,7 @@ public class XbaseInformationControl extends AbstractInformationControl implemen
 	 *            the new input, or <code>null</code> to request cancellation
 	 * @since 3.4
 	 */
+	@Override
 	public void notifyDelayedInputChange(Object newInput) {
 		if (fDelayedInputChangeListener != null)
 			fDelayedInputChangeListener.inputChanged(newInput);

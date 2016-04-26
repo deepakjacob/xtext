@@ -1,7 +1,9 @@
 /**
- * <copyright>
- * </copyright>
- *
+ * Copyright (c) 2011-2013 itemis AG (http://www.itemis.eu) and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  */
 package org.eclipse.xtext.common.types.impl;
 
@@ -25,6 +27,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
 
 import org.eclipse.xtext.common.types.JvmArrayType;
 import org.eclipse.xtext.common.types.JvmComponentType;
+import org.eclipse.xtext.common.types.JvmConstructor;
 import org.eclipse.xtext.common.types.JvmDeclaredType;
 import org.eclipse.xtext.common.types.JvmFeature;
 import org.eclipse.xtext.common.types.JvmField;
@@ -193,33 +196,6 @@ public abstract class JvmDeclaredTypeImpl extends JvmMemberImplCustom implements
 	 */
 	public JvmArrayType getArrayType()
 	{
-		if (arrayType != null && arrayType.eIsProxy())
-		{
-			InternalEObject oldArrayType = (InternalEObject)arrayType;
-			arrayType = (JvmArrayType)eResolveProxy(oldArrayType);
-			if (arrayType != oldArrayType)
-			{
-				InternalEObject newArrayType = (InternalEObject)arrayType;
-				NotificationChain msgs =  oldArrayType.eInverseRemove(this, TypesPackage.JVM_ARRAY_TYPE__COMPONENT_TYPE, JvmArrayType.class, null);
-				if (newArrayType.eInternalContainer() == null)
-				{
-					msgs =  newArrayType.eInverseAdd(this, TypesPackage.JVM_ARRAY_TYPE__COMPONENT_TYPE, JvmArrayType.class, msgs);
-				}
-				if (msgs != null) msgs.dispatch();
-				if (eNotificationRequired())
-					eNotify(new ENotificationImpl(this, Notification.RESOLVE, TypesPackage.JVM_DECLARED_TYPE__ARRAY_TYPE, oldArrayType, arrayType));
-			}
-		}
-		return arrayType;
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public JvmArrayType basicGetArrayType()
-	{
 		return arrayType;
 	}
 
@@ -270,7 +246,7 @@ public abstract class JvmDeclaredTypeImpl extends JvmMemberImplCustom implements
 	{
 		if (superTypes == null)
 		{
-			superTypes = new EObjectContainmentEList.Resolving<JvmTypeReference>(JvmTypeReference.class, this, TypesPackage.JVM_DECLARED_TYPE__SUPER_TYPES);
+			superTypes = new EObjectContainmentEList<JvmTypeReference>(JvmTypeReference.class, this, TypesPackage.JVM_DECLARED_TYPE__SUPER_TYPES);
 		}
 		return superTypes;
 	}
@@ -284,7 +260,7 @@ public abstract class JvmDeclaredTypeImpl extends JvmMemberImplCustom implements
 	{
 		if (members == null)
 		{
-			members = new EObjectContainmentWithInverseEList.Resolving<JvmMember>(JvmMember.class, this, TypesPackage.JVM_DECLARED_TYPE__MEMBERS, TypesPackage.JVM_MEMBER__DECLARING_TYPE);
+			members = new EObjectContainmentWithInverseEList<JvmMember>(JvmMember.class, this, TypesPackage.JVM_DECLARED_TYPE__MEMBERS, TypesPackage.JVM_MEMBER__DECLARING_TYPE);
 		}
 		return members;
 	}
@@ -434,6 +410,90 @@ public abstract class JvmDeclaredTypeImpl extends JvmMemberImplCustom implements
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public Iterable<JvmTypeReference> getExtendedInterfaces()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public JvmTypeReference getExtendedClass()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isInstantiateable()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Iterable<JvmDeclaredType> findAllNestedTypesByName(String simpleName)
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public boolean isLocal()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Iterable<JvmConstructor> getDeclaredConstructors()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public Iterable<JvmDeclaredType> getAllNestedTypes()
+	{
+		// TODO: implement this method
+		// Ensure that you remove @generated or mark it @generated NOT
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs)
@@ -481,8 +541,7 @@ public abstract class JvmDeclaredTypeImpl extends JvmMemberImplCustom implements
 		switch (featureID)
 		{
 			case TypesPackage.JVM_DECLARED_TYPE__ARRAY_TYPE:
-				if (resolve) return getArrayType();
-				return basicGetArrayType();
+				return getArrayType();
 			case TypesPackage.JVM_DECLARED_TYPE__SUPER_TYPES:
 				return getSuperTypes();
 			case TypesPackage.JVM_DECLARED_TYPE__MEMBERS:

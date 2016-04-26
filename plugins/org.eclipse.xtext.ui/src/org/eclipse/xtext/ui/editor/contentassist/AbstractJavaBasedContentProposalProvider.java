@@ -26,6 +26,8 @@ import org.eclipse.xtext.GrammarUtil;
 import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
+import org.eclipse.xtext.conversion.IValueConverter;
+import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.resource.IEObjectDescription;
@@ -62,6 +64,10 @@ public abstract class AbstractJavaBasedContentProposalProvider extends AbstractC
 		private final ContentAssistContext contentAssistContext;
 		private final String ruleName;
 		private final IQualifiedNameConverter qualifiedNameConverter;
+		/**
+		 * @since 2.7
+		 */
+		protected final IValueConverter<Object> valueConverter;
 
 		/**
 		 * @since 2.1
@@ -71,14 +77,27 @@ public abstract class AbstractJavaBasedContentProposalProvider extends AbstractC
 			this.contentAssistContext = contentAssistContext;
 			this.ruleName = ruleName;
 			this.qualifiedNameConverter = qualifiedNameConverter;
+			if (this.ruleName != null && getValueConverter() instanceof IValueConverterService.Introspectable) {
+				this.valueConverter = ((IValueConverterService.Introspectable)getValueConverter()).getConverter(ruleName);
+			} else {
+				this.valueConverter = null;
+			}
 		}
 
+		@Override
 		public ICompletionProposal apply(IEObjectDescription candidate) {
 			if (candidate == null)
 				return null;
 			ICompletionProposal result = null;
 			String proposal = qualifiedNameConverter.toString(candidate.getName());
-			if (ruleName != null) {
+			if (valueConverter != null) {
+				try {
+					proposal = valueConverter.toString(proposal);
+				} catch (ValueConverterException e) {
+					log.debug(e.getMessage(), e);
+					return null;
+				}
+			} else if (ruleName != null) {
 				try {
 					proposal = getValueConverter().toString(proposal, ruleName);
 				} catch (ValueConverterException e) {
@@ -88,7 +107,7 @@ public abstract class AbstractJavaBasedContentProposalProvider extends AbstractC
 			}
 			EObject objectOrProxy = candidate.getEObjectOrProxy();
 			StyledString displayString = getStyledDisplayString(candidate);
-			Image image = getImage(objectOrProxy);
+			Image image = getImage(candidate);
 			result = createCompletionProposal(proposal, displayString, image, contentAssistContext);
 			if (result instanceof ConfigurableCompletionProposal) {
 				((ConfigurableCompletionProposal) result).setProposalContextResource(contentAssistContext.getResource());
@@ -202,8 +221,17 @@ public abstract class AbstractJavaBasedContentProposalProvider extends AbstractC
 			ICompletionProposalAcceptor acceptor, Predicate<IEObjectDescription> filter) {
 		ParserRule containingParserRule = GrammarUtil.containingParserRule(crossReference);
 		if (!GrammarUtil.isDatatypeRule(containingParserRule)) {
-			EReference ref = GrammarUtil.getReference(crossReference);
-			lookupCrossReference(crossReference, ref, contentAssistContext, acceptor, filter);
+			EReference ref;
+			if (containingParserRule.isWildcard()) {
+				// TODO we need better ctrl flow analysis here
+				// The cross reference may come from another parser rule then the current model 
+				ref = GrammarUtil.getReference(crossReference, contentAssistContext.getCurrentModel().eClass());
+			} else {
+				ref = GrammarUtil.getReference(crossReference);
+			}
+			if (ref != null) {
+				lookupCrossReference(crossReference, ref, contentAssistContext, acceptor, filter);
+			}
 		}
 	}
 
@@ -238,7 +266,7 @@ public abstract class AbstractJavaBasedContentProposalProvider extends AbstractC
 		return new DefaultProposalCreator(contentAssistContext, ruleName, getQualifiedNameConverter());
 	}
 
-	private Set<List<Object>> handledArguments;
+	private Set<List<?>> handledArguments;
 
 	@Override
 	public void createProposals(ContentAssistContext context, ICompletionProposalAcceptor acceptor) {
@@ -268,9 +296,16 @@ public abstract class AbstractJavaBasedContentProposalProvider extends AbstractC
 		Object[] paramAsArray = new Object[params.length + 1];
 		System.arraycopy(params, 0, paramAsArray, 0, params.length);
 		paramAsArray[params.length] = acceptor;
-		if (handledArguments.add(Lists.asList(methodName, paramAsArray))) {
+		if (announceProcessing(Lists.asList(methodName, paramAsArray))) {
 			dispatcher.invoke(paramAsArray);
 		}
+	}
+	
+	/**
+	 * @since 2.7
+	 */
+	protected boolean announceProcessing(List<?> key) {
+		return handledArguments.add(key);
 	}
 
 	public void setScopeProvider(IScopeProvider scopeProvider) {

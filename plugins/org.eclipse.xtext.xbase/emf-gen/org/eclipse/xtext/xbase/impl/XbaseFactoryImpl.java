@@ -35,7 +35,7 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	{
 		try
 		{
-			XbaseFactory theXbaseFactory = (XbaseFactory)EPackage.Registry.INSTANCE.getEFactory("http://www.eclipse.org/xtext/xbase/Xbase"); 
+			XbaseFactory theXbaseFactory = (XbaseFactory)EPackage.Registry.INSTANCE.getEFactory(XbasePackage.eNS_URI);
 			if (theXbaseFactory != null)
 			{
 				return theXbaseFactory;
@@ -81,11 +81,15 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 			case XbasePackage.XNULL_LITERAL: return createXNullLiteral();
 			case XbasePackage.XNUMBER_LITERAL: return createXNumberLiteral();
 			case XbasePackage.XSTRING_LITERAL: return createXStringLiteral();
+			case XbasePackage.XLIST_LITERAL: return createXListLiteral();
+			case XbasePackage.XSET_LITERAL: return createXSetLiteral();
 			case XbasePackage.XCLOSURE: return createXClosure();
 			case XbasePackage.XCASTED_EXPRESSION: return createXCastedExpression();
 			case XbasePackage.XBINARY_OPERATION: return createXBinaryOperation();
 			case XbasePackage.XUNARY_OPERATION: return createXUnaryOperation();
+			case XbasePackage.XPOSTFIX_OPERATION: return createXPostfixOperation();
 			case XbasePackage.XFOR_LOOP_EXPRESSION: return createXForLoopExpression();
+			case XbasePackage.XBASIC_FOR_LOOP_EXPRESSION: return createXBasicForLoopExpression();
 			case XbasePackage.XDO_WHILE_EXPRESSION: return createXDoWhileExpression();
 			case XbasePackage.XWHILE_EXPRESSION: return createXWhileExpression();
 			case XbasePackage.XTYPE_LITERAL: return createXTypeLiteral();
@@ -95,6 +99,7 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 			case XbasePackage.XCATCH_CLAUSE: return createXCatchClause();
 			case XbasePackage.XASSIGNMENT: return createXAssignment();
 			case XbasePackage.XRETURN_EXPRESSION: return createXReturnExpression();
+			case XbasePackage.XSYNCHRONIZED_EXPRESSION: return createXSynchronizedExpression();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -118,7 +123,7 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	 */
 	public XSwitchExpression createXSwitchExpression()
 	{
-		XSwitchExpressionImplCustom xSwitchExpression = new XSwitchExpressionImplCustom();
+		XSwitchExpressionImpl xSwitchExpression = new XSwitchExpressionImpl();
 		return xSwitchExpression;
 	}
 
@@ -140,7 +145,7 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	 */
 	public XBlockExpression createXBlockExpression()
 	{
-		XBlockExpressionImpl xBlockExpression = new XBlockExpressionImpl();
+		XBlockExpressionImplCustom xBlockExpression = new XBlockExpressionImplCustom();
 		return xBlockExpression;
 	}
 
@@ -206,7 +211,7 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	 */
 	public XNullLiteral createXNullLiteral()
 	{
-		XNullLiteralImpl xNullLiteral = new XNullLiteralImpl();
+		XNullLiteralImplCustom xNullLiteral = new XNullLiteralImplCustom();
 		return xNullLiteral;
 	}
 
@@ -230,6 +235,28 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	{
 		XStringLiteralImpl xStringLiteral = new XStringLiteralImpl();
 		return xStringLiteral;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public XListLiteral createXListLiteral()
+	{
+		XListLiteralImpl xListLiteral = new XListLiteralImpl();
+		return xListLiteral;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public XSetLiteral createXSetLiteral()
+	{
+		XSetLiteralImpl xSetLiteral = new XSetLiteralImpl();
+		return xSetLiteral;
 	}
 
 	/**
@@ -281,10 +308,32 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public XPostfixOperation createXPostfixOperation()
+	{
+		XPostfixOperationImplCustom xPostfixOperation = new XPostfixOperationImplCustom();
+		return xPostfixOperation;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public XForLoopExpression createXForLoopExpression()
 	{
 		XForLoopExpressionImpl xForLoopExpression = new XForLoopExpressionImpl();
 		return xForLoopExpression;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public XBasicForLoopExpression createXBasicForLoopExpression()
+	{
+		XBasicForLoopExpressionImpl xBasicForLoopExpression = new XBasicForLoopExpressionImpl();
+		return xBasicForLoopExpression;
 	}
 
 	/**
@@ -316,7 +365,7 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	 */
 	public XTypeLiteral createXTypeLiteral()
 	{
-		XTypeLiteralImpl xTypeLiteral = new XTypeLiteralImpl();
+		XTypeLiteralImplCustom xTypeLiteral = new XTypeLiteralImplCustom();
 		return xTypeLiteral;
 	}
 
@@ -382,8 +431,19 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	 */
 	public XReturnExpression createXReturnExpression()
 	{
-		XReturnExpressionImpl xReturnExpression = new XReturnExpressionImpl();
+		XReturnExpressionImplCustom xReturnExpression = new XReturnExpressionImplCustom();
 		return xReturnExpression;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public XSynchronizedExpression createXSynchronizedExpression()
+	{
+		XSynchronizedExpressionImpl xSynchronizedExpression = new XSynchronizedExpressionImpl();
+		return xSynchronizedExpression;
 	}
 
 	/**
@@ -399,6 +459,7 @@ public class XbaseFactoryImpl extends EFactoryImpl implements XbaseFactory
 	/**
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
+	 * @deprecated
 	 * @generated
 	 */
 	@Deprecated

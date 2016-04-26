@@ -17,13 +17,14 @@ import org.eclipse.xtext.common.types.JvmGenericType;
 import org.eclipse.xtext.common.types.JvmMember;
 import org.eclipse.xtext.common.types.JvmType;
 import org.eclipse.xtext.common.types.JvmTypeReference;
+import org.eclipse.xtext.common.types.descriptions.JvmDeclaredTypeSignatureHashProvider;
 import org.eclipse.xtext.common.types.util.TypeReferences;
 import org.eclipse.xtext.util.Strings;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder;
 import org.eclipse.xtext.xbase.lib.Exceptions;
+import org.eclipse.xtext.xbase.lib.Extension;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
-import org.eclipse.xtext.xbase.resource.JvmDeclaredTypeSignatureHashProvider;
 import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,12 +37,15 @@ import org.junit.Test;
 @SuppressWarnings("all")
 public class TypeSignatureHashTest extends AbstractXbaseTestCase {
   @Inject
+  @Extension
   private JvmDeclaredTypeSignatureHashProvider _jvmDeclaredTypeSignatureHashProvider;
   
   @Inject
+  @Extension
   private JvmTypesBuilder _jvmTypesBuilder;
   
   @Inject
+  @Extension
   private TypeReferences _typeReferences;
   
   @Test
@@ -49,18 +53,20 @@ public class TypeSignatureHashTest extends AbstractXbaseTestCase {
     final EObject eObject = EcoreFactory.eINSTANCE.createEObject();
     final JvmGenericType bar = this._jvmTypesBuilder.toClass(eObject, "Bar");
     final Procedure1<JvmGenericType> _function = new Procedure1<JvmGenericType>() {
-        public void apply(final JvmGenericType it) {
-          EList<JvmMember> _members = it.getMembers();
-          TypeSignatureHashTest.this._jvmTypesBuilder.<JvmGenericType>operator_add(_members, bar);
-        }
-      };
+      @Override
+      public void apply(final JvmGenericType it) {
+        EList<JvmMember> _members = it.getMembers();
+        TypeSignatureHashTest.this._jvmTypesBuilder.<JvmGenericType>operator_add(_members, bar);
+      }
+    };
     final JvmGenericType foo = this._jvmTypesBuilder.toClass(eObject, "Foo", _function);
     final String hash = this._jvmDeclaredTypeSignatureHashProvider.getHash(foo);
     EList<JvmMember> _members = bar.getMembers();
     final Procedure1<JvmConstructor> _function_1 = new Procedure1<JvmConstructor>() {
-        public void apply(final JvmConstructor it) {
-        }
-      };
+      @Override
+      public void apply(final JvmConstructor it) {
+      }
+    };
     JvmConstructor _constructor = this._jvmTypesBuilder.toConstructor(eObject, _function_1);
     this._jvmTypesBuilder.<JvmConstructor>operator_add(_members, _constructor);
     String _hash = this._jvmDeclaredTypeSignatureHashProvider.getHash(foo);
@@ -106,7 +112,7 @@ public class TypeSignatureHashTest extends AbstractXbaseTestCase {
       JvmType _findDeclaredType = this._typeReferences.findDeclaredType(String.class, e);
       String _hash = this._jvmDeclaredTypeSignatureHashProvider.getHash(((JvmDeclaredType) _findDeclaredType));
       Assert.assertEquals("java.lang.String", _hash);
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }

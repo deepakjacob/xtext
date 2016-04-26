@@ -12,7 +12,9 @@ import org.eclipse.xtext.junit4.AbstractXtextTests;
 import org.eclipse.xtext.parser.antlr.Lexer;
 import org.eclipse.xtext.parser.antlr.internal.InternalXtextLexer;
 import org.eclipse.xtext.resource.DefaultLocationInFileProvider;
+import org.eclipse.xtext.resource.OutdatedStateManager;
 import org.eclipse.xtext.resource.XtextResource;
+import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.ui.editor.model.DocumentTokenSource;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.editor.model.XtextDocument;
@@ -40,6 +42,7 @@ public class OutlineTreeProviderTest extends AbstractXtextTests {
 		super.setUp();
 		final Injector injector = Activator.getInstance().getInjector("org.eclipse.xtext.ui.tests.editor.outline.OutlineTestLanguage");
 		with(new ISetup() {
+			@Override
 			public Injector createInjectorAndDoEMFRegistration() {
 				return injector;
 			}
@@ -130,10 +133,11 @@ public class OutlineTreeProviderTest extends AbstractXtextTests {
 		final XtextResource resource = getResource(modelAsText, "test.outlinetestlanguage");
 		DocumentTokenSource tokenSource = new DocumentTokenSource();
 		tokenSource.setLexer(new Provider<Lexer>(){
+			@Override
 			public Lexer get() {
 				return new InternalXtextLexer();
 			}});
-		XtextDocument xtextDocument = new XtextDocument(tokenSource, null);
+		XtextDocument xtextDocument = new XtextDocument(tokenSource, null, new OutdatedStateManager(), new OperationCanceledManager());
 		xtextDocument.setInput(resource);
 		xtextDocument.set(modelAsText);
 		return xtextDocument;	

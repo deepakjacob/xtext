@@ -11,9 +11,6 @@ import org.eclipse.emf.ecore.EObject;
 
 import org.eclipse.xtext.purexbase.pureXbase.*;
 
-import org.eclipse.xtext.xbase.XBlockExpression;
-import org.eclipse.xtext.xbase.XExpression;
-
 /**
  * <!-- begin-user-doc -->
  * The <b>Adapter Factory</b> for the model.
@@ -83,26 +80,6 @@ public class PureXbaseAdapterFactory extends AdapterFactoryImpl
         return createModelAdapter();
       }
       @Override
-      public Adapter caseImport(Import object)
-      {
-        return createImportAdapter();
-      }
-      @Override
-      public Adapter caseSpecialBlockExpression(SpecialBlockExpression object)
-      {
-        return createSpecialBlockExpressionAdapter();
-      }
-      @Override
-      public Adapter caseXExpression(XExpression object)
-      {
-        return createXExpressionAdapter();
-      }
-      @Override
-      public Adapter caseXBlockExpression(XBlockExpression object)
-      {
-        return createXBlockExpressionAdapter();
-      }
-      @Override
       public Adapter defaultCase(EObject object)
       {
         return createEObjectAdapter();
@@ -135,66 +112,6 @@ public class PureXbaseAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createModelAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.purexbase.pureXbase.Import <em>Import</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see org.eclipse.xtext.purexbase.pureXbase.Import
-   * @generated
-   */
-  public Adapter createImportAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.purexbase.pureXbase.SpecialBlockExpression <em>Special Block Expression</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see org.eclipse.xtext.purexbase.pureXbase.SpecialBlockExpression
-   * @generated
-   */
-  public Adapter createSpecialBlockExpressionAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XExpression <em>XExpression</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see org.eclipse.xtext.xbase.XExpression
-   * @generated
-   */
-  public Adapter createXExpressionAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link org.eclipse.xtext.xbase.XBlockExpression <em>XBlock Expression</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see org.eclipse.xtext.xbase.XBlockExpression
-   * @generated
-   */
-  public Adapter createXBlockExpressionAdapter()
   {
     return null;
   }

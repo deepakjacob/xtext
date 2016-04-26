@@ -13,6 +13,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.DefaultHighlightingConfiguration;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfigurationAcceptor;
 import org.eclipse.xtext.ui.editor.utils.TextStyle;
+import org.eclipse.xtext.xbase.ide.highlighting.XbaseHighlightingStyles;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
@@ -20,12 +21,12 @@ import org.eclipse.xtext.ui.editor.utils.TextStyle;
  */
 public class XbaseHighlightingConfiguration extends DefaultHighlightingConfiguration {
 	
-	public static final String STATIC_METHOD_INVOCATION = "xbase.static.method.invocation";
-	public static final String STATIC_FIELD = "xbase.static.field";
-	public static final String FIELD = "xbase.field";
-	public static final String ANNOTATION = "xbase.annotation";
-	public static final String EXTENSION_METHOD_INVOCATION = "xbase.extension.method.invacation";
-	public static final String DEPRECATED_MEMBERS = "xbase.deprecated.members";
+	public static final String STATIC_METHOD_INVOCATION = XbaseHighlightingStyles.STATIC_METHOD_INVOCATION;
+	public static final String STATIC_FIELD = XbaseHighlightingStyles.STATIC_FIELD;
+	public static final String FIELD = XbaseHighlightingStyles.FIELD;
+	public static final String ANNOTATION = XbaseHighlightingStyles.ANNOTATION;
+	public static final String EXTENSION_METHOD_INVOCATION = XbaseHighlightingStyles.EXTENSION_METHOD_INVOCATION;
+	public static final String DEPRECATED_MEMBERS = XbaseHighlightingStyles.DEPRECATED_MEMBERS;
 
 	@Override
 	public void configure(IHighlightingConfigurationAcceptor acceptor) {
@@ -43,7 +44,6 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 	public TextStyle staticMethodInvocation(){
 		TextStyle textStyle = defaultTextStyle().copy();
 		textStyle.setStyle(SWT.ITALIC);
-		textStyle.setColor(new RGB(0, 0, 0));
 		return textStyle;
 	}
 	
@@ -75,7 +75,6 @@ public class XbaseHighlightingConfiguration extends DefaultHighlightingConfigura
 	public TextStyle deprecatedMembers(){
 		TextStyle textStyle = defaultTextStyle().copy();
 		textStyle.setStyle(TextAttribute.STRIKETHROUGH);
-		textStyle.setColor(new RGB(0, 0, 0));
 		return textStyle;
 	}
 	

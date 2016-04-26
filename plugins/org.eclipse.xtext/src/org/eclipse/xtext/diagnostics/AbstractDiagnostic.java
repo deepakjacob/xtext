@@ -11,6 +11,8 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.util.LineAndColumn;
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -23,22 +25,41 @@ public abstract class AbstractDiagnostic implements Diagnostic {
 	
 	public abstract String[] getData();
 
+	@Override
 	public int getLength() {
-		return getNode().getLength();
+		INode node = getNode();
+		if (node != null)
+			return node.getLength();
+		return 1;
 	}
 
+	@Override
 	public int getOffset() {
-		return getNode().getOffset();
+		INode node = getNode();
+		if (node != null)
+			return node.getOffset();
+		return 0;
 	}
 
+	@Override
 	public int getColumn() {
-		throw new UnsupportedOperationException();
+		INode node = getNode();
+		if (node != null) {
+			LineAndColumn lineAndColumn = NodeModelUtils.getLineAndColumn(node, getOffset());
+			return lineAndColumn.getColumn();
+		}
+		return 0;
 	}
 
+	@Override
 	public int getLine() {
-		return getNode().getStartLine();
+		INode node = getNode();
+		if (node != null)
+			return node.getStartLine();
+		return -1;
 	}
 
+	@Override
 	public String getLocation() {
 		return null;
 	}

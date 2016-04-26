@@ -26,6 +26,11 @@ import org.eclipse.xtext.common.types.TypesPackage;
  *   <li>and each data type</li>
  * </ul>
  * <!-- end-user-doc -->
+ * <!-- begin-model-doc -->
+ * @since 2.7
+ * @noextend This interface is not intended to be extended by clients.
+ * @noimplement This interface is not intended to be implemented by clients.
+ * <!-- end-model-doc -->
  * @see org.eclipse.xtext.xtype.XtypeFactory
  * @model kind="package"
  * @generated
@@ -204,13 +209,22 @@ public interface XtypePackage extends EPackage
 	int XIMPORT_DECLARATION = 3;
 
 	/**
+	 * The feature id for the '<em><b>Wildcard</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int XIMPORT_DECLARATION__WILDCARD = 0;
+
+	/**
 	 * The feature id for the '<em><b>Extension</b></em>' attribute.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int XIMPORT_DECLARATION__EXTENSION = 0;
+	int XIMPORT_DECLARATION__EXTENSION = 1;
 
 	/**
 	 * The feature id for the '<em><b>Static</b></em>' attribute.
@@ -219,7 +233,7 @@ public interface XtypePackage extends EPackage
 	 * @generated
 	 * @ordered
 	 */
-	int XIMPORT_DECLARATION__STATIC = 1;
+	int XIMPORT_DECLARATION__STATIC = 2;
 
 	/**
 	 * The feature id for the '<em><b>Imported Type</b></em>' reference.
@@ -228,7 +242,25 @@ public interface XtypePackage extends EPackage
 	 * @generated
 	 * @ordered
 	 */
-	int XIMPORT_DECLARATION__IMPORTED_TYPE = 2;
+	int XIMPORT_DECLARATION__IMPORTED_TYPE = 3;
+
+	/**
+	 * The feature id for the '<em><b>Member Name</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int XIMPORT_DECLARATION__MEMBER_NAME = 4;
+
+	/**
+	 * The feature id for the '<em><b>Imported Namespace</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int XIMPORT_DECLARATION__IMPORTED_NAMESPACE = 5;
 
 	/**
 	 * The number of structural features of the '<em>XImport Declaration</em>' class.
@@ -237,7 +269,7 @@ public interface XtypePackage extends EPackage
 	 * @generated
 	 * @ordered
 	 */
-	int XIMPORT_DECLARATION_FEATURE_COUNT = 3;
+	int XIMPORT_DECLARATION_FEATURE_COUNT = 6;
 
 	/**
 	 * The meta object id for the '<em>IJvm Type Reference Provider</em>' data type.
@@ -357,6 +389,17 @@ public interface XtypePackage extends EPackage
 	EClass getXImportDeclaration();
 
 	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.xtype.XImportDeclaration#isWildcard <em>Wildcard</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Wildcard</em>'.
+	 * @see org.eclipse.xtext.xtype.XImportDeclaration#isWildcard()
+	 * @see #getXImportDeclaration()
+	 * @generated
+	 */
+	EAttribute getXImportDeclaration_Wildcard();
+
+	/**
 	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.xtype.XImportDeclaration#isExtension <em>Extension</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -388,6 +431,28 @@ public interface XtypePackage extends EPackage
 	 * @generated
 	 */
 	EReference getXImportDeclaration_ImportedType();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.xtype.XImportDeclaration#getMemberName <em>Member Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Member Name</em>'.
+	 * @see org.eclipse.xtext.xtype.XImportDeclaration#getMemberName()
+	 * @see #getXImportDeclaration()
+	 * @generated
+	 */
+	EAttribute getXImportDeclaration_MemberName();
+
+	/**
+	 * Returns the meta object for the attribute '{@link org.eclipse.xtext.xtype.XImportDeclaration#getImportedNamespace <em>Imported Namespace</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the attribute '<em>Imported Namespace</em>'.
+	 * @see org.eclipse.xtext.xtype.XImportDeclaration#getImportedNamespace()
+	 * @see #getXImportDeclaration()
+	 * @generated
+	 */
+	EAttribute getXImportDeclaration_ImportedNamespace();
 
 	/**
 	 * Returns the meta object for data type '{@link org.eclipse.xtext.xbase.typing.IJvmTypeReferenceProvider <em>IJvm Type Reference Provider</em>}'.
@@ -512,6 +577,14 @@ public interface XtypePackage extends EPackage
 		EClass XIMPORT_DECLARATION = eINSTANCE.getXImportDeclaration();
 
 		/**
+		 * The meta object literal for the '<em><b>Wildcard</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute XIMPORT_DECLARATION__WILDCARD = eINSTANCE.getXImportDeclaration_Wildcard();
+
+		/**
 		 * The meta object literal for the '<em><b>Extension</b></em>' attribute feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -534,6 +607,22 @@ public interface XtypePackage extends EPackage
 		 * @generated
 		 */
 		EReference XIMPORT_DECLARATION__IMPORTED_TYPE = eINSTANCE.getXImportDeclaration_ImportedType();
+
+		/**
+		 * The meta object literal for the '<em><b>Member Name</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute XIMPORT_DECLARATION__MEMBER_NAME = eINSTANCE.getXImportDeclaration_MemberName();
+
+		/**
+		 * The meta object literal for the '<em><b>Imported Namespace</b></em>' attribute feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EAttribute XIMPORT_DECLARATION__IMPORTED_NAMESPACE = eINSTANCE.getXImportDeclaration_ImportedNamespace();
 
 		/**
 		 * The meta object literal for the '<em>IJvm Type Reference Provider</em>' data type.

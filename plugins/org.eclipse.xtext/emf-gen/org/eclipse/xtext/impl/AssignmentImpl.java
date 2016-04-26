@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: AssignmentImpl.java,v 1.16 2010/04/06 14:09:59 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -24,12 +20,12 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.impl.AssignmentImpl#getFeature <em>Feature</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.AssignmentImpl#getOperator <em>Operator</em>}</li>
  *   <li>{@link org.eclipse.xtext.impl.AssignmentImpl#getTerminal <em>Terminal</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

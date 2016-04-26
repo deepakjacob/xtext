@@ -52,7 +52,7 @@ public abstract class AbstractJavaProjectsStateTest extends AbstractAllContainer
 		uri3 = createFileAndRegisterResource(project2, "src2/file3");
 		IResource member = javaProject1.getProject().findMember("src");
 		srcRoot = javaProject1.getPackageFragmentRoot(member);
-		Storage2UriMapperJavaImpl mapper = new Storage2UriMapperJavaImpl() {
+		Storage2UriMapperImpl mapper = new Storage2UriMapperImpl() {
 			@Override
 			public boolean isValidUri(URI uri, IStorage storage) {
 				return uri != null 
@@ -60,7 +60,7 @@ public abstract class AbstractJavaProjectsStateTest extends AbstractAllContainer
 					&& !uri.toString().endsWith("/.classpath");
 			}
 		};
-		mapper.setUriValidator(new UriValidator() {
+		UriValidator uriValidator = new UriValidator() {
 			@Override
 			public boolean isValid(URI uri, IStorage storage) {
 				return "name".equals(uri.fileExtension());
@@ -70,9 +70,14 @@ public abstract class AbstractJavaProjectsStateTest extends AbstractAllContainer
 			public boolean isPossiblyManaged(IStorage storage) {
 				return "name".equals(storage.getFullPath().getFileExtension());
 			}
-		});
-		mapper.setJdtHelper(new JdtHelper());
-		mapper.setLocator(new JarEntryLocator());
+		};
+		mapper.setUriValidator(uriValidator);
+		Storage2UriMapperJavaImpl contribution = new Storage2UriMapperJavaImpl();
+		contribution.setUriValidator(uriValidator);
+		contribution.setJdtHelper(new JdtHelper());
+		contribution.setLocator(new JarEntryLocator());
+		contribution.setHost(mapper);
+		mapper.setContribution(contribution);
 		projectsState = createProjectsState(mapper);
 	}
 

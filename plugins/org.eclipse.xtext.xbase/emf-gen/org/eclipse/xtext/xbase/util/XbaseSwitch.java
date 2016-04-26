@@ -7,10 +7,10 @@
  */
 package org.eclipse.xtext.xbase.util;
 
-import java.util.List;
-
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+
+import org.eclipse.emf.ecore.util.Switch;
 
 import org.eclipse.xtext.common.types.JvmIdentifiableElement;
 
@@ -29,7 +29,7 @@ import org.eclipse.xtext.xbase.*;
  * @see org.eclipse.xtext.xbase.XbasePackage
  * @generated
  */
-public class XbaseSwitch<T>
+public class XbaseSwitch<T> extends Switch<T>
 {
 	/**
 	 * The cached model package
@@ -54,15 +54,17 @@ public class XbaseSwitch<T>
 	}
 
 	/**
-	 * Calls <code>caseXXX</code> for each class of the model until one returns a non null result; it yields that result.
+	 * Checks whether this is a switch for the given package.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the first non-null result returned by a <code>caseXXX</code> call.
+	 * @param ePackage the package in question.
+	 * @return whether this is a switch for the given package.
 	 * @generated
 	 */
-	public T doSwitch(EObject theEObject)
+	@Override
+	protected boolean isSwitchFor(EPackage ePackage)
 	{
-		return doSwitch(theEObject.eClass(), theEObject);
+		return ePackage == modelPackage;
 	}
 
 	/**
@@ -72,29 +74,7 @@ public class XbaseSwitch<T>
 	 * @return the first non-null result returned by a <code>caseXXX</code> call.
 	 * @generated
 	 */
-	protected T doSwitch(EClass theEClass, EObject theEObject)
-	{
-		if (theEClass.eContainer() == modelPackage)
-		{
-			return doSwitch(theEClass.getClassifierID(), theEObject);
-		}
-		else
-		{
-			List<EClass> eSuperTypes = theEClass.getESuperTypes();
-			return
-				eSuperTypes.isEmpty() ?
-					defaultCase(theEObject) :
-					doSwitch(eSuperTypes.get(0), theEObject);
-		}
-	}
-
-	/**
-	 * Calls <code>caseXXX</code> for each class of the model until one returns a non null result; it yields that result.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @return the first non-null result returned by a <code>caseXXX</code> call.
-	 * @generated
-	 */
+	@Override
 	protected T doSwitch(int classifierID, EObject theEObject)
 	{
 		switch (classifierID)
@@ -119,7 +99,6 @@ public class XbaseSwitch<T>
 				XSwitchExpression xSwitchExpression = (XSwitchExpression)theEObject;
 				T result = caseXSwitchExpression(xSwitchExpression);
 				if (result == null) result = caseXExpression(xSwitchExpression);
-				if (result == null) result = caseJvmIdentifiableElement(xSwitchExpression);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -127,7 +106,6 @@ public class XbaseSwitch<T>
 			{
 				XCasePart xCasePart = (XCasePart)theEObject;
 				T result = caseXCasePart(xCasePart);
-				if (result == null) result = caseJvmIdentifiableElement(xCasePart);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -214,6 +192,32 @@ public class XbaseSwitch<T>
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case XbasePackage.XCOLLECTION_LITERAL:
+			{
+				XCollectionLiteral xCollectionLiteral = (XCollectionLiteral)theEObject;
+				T result = caseXCollectionLiteral(xCollectionLiteral);
+				if (result == null) result = caseXExpression(xCollectionLiteral);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case XbasePackage.XLIST_LITERAL:
+			{
+				XListLiteral xListLiteral = (XListLiteral)theEObject;
+				T result = caseXListLiteral(xListLiteral);
+				if (result == null) result = caseXCollectionLiteral(xListLiteral);
+				if (result == null) result = caseXExpression(xListLiteral);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case XbasePackage.XSET_LITERAL:
+			{
+				XSetLiteral xSetLiteral = (XSetLiteral)theEObject;
+				T result = caseXSetLiteral(xSetLiteral);
+				if (result == null) result = caseXCollectionLiteral(xSetLiteral);
+				if (result == null) result = caseXExpression(xSetLiteral);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			case XbasePackage.XCLOSURE:
 			{
 				XClosure xClosure = (XClosure)theEObject;
@@ -248,11 +252,28 @@ public class XbaseSwitch<T>
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
+			case XbasePackage.XPOSTFIX_OPERATION:
+			{
+				XPostfixOperation xPostfixOperation = (XPostfixOperation)theEObject;
+				T result = caseXPostfixOperation(xPostfixOperation);
+				if (result == null) result = caseXAbstractFeatureCall(xPostfixOperation);
+				if (result == null) result = caseXExpression(xPostfixOperation);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
 			case XbasePackage.XFOR_LOOP_EXPRESSION:
 			{
 				XForLoopExpression xForLoopExpression = (XForLoopExpression)theEObject;
 				T result = caseXForLoopExpression(xForLoopExpression);
 				if (result == null) result = caseXExpression(xForLoopExpression);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case XbasePackage.XBASIC_FOR_LOOP_EXPRESSION:
+			{
+				XBasicForLoopExpression xBasicForLoopExpression = (XBasicForLoopExpression)theEObject;
+				T result = caseXBasicForLoopExpression(xBasicForLoopExpression);
+				if (result == null) result = caseXExpression(xBasicForLoopExpression);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -335,6 +356,14 @@ public class XbaseSwitch<T>
 				XReturnExpression xReturnExpression = (XReturnExpression)theEObject;
 				T result = caseXReturnExpression(xReturnExpression);
 				if (result == null) result = caseXExpression(xReturnExpression);
+				if (result == null) result = defaultCase(theEObject);
+				return result;
+			}
+			case XbasePackage.XSYNCHRONIZED_EXPRESSION:
+			{
+				XSynchronizedExpression xSynchronizedExpression = (XSynchronizedExpression)theEObject;
+				T result = caseXSynchronizedExpression(xSynchronizedExpression);
+				if (result == null) result = caseXExpression(xSynchronizedExpression);
 				if (result == null) result = defaultCase(theEObject);
 				return result;
 			}
@@ -567,6 +596,54 @@ public class XbaseSwitch<T>
 	}
 
 	/**
+	 * Returns the result of interpreting the object as an instance of '<em>XCollection Literal</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>XCollection Literal</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseXCollectionLiteral(XCollectionLiteral object)
+	{
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>XList Literal</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>XList Literal</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseXListLiteral(XListLiteral object)
+	{
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>XSet Literal</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>XSet Literal</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseXSetLiteral(XSetLiteral object)
+	{
+		return null;
+	}
+
+	/**
 	 * Returns the result of interpreting the object as an instance of '<em>XClosure</em>'.
 	 * <!-- begin-user-doc -->
 	 * This implementation returns null;
@@ -631,6 +708,22 @@ public class XbaseSwitch<T>
 	}
 
 	/**
+	 * Returns the result of interpreting the object as an instance of '<em>XPostfix Operation</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>XPostfix Operation</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseXPostfixOperation(XPostfixOperation object)
+	{
+		return null;
+	}
+
+	/**
 	 * Returns the result of interpreting the object as an instance of '<em>XFor Loop Expression</em>'.
 	 * <!-- begin-user-doc -->
 	 * This implementation returns null;
@@ -642,6 +735,22 @@ public class XbaseSwitch<T>
 	 * @generated
 	 */
 	public T caseXForLoopExpression(XForLoopExpression object)
+	{
+		return null;
+	}
+
+	/**
+	 * Returns the result of interpreting the object as an instance of '<em>XBasic For Loop Expression</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>XBasic For Loop Expression</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseXBasicForLoopExpression(XBasicForLoopExpression object)
 	{
 		return null;
 	}
@@ -807,6 +916,22 @@ public class XbaseSwitch<T>
 	}
 
 	/**
+	 * Returns the result of interpreting the object as an instance of '<em>XSynchronized Expression</em>'.
+	 * <!-- begin-user-doc -->
+	 * This implementation returns null;
+	 * returning a non-null result will terminate the switch.
+	 * <!-- end-user-doc -->
+	 * @param object the target of the switch.
+	 * @return the result of interpreting the object as an instance of '<em>XSynchronized Expression</em>'.
+	 * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+	 * @generated
+	 */
+	public T caseXSynchronizedExpression(XSynchronizedExpression object)
+	{
+		return null;
+	}
+
+	/**
 	 * Returns the result of interpreting the object as an instance of '<em>Jvm Identifiable Element</em>'.
 	 * <!-- begin-user-doc -->
 	 * This implementation returns null;
@@ -833,6 +958,7 @@ public class XbaseSwitch<T>
 	 * @see #doSwitch(org.eclipse.emf.ecore.EObject)
 	 * @generated
 	 */
+	@Override
 	public T defaultCase(EObject object)
 	{
 		return null;

@@ -7,12 +7,16 @@
  *******************************************************************************/
 package org.eclipse.xtext.xbase.tests.typesystem
 
-import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
-import org.junit.Ignore
-import org.junit.Test
 import java.util.Set
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtext.linking.impl.XtextLinkingDiagnostic
+import org.eclipse.xtext.resource.XtextSyntaxDiagnostic
+import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.Ignore
+import org.junit.Test
+import org.eclipse.xtext.junit4.smoketest.IgnoredBySmokeTest
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -27,22 +31,45 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	
 	@BeforeClass
 	def static void createSeenExpressionsSet() {
-	    XbaseNewTypeSystemInjectorProvider$ClasspathTypeProviderFactoryWithoutAnnotationValues::skipAnnotationValues
 		seenExpressions = newHashSet
 	}
 	
 	@AfterClass
 	def static void discardSeenExpressions() {
 		seenExpressions = null
-		XbaseNewTypeSystemInjectorProvider$ClasspathTypeProviderFactoryWithoutAnnotationValues::readAnnotationValues
 	}
 	
 	override protected expression(CharSequence expression, boolean resolve) throws Exception {
-		val string = expression.toString
+		val string = expression.toString.replace('$$', 'org::eclipse::xtext::xbase::lib::')
 		if (!seenExpressions.add(string)) {
-			fail("Duplicate expression under test: " + expression)
+			handleDuplicateExpression(expression)
+			return null
 		}
-		super.expression(expression, resolve)
+		super.expression(string, resolve)
+	}
+	
+	def getLinkingAndSyntaxErrors(Resource resource) {
+		resource.errors.filter[ it instanceof XtextSyntaxDiagnostic || it instanceof XtextLinkingDiagnostic]
+	}
+	
+	def protected handleDuplicateExpression(CharSequence expression) {
+		fail("Duplicate expression under test: " + expression)
+	}
+	
+	@Test def void testRawType_01() throws Exception {
+		"{ val java.util.Set set = newHashSet() set }".resolvesTo("Set")
+	}
+	
+	@Test def void testRawType_02() throws Exception {
+		"{ val java.util.Set set = newHashSet set.head }".resolvesTo("Object")
+	}
+	
+	@Test def void testRawType_03() throws Exception {
+		"(null as java.util.Set<java.util.Set>).head".resolvesTo("Set")
+	}
+	
+	@Test def void testRawType_04() throws Exception {
+		"{ val java.util.Set<java.util.Set> set = newHashSet set }".resolvesTo("Set<Set>")
 	}
 	
 	@Test def void testAssignment_01() throws Exception {
@@ -55,6 +82,43 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	
 	@Test def void testAssignment_03() throws Exception {
 		"new testdata.FieldAccess().stringField = ''".resolvesTo("String")
+	}
+	
+	@Test def void testAssignment_04() throws Exception {
+		"{
+			var Comparable<Object> it = null
+			switch it {
+	            CharSequence: { it.length it = null }
+        	}
+		}".resolvesTo("Comparable<Object>")
+	}
+	
+	@Test def void testAssignment_05() throws Exception {
+		"{
+			val Comparable<Object> it = null
+			switch it {
+	            CharSequence: it = null
+        	}
+		}".resolvesTo("Comparable<Object> & CharSequence")
+	}
+	
+	@Test def void testAssignment_06() throws Exception {
+		"{
+			var Comparable<Object> it = null
+			switch it {
+	            CharSequence: { it = null it }
+        	}
+		}".resolvesTo("Comparable<Object>")
+	}
+	
+	@Test def void testReassignedTypeDiscarded_01() throws Exception {
+		"{
+			var Comparable<Object> it = null
+			switch it {
+	            CharSequence: it
+        	}
+			it
+		}".resolvesTo("Comparable<Object>")
 	}
 
 	@Test def void testNullLiteral() throws Exception {
@@ -79,6 +143,26 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	
 	@Test def void testTypeLiteral_4() throws Exception {
 		"typeof(int[])".resolvesTo("Class<int[]>")
+	}
+	
+	@Test def void testTypeLiteral_5() throws Exception {
+		"typeof(int[]).superclass".resolvesTo("Class<? super int[]>")
+	}
+	
+	@Test def void testTypeLiteral_6() throws Exception {
+		"String".resolvesTo("Class<String>")
+	}
+	
+	@Test def void testTypeLiteral_7() throws Exception {
+		"void".resolvesTo("Class<Void>")
+	}
+	
+	@Test def void testTypeLiteral_8() throws Exception {
+		"int".resolvesTo("Class<Integer>")
+	}
+	
+	@Test def void testTypeLiteral_9() throws Exception {
+		"java.lang.String".resolvesTo("Class<String>")
 	}
 
 	@Test def void testBooleanLiteral() throws Exception {
@@ -227,6 +311,120 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"newArrayList().map[42]".resolvesTo("List<Integer>")
 	}
 	
+	@Test def void testListLiteral_00() {
+		"#[]".resolvesTo("List<Object>")
+	}
+	
+	@Test def void testListLiteral_01() throws Exception {
+		"#['foo']".resolvesTo("List<String>")
+	}
+
+	@Test def void testListLiteral_02() throws Exception {
+		"#['foo', null, 'bar']".resolvesTo("List<String>")
+	}
+
+	@Test def void testListLiteral_03() throws Exception {
+		"#[null]".resolvesTo("List<Object>")
+	}
+
+	@Test def void testListLiteral_04() throws Exception {
+		"#[1, 2, 3]".resolvesTo("List<Integer>")
+	}
+
+	@Test def void testListLiteral_05() throws Exception {
+		"#[1, 2.0, 3]".resolvesTo("List<? extends Number & Comparable<?>>")
+	}
+
+	@Test def void testListLiteral_06() throws Exception {
+		"{ val java.util.List<Number> foo = #[1, 2.0, 3bi] foo }".resolvesTo("List<Number>")
+	}
+
+	@Test def void testListLiteral_07() throws Exception {
+		"{ val java.util.List<CharSequence> foo = #['foo', 'bar'] foo }".resolvesTo("List<CharSequence>")
+	}
+
+	@Test def void testListLiteral_08() throws Exception {
+		"{ val String[] foo = #['foo', 'bar'] foo }".resolvesTo("String[]")
+	}
+
+	@Test def void testListLiteral_09() throws Exception {
+		"{ val x = #[] val String[] y = x x }".resolvesTo("List<String>")
+	}
+
+	@Test def void testListLiteral_10() throws Exception {
+		"{ val x = #[null] val String[] y = x x }".resolvesTo("List<String>")
+	}
+
+	@Test def void testListLiteral_11() throws Exception {
+		"{ val x = #[] val Iterable<String> y = x x }".resolvesTo("List<String>")
+	}
+
+	@Test def void testListLiteral_12() throws Exception {
+		"{ val x = #[null] val java.util.Set<String> y = x x }".resolvesTo("List<String>")
+	}
+
+	@Test def void testListLiteral_13() throws Exception {
+		// produces immutable list thus ? extends is ok
+		"#[#['foo'], #{}]".resolvesTo("List<? extends Collection<String>>")
+	}
+	
+	@Test def void testListLiteral_14() throws Exception {
+		// produces mutable list thus ? extends would be not too helpful
+		"newArrayList(#['foo'], #{})".resolvesTo("ArrayList<Collection<String>>")
+	}
+
+	@Test def void testSetLiteral_00() {
+		"#{}".resolvesTo("Set<Object>")
+	}
+	
+	@Test def void testSetLiteral_01() throws Exception {
+		"#{'foo'}".resolvesTo("Set<String>")
+	}
+
+	@Test def void testSetLiteral_02() throws Exception {
+		"#{'foo', null, 'bar'}".resolvesTo("Set<String>")
+	}
+
+	@Test def void testSetLiteral_03() throws Exception {
+		"#{null}".resolvesTo("Set<Object>")
+	}
+
+	@Test def void testSetLiteral_04() throws Exception {
+		"#{1, 2 ,3}".resolvesTo("Set<Integer>")
+	}
+
+	@Test def void testSetLiteral_05() throws Exception {
+		"#{1, 2.0 ,3}".resolvesTo("Set<? extends Number & Comparable<?>>")
+	}
+	
+	@Test def void testSetLiteral_06() throws Exception {
+		"{ val java.util.Set<Number> foo = #{1, 2.0, 3bi} foo }".resolvesTo("Set<Number>")
+	}
+	
+	@Test def void testSetLiteral_07() throws Exception {
+		"{ val java.util.Set<CharSequence> foo = #{'foo', 'bar'} foo }".resolvesTo("Set<CharSequence>")
+	}
+
+	@Test def void testSetLiteral_08() throws Exception {
+		"#{'foo' -> 'bar'}".resolvesTo("Map<String, String>")
+	}
+
+	@Test def void testSetLiteral_09() throws Exception {
+		"#{'foo' -> true, 'bar' -> false}".resolvesTo("Map<String, Boolean>")
+	}
+
+	@Test def void testSetLiteral_10() throws Exception {
+		"#{'foo'-> new Exception('ohoh'),'bar'->new Error('ohohoh')}".resolvesTo("Map<String, Throwable>")
+	}
+
+	@Test def void testSetLiteral_11() throws Exception {
+		"{ val java.util.Map<String,String> x = #{} x }".resolvesTo("Map<String, String>")
+	} 
+
+	@Test def void testSetLiteral_12() throws Exception {
+		"{ val java.util.Set<org.eclipse.xtext.xbase.lib.Pair<String,Object>> foo = #{'foo'->'bar'} foo }".resolvesTo("Set<Pair<String, Object>>")
+	} 
+
 	@Test def void testOverloadedVarArgs_01() throws Exception {
 		"testdata::OverloadedMethods::overloadedVarArgs(null, null)".resolvesTo("long")
 	}
@@ -240,7 +438,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	}
 	
 	@Test def void testOverloadedVarArgs_04() throws Exception {
-		// TODO discuss: JDT binds to overloaded(Object, Object) thought the arity indicates overloaded(String...)
+		// TODO discuss: JDT binds to overloaded(Object, Object) though the arity indicates overloaded(String...)
 		"testdata::OverloadedMethods::overloadedVarArgs(new Object, new Object, new Object)".resolvesTo("int")
 	}
 	
@@ -435,12 +633,16 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	}
 	
 	@Test def void testOverloadedOperators_20() throws Exception {
-		"'a' - 1".resolvesTo("int")
+		"(null as Iterable<StringBuilder>) + (null as Iterable<StringBuffer>) + (null as Iterable<String>)".resolvesTo("Iterable<Serializable & CharSequence>")
 	}
 
 	@Test def void testCastExpression() throws Exception {
 		"null as String".resolvesTo("String")
 		"null as Boolean".resolvesTo("Boolean")
+	}
+	
+	@Test def void testCastExpression_02() throws Exception {
+		"(null as Iterable<String[]>)".resolvesTo("Iterable<String[]>")
 	}
 	
 	@Test def void testThrowExpression() throws Exception {
@@ -668,6 +870,15 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"emptyList".resolvesTo("List<Object>")
 	}
 	
+	@Test def void testElvisWithEmptyListInLamdba() throws Exception {
+		"[ String s |
+			val result = <Integer>newArrayList
+			val (String)=>Iterable<Integer> fun = []
+			result += fun.apply(s) ?: emptyList
+			result
+		]".resolvesTo("(String)=>ArrayList<Integer>")
+	}
+	
 	@Test def void testMethodTypeParamInference_00() throws Exception {
 		"new java.util.ArrayList<String>().findFirst(e | true)".resolvesTo("String")
 	}
@@ -696,8 +907,44 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"null instanceof String".resolvesTo("boolean")
 	}
 	
-	@Test def void testTypeForVoidClosure() throws Exception {
+	@Test def void testTypeForVoidClosure_01() throws Exception {
 		"newArrayList('foo','bar').forEach []".resolvesTo("void")
+	}
+	
+	@Test def void testTypeForVoidClosure_02() throws Exception {
+		"[ return ]".resolvesTo("(Object)=>void").isFunctionAndEquivalentTo("Procedure1<Object>")
+	}
+	
+	@Test def void testTypeForVoidClosure_03() throws Exception {
+		"[| return ]".resolvesTo("()=>void").isFunctionAndEquivalentTo("Procedure0")
+	}
+	
+	@Test def void testTypeForVoidClosure_04() throws Exception {
+		"[a, b| return ]".resolvesTo("(Object, Object)=>void").isFunctionAndEquivalentTo("Procedure2<Object, Object>")
+	}
+	
+	@Test def void testTypeForVoidClosure_05() throws Exception {
+		"[ System::out.println ]".resolvesTo("(Object)=>void").isFunctionAndEquivalentTo("Procedure1<Object>")
+	}
+	
+	@Test def void testTypeForVoidClosure_06() throws Exception {
+		"[| System::out.println ]".resolvesTo("()=>void").isFunctionAndEquivalentTo("Procedure0")
+	}
+	
+	@Test def void testTypeForVoidClosure_07() throws Exception {
+		"[a, b| System::out.println ]".resolvesTo("(Object, Object)=>void").isFunctionAndEquivalentTo("Procedure2<Object, Object>")
+	}
+	
+	@Test def void testTypeForEmptyClosure_01() throws Exception {
+		"[]".resolvesTo("(Object)=>Object").isFunctionAndEquivalentTo("Function1<Object, Object>")
+	}
+	
+	@Test def void testTypeForEmptyClosure_02() throws Exception {
+		"[|]".resolvesTo("()=>Object").isFunctionAndEquivalentTo("Function0<Object>")
+	}
+	
+	@Test def void testTypeForEmptyClosure_03() throws Exception {
+		"[a, b|]".resolvesTo("(Object, Object)=>Object").isFunctionAndEquivalentTo("Function2<Object, Object, Object>")
 	}
 
 	@Test def void testFeatureCallWithArrayToIterableConversion_01() throws Exception {
@@ -715,45 +962,73 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	@Test def void testFeatureCallWithArrayToIterableConversion_04() throws Exception {
         "(null as String[][]).head".resolvesTo("String[]")
     }
+	
+	@Test def void testFeatureCallWithArrayToIterableConversion_05() throws Exception {
+        "{ var x = <String[]>newArrayList('a,b'.split(',')) x }".resolvesTo("ArrayList<String[]>")
+    }
+	
+	@Test def void testFeatureCallWithArrayToIterableConversion_06() throws Exception {
+        "{ var x = <String[]>newArrayList('a,b'.split(',')) x.head }".resolvesTo("String[]")
+    }
+	
+	@Test def void testFeatureCallWithArrayToIterableConversion_07() throws Exception {
+        "{ var x = <String[]>newArrayList('a,b'.split(',')) x.head.head }".resolvesTo("String")
+    }
+	
+	@Test def void testFeatureCallWithArrayToIterableConversion_08() throws Exception {
+        "{ var x = <Iterable<String>>newArrayList('a,b'.split(',')) x }".resolvesTo("ArrayList<Iterable<String>>")
+    }
+	
+	@Test def void testFeatureCallWithArrayToIterableConversion_09() throws Exception {
+        "{ var x = <Iterable<String>>newArrayList('a,b'.split(',')) x.head }".resolvesTo("Iterable<String>")
+    }
+	
+	@Test def void testFeatureCallWithArrayToIterableConversion_10() throws Exception {
+        "{ var x = <Iterable<String>>newArrayList('a,b'.split(',')) x.head.head }".resolvesTo("String")
+    }
     
-    @Test def void testReturnType_00() throws Exception {
+    @Test def void testReturnExpression_00() throws Exception {
 		"return".resolvesTo("void")
 	}
 	
-	@Test def void testReturnType_01() throws Exception {
+	@Test def void testReturnExpression_01() throws Exception {
 		"return 'foo'".resolvesTo("void")
 	}
 	
-	@Test def void testReturnType_02() throws Exception {
+	@Test def void testReturnExpression_02() throws Exception {
 		"return try { if (true) 'foo' else 'bar' } finally { String::valueOf('zonk') }".resolvesTo("void")
 	}
 	
-	@Test def void testReturnType_03() throws Exception {
+	@Test def void testReturnExpression_03() throws Exception {
 		"{ val c = [ int i | return i ] c.apply(1) return null }".resolvesTo("void")
 	}
 	
-	@Test def void testReturnType_04() throws Exception {
+	@Test def void testReturnExpression_04() throws Exception {
 		"{ val c = [ int i | i ] c.apply(1) return null }".resolvesTo("void")
 	}
 	
-	@Test def void testReturnType_05() throws Exception {
+	@Test def void testReturnExpression_05() throws Exception {
 		"{ var closure = [| return 'literal'] closure.apply }".resolvesTo("String")
 	}
 	
-	@Test def void testReturnType_06() throws Exception {
+	@Test def void testReturnExpression_06() throws Exception {
 		"{ var closure = [| return 'literal'] return closure.apply }".resolvesTo("void")
 	}
 	
-	@Test def void testReturnType_07() throws Exception {
+	@Test def void testReturnExpression_07() throws Exception {
 		"[| return 'literal'].apply".resolvesTo("String")
 	}
 	
-	@Test def void testReturnType_08() throws Exception {
+	@Test def void testReturnExpression_08() throws Exception {
 		"return [| return 'literal'].apply".resolvesTo("void")
 	}
 	
-	@Test def void testReturnType_09() throws Exception {
+	@Test def void testReturnExpression_09() throws Exception {
 		"[| return 'literal']".resolvesTo("()=>String").isFunctionAndEquivalentTo("Function0<String>")
+	}
+	
+	@Test def void testReturnExpression_10() throws Exception {
+		"return if (true) while(false) ('foo'+'bar').length".resolvesTo("void")
 	}
 	
 	@Test def void testClosure_00() throws Exception {
@@ -859,6 +1134,14 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 			val fun = [ x | x ]
 			val java.util.List<String> list = newArrayList(fun.apply(null))
 			fun
+		}".resolvesTo("(String[])=>String[]").isFunctionAndEquivalentTo("Function1<String[], String[]>")
+	}
+	
+	@Test def void testClosure_16_02() throws Exception {
+		"{ 
+			val fun = [ x | x ]
+			val java.util.List<String> list = newArrayList(fun.apply(null), fun.apply(null))
+			fun
 		}".resolvesTo("(String)=>String").isFunctionAndEquivalentTo("Function1<String, String>")
 	}
 	
@@ -957,6 +1240,8 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	
 	@Test def void testClosure_29() throws Exception {
 		"[].apply()".resolvesTo("Object")
+		"[].apply('')".resolvesTo("Object")
+		"[].apply('', '')".resolvesTo("Object")
 	}
 	
 	@Test def void testClosure_30() throws Exception {
@@ -974,7 +1259,11 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	@Test def void testClosure_32() throws Exception {
         "[ x, i | x.charAt(i) ].apply('', 0)".resolvesTo("Character")
     }
-	
+    
+	@Test def void testClosure_33() throws Exception {
+        "[ String it | val bytes = new String bytes ]".resolvesTo("(String)=>String").isFunctionAndEquivalentTo("Function1<String, String>")
+    }
+    
 	@Test def void testNewTreeSet_01() throws Exception {
         "new java.util.TreeSet(newArrayList(''))".resolvesTo("TreeSet<String>")
     }
@@ -987,18 +1276,20 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
         "newTreeSet([a, b|0], 'a', 'b')".resolvesTo("TreeSet<String>") /* character? */
     }
     
-    @Ignore("TODO deferred closure body typing")
     @Test def void testNewTreeSet_04() throws Exception {
         "newTreeSet([a, b|a.length.compareTo(b.length)], 'a', 'b')".resolvesTo("TreeSet<String>")
     }
     
-    @Ignore("TODO deferred closure body typing")
     @Test def void testNewTreeSet_05() throws Exception {
         "newTreeSet([a, b|a.toString.compareTo(b.toString)], 'a', 'b')".resolvesTo("TreeSet<String>")
     }
     
-	@Test def void testTypeArgs() throws Exception {
+	@Test def void testTypeArgs_01() throws Exception {
 		"new java.util.ArrayList<String>() += 'foo'".resolvesTo("boolean")
+	}
+	
+	@Test def void testJEP101Example_01() throws Exception {
+		"foo::JEP101List::cons(42, foo::JEP101List::nil())".resolvesTo("JEP101List<Integer>")
 	}
 	
 	@Test def void testIfExpression_01() throws Exception {
@@ -1012,7 +1303,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	}
 	
 	@Test def void testIfExpression_03() throws Exception {
-		"if (true) return 'foo'".resolvesTo("null")
+		"if (true) return 'foo'".resolvesTo("void")
 	}
 	
 	@Test def void testIfExpression_04() throws Exception {
@@ -1040,7 +1331,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	}
 	
 	@Test def void testIfExpression_10() throws Exception {
-		"if (true) null as java.util.List<String> else null as String[]".resolvesTo("List<String>")
+		"if (true) null as java.util.List<String> else null as String[]".resolvesTo("Object")
 	}
 	
 	@Test def void testIfExpression_11() throws Exception {
@@ -1068,11 +1359,11 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	}
 	
 	@Test def void testIfExpression_17() throws Exception {
-		"if (true) return 1".resolvesTo("null")
+		"if (true) return 1".resolvesTo("void")
 	}
 	
 	@Test def void testIfExpression_18() throws Exception {
-		"if (true) return".resolvesTo("null")
+		"if (true) return".resolvesTo("void")
 	}
 	
 	@Test def void testIfExpression_19() throws Exception {
@@ -1081,6 +1372,62 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	
 	@Test def void testIfExpression_20() throws Exception {
 		"if (true) return else return".resolvesTo("void")
+	}
+	
+	@Test def void testIfExpression_21() throws Exception {
+        "{ val x = if (true) null else null x }".resolvesTo("null")
+    }
+    
+    @Test def void testIfExpression_22() throws Exception {
+		"{ val x = if (true) return 1 else 0 x }".resolvesTo("int")
+	}
+	
+	@Test def void testIfExpression_23() throws Exception {
+		"{ val x = if (true) return 1 x }".resolvesTo("null")
+	}
+	
+	@Test def void testIfExpression_24() throws Exception {
+		"{ val x = if (true) return; x }".resolvesTo("null")
+	}
+	
+	@Test def void testIfExpression_25() throws Exception {
+		"{ val x = if (true) return else null x }".resolvesTo("null")
+	}
+	
+	@Test def void testIfExpression_26() throws Exception {
+		"if (true) for(i: 1..2) i.toString else ''".resolvesTo("String")
+	}
+	
+	@Test def void testIfExpression_27() throws Exception {
+		"if (true) while(false) ('foo'+'bar').length".resolvesTo("void")
+	}
+	
+	@Test def void testIfExpression_28() throws Exception {
+		"if (true) return '' else 1".resolvesTo("int")
+	}
+	
+	@Test def void testIfExpression_29() throws Exception {
+		"if (true) while(true) ''.toString else while(true) ''.toString".resolvesTo("void")
+	}
+	
+	@Test def void testIfExpression_30() throws Exception {
+		"if (true) null as int[] else null as Integer[]".resolvesTo("Serializable & Cloneable")
+	}
+	
+	@Test def void testIfExpression_31() throws Exception {
+		"if (true) null as int[] else null as Iterable<Integer>".resolvesTo("Object")
+	}
+	
+	@Test def void testIfExpression_32() throws Exception {
+		"if (true) while(false) ''.toString else 'myString'".resolvesTo("String")
+	}
+	
+	@Test def void testIfExpression_33() throws Exception {
+		"if(true) #{'f'} else emptySet".resolvesTo("Set<String>")
+	}
+	
+	@Test def void testIfExpression_34() throws Exception {
+		"if(true) true else Boolean.TRUE".resolvesTo("Boolean")
 	}
 	
 	@Test def void testSwitchExpression() throws Exception {
@@ -1095,7 +1442,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	@Test def void testSwitchExpression_2() throws Exception {
 		"switch null {
 		  Object : return null 
-		}".resolvesTo("null")
+		}".resolvesTo("void")
 	}
 	
 	@Test def void testSwitchExpression_3() throws Exception {
@@ -1104,7 +1451,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 			switch c {
 	            CharSequence: 1
 	    	}
-		}".resolvesTo("Integer")
+		}".resolvesTo("int")
 	}
 	
 	@Test def void testSwitchExpression_4() throws Exception {
@@ -1117,7 +1464,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
                     }
                 }
         	}
-		}".resolvesTo("Character")
+		}".resolvesTo("char")
 	}
 	
 	@Test def void testSwitchExpression_5() throws Exception {
@@ -1143,7 +1490,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
                     }
                 }
         	}
-		}".resolvesTo("Integer")
+		}".resolvesTo("int")
 	}
 	
 	@Test def void testSwitchExpression_7() throws Exception {
@@ -1156,7 +1503,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
                     }
                 }
         	}
-		}".resolvesTo("Character")
+		}".resolvesTo("char")
 	}
 	
 	@Test def void testSwitchExpression_8() throws Exception {
@@ -1182,7 +1529,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
                     }
                 }
         	}
-		}".resolvesTo("Integer")
+		}".resolvesTo("int")
 	}
 	
 	@Test def void testSwitchExpression_10() throws Exception {
@@ -1195,7 +1542,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	@Test def void testSwitchExpression_11() throws Exception {
 		"switch null {
 		  Object : return 
-		}".resolvesTo("null")
+		}".resolvesTo("void")
 	}
 	
 	@Test def void testSwitchExpression_12() throws Exception {
@@ -1228,6 +1575,14 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		}".resolvesTo("CharSequence")
 	}
 	
+	@Test def void testTypeGuardedCase_3() throws Exception {
+		"switch s: new Object() { String, StringBuffer: s}".resolvesTo("Serializable & CharSequence")
+	}
+	
+	@Test def void testTypeGuardedCase_4() throws Exception {
+		"switch s: '' as CharSequence { Cloneable, String: s }".resolvesTo("CharSequence")
+	}
+	
 	@Test def void testSwitchExpression_Bug343100() throws Exception {
 		"switch 'a' {
 		  case null: typeof(String) 
@@ -1246,6 +1601,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"{val s = '' s}".resolvesTo("String")
 	}
 	
+	@IgnoredBySmokeTest("Do not run smoke test with 1000s of nested expressions") 
 	@Test def void testBlockExpression_03() throws Exception {
 		var input = "{ val s1 = ''\n"
 		val max = 1000
@@ -1289,6 +1645,35 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
             test3.head.value.value.apply(null, null).last
         }".resolvesTo("Double")
     }
+    
+    @Test def void testBlockExpression_09() throws Exception {
+		"{val Object x = if (false) return; x }".resolvesTo("Object")
+	}
+    
+    @Test def void testBlockExpression_10() throws Exception {
+		"{ ( if (true) {val Object x = if (false) return; x } ) }".resolvesTo("Object")
+	}
+    
+    @Test def void testBlockExpression_11() throws Exception {
+		"{ ( if (true) {val Object x = if (false) return; x } ) {val Object x = if (false) return; x } }".resolvesTo("Object")
+	}
+	
+	@Test def void testBlockExpression_12() throws Exception {
+		"{ ( if (true) if (true) return else null ) { if (true) return else null } }".resolvesTo("null")
+	}
+    
+    @Test def void testEntrySet_01() throws Exception {
+		"(null as java.util.Map<? extends String,? extends String>).entrySet".resolvesTo("Set<? extends Entry<? extends String, ? extends String>>")
+	}
+	
+    @Test def void testEntrySet_02() throws Exception {
+		"(null as java.util.Map<String, String>).entrySet".resolvesTo("Set<Entry<String, String>>")
+	}
+	
+    @Test def void testEntrySet_03() throws Exception {
+		"(null as java.util.Map<Iterable<? extends String>, Iterable<? extends String>>).entrySet"
+			.resolvesTo("Set<Entry<Iterable<? extends String>, Iterable<? extends String>>>")
+	}
 	
 	@Test def void testEMap_01() throws Exception {
 		"{ 
@@ -1390,6 +1775,14 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"new java.util.HashMap<? super String,Boolean>".resolvesTo("HashMap<String, Boolean>");
 	}
 	
+	@Test def void testBrokenConstructorCall_01() throws Exception {
+		"new Iterable<String>()".resolvesTo("Iterable<String>")
+	}
+	
+	@Test def void testBrokenConstructorCall_02() throws Exception {
+		"new java.util.Map<String>()".resolvesTo("Map<String, Object>")
+	}
+	
 	@Test def void testConstructorTypeInference_01() throws Exception {
 		"new testdata.GenericType1('')".resolvesTo("GenericType1<String>")
 	}
@@ -1438,6 +1831,22 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"typeof(String).newInstance".resolvesTo("String")
 	}
 	
+	@Test def void testClassGetSuperclass_01() throws Exception {
+		"typeof(String).superclass".resolvesTo("Class<? super String>")
+	}
+	
+	@Test def void testClassGetSuperclass_02() throws Exception {
+		"typeof(String).superclass.superclass".resolvesTo("Class<? super String>")
+	}
+	
+	@Test def void testClassGetSuperclass_03() throws Exception {
+		"{ var c = Class::forName('') c.superclass }".resolvesTo("Class<?>")
+	}
+	
+	@Test def void testClassGetSuperclass_04() throws Exception {
+		"{ var c = Class::forName('') println(c.superclass) }".resolvesTo("Class<?>")
+	}
+	
 	@Test def void testVarArgs_01() throws Exception {
 		"newArrayList(new Double('-20'), new Integer('20'))".resolvesTo("ArrayList<Number & Comparable<?>>");
 	}
@@ -1460,6 +1869,14 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 
 	@Test def void testVarArgs_06() throws Exception {
 		"java::util::Arrays::asList(1, 3d, '4')".resolvesTo("List<Comparable<?> & Serializable>");
+	}
+	
+	@Test def void testVarArgs_07() throws Exception {
+		"newArrayList(null as Integer[], null as int[], null as Iterable<Integer>)".resolvesTo("ArrayList<Object>");
+	}
+	
+	@Test def void testVarArgs_08() throws Exception {
+		"newArrayList(null as Integer[], null as int[])".resolvesTo("ArrayList<Serializable & Cloneable>");
 	}
 	
 	@Test def void testFeatureCall_01() throws Exception {
@@ -1496,6 +1913,14 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	@Test def void testMemberFeatureCall_03() throws Exception {
 		"newArrayList('').get(0)".resolvesTo("String")
 		"<String>newArrayList().get(0)".resolvesTo("String")
+	}
+	
+	@Test def void testMemberFeatureCall_04() throws Exception {
+		"''.^class".resolvesTo("Class<? extends String>")
+	}
+	
+	@Test def void testMemberFeatureCall_05() throws Exception {
+		"''.^class.superclass".resolvesTo("Class<?>")
 	}
 	
 	@Test def void testFeatureCall_04() throws Exception {
@@ -1700,6 +2125,7 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"newArrayList(newArrayList('').map(s|1).map(e|e).map(e|e).map(e|e).map(e|e)).map(iterable|iterable.size()).map(e|e).map(e|e).map(e|e).map(e|e).head".resolvesTo("Integer")
 	}
 	
+	@IgnoredBySmokeTest("Pointless since the scenario is pretty much the same as above")
 	@Test def void testFeatureCall_15_m() throws Exception {
 		("newArrayList(newArrayList('').map(String s|1).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)
 		.map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e).map(Integer e|e)
@@ -1945,14 +2371,15 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 	@Test def void testFeatureCall_25_a() throws Exception {
 		"newArrayList('').map(s|s.length + 1 * 5).map(b| b / 5 )".resolvesTo("List<Integer>")
 	}
+	@IgnoredBySmokeTest("Same as testFeatureCall_25_a")
 	@Test def void testFeatureCall_25_b() throws Exception {
 		"newArrayList('').map(s|s.length + 1 * 5).map(b| b / 5 ).head".resolvesTo("Integer")
 	}
-	
+	@IgnoredBySmokeTest("Same as testFeatureCall_25_a")
 	@Test def void testFeatureCall_25_c() throws Exception {
 		"newArrayList('').map[ length + 1 * 5 ].map [ it / 5 ].head".resolvesTo("Integer")
 	}
-	
+	@IgnoredBySmokeTest("Same as testFeatureCall_25_a")
 	@Test def void testFeatureCall_25_d() throws Exception {
 		"newArrayList('').map[ length + 1 * 5 - length + 1 * 5 ].map [ it / 5 + 1 / it ].head".resolvesTo("Integer")
 	}
@@ -2149,8 +2576,6 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		}".resolvesTo("Map<String, Object>")
 	}
 
-	// TODO fix the following case
-	@Ignore("TODO this should work")
 	@Test def void testBug_391758() throws Exception {
 		"{
 			val iterable = newArrayList
@@ -3662,9 +4087,9 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"{
 			val list = new java.util.ArrayList
 			list.add(new java.util.ArrayList)
-			val Iterable<String> s = list.head.head.head
+			val Iterable<String> s = list.head.flatten.head
 			list.head
-		}".resolvesTo("ArrayList<Iterable<Iterable<String>>>")
+		}".resolvesTo("ArrayList<Iterable<? extends Iterable<String>>>")
 	}
 	
 	@Test def void testDeferredTypeArgumentResolution_146() throws Exception {
@@ -3680,9 +4105,9 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 		"{
 			val list = new java.util.ArrayList
 			list.add(new java.util.ArrayList)
-			val String s = list.head.head.head
+			val String s = list.head.flatten.head
 			list.head
-		}".resolvesTo("ArrayList<Iterable<String>>")
+		}".resolvesTo("ArrayList<Iterable<? extends String>>")
 	}
 	
 	@Test def void testDeferredTypeArgumentResolution_148() throws Exception {
@@ -3797,6 +4222,98 @@ abstract class AbstractTypeResolverTest<Reference> extends AbstractXbaseTestCase
 			list.addAll(secondList)
 			list.addAll(null as String[])
 			secondList
+		}".resolvesTo("ArrayList<String>")
+	}
+	
+	@Test def void testDeferredTypeArgumentResolution_161() throws Exception {
+		"{
+			val list = newArrayList
+			for(s: list) {
+				val String x = s
+				x.toString
+			}
+			list
+		}".resolvesTo("ArrayList<String>")
+	}
+	
+	@Test def void testDeferredTypeArgumentResolution_162() throws Exception {
+		"{
+			val list = newArrayList
+			for(s: newArrayList) {
+				list.add(s)
+				val String x = s
+				x.toString
+			}
+			list
+		}".resolvesTo("ArrayList<String>")
+	}
+	
+	@Test def void testDeferredTypeArgumentResolution_163() throws Exception {
+		"{
+			val list = newArrayList
+			val literal = #{}
+			list.addAll(literal)
+			for(s: newArrayList) {
+				list.add(s)
+				val String x = s
+				x.toString
+			}
+			literal
+		}".resolvesTo("Set<String>")
+	}
+	
+	@Test def void testDeferredTypeArgumentResolution_164() throws Exception {
+		"{
+			val list = newArrayList
+			val literal = #{}
+			list += literal
+			for(s: newArrayList) {
+				list.add(s)
+				val String x = s
+				x.toString
+			}
+			literal
+		}".resolvesTo("Set<String>")
+	}
+	
+	@Test def void testDeferredTypeArgumentResolution_165() throws Exception {
+		"{
+			val list = newArrayList
+			val literal = #{}
+			list.add(literal.flatten.head)
+			for(s: newArrayList) {
+				list.add(s)
+				val String x = s
+				x.toString
+			}
+			literal
+		}".resolvesTo("Set<Iterable<? extends String>>")
+	}
+	
+	@Ignore("+= resolves the type parameter since Integer is a resolved type")
+	@Test def void testDeferredTypeArgumentResolution_166() throws Exception {
+		"{
+			val list = newArrayList
+			list += 1
+			list += 1.0
+			list
+		}".resolvesTo("ArrayList<Number & Comparable<?>>")
+	}
+	
+	@Test def void testDeferredTypeArgumentResolution_167() throws Exception {
+		"{
+			val list = new java.util.ArrayList
+			list.add(new java.util.ArrayList)
+			val java.util.Iterator<String> s = list.head.flatten.head
+			list.head
+		}".resolvesTo("ArrayList<Iterable<? extends Iterator<String>>>")
+	}
+	
+	@Test def void testDeferredTypeArgumentResolution_168() throws Exception {
+		"{
+			val list = newArrayList
+			list.addAll(1, null as String[])
+			list
 		}".resolvesTo("ArrayList<String>")
 	}
 	

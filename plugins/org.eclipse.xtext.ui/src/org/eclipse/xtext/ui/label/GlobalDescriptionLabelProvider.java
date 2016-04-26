@@ -10,9 +10,9 @@ package org.eclipse.xtext.ui.label;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.edit.provider.IItemLabelProvider;
 import org.eclipse.jface.viewers.BaseLabelProvider;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IReferenceDescription;
@@ -27,6 +27,7 @@ import org.eclipse.xtext.ui.resource.IResourceUIServiceProvider;
  */
 public class GlobalDescriptionLabelProvider extends BaseLabelProvider implements ILabelProvider, IItemLabelProvider, IStyledLabelProvider {
 
+	@Override
 	public Image getImage(Object element) {
 		ILabelProvider descriptionLabelProvider = lookupDescriptionLabelProvider(element);
 		if (descriptionLabelProvider != null) {
@@ -36,6 +37,7 @@ public class GlobalDescriptionLabelProvider extends BaseLabelProvider implements
 		}
 	}
 
+	@Override
 	public String getText(Object element) {
 		if (element == null) {
 			return Messages.GlobalDescriptionLabelProvider_0;
@@ -49,6 +51,7 @@ public class GlobalDescriptionLabelProvider extends BaseLabelProvider implements
 		}
 	}
 	
+	@Override
 	public StyledString getStyledText(Object element) {
 		if (element == null) {
 			return new StyledString(Messages.GlobalDescriptionLabelProvider_0);

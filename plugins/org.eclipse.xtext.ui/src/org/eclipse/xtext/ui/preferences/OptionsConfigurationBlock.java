@@ -47,6 +47,7 @@ import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
+import org.eclipse.xtext.ui.editor.preferences.PreferenceStoreAccessImpl;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -65,7 +66,10 @@ public abstract class OptionsConfigurationBlock {
 	@Inject
 	AbstractUIPlugin uiPlugin;
 
-	public static final String IS_PROJECT_SPECIFIC = "is_project_specific"; //$NON-NLS-1$
+	@Inject
+	protected PreferenceStoreAccessImpl preferenceStoreAccessImpl;
+
+	private static final String IS_PROJECT_SPECIFIC = "is_project_specific"; //$NON-NLS-1$
 	private static final String SETTINGS_EXPANDED = "expanded"; //$NON-NLS-1$
 	private static final String REBUILD_COUNT_KEY = "preferences_build_requested"; //$NON-NLS-1$
 
@@ -105,19 +109,19 @@ public abstract class OptionsConfigurationBlock {
 
 	public static final class BuildJob extends Job {
 		private final IProject project;
-	
+
 		public BuildJob(String name, IProject project) {
 			super(name);
 			this.project = project;
 		}
-	
+
 		public boolean isCoveredBy(BuildJob other) {
 			if (other.project == null) {
 				return true;
 			}
 			return project != null && project.equals(other.project);
 		}
-	
+
 		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			synchronized (getClass()) {
@@ -157,7 +161,7 @@ public abstract class OptionsConfigurationBlock {
 			}
 			return Status.OK_STATUS;
 		}
-	
+
 		@Override
 		public boolean belongsTo(Object family) {
 			return ResourcesPlugin.FAMILY_MANUAL_BUILD == family;
@@ -172,7 +176,7 @@ public abstract class OptionsConfigurationBlock {
 	private SelectionListener selectionListener;
 	private ModifyListener textModifyListener;
 	protected IStatusChangeListener statusChangeListener;
-	protected final IProject project;
+	protected IProject project;
 	protected String[] keys;
 	private Shell shell;
 	private Map<String, String> disabledProjectSettings;
@@ -195,9 +199,25 @@ public abstract class OptionsConfigurationBlock {
 			IWorkbenchPreferenceContainer container) {
 		this.project = project;
 		this.keys = new String[] {};
+		this.setPreferenceStore(preferenceStore);
+		this.workbenchPreferenceContainer = container;
+	}
+
+	public OptionsConfigurationBlock() {
+		this.keys = new String[] {};
+	}
+
+	public void setWorkbenchPreferenceContainer(IWorkbenchPreferenceContainer workbenchPreferenceContainer) {
+		this.workbenchPreferenceContainer = workbenchPreferenceContainer;
+	}
+
+	public void setProject(IProject project) {
+		this.project = project;
+	}
+
+	public void setPreferenceStore(IPreferenceStore preferenceStore) {
 		this.preferenceStore = preferenceStore;
 		this.rebuildCount = getRebuildCount();
-		this.workbenchPreferenceContainer = container;
 	}
 
 	private void updateDisabledProjSettings(IProject project, IPreferenceStore preferenceStore, String[] allKeys) {
@@ -212,11 +232,28 @@ public abstract class OptionsConfigurationBlock {
 	}
 
 	public boolean hasProjectSpecificOptions(IProject project) {
-		return preferenceStore.getBoolean(IS_PROJECT_SPECIFIC);
+		IPreferenceStore ps = preferenceStore;
+		if (project != getProject()) {
+			ps = preferenceStoreAccessImpl.getWritablePreferenceStore(project);
+		}
+		// backward compatibility
+		boolean oldSettingsUsed = ps.getBoolean(IS_PROJECT_SPECIFIC);
+		boolean newSettingsValue = ps.getBoolean(getIsProjectSpecificPropertyKey(getPropertyPrefix()));
+		if (oldSettingsUsed) {
+			if (!newSettingsValue) {
+				ps.setValue(getIsProjectSpecificPropertyKey(getPropertyPrefix()), true);
+				return true;
+			}
+		}
+		return newSettingsValue;
 	}
 
 	protected void setShell(Shell shell) {
 		this.shell = shell;
+	}
+
+	protected Shell getShell() {
+		return shell;
 	}
 
 	public final Control createContents(Composite parent) {
@@ -231,7 +268,7 @@ public abstract class OptionsConfigurationBlock {
 
 	protected Button addCheckBox(Composite parent, String label, String key, String[] values, int indent) {
 		ControlData data = new ControlData(key, values);
-		GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+		GridData gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
 		gd.horizontalSpan = 3;
 		gd.horizontalIndent = indent;
 		return addCheckboxWithData(parent, label, data, gd);
@@ -254,22 +291,21 @@ public abstract class OptionsConfigurationBlock {
 		Label labelControl = new Label(parent, SWT.WRAP);
 		labelControl.setText(label);
 		labelControl.setFont(JFaceResources.getDialogFont());
-		labelControl.setLayoutData(new GridData());
+		GridData labelLayoutData = new GridData();
+		labelLayoutData.horizontalIndent = indent;
+		labelControl.setLayoutData(labelLayoutData);
 		Text textBox = new Text(parent, SWT.BORDER | SWT.SINGLE);
 		textBox.setData(key);
-		textBox.setLayoutData(new GridData());
 		makeScrollableCompositeAware(textBox);
 		labels.put(textBox, labelControl);
 		updateText(textBox);
 		textBox.addModifyListener(getTextModifyListener());
 
-		GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
+		GridData textLayoutData = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		if (widthHint != 0) {
-			data.widthHint = widthHint;
+			textLayoutData.widthHint = widthHint;
 		}
-		data.horizontalIndent = indent;
-		data.horizontalSpan = 2;
-		textBox.setLayoutData(data);
+		textBox.setLayoutData(textLayoutData);
 		textBoxes.add(textBox);
 		return textBox;
 	}
@@ -285,7 +321,7 @@ public abstract class OptionsConfigurationBlock {
 		labelControl.setLayoutData(gd);
 
 		Combo comboBox = newComboControl(parent, key, values, valueLabels);
-		comboBox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+		comboBox.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 
 		labels.put(comboBox, labelControl);
 
@@ -374,9 +410,11 @@ public abstract class OptionsConfigurationBlock {
 	protected SelectionListener getSelectionListener() {
 		if (selectionListener == null) {
 			selectionListener = new SelectionListener() {
+				@Override
 				public void widgetDefaultSelected(SelectionEvent e) {
 				}
 
+				@Override
 				public void widgetSelected(SelectionEvent e) {
 					controlChanged(e.widget);
 				}
@@ -388,6 +426,7 @@ public abstract class OptionsConfigurationBlock {
 	protected ModifyListener getTextModifyListener() {
 		if (textModifyListener == null) {
 			textModifyListener = new ModifyListener() {
+				@Override
 				public void modifyText(ModifyEvent e) {
 					textChanged((Text) e.widget);
 				}
@@ -429,6 +468,16 @@ public abstract class OptionsConfigurationBlock {
 			return disabledProjectSettings.put(key, value);
 		}
 		String oldValue = getValue(key);
+		preferenceStore.putValue(key, value);
+		return oldValue;
+	}
+
+	protected String setToDefault(String key) {
+		String value = preferenceStore.getDefaultString(key);
+		if (disabledProjectSettings != null) {
+			return disabledProjectSettings.put(key, value);
+		}
+		String oldValue = getValue(key);
 		preferenceStore.setValue(key, value);
 		return oldValue;
 	}
@@ -445,7 +494,7 @@ public abstract class OptionsConfigurationBlock {
 				disabledProjectSettings = null;
 				updateControls();
 				validateSettings(null, null, null);
-				preferenceStore.setValue(IS_PROJECT_SPECIFIC, true);
+				preferenceStore.setValue(getIsProjectSpecificPropertyKey(getPropertyPrefix()), true);
 			} else {
 				disabledProjectSettings = Maps.newHashMap();
 				for (int i = 0; i < keys.length; i++) {
@@ -454,6 +503,8 @@ public abstract class OptionsConfigurationBlock {
 					disabledProjectSettings.put(curr, oldSetting);
 					preferenceStore.setToDefault(curr);
 				}
+				preferenceStore.setToDefault(getIsProjectSpecificPropertyKey(getPropertyPrefix()));
+				//backward compatibility
 				preferenceStore.setToDefault(IS_PROJECT_SPECIFIC);
 			}
 		}
@@ -520,10 +571,13 @@ public abstract class OptionsConfigurationBlock {
 				((IPersistentPreferenceStore) preferenceStore).save();
 			}
 		} catch (IOException e) {
-			IStatus status = new Status(IStatus.ERROR, uiPlugin.getBundle().getSymbolicName(),
-					"Unexpected internal error: ", e); //$NON-NLS-1$
-			uiPlugin.getLog().log(status);
+			logError("Unexpected internal error: ", e); //$NON-NLS-1$
 		}
+	}
+
+	private void logError(String text, IOException e) {
+		IStatus status = new Status(IStatus.ERROR, uiPlugin.getBundle().getSymbolicName(), text, e);
+		uiPlugin.getLog().log(status);
 	}
 
 	public Map<String, ValueDifference<String>> getPreferenceChanges() {
@@ -543,8 +597,7 @@ public abstract class OptionsConfigurationBlock {
 	public void performDefaults() {
 		for (int i = 0; i < keys.length; i++) {
 			String curr = keys[i];
-			String defValue = preferenceStore.getDefaultString(curr);
-			setValue(curr, defValue);
+			setToDefault(curr);
 		}
 		updateControls();
 		validateSettings(null, null, null);
@@ -621,4 +674,19 @@ public abstract class OptionsConfigurationBlock {
 		keysToRegister.add(key);
 	}
 
+	public abstract String getPropertyPrefix();
+
+	public String getIsProjectSpecificPropertyKey(String propertyPrefix) {
+		String key = IS_PROJECT_SPECIFIC;
+		if (propertyPrefix != null) {
+			key = isProjectSpecificPropertyKey(propertyPrefix);
+		} else {
+			logError("Project specific key is not qualified", null);
+		}
+		return key;
+	}
+
+	public static String isProjectSpecificPropertyKey(String propertyPrefix) {
+		return propertyPrefix + "." + IS_PROJECT_SPECIFIC;
+	}
 }

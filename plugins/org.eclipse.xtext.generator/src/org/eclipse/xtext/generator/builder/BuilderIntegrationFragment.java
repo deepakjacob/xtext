@@ -37,10 +37,10 @@ public class BuilderIntegrationFragment extends DefaultGeneratorFragment {
 							+ ").to("
 							+ ResourceSetBasedResourceDescriptions.class.getName() + ".class)")
 			.addConfiguredBinding(
-					IResourceDescriptions.class.getName() + "BuilderScope",
-					"binder.bind(" + IResourceDescriptions.class.getName() + ".class"
+					IResourceDescriptions.class.getName() + "Persisted",
+					"binder.bind("+ IResourceDescriptions.class.getName() + ".class"
 							+ ").annotatedWith(com.google.inject.name.Names.named("
-							+ ResourceDescriptionsProvider.class.getName() + ".NAMED_BUILDER_SCOPE)).to("
+							+ "org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider.PERSISTED_DESCRIPTIONS)).to("
 							+ ResourceSetBasedResourceDescriptions.class.getName() + ".class)")
 			.getBindings();
 	}
@@ -55,11 +55,12 @@ public class BuilderIntegrationFragment extends DefaultGeneratorFragment {
 							+ ResourceDescriptionsProvider.class.getName() + ".NAMED_BUILDER_SCOPE)).to("
 							+ "org.eclipse.xtext.builder.clustering.CurrentDescriptions.ResourceSetAware.class)")
 			.addTypeToType("org.eclipse.xtext.ui.editor.IXtextEditorCallback", "org.eclipse.xtext.builder.nature.NatureAddingEditorCallback")
+			.addTypeToType("org.eclipse.xtext.generator.IContextualOutputConfigurationProvider", "org.eclipse.xtext.builder.EclipseOutputConfigurationProvider")
 			.addConfiguredBinding(
 					IResourceDescriptions.class.getName() + "Persisted",
 					"binder.bind("+ IResourceDescriptions.class.getName() + ".class"
 							+ ").annotatedWith(com.google.inject.name.Names.named("
-							+ "org.eclipse.xtext.builder.impl.PersistentDataAwareDirtyResource.PERSISTED_DESCRIPTIONS)).to("
+							+ "org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider.PERSISTED_DESCRIPTIONS)).to("
 							+ "org.eclipse.xtext.builder.builderState.IBuilderState.class)")
 			.addTypeToType("org.eclipse.xtext.ui.editor.DocumentBasedDirtyResource", "org.eclipse.xtext.builder.impl.PersistentDataAwareDirtyResource")
 			.getBindings();

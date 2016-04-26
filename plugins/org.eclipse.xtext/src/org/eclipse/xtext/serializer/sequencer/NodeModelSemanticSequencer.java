@@ -15,46 +15,28 @@ import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.TerminalRule;
+import org.eclipse.xtext.TypeRef;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.nodemodel.BidiIterator;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.serializer.ISerializationContext;
+import org.eclipse.xtext.serializer.analysis.SerializationContext;
 import org.eclipse.xtext.serializer.impl.FeatureFinderUtil;
 import org.eclipse.xtext.util.Triple;
+import org.eclipse.xtext.xtext.RuleNames;
 
 import com.google.inject.Inject;
 
 public class NodeModelSemanticSequencer extends AbstractSemanticSequencer {
 
 	@Inject
-	protected IValueConverterService valueConverter;
+	protected RuleNames ruleNames;
 
-	public void createSequence(EObject context, EObject semanticObject) {
-		SemanticNodeIterator ni = new SemanticNodeIterator(semanticObject);
-		while (ni.hasNext()) {
-			Triple<INode, AbstractElement, EObject> node = ni.next();
-			if (node.getSecond() instanceof RuleCall) {
-				RuleCall rc = (RuleCall) node.getSecond();
-				if (rc.getRule().getType().getClassifier() instanceof EClass)
-					acceptSemantic(semanticObject, rc, node.getThird(), node.getFirst());
-				else if (GrammarUtil.containingCrossReference(node.getSecond()) != null) {
-					EStructuralFeature feature = FeatureFinderUtil
-							.getFeature(node.getSecond(), semanticObject.eClass());
-					acceptSemantic(semanticObject, rc, semanticObject.eGet(feature), node.getFirst());
-				} else {
-					String strVal = NodeModelUtils.getTokenText(node.getFirst());
-					Object val = valueConverter.toValue(strVal, rc.getRule().getName(), node.getFirst());
-					acceptSemantic(semanticObject, rc, val, node.getFirst());
-				}
-			} else if (node.getSecond() instanceof Keyword)
-				acceptSemantic(semanticObject, node.getSecond(), node.getFirst().getText(), node.getFirst());
-			else if (node.getSecond() instanceof Action) {
-				acceptSemantic(semanticObject, node.getSecond(), semanticObject, node.getFirst());
-			}
-		}
-	}
+	@Inject
+	protected IValueConverterService valueConverter;
 
 	protected boolean acceptSemantic(EObject semanticObject, AbstractElement ele, Object value, INode node) {
 		Assignment ass = GrammarUtil.containingAssignment(ele);
@@ -86,8 +68,8 @@ public class NodeModelSemanticSequencer extends AbstractSemanticSequencer {
 					return true;
 				}
 				if (rc.getRule() instanceof TerminalRule) {
-					sequenceAcceptor
-							.acceptAssignedCrossRefTerminal(rc, token, (EObject) value, index, (ILeafNode) node);
+					sequenceAcceptor.acceptAssignedCrossRefTerminal(rc, token, (EObject) value, index,
+							(ILeafNode) node);
 					return true;
 				}
 				if (rc.getRule() instanceof EnumRule) {
@@ -132,7 +114,41 @@ public class NodeModelSemanticSequencer extends AbstractSemanticSequencer {
 		return false;
 	}
 
-	private INode findContextNode(EObject semanticObject) {
+	@Override
+	@SuppressWarnings("deprecation")
+	public void createSequence(EObject context, EObject semanticObject) {
+		createSequence(SerializationContext.fromEObject(context, semanticObject), semanticObject);
+	}
+
+	@Override
+	public void createSequence(ISerializationContext context, EObject semanticObject) {
+		SemanticNodeIterator ni = new SemanticNodeIterator(semanticObject);
+		while (ni.hasNext()) {
+			Triple<INode, AbstractElement, EObject> node = ni.next();
+			if (node.getSecond() instanceof RuleCall) {
+				RuleCall rc = (RuleCall) node.getSecond();
+				TypeRef ruleType = rc.getRule().getType();
+				if (ruleType == null || ruleType.getClassifier() instanceof EClass)
+					acceptSemantic(semanticObject, rc, node.getThird(), node.getFirst());
+				else if (GrammarUtil.containingCrossReference(node.getSecond()) != null) {
+					EStructuralFeature feature = FeatureFinderUtil.getFeature(node.getSecond(),
+							semanticObject.eClass());
+					acceptSemantic(semanticObject, rc, semanticObject.eGet(feature), node.getFirst());
+				} else {
+					String strVal = NodeModelUtils.getTokenText(node.getFirst());
+					Object val = valueConverter.toValue(strVal, ruleNames.getQualifiedName(rc.getRule()),
+							node.getFirst());
+					acceptSemantic(semanticObject, rc, val, node.getFirst());
+				}
+			} else if (node.getSecond() instanceof Keyword)
+				acceptSemantic(semanticObject, node.getSecond(), node.getFirst().getText(), node.getFirst());
+			else if (node.getSecond() instanceof Action) {
+				acceptSemantic(semanticObject, node.getSecond(), semanticObject, node.getFirst());
+			}
+		}
+	}
+
+	protected INode findContextNode(EObject semanticObject) {
 		INode node = NodeModelUtils.findActualNodeFor(semanticObject);
 		if (node != null) {
 			BidiIterator<INode> nodes = node.getAsTreeIterable().iterator();
@@ -148,11 +164,10 @@ public class NodeModelSemanticSequencer extends AbstractSemanticSequencer {
 		throw new RuntimeException("no context found");
 	}
 
-	public Iterable<EObject> findContexts(EObject semanticObject, boolean consultContainer,
-			Iterable<EObject> contextCandidates) {
+	public Iterable<ISerializationContext> findContexts(EObject semanticObject, boolean consultContainer, Iterable<ISerializationContext> contextCandidates) {
 		EObject ctx = findContextNode(semanticObject).getGrammarElement();
 		if (ctx instanceof RuleCall)
-			return Collections.singletonList((EObject) (((RuleCall) ctx).getRule()));
-		return Collections.singletonList(ctx);
+			ctx = ((RuleCall) ctx).getRule();
+		return Collections.singletonList(SerializationContext.fromEObject(ctx, semanticObject));
 	}
 }

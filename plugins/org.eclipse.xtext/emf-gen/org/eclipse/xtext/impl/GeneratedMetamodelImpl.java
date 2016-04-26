@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: GeneratedMetamodelImpl.java,v 1.17 2010/04/06 14:09:50 sefftinge Exp $
  */
 package org.eclipse.xtext.impl;
 
@@ -21,10 +17,10 @@ import org.eclipse.xtext.XtextPackage;
  * <!-- end-user-doc -->
  * <p>
  * The following features are implemented:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.impl.GeneratedMetamodelImpl#getName <em>Name</em>}</li>
  * </ul>
- * </p>
  *
  * @generated
  */

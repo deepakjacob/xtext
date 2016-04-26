@@ -24,13 +24,19 @@ XFunctionTypeRef:
   ('(' (paramTypes+=JvmTypeReference (',' paramTypes+=JvmTypeReference)*)? ')')? '=>' returnType=JvmTypeReference;
 
 JvmParameterizedTypeReference:
-  type=[JvmType|QualifiedName] (=>'<' arguments+=JvmArgumentTypeReference (',' arguments+=JvmArgumentTypeReference)* '>')?;
+  type=[JvmType|QualifiedName] (
+  	=>'<' arguments+=JvmArgumentTypeReference (',' arguments+=JvmArgumentTypeReference)* '>'
+  	(=>({JvmInnerTypeReference.outer=current} '.') type=[JvmType|ValidID] (=>'<' arguments+=JvmArgumentTypeReference (',' arguments+=JvmArgumentTypeReference)* '>')?)*
+  )?;
 
 JvmArgumentTypeReference returns JvmTypeReference:
 	JvmTypeReference | JvmWildcardTypeReference;
 
 JvmWildcardTypeReference:
-  {JvmWildcardTypeReference} '?' (constraints+=JvmUpperBound | constraints+=JvmLowerBound)?;
+  {JvmWildcardTypeReference} '?' (
+  	constraints+=JvmUpperBound (constraints+=JvmUpperBoundAnded)*
+  | constraints+=JvmLowerBound (constraints+=JvmLowerBoundAnded)*
+  )?;
   
 JvmUpperBound : 
  'extends' typeReference=JvmTypeReference;
@@ -41,31 +47,42 @@ JvmUpperBoundAnded returns JvmUpperBound:
 JvmLowerBound :
  'super' typeReference=JvmTypeReference;
 
+JvmLowerBoundAnded returns JvmLowerBound: 
+ '&' typeReference=JvmTypeReference;
+
 JvmTypeParameter :
   name=ValidID 
-  ((constraints+=JvmUpperBound (constraints+=JvmUpperBoundAnded)*) |
-   (constraints+=JvmLowerBound))?;
+  (constraints+=JvmUpperBound (constraints+=JvmUpperBoundAnded)*)?;
 
 QualifiedName:
   ValidID ('.' ValidID)*;
-  
+
+QualifiedNameWithWildcard :
+	QualifiedName  '.' '*';
+
 ValidID:
 	ID;
 
 XImportSection:
 	importDeclarations+=XImportDeclaration+;
 
-XImportDeclaration:
+XImportDeclaration: 
 	'import' (
-		(static?='static' extension?='extension'? importedType=[JvmDeclaredType|QualifiedName] '.' '*') 
-		| importedType=[JvmDeclaredType|QualifiedName]) ';'?;
+		(static?='static' extension?='extension'? importedType=[JvmDeclaredType|QualifiedNameInStaticImport] (wildcard?='*' | memberName=ValidID)) 
+		| importedType=[JvmDeclaredType|QualifiedName] 
+		| importedNamespace=QualifiedNameWithWildcard) ';'?
+;
+
+QualifiedNameInStaticImport:
+  (ValidID '.')+
+;
 
 terminal ID:
 	'^'? ('a'..'z'|'A'..'Z'|'$'|'_') ('a'..'z'|'A'..'Z'|'$'|'_'|'0'..'9')*;
 	
 terminal STRING: 
-			'"' ( '\\' ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') | !('\\'|'"') )* '"' |
-			"'" ( '\\' ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') | !('\\'|"'") )* "'";
+			'"' ( '\\' . /* ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') */ | !('\\'|'"') )* '"'? |
+			"'" ( '\\' . /* ('b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\') */ | !('\\'|"'") )* "'"?;
 			 
 terminal ML_COMMENT: '/*' -> '*/';
 

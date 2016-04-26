@@ -26,6 +26,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.AnnotationRulerColumn;
 import org.eclipse.jface.text.source.CompositeRuler;
 import org.eclipse.jface.text.source.IAnnotationAccessExtension;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ICharacterPairMatcher;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.SourceViewer;
@@ -232,6 +233,7 @@ public class EmbeddedEditorFactory {
 
 			final EmbeddedEditorActions actions = initializeActions(viewer);
 			parent.addDisposeListener(new DisposeListener() {
+				@Override
 				public void widgetDisposed(DisposeEvent e) {
 					viewerDecorationSupport.dispose();
 					highlightingHelper.uninstall();
@@ -239,6 +241,7 @@ public class EmbeddedEditorFactory {
 			});
 			final EmbeddedEditor result = new EmbeddedEditor(
 					document, viewer, viewerConfiguration, resourceProvider, new Runnable() {
+						@Override
 						public void run() {
 							afterCreatePartialEditor(viewer, document, annotationRuler, actions);
 							highlightingHelper.install(viewerConfiguration, viewer);
@@ -249,14 +252,17 @@ public class EmbeddedEditorFactory {
 				
 				private Button defaultButton;
 
+				@Override
 				public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
 				}
 				
+				@Override
 				public void assistSessionStarted(ContentAssistEvent event) {
 					defaultButton = parent.getShell().getDefaultButton();
 					parent.getShell().setDefaultButton(null);
 				}
 				
+				@Override
 				public void assistSessionEnded(ContentAssistEvent event) {
 					parent.getShell().setDefaultButton(defaultButton);
 					defaultButton = null;
@@ -265,54 +271,63 @@ public class EmbeddedEditorFactory {
 			ValidationJob job = new ValidationJob(this.resourceValidator, document, new IValidationIssueProcessor() {
 				private AnnotationIssueProcessor annotationIssueProcessor;
 
+				@Override
 				public void processIssues(List<Issue> issues, IProgressMonitor monitor) {
 					IValidationIssueProcessor issueProcessor = Builder.this.issueProcessor;
 					if (issueProcessor != null) {
 						issueProcessor.processIssues(issues, monitor);
 					}
-					if (this.annotationIssueProcessor == null) {
-						this.annotationIssueProcessor = new AnnotationIssueProcessor(document, viewer.getAnnotationModel(), new IssueResolutionProvider() {
-
-							public boolean hasResolutionFor(String issueCode) {
-								return issueResolutionProvider.hasResolutionFor(issueCode);
-							}
-
-							public List<IssueResolution> getResolutions(Issue issue) {
-								List<IssueResolution> resolutions = issueResolutionProvider.getResolutions(issue);
-								List<IssueResolution> result = Lists.transform(resolutions, new Function<IssueResolution, IssueResolution>() {
-
-									public IssueResolution apply(final IssueResolution input) {
-										IssueResolution result = new IssueResolution(
-												input.getLabel(), 
-												input.getDescription(), 
-												input.getImage(), 
-												new IModificationContext() {
-													public IXtextDocument getXtextDocument(URI uri) {
-														if (uri.trimFragment().equals(document.getResourceURI()))
-															return document;
-														return input.getModificationContext().getXtextDocument(uri);
-													}
-													
-													public IXtextDocument getXtextDocument() {
-														IModificationContext original = input.getModificationContext();
-														if (original instanceof IssueModificationContext) {
-															URI uri = ((IssueModificationContext) original).getIssue().getUriToProblem();
-															return getXtextDocument(uri);
+					IAnnotationModel annotationModel = viewer.getAnnotationModel();
+					if (annotationModel != null) {
+						if (this.annotationIssueProcessor == null) {
+							this.annotationIssueProcessor = new AnnotationIssueProcessor(document, annotationModel, new IssueResolutionProvider() {
+	
+								@Override
+								public boolean hasResolutionFor(String issueCode) {
+									return issueResolutionProvider.hasResolutionFor(issueCode);
+								}
+	
+								@Override
+								public List<IssueResolution> getResolutions(Issue issue) {
+									List<IssueResolution> resolutions = issueResolutionProvider.getResolutions(issue);
+									List<IssueResolution> result = Lists.transform(resolutions, new Function<IssueResolution, IssueResolution>() {
+	
+										@Override
+										public IssueResolution apply(final IssueResolution input) {
+											IssueResolution result = new IssueResolution(
+													input.getLabel(), 
+													input.getDescription(), 
+													input.getImage(), 
+													new IModificationContext() {
+														@Override
+														public IXtextDocument getXtextDocument(URI uri) {
+															if (uri.trimFragment().equals(document.getResourceURI()))
+																return document;
+															return input.getModificationContext().getXtextDocument(uri);
 														}
-														return original.getXtextDocument();
-													}
-												}, 
-												input.getModification());
-										return result;
-									}
-								});
-								return result;
-							}
-							
-						});
-					}
-					if (this.annotationIssueProcessor != null) {
-						this.annotationIssueProcessor.processIssues(issues, monitor);
+														
+														@Override
+														public IXtextDocument getXtextDocument() {
+															IModificationContext original = input.getModificationContext();
+															if (original instanceof IssueModificationContext) {
+																URI uri = ((IssueModificationContext) original).getIssue().getUriToProblem();
+																return getXtextDocument(uri);
+															}
+															return original.getXtextDocument();
+														}
+													}, 
+													input.getModification());
+											return result;
+										}
+									});
+									return result;
+								}
+								
+							});
+						}
+						if (this.annotationIssueProcessor != null) {
+							this.annotationIssueProcessor.processIssues(issues, monitor);
+						}
 					}
 				}
 			}, CheckMode.FAST_ONLY);
@@ -343,11 +358,13 @@ public class EmbeddedEditorFactory {
 
 			final OperationHistoryListener listener = installUndoRedoSupport(viewer, document, actions);
 			viewer.getControl().addDisposeListener(new DisposeListener() {
+				@Override
 				public void widgetDisposed(DisposeEvent e) {
 					uninstallUndoRedoSupport(listener);
 				}
 			});
 			viewer.addTextListener(new ITextListener() {
+				@Override
 				public void textChanged(TextEvent event) {
 					if (event.getDocumentEvent() != null) {
 						actions.updateAllActions();
@@ -355,6 +372,7 @@ public class EmbeddedEditorFactory {
 				}
 			});
 			viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+				@Override
 				public void selectionChanged(SelectionChangedEvent event) {
 					actions.updateSelectionDependentActions();
 				}
@@ -376,6 +394,7 @@ public class EmbeddedEditorFactory {
 			final IUndoContext context = undoManager.getUndoContext();
 			IOperationHistory operationHistory = PlatformUI.getWorkbench().getOperationSupport().getOperationHistory();
 			OperationHistoryListener operationHistoryListener = new OperationHistoryListener(context, new IUpdate() {
+				@Override
 				public void update() {
 					actions.updateAction(ITextEditorActionConstants.REDO);
 					actions.updateAction(ITextEditorActionConstants.UNDO);

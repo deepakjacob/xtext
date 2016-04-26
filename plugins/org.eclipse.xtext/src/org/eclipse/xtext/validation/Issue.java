@@ -13,13 +13,22 @@ import org.eclipse.xtext.diagnostics.Severity;
 
 /**
  * @author Sven Efftinge - Initial contribution and API
+ * @noimplement This interface is not intended to be implemented by clients.
+ * @noextend This interface is not intended to be extended by clients.
  */
 public interface Issue {
 
 	String CODE_KEY = "CODE_KEY";
 	String URI_KEY = "URI_KEY";
+	/**
+	 * @since 2.9
+	 */
+	String COLUMN_KEY = "COLUMN_KEY";
 	String DATA_KEY = "DATA_KEY";
 	
+	/**
+	 * Returns the severity of the issue. Defaults to {@link Severity#ERROR}.
+	 */
 	Severity getSeverity();
 
 	String getMessage();
@@ -30,7 +39,21 @@ public interface Issue {
 
 	URI getUriToProblem();
 
+	/**
+	 * Returns the one-based line number of the issue.
+	 */
 	Integer getLineNumber();
+	
+	/**
+	 * Returns the column in the line of the issue. It's not the virtual column but literally
+	 * the character offset in the column, e.g. tab ('\t') counts as one character.
+	 * The first char in a line has column number 1, the number is one-based.
+	 * 
+	 * If no column information is available, returns -1.
+	 * 
+	 * @since 2.9
+	 */
+	Integer getColumn();
 
 	Integer getOffset();
 
@@ -42,12 +65,12 @@ public interface Issue {
 	 * @return the associated user data. May be <code>null</code> or empty but may not contain <code>null</code> entries.
 	 */
 	String[] getData();
-	
+
 	static class IssueImpl implements Issue {
 		
 		private static Logger LOG = Logger.getLogger(IssueImpl.class);
 
-		private Integer length, lineNumber, offset;
+		private Integer length, lineNumber, offset, column;
 		private String code, message;
 		private boolean isSyntaxError = false;
 		private URI uriToProblem;
@@ -55,19 +78,21 @@ public interface Issue {
 		private CheckType type;
 		private String[] data;
 
+		@Override
 		public Integer getLength() {
 			return length;
 		}
 
 		public void setLength(Integer length) {
-			if(length <0) {
-				LOG.error("Issue length < 0");
+			if(length == null || length < 0) {
+				LOG.error("Issue length was "+length);
 				this.length = 0;
 			} else {
 				this.length = length;
 			}
 		}
 
+		@Override
 		public Integer getLineNumber() {
 			return lineNumber;
 		}
@@ -75,7 +100,23 @@ public interface Issue {
 		public void setLineNumber(Integer lineNumber) {
 			this.lineNumber = lineNumber;
 		}
+		
+		/**
+		 * @since 2.9
+		 */
+		@Override
+		public Integer getColumn() {
+			return column;
+		}
+		
+		/**
+		 * @since 2.9
+		 */
+		public void setColumn(Integer column) {
+			this.column = column;
+		}
 
+		@Override
 		public Integer getOffset() {
 			return offset;
 		}
@@ -84,6 +125,7 @@ public interface Issue {
 			this.offset = offset;
 		}
 
+		@Override
 		public String getMessage() {
 			return message;
 		}
@@ -92,6 +134,7 @@ public interface Issue {
 			this.message = message;
 		}
 
+		@Override
 		public URI getUriToProblem() {
 			return uriToProblem;
 		}
@@ -100,6 +143,7 @@ public interface Issue {
 			this.uriToProblem = uriToProblem;
 		}
 
+		@Override
 		public Severity getSeverity() {
 			return severity == null ? Severity.ERROR : severity;
 		}
@@ -108,6 +152,7 @@ public interface Issue {
 			this.severity = severity;
 		}
 
+		@Override
 		public String getCode() {
 			return code;
 		}
@@ -116,6 +161,7 @@ public interface Issue {
 			this.code = code;
 		}
 
+		@Override
 		public String[] getData() {
 			return data;
 		}
@@ -124,6 +170,7 @@ public interface Issue {
 			this.data = data;
 		}
 
+		@Override
 		public CheckType getType() {
 			return type;
 		}
@@ -136,19 +183,20 @@ public interface Issue {
 			this.isSyntaxError = isSyntaxError;
 		}
 
+		@Override
 		public boolean isSyntaxError() {
 			return isSyntaxError;
 		}
 
 		@Override
 		public String toString() {
-			StringBuffer buffer = new StringBuffer(getSeverity().name());
-			buffer.append(":").append(getMessage());
-			buffer.append(" (");
+			StringBuilder result = new StringBuilder(getSeverity().name());
+			result.append(":").append(getMessage());
+			result.append(" (");
 			if (getUriToProblem() != null)
-				buffer.append(getUriToProblem().trimFragment());
-			buffer.append(" line : ").append(getLineNumber()).append(")");
-			return buffer.toString();
+				result.append(getUriToProblem().trimFragment());
+			result.append(" line : ").append(getLineNumber()).append(" column : ").append(getColumn()).append(")");
+			return result.toString();
 		}
 	}
 }

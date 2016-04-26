@@ -7,8 +7,6 @@ a * Copyright (c) 2012 itemis AG (http://www.itemis.eu) and others.
  *******************************************************************************/
 package org.eclipse.xtext.xbase.typesystem.internal;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.xtext.xbase.typesystem.computation.ITypeExpectation;
 import org.eclipse.xtext.xbase.typesystem.references.ITypeReferenceOwner;
 import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
@@ -17,18 +15,19 @@ import org.eclipse.xtext.xbase.typesystem.references.LightweightTypeReference;
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc, toString
  */
-@NonNullByDefault
 public class NoExpectation extends AbstractReturnAwareTypeExpectation {
 
 	public NoExpectation(AbstractTypeComputationState state, boolean returnType) {
 		super(state, returnType);
 	}
 
-	@Nullable
+	/* @Nullable */
+	@Override
 	public LightweightTypeReference getExpectedType() {
 		return null;
 	}
 
+	@Override
 	public boolean isNoTypeExpectation() {
 		return true;
 	}
@@ -38,6 +37,7 @@ public class NoExpectation extends AbstractReturnAwareTypeExpectation {
 		return true;
 	}
 	
+	@Override
 	public ITypeExpectation copyInto(ITypeReferenceOwner referenceOwner) {
 		return this;
 	}

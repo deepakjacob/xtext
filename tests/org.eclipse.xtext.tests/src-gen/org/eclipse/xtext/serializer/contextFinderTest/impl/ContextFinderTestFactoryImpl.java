@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.contextFinderTest.impl;
 
@@ -34,7 +31,7 @@ public class ContextFinderTestFactoryImpl extends EFactoryImpl implements Contex
   {
     try
     {
-      ContextFinderTestFactory theContextFinderTestFactory = (ContextFinderTestFactory)EPackage.Registry.INSTANCE.getEFactory("http://www.eclipse.org/2009/tmf/xtext/contextfindertestlanguage"); 
+      ContextFinderTestFactory theContextFinderTestFactory = (ContextFinderTestFactory)EPackage.Registry.INSTANCE.getEFactory(ContextFinderTestPackage.eNS_URI);
       if (theContextFinderTestFactory != null)
       {
         return theContextFinderTestFactory;
@@ -80,6 +77,8 @@ public class ContextFinderTestFactoryImpl extends EFactoryImpl implements Contex
       case ContextFinderTestPackage.PARENT_REF_TEST_CHILD: return createParentRefTestChild();
       case ContextFinderTestPackage.QUANTITY_EXCLUSION_TEST: return createQuantityExclusionTest();
       case ContextFinderTestPackage.VALUE_EXCLUSION_TEST: return createValueExclusionTest();
+      case ContextFinderTestPackage.NODE_EXCLUSION: return createNodeExclusion();
+      case ContextFinderTestPackage.NODE_EXCLUSION_LIST: return createNodeExclusionList();
       case ContextFinderTestPackage.NESTED_TYPE_RECURSIVE_TEST1: return createNestedTypeRecursiveTest1();
       case ContextFinderTestPackage.NESTED_TYPE_RECURSIVE_TEST2: return createNestedTypeRecursiveTest2();
       default:
@@ -251,6 +250,28 @@ public class ContextFinderTestFactoryImpl extends EFactoryImpl implements Contex
   {
     ValueExclusionTestImpl valueExclusionTest = new ValueExclusionTestImpl();
     return valueExclusionTest;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NodeExclusion createNodeExclusion()
+  {
+    NodeExclusionImpl nodeExclusion = new NodeExclusionImpl();
+    return nodeExclusion;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public NodeExclusionList createNodeExclusionList()
+  {
+    NodeExclusionListImpl nodeExclusionList = new NodeExclusionListImpl();
+    return nodeExclusionList;
   }
 
   /**

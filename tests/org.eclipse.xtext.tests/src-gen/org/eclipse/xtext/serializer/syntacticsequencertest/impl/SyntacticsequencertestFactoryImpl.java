@@ -1,7 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
  */
 package org.eclipse.xtext.serializer.syntacticsequencertest.impl;
 
@@ -33,7 +30,7 @@ public class SyntacticsequencertestFactoryImpl extends EFactoryImpl implements S
   {
     try
     {
-      SyntacticsequencertestFactory theSyntacticsequencertestFactory = (SyntacticsequencertestFactory)EPackage.Registry.INSTANCE.getEFactory("http://www.eclipse.org/2009/tmf/xtext/syntacticsequencertestlanguage"); 
+      SyntacticsequencertestFactory theSyntacticsequencertestFactory = (SyntacticsequencertestFactory)EPackage.Registry.INSTANCE.getEFactory(SyntacticsequencertestPackage.eNS_URI);
       if (theSyntacticsequencertestFactory != null)
       {
         return theSyntacticsequencertestFactory;
@@ -81,6 +78,9 @@ public class SyntacticsequencertestFactoryImpl extends EFactoryImpl implements S
       case SyntacticsequencertestPackage.MANDATORY_MANY_TRANSITION: return createMandatoryManyTransition();
       case SyntacticsequencertestPackage.ALTERNATIVE_TRANSITION: return createAlternativeTransition();
       case SyntacticsequencertestPackage.BOOLEAN_VALUES: return createBooleanValues();
+      case SyntacticsequencertestPackage.LONG_ALTERNATIVE: return createLongAlternative();
+      case SyntacticsequencertestPackage.ACTION_ONLY: return createActionOnly();
+      case SyntacticsequencertestPackage.FRAGMENT_CALLER_TYPE: return createFragmentCallerType();
       case SyntacticsequencertestPackage.ADD0: return createAdd0();
       case SyntacticsequencertestPackage.VAL0: return createVal0();
       case SyntacticsequencertestPackage.ADD1: return createAdd1();
@@ -245,6 +245,39 @@ public class SyntacticsequencertestFactoryImpl extends EFactoryImpl implements S
   {
     BooleanValuesImpl booleanValues = new BooleanValuesImpl();
     return booleanValues;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public LongAlternative createLongAlternative()
+  {
+    LongAlternativeImpl longAlternative = new LongAlternativeImpl();
+    return longAlternative;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public ActionOnly createActionOnly()
+  {
+    ActionOnlyImpl actionOnly = new ActionOnlyImpl();
+    return actionOnly;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public FragmentCallerType createFragmentCallerType()
+  {
+    FragmentCallerTypeImpl fragmentCallerType = new FragmentCallerTypeImpl();
+    return fragmentCallerType;
   }
 
   /**

@@ -45,7 +45,7 @@ public class ParseTreeConstructorUtil {
 		for (AbstractRule r : GrammarUtil.allRules(g))
 			if (r instanceof ParserRule) {
 				ParserRule pr = (ParserRule) r;
-				if (!GrammarUtil.isDatatypeRule(pr))
+				if (!GrammarUtil.isDatatypeRule(pr) && !pr.isFragment())
 					callees.add(pr.getAlternatives());
 			}
 		return callees;
@@ -69,7 +69,7 @@ public class ParseTreeConstructorUtil {
 	}
 
 	public static String getParseTreeConstructorName(Grammar g, Naming n) {
-		return getPackage(g, n) + "." + GrammarUtil.getName(g) + "ParsetreeConstructor";
+		return getPackage(g, n) + "." + GrammarUtil.getSimpleName(g) + "ParsetreeConstructor";
 	}
 
 	private static List<CrossReference> getCrossReferencesWithSameEReference(CrossReference cr) {

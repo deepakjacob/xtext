@@ -9,27 +9,36 @@ package org.eclipse.xtext.ui.util;
 
 import static org.eclipse.xtext.util.Strings.*;
 
+import java.util.Set;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJarEntryResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.ExternalPackageFragmentRoot;
 import org.eclipse.xtext.resource.ClasspathUriResolutionException;
 import org.eclipse.xtext.resource.ClasspathUriUtil;
 import org.eclipse.xtext.resource.IClasspathUriResolver;
 
+import com.google.common.collect.Sets;
+
 public class JdtClasspathUriResolver implements IClasspathUriResolver {
 
 	private IJavaElement javaElement;
 
+	@Override
 	public URI resolve(Object context, URI classpathUri) {
 		if (!(context instanceof IJavaElement)) {
 			throw new IllegalArgumentException("Context must implement IResource");
@@ -68,7 +77,7 @@ public class JdtClasspathUriResolver implements IClasspathUriResolver {
                     }
                     else { // jar file or external class folder
 						if (packageFragmentRoot.isArchive()) { // jar file
-							Object[] nonJavaResources = packageFragment.getNonJavaResources();
+							Object[] nonJavaResources = getNonJavaResources(packageFragmentRoot, packageFragment);
 							for (Object nonJavaResource : nonJavaResources) {
 								IJarEntryResource jarEntryResource = (IJarEntryResource) nonJavaResource;
 								if (fullPath.equals(jarEntryResource.getFullPath().toString())) {
@@ -87,7 +96,7 @@ public class JdtClasspathUriResolver implements IClasspathUriResolver {
 								}
 							}
 						} else if (packageFragmentRoot.isExternal()) { // external class folder
-                            Object[] nonJavaResources = packageFragment.getNonJavaResources();
+							Object[] nonJavaResources = getNonJavaResources(packageFragmentRoot, packageFragment);
                             for (Object nonJavaResource : nonJavaResources) {
 								IJarEntryResource jarEntryResource = (IJarEntryResource) nonJavaResource;
 								if (fileName.equals(jarEntryResource.getName())) {
@@ -101,8 +110,54 @@ public class JdtClasspathUriResolver implements IClasspathUriResolver {
 					}
 				}
 			}
+			// not found in a source folder - look for a resource relative to project root
+			// of this project or one of its dependencies
+			URI result = findResourceInProjectRoot(javaProject, classpathUri.path(), Sets.<String>newHashSet());
+			if (result != null) {
+				return result;
+			}
 		}
 		return classpathUri;
+	}
+
+	private URI findResourceInProjectRoot(IJavaProject javaProject, String path, Set<String> visited) throws CoreException {
+		boolean includeAll = visited.isEmpty();
+		if (visited.add(javaProject.getElementName())) {
+			IProject project = javaProject.getProject();
+			IResource resourceFromProjectRoot = project.findMember(path);
+			if (resourceFromProjectRoot != null && resourceFromProjectRoot.exists()) {
+				return createPlatformResourceURI(resourceFromProjectRoot);
+			}
+			for(IClasspathEntry entry: javaProject.getResolvedClasspath(true)) {
+				if (entry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
+					if (includeAll || entry.isExported()) {
+						IResource referencedProject = project.getWorkspace().getRoot().findMember(entry.getPath());
+						if (referencedProject != null && referencedProject.getType() == IResource.PROJECT) {
+							IJavaProject referencedJavaProject = JavaCore.create((IProject) referencedProject);
+							if (referencedJavaProject.exists()) {
+								URI result = findResourceInProjectRoot(referencedJavaProject, path, visited);
+								if (result != null) {
+									return result;
+								}
+							}
+						}
+						break;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private Object[] getNonJavaResources(IPackageFragmentRoot packageFragmentRoot, IPackageFragment packageFragment)
+			throws JavaModelException {
+		Object[] nonJavaResources = null;
+		if (packageFragment.isDefaultPackage()) {
+			nonJavaResources = packageFragmentRoot.getNonJavaResources();
+		} else {
+			nonJavaResources = packageFragment.getNonJavaResources();
+		}
+		return nonJavaResources;
 	}
 
 	protected URI createArchiveURI(URI baseURI, String entryPath) {

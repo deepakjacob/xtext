@@ -8,6 +8,7 @@
 package org.eclipse.xtext.xbase.lib;
 
 import com.google.common.annotations.GwtCompatible;
+import com.google.common.primitives.Booleans;
 
 
 /**
@@ -27,7 +28,7 @@ import com.google.common.annotations.GwtCompatible;
 	 * @return <code>a && b</code>
 	 */
 	@Pure
-	@Inline("($1 && $2)")
+	@Inline(value="($1 && $2)", constantExpression=true)
 	public static boolean operator_and(boolean a, boolean b) {
 		return a && b;
 	}
@@ -42,7 +43,7 @@ import com.google.common.annotations.GwtCompatible;
 	 * @return <code>a || b</code>
 	 */
 	@Pure
-	@Inline("($1 || $2)")
+	@Inline(value="($1 || $2)", constantExpression=true)
 	public static boolean operator_or(boolean a, boolean b) {
 		return a || b;
 	}
@@ -55,7 +56,7 @@ import com.google.common.annotations.GwtCompatible;
 	 * @return <code>!b</code>
 	 */
 	@Pure
-	@Inline("(!$1)")
+	@Inline(value="(!$1)", constantExpression=true)
 	public static boolean operator_not(boolean b) {
 		return !b;
 	}
@@ -70,7 +71,7 @@ import com.google.common.annotations.GwtCompatible;
 	 * @return <code>a==b</code>
 	 */
 	@Pure
-	@Inline("($1 == $2)")
+	@Inline(value="($1 == $2)", constantExpression=true)
 	public static boolean operator_equals(boolean a, boolean b) {
 		return a == b;
 	}
@@ -85,7 +86,7 @@ import com.google.common.annotations.GwtCompatible;
 	 * @return <code>a!=b</code>
 	 */
 	@Pure
-	@Inline("($1 != $2)")
+	@Inline(value="($1 != $2)", constantExpression=true)
 	public static boolean operator_notEquals(boolean a, boolean b) {
 		return a != b;
 	}
@@ -104,6 +105,72 @@ import com.google.common.annotations.GwtCompatible;
 	public static boolean xor(boolean a, boolean b) {
 		return a ^ b;
 	}
-
-
+	
+	/**
+	 * The binary <code>lessThan</code> operator for boolean values.
+	 * {@code false} is considered less than {@code true}.
+	 * 
+	 * @see Boolean#compareTo(Boolean)
+	 * @see Booleans#compare(boolean, boolean)
+	 * @param a  a boolean.
+	 * @param b  another boolean.
+	 * @return   <code>Booleans.compare(a, b)&lt;0</code>
+	 * @since 2.4
+	 */
+	@Pure
+	@Inline(value = "($3.compare($1, $2) < 0)", imported = Booleans.class)
+	public static boolean operator_lessThan(boolean a, boolean b) {
+		return Booleans.compare(a, b) < 0;
+	}
+	
+	/**
+	 * The binary <code>lessEqualsThan</code> operator for boolean values.
+	 * {@code false} is considered less than {@code true}.
+	 * 
+	 * @see Boolean#compareTo(Boolean)
+	 * @see Booleans#compare(boolean, boolean)
+	 * @param a  a boolean.
+	 * @param b  another boolean.
+	 * @return   <code>Booleans.compare(a, b)&lt;=0</code>
+	 * @since 2.4
+	 */
+	@Pure
+	@Inline(value = "($3.compare($1, $2) <= 0)", imported = Booleans.class)
+	public static boolean operator_lessEqualsThan(boolean a, boolean b) {
+		return Booleans.compare(a, b) <= 0;
+	}
+	
+	/**
+	 * The binary <code>greaterThan</code> operator for boolean values.
+	 * {@code false} is considered less than {@code true}.
+	 * 
+	 * @see Boolean#compareTo(Boolean)
+	 * @see Booleans#compare(boolean, boolean)
+	 * @param a  a boolean.
+	 * @param b  another boolean.
+	 * @return   <code>Booleans.compare(a, b)&gt;0</code>
+	 * @since 2.4
+	 */
+	@Pure
+	@Inline(value = "($3.compare($1, $2) > 0)", imported = Booleans.class)
+	public static boolean operator_greaterThan(boolean a, boolean b) {
+		return Booleans.compare(a, b) > 0;
+	}
+	
+	/**
+	 * The binary <code>greaterEqualsThan</code> operator for boolean values.
+	 * {@code false} is considered less than {@code true}.
+	 * 
+	 * @see Boolean#compareTo(Boolean)
+	 * @see Booleans#compare(boolean, boolean)
+	 * @param a  a boolean.
+	 * @param b  another boolean.
+	 * @return   <code>Booleans.compare(a, b)&gt;=0</code>
+	 * @since 2.4
+	 */
+	@Pure
+	@Inline(value = "($3.compare($1, $2) >= 0)", imported = Booleans.class)
+	public static boolean operator_greaterEqualsThan(boolean a, boolean b) {
+		return Booleans.compare(a, b) >= 0;
+	}
 }

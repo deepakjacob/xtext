@@ -72,7 +72,7 @@ public class RefactoringTest extends AbstractEditorTest {
 	public void tearDown() throws Exception {
 		closeEditors();
 		javaProject.getProject().delete(true, new NullProgressMonitor());
-		waitForAutoBuild();
+		waitForBuild();
 	}
 	
 	protected void setLanguageConfig(boolean hasRefactoring, boolean usesJdtRefactoring) throws Exception {
@@ -86,7 +86,7 @@ public class RefactoringTest extends AbstractEditorTest {
 		xtextFile = createFile("RefactoringTest/src/test/test.typesRefactoring" + languageNameSuffix, "testName test.JavaClass");
 		languageServices = AbstractActivator.getInstance().getInjector(getEditorId()).getInstance(LanguageServices.class);
 		editor = openEditor(xtextFile);
-		waitForAutoBuild();
+		waitForBuild();
 	}
 	
 	@Override
@@ -120,7 +120,7 @@ public class RefactoringTest extends AbstractEditorTest {
 		IRenameSupport renameSupport = createRenameSupportForElement();
 		assertNotNull(renameSupport);
 		renameSupport.startDirectRefactoring();
-		waitForAutoBuild();
+		waitForBuild();
 		assertXtextElementRefactored();
 		assertJavaUnchanged();
 	}
@@ -143,7 +143,7 @@ public class RefactoringTest extends AbstractEditorTest {
 		IRenameSupport renameSupport = createRenameSupportForElement();
 		assertNotNull(renameSupport);
 		renameSupport.startDirectRefactoring();
-		waitForAutoBuild();
+		waitForBuild();
 		assertXtextElementRefactored();
 		assertJavaUnchanged();
 	}
@@ -153,7 +153,7 @@ public class RefactoringTest extends AbstractEditorTest {
 		IRenameSupport renameSupport = createRenameSupportForJvmReference();
 		assertNotNull(renameSupport);
 		renameSupport.startDirectRefactoring();
-		waitForAutoBuild();
+		waitForBuild();
 		assertXtextJvmRefRefactored();
 		assertJavaRefactored();
 	}
@@ -195,6 +195,7 @@ public class RefactoringTest extends AbstractEditorTest {
 			return null;
 		IRenameElementContext renameElementContext = editor.getDocument().readOnly(
 				new IUnitOfWork<IRenameElementContext, XtextResource>() {
+					@Override
 					public IRenameElementContext exec(XtextResource state) throws Exception {
 						Model model = (Model) state.getContents().get(0);
 						JvmType defaultReference = model.getReferenceHolder().get(0).getDefaultReference();
@@ -212,6 +213,7 @@ public class RefactoringTest extends AbstractEditorTest {
 			return null;
 		IRenameElementContext renameElementContext = editor.getDocument().readOnly(
 				new IUnitOfWork<IRenameElementContext, XtextResource>() {
+					@Override
 					public IRenameElementContext exec(XtextResource state) throws Exception {
 						Model model = (Model) state.getContents().get(0);
 						ReferenceHolder referenceHolder = model.getReferenceHolder().get(0);
@@ -227,6 +229,6 @@ public class RefactoringTest extends AbstractEditorTest {
 	protected void renameJavaClass() throws Exception {
 		RenameSupport renameSupport = RenameSupport.create(javaProject.findType("test.JavaClass"), "NewJavaClass", RenameSupport.UPDATE_REFERENCES);
 		renameSupport.perform(activeWorkbenchWindow.getShell(), activeWorkbenchWindow);
-		waitForAutoBuild();
+		waitForBuild();
 	}
 }

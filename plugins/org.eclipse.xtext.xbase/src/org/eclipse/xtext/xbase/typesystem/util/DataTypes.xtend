@@ -8,66 +8,76 @@
 package org.eclipse.xtext.xbase.typesystem.util
 
 import com.google.inject.Inject
+import com.google.inject.Singleton
 import java.util.Set
-import org.eclipse.xtend.lib.Property
+import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.xtext.common.types.JvmTypeParameter
 import org.eclipse.xtext.common.types.JvmTypeParameterDeclarator
 import org.eclipse.xtext.common.types.TypesFactory
 import org.eclipse.xtext.common.types.util.Primitives
 import org.eclipse.xtext.common.types.util.TypeReferences
+import org.eclipse.xtext.xbase.jvmmodel.IJvmModelAssociations
+import org.eclipse.xtext.xbase.scoping.featurecalls.OperatorMapping
+import org.eclipse.xtext.xbase.typesystem.computation.SynonymTypesProvider
 import org.eclipse.xtext.xbase.typesystem.conformance.IRawTypeHelper
 import org.eclipse.xtext.xbase.typesystem.conformance.TypeConformanceComputer
-import org.eclipse.xtext.xtype.XtypeFactory
-import org.eclipse.xtext.xbase.typesystem.references.FunctionTypes
-import org.eclipse.xtext.xbase.typesystem.computation.SynonymTypesProvider
 import org.eclipse.xtext.xbase.typesystem.references.ArrayTypes
-import com.google.inject.Singleton
+import org.eclipse.xtext.xbase.typesystem.references.FunctionTypes
+import org.eclipse.xtext.xbase.util.XExpressionHelper
+import org.eclipse.xtext.xtype.XtypeFactory
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
  * TODO JavaDoc
  */
 @Singleton
+@Accessors
 class CommonTypeComputationServices {
+	
 	@Inject
-	@Property
+	OperatorMapping operatorMapping
+	
+	@Inject
+	XExpressionHelper expressionHelper
+	
+	@Inject
 	TypeReferences typeReferences
 	
 	@Inject
-	@Property
 	TypeConformanceComputer typeConformanceComputer;
 
 	@Inject
-	@Property
 	IRawTypeHelper rawTypeHelper
 	
 	@Inject
-	@Property
 	Primitives primitives;
 	
 	@Inject
-	@Property
 	FunctionTypes functionTypes;
 	
 	@Inject
-	@Property
 	ArrayTypes arrayTypes;
 	
 	@Inject
-	@Property
 	BoundTypeArgumentMerger boundTypeArgumentMerger
 
 	@Inject
-	@Property
 	SynonymTypesProvider synonymTypesProvider
 	
-	@Inject(optional = true)
-	@Property
-	XtypeFactory xtypeFactory = XtypeFactory::eINSTANCE;
+	@Inject
+	IJvmModelAssociations jvmModelAssociations
+	
+	@Inject
+	ExtendedEarlyExitComputer earlyExitComputer
+	
+	@Inject
+	HumanReadableTypeNames humanReadableTypeNames
 	
 	@Inject(optional = true)
-	@Property
-	TypesFactory typesFactory = TypesFactory::eINSTANCE;
+	XtypeFactory xtypeFactory = XtypeFactory.eINSTANCE;
+	
+	@Inject(optional = true)
+	TypesFactory typesFactory = TypesFactory.eINSTANCE;
 }
 
 /**
@@ -87,6 +97,9 @@ class ConstraintVisitingInfo {
 	}
 	def boolean tryVisit(JvmTypeParameter parameter) {
 		return visiting.add(parameter);
+	}
+	def boolean canVisit(JvmTypeParameter parameter) {
+		return !visiting.contains(parameter)
 	}
 	def void didVisit(JvmTypeParameter parameter) {
 		visiting.remove(parameter);

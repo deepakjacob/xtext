@@ -16,7 +16,6 @@ import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Test
-import org.junit.Ignore
 
 /**
  * @author Sebastian Zarnekow - Initial contribution and API
@@ -43,12 +42,79 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
 		return featureCalls.sortBy [ NodeModelUtils::findNodesForFeature(it, XbasePackage$Literals::XABSTRACT_FEATURE_CALL__FEATURE).head.offset ]
 	}
 	
+	def protected filterTypeLiteralsAndPackageFragments(Iterable<XAbstractFeatureCall> featureCalls) {
+		featureCalls.filter[ !packageFragment && !typeLiteral ]
+	}
+	
 	override protected expression(CharSequence expression, boolean resolve) throws Exception {
 		val string = expression.toString
 		if (!seenExpressions.add(string)) {
 			fail("Duplicate expression under test: " + expression)
 		}
 		super.expression(expression, resolve)
+	}
+	
+	@Test def void testJEP101Example_01() throws Exception {
+		"{ val foo.JEP101List<String> ls = foo::JEP101List::nil }".resolvesFeatureCallsTo("JEP101List<String>")
+	}
+	@Test def void testJEP101Example_02() throws Exception {
+		"foo::JEP101List::cons(42, foo::JEP101List::nil)".resolvesFeatureCallsTo("JEP101List<Integer>", "JEP101List<Integer>")
+	}
+	@Test def void testJEP101Example_03() throws Exception {
+		"{ val String s = foo::JEP101List::nil.head }".resolvesFeatureCallsTo("JEP101List<String>", "String")
+	}
+	
+	@Test def void testElvisWithEmptyListInLambda() throws Exception {
+		"[ String s |
+			val result = <Integer>newArrayList
+			val (String)=>Iterable<Integer> fun = []
+			result += fun.apply(s) ?: emptyList
+			result
+		]".resolvesFeatureCallsTo(
+			"ArrayList<Integer>", // <Integer>newArrayList
+			"ArrayList<Integer>", // result
+			"boolean", // +=
+			"(String)=>Iterable<Integer>", // fun
+			"Iterable<Integer>", // apply 
+			"String", // s
+			"Iterable<Integer>", // ?: 
+			"List<Integer>", // emptyList
+			"ArrayList<Integer>") // result
+	}
+	
+	@Test def void testElvisWithEmptyList() throws Exception {
+		"{ 
+			val java.util.List<Integer> list = null
+			val fun = [| list ]
+			list += fun.apply ?: emptyList
+         }".resolvesFeatureCallsTo(
+			"List<Integer>", // list in lambda
+			"List<Integer>", // list
+			"boolean", // +=
+			"()=>List<Integer>", // fun
+			"List<Integer>", // apply
+			"List<Integer>", // ?: 
+			"List<Integer>") // emptyList
+	}
+	
+	@Test def void testRawType_01() throws Exception {
+		"{ val java.util.Set set = newHashSet() set }".resolvesFeatureCallsTo("HashSet", "Set")
+	}
+	
+	@Test def void testRawType_02() throws Exception {
+		"{ val java.util.Set set = newHashSet set.head }".resolvesFeatureCallsTo("HashSet", "Set", "Object")
+	}
+	
+	@Test def void testRawType_03() throws Exception {
+		"(null as java.util.Set<java.util.Set>).head".resolvesFeatureCallsTo("Set")
+	}
+	
+	@Test def void testRawType_04() throws Exception {
+		"{ val java.util.Set<java.util.Set> set = newHashSet set.head }".resolvesFeatureCallsTo("HashSet<Set>", "Set<Set>", "Set")
+	}
+	
+	@Test def void testRawType_05() throws Exception {
+		"{ val java.util.Set<java.util.Set> set = newHashSet(newHashSet) set.head }".resolvesFeatureCallsTo("HashSet<Set>", "HashSet", "Set<Set>", "Set")
 	}
 
 	@Test def void testNumberLiteralInClosure_01() throws Exception {
@@ -182,6 +248,26 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
 	@Test def void testForExpression_04() throws Exception {
 		"for(x : null as String[]) x.length".resolvesFeatureCallsTo("String", "int")
 	}
+	
+	@Test def void testBasicForExpression_01() {
+		"for(val x = new Object; x instanceof String;) { val y = x }".resolvesFeatureCallsTo("Object", "String")
+	}
+	
+	@Test def void testBasicForExpression_02() {
+		"for(val x = new Object; x instanceof String && true;) { val y = x }".resolvesFeatureCallsTo("Object", "boolean", "Object")
+	}
+	
+	@Test def void testBasicForExpression_03() {
+		'''
+			{
+				var Object y = null
+				for(var x = new Object; x instanceof String; y = x) { 
+					y = x
+					x = new Object
+				}
+			}
+		'''.toString.resolvesFeatureCallsTo("Object", "Object", "Object", "Object", "String", "Object")
+	}
 
 	@Test def void testMethodTypeParamInference_01() throws Exception {
 		"new java.util.ArrayList<String>().findFirst(e|e == 'foo')".resolvesFeatureCallsTo("String", "String", "boolean")
@@ -239,7 +325,7 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
 		"{ val x = new testdata.ArrayClient().swap(null) val Integer y = x.head }".resolvesFeatureCallsTo("Integer[]", "Integer[]", "Integer")
 	}
 	
-	@Test @Ignore("Investigate why this fails for nested arrays") def void testArray_09() throws Exception {
+	@Test def void testArray_09() throws Exception {
 		"{ val x = new testdata.ArrayClient().swap(null) val Integer[] y = x.head }".resolvesFeatureCallsTo("Integer[][]", "Integer[][]", "Integer[]")
 	}
 	
@@ -250,6 +336,11 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
 	@Test def void testClosure_01() throws Exception {
 		"{ var closure = [|'literal']
 		  new testdata.ClosureClient().invoke0(closure)	}".resolvesFeatureCallsTo("String", "()=>String")
+	}
+	
+	@Test def void testClosure_02() throws Exception {
+		"{ var com.google.common.collect.AbstractIterator<String> iter = [| return self.endOfData ] }"
+			.resolvesFeatureCallsTo("AbstractIterator<String>", "String")
 	}
 	
 	@Test
@@ -266,6 +357,21 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
 		"  var java.util.List<? super String> list = null;\n" + 
 		"  list.map(e|false)\n" +
 		"}").resolvesFeatureCallsTo("List<? super String>", "List<Boolean>")
+	}
+	
+	@Test def void testClosure_05() throws Exception {
+		"{ 
+			var com.google.common.collect.AbstractIterator<java.util.Iterator<String>> iter = [|
+				if (true) {
+					val com.google.common.collect.AbstractIterator<String> result = [|
+						return self.endOfData
+					]
+					return result
+				}
+				return self.endOfData
+			]
+		}"
+			.resolvesFeatureCallsTo("AbstractIterator<String>", "String", "AbstractIterator<String>", "AbstractIterator<Iterator<String>>", "Iterator<String>")
 	}
 
 	@Test def void testClosure_07() throws Exception {
@@ -325,6 +431,33 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
 		"}").resolvesFeatureCallsTo("List<Object>", "List<? super String>", "Object")
 	}
 	
+	@Test def void testClosure_59() throws Exception {
+		'{ 
+			val java.util.List<CharSequence> res = null
+			val Iterable<? extends Object> obj = null
+			res += obj.map[""]
+		}'.resolvesFeatureCallsTo("List<CharSequence>", "boolean", "Iterable<?>", "Iterable<String>")
+	}
+	
+	@Test def void testIfExpression_01() throws Exception {
+		"if(true) #{'f'} else emptySet".resolvesFeatureCallsTo("Set<String>")
+	}
+	
+	@Test def void testIfExpression_02() throws Exception {
+		"if(true) emptySet else #{'f'}".resolvesFeatureCallsTo("Set<String>")
+	}
+	
+	@Test def void testIfExpression_03() throws Exception {
+		"{ 
+			val Iterable<Object> branch = 
+			  if (true) 
+			    [|<Object>newArrayList().iterator]
+			  else
+			    newArrayList('a').toArray
+		}"
+			.resolvesFeatureCallsTo("ArrayList<Object>", "Iterator<Object>", "ArrayList<String>", "Object[]")
+	}
+	
 	@Test def void testSwitchExpression_3() throws Exception {
 		"{
 			val Object c = null
@@ -371,6 +504,12 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
                 }
         	}
 		}".resolvesFeatureCallsTo("Comparable<Object>", "Comparable<Object> & CharSequence", "Comparable<Object> & CharSequence & Appendable", "int")
+	}
+	
+	@Test def void testSwitchExpression_7() throws Exception {
+		"switch x : 'foo' as CharSequence {
+			Comparable : x.compareTo('')
+		}".resolvesFeatureCallsTo("CharSequence & Comparable", "int")
 	}
 	
 	@Test def void testTypeGuardedCase_0() throws Exception {
@@ -671,13 +810,17 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
 		}".resolvesFeatureCallsTo("CharSequence", "Class<? extends CharSequence>", "Field[]", "Map<String, Field>", "String", "Map<String, Object>", "Object", "CharSequence")
 	}
 	
-	// TODO fix the following case
-	@Ignore("TODO this should work")
 	@Test def void testBug_391758() throws Exception {
 		"{
 			val iterable = newArrayList
 			iterable.fold(newArrayList) [ list , elem | null as java.util.List<String> ]
 		}".resolvesFeatureCallsTo("ArrayList<Object>", "ArrayList<Object>", "List<String>", "ArrayList<String>")
+	}
+	
+	@Test def void testBug_406425_01() throws Exception {
+		"(null as StringBuilder) => [
+            newArrayList(it, new Long(0))
+        ]".resolvesFeatureCallsTo("StringBuilder", "ArrayList<Serializable>", "StringBuilder")
 	}
 	
 	@Test def void testBounds_01() throws Exception {
@@ -1185,6 +1328,13 @@ abstract class AbstractFeatureCallTypeTest extends AbstractXbaseTestCase {
 	
 	@Test def void testFeatureCallWithOperatorOverloading_5() throws Exception {
 		"new java.util.ArrayList<Byte>() += 'x'.getBytes()".resolvesFeatureCallsTo("boolean", "byte[]")
+	}
+	
+	@Test def void testFeatureCallWithOperatorOverloading_6() throws Exception {
+		"newHashMap( 5 -> '', '' -> 5 )".resolvesFeatureCallsTo(
+			"HashMap<Comparable<?> & Serializable, Comparable<?> & Serializable>", 
+			"Pair<Integer, String>", 
+			"Pair<String, Integer>")
 	}
 	
 	@Test def void testFeatureCallOnIt() throws Exception {

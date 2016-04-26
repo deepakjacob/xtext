@@ -11,6 +11,7 @@ import static com.google.common.collect.Lists.*;
 
 import java.util.List;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource.Diagnostic;
@@ -19,8 +20,10 @@ import org.eclipse.xtext.diagnostics.AbstractDiagnostic;
 import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
+import org.eclipse.xtext.resource.XtextSyntaxDiagnostic;
 import org.eclipse.xtext.util.IAcceptor;
-import org.eclipse.xtext.util.Strings;
+import org.eclipse.xtext.util.ITextRegionWithLineInformation;
+import org.eclipse.xtext.util.LineAndColumn;
 import org.eclipse.xtext.validation.Issue.IssueImpl;
 
 /**
@@ -32,18 +35,30 @@ public class DiagnosticConverterImpl implements IDiagnosticConverter {
 		
 		public IssueLocation() {}
 		
+		/**
+		 * 1-based line number.
+		 */
 		public Integer lineNumber;
+		/**
+		 * 1-based column.
+		 * @since 2.9
+		 */
+		public Integer column;
+		/**
+		 * 0-based offset.
+		 */
 		public Integer offset;
 		public Integer length;
 	}
 	
+	@Override
 	public void convertResourceDiagnostic(Diagnostic diagnostic, Severity severity,	IAcceptor<Issue> acceptor) {
 		IssueImpl issue = new Issue.IssueImpl();
-		issue.setSyntaxError(true);
+		issue.setSyntaxError(diagnostic instanceof XtextSyntaxDiagnostic);
 		issue.setSeverity(severity);
 		issue.setLineNumber(diagnostic.getLine());
+		issue.setColumn(diagnostic.getColumn());
 		issue.setMessage(diagnostic.getMessage());
-		//		issue.setmarker.put(IMarker.PRIORITY, Integer.valueOf(IMarker.PRIORITY_LOW));
 
 		if (diagnostic instanceof org.eclipse.xtext.diagnostics.Diagnostic) {
 			org.eclipse.xtext.diagnostics.Diagnostic xtextDiagnostic = (org.eclipse.xtext.diagnostics.Diagnostic) diagnostic;
@@ -60,6 +75,7 @@ public class DiagnosticConverterImpl implements IDiagnosticConverter {
 		acceptor.accept(issue);
 	}
 
+	@Override
 	public void convertValidatorDiagnostic(org.eclipse.emf.common.util.Diagnostic diagnostic,
 			IAcceptor<Issue> acceptor) {
 		Severity severity = getSeverity(diagnostic);
@@ -71,6 +87,7 @@ public class DiagnosticConverterImpl implements IDiagnosticConverter {
 		IssueLocation locationData = getLocationData(diagnostic);
 		if (locationData != null) {
 			issue.setLineNumber(locationData.lineNumber);
+			issue.setColumn(locationData.column);
 			issue.setOffset(locationData.offset);
 			issue.setLength(locationData.length);
 		}
@@ -176,9 +193,9 @@ public class DiagnosticConverterImpl implements IDiagnosticConverter {
 				INode parserNode = NodeModelUtils.getNode(causer);
 				IssueLocation result = new IssueLocation();
 				if (parserNode != null) {
-					String completeText = parserNode.getRootNode().getText();
-					int startLine = Strings.countLines(completeText.substring(0, castedDiagnostic.getOffset())) + 1;
-					result.lineNumber = startLine;
+					LineAndColumn lineAndColumn = NodeModelUtils.getLineAndColumn(parserNode, castedDiagnostic.getOffset());
+					result.lineNumber = lineAndColumn.getLine();
+					result.column = lineAndColumn.getColumn();
 				}
 				result.offset = castedDiagnostic.getOffset();
 				result.length = castedDiagnostic.getLength();
@@ -215,15 +232,28 @@ public class DiagnosticConverterImpl implements IDiagnosticConverter {
 					parserNode = nodes.get(index);
 			}
 			return getLocationForNode(parserNode);
+		} else if (obj.eContainer() != null) {
+			EObject container = obj.eContainer();
+			EStructuralFeature containingFeature = obj.eContainingFeature();
+			return getLocationData(container, containingFeature,
+					containingFeature.isMany() ? ((EList<?>) container.eGet(containingFeature)).indexOf(obj)
+							: ValidationMessageAcceptor.INSIGNIFICANT_INDEX);
 		}
-		return null;
+		IssueLocation result = new IssueLocation();
+		result.lineNumber = 1;
+		result.column = 1;
+		result.offset = 0;
+		result.length = 0;
+		return result;
 	}
 
 	protected IssueLocation getLocationForNode(INode node) {
+		ITextRegionWithLineInformation nodeRegion = node.getTextRegionWithLineInformation();
 		IssueLocation result = new IssueLocation();
-		result.lineNumber = node.getStartLine();
-		result.offset = node.getOffset();
-		result.length = node.getLength();
+		result.lineNumber = nodeRegion.getLineNumber();
+		result.offset = nodeRegion.getOffset();
+		result.column = NodeModelUtils.getLineAndColumn(node, result.offset).getColumn();
+		result.length = nodeRegion.getLength();
 		return result;
 	}
 

@@ -7,6 +7,8 @@
  *******************************************************************************/
 package org.eclipse.xtext.junit4.ui.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.resources.ICommand;
@@ -28,7 +30,12 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
+import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.xtext.util.StringInputStream;
+import org.eclipse.xtext.xbase.lib.Exceptions;
+import org.junit.Assert;
+
+import com.google.common.io.ByteStreams;
 
 public class IResourcesSetupUtil {
 
@@ -48,6 +55,17 @@ public class IResourcesSetupUtil {
 			project.create(monitor());
 		project.open(monitor());
 		return project;
+	}
+	
+	public static void assertNoErrorsInWorkspace() throws CoreException {
+		IMarker[] findMarkers = ResourcesPlugin.getWorkspace().getRoot().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+		String msg = "";
+		for (IMarker iMarker : findMarkers) {
+			if (MarkerUtilities.getSeverity(iMarker) == IMarker.SEVERITY_ERROR)
+				msg += "\n - "+iMarker.getResource().getName()+":"+MarkerUtilities.getLineNumber(iMarker)+" - "+MarkerUtilities.getMessage(iMarker) + "("+MarkerUtilities.getMarkerType(iMarker)+")";
+		}
+		if (msg.length()>0)
+			Assert.fail("Workspace contained errors: "+msg);
 	}
 
 	public static void addNature(IProject project, String nature)
@@ -212,6 +230,32 @@ public class IResourcesSetupUtil {
 	public static IResource file(String path) {
 		return root().findMember(new Path(path));
 	}
+	
+	public static byte[] fileToByteArray(IFile file) throws CoreException, IOException {
+		InputStream contents = null;
+		try {
+			contents = file.getContents();
+			return ByteStreams.toByteArray(contents);
+		} finally {
+			if (contents != null)
+				contents.close();
+		}
+	}
+
+	public static String fileToString(IFile file) throws CoreException, IOException {
+		return new String(fileToByteArray(file), file.getCharset());
+	}
+
+	public static boolean fileIsEmpty(IFile file) throws IOException, CoreException {
+		InputStream contents = null;
+		try {
+			contents = file.getContents();
+			return contents.read() == -1;
+		} finally {
+			if (contents != null)
+				contents.close();
+		}
+	}
 
 	private static void create(final IContainer container)
 			throws CoreException, InvocationTargetException,
@@ -240,40 +284,27 @@ public class IResourcesSetupUtil {
 	}
 
 	public static void fullBuild() throws CoreException {
-		ResourcesPlugin.getWorkspace().build(
-				IncrementalProjectBuilder.FULL_BUILD, monitor());
-		boolean wasInterrupted = false;
-		do {
-			try {
-				Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_BUILD,
-						null);
-				wasInterrupted = false;
-			} catch (OperationCanceledException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				wasInterrupted = true;
-			}
-		} while (wasInterrupted);
+		ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.FULL_BUILD, monitor());
 	}
 	
 	public static void cleanBuild() throws CoreException {
-		ResourcesPlugin.getWorkspace().build(
-				IncrementalProjectBuilder.CLEAN_BUILD, monitor());
-		boolean wasInterrupted = false;
-		do {
-			try {
-				Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_BUILD,
-						null);
-				wasInterrupted = false;
-			} catch (OperationCanceledException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				wasInterrupted = true;
-			}
-		} while (wasInterrupted);
+		ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor());
 	}
 
+	/**
+	 * @deprecated clients should use {@link #waitForBuild()} since it is much faster. Clients that really depend
+	 * on the delay before the build can use {@link #reallyWaitForAutoBuild()}.
+	 */
+	@Deprecated
 	public static void waitForAutoBuild() {
+		reallyWaitForAutoBuild();
+	}
+	
+	/**
+	 * A test that really should test the mechanism including the delay
+	 * after the resource change event, could wait for the auto build.
+	 */
+	public static void reallyWaitForAutoBuild() {
 		boolean wasInterrupted = false;
 		do {
 			try {
@@ -287,12 +318,38 @@ public class IResourcesSetupUtil {
 			}
 		} while (wasInterrupted);
 	}
+	
+	public static void waitForBuild() {
+		waitForBuild(null);
+	}
+	
+	public static void waitForBuild(IProgressMonitor monitor) {
+		try {
+			ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.INCREMENTAL_BUILD, monitor);
+		} catch (CoreException e) {
+			throw new OperationCanceledException(e.getMessage());
+		}
+	}
 
 	public static void cleanWorkspace() throws CoreException {
-		IProject[] visibleProjects = root().getProjects();
-		deleteProjects(visibleProjects);
-		IProject[] hiddenProjects = root().getProjects(IContainer.INCLUDE_HIDDEN);
-		deleteProjects(hiddenProjects);
+		try {
+			new WorkspaceModifyOperation() {
+	
+				@Override
+				protected void execute(IProgressMonitor monitor)
+						throws CoreException, InvocationTargetException,
+						InterruptedException {
+					IProject[] visibleProjects = root().getProjects();
+					deleteProjects(visibleProjects);
+					IProject[] hiddenProjects = root().getProjects(IContainer.INCLUDE_HIDDEN);
+					deleteProjects(hiddenProjects);
+				}
+			}.run(monitor());
+		} catch(InvocationTargetException e) {
+			Exceptions.sneakyThrow(e.getCause());
+		} catch(Exception e) {
+			throw new RuntimeException();
+		}
 	}
 
 	protected static void deleteProjects(IProject[] projects) throws CoreException {
@@ -304,10 +361,13 @@ public class IResourcesSetupUtil {
 	}
 	
 	public static String printMarker(IMarker[] markers) throws CoreException {
-		String s = "";
-		for (IMarker iMarker : markers) {
-			s += "," + iMarker.getAttribute(IMarker.MESSAGE);
+		StringBuilder result = new StringBuilder();
+		for (IMarker marker : markers) {
+			if (result.length() != 0) {
+				result.append(", ");
+			}
+			result.append(marker.getAttribute(IMarker.MESSAGE));
 		}
-		return s;
+		return result.toString();
 	}
 }

@@ -20,7 +20,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.xtext.ui.XtextProjectHelper;
 import org.eclipse.xtext.ui.util.ProjectFactory;
@@ -44,6 +43,7 @@ public abstract class AbstractProjectCreator extends WorkspaceModifyOperation im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public IFile getResult() {
 		return result;
 	}
@@ -55,6 +55,7 @@ public abstract class AbstractProjectCreator extends WorkspaceModifyOperation im
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public void setProjectInfo(IProjectInfo projectInfo) {
 		this.projectInfo = projectInfo;
 	}
@@ -94,6 +95,7 @@ public abstract class AbstractProjectCreator extends WorkspaceModifyOperation im
 		final String expectedExtension = getPrimaryModelFileExtension();
 		final IFile[] result = new IFile[1];
 		srcFolder.accept(new IResourceVisitor() {
+			@Override
 			public boolean visit(IResource resource) throws CoreException {
 				if (IResource.FILE == resource.getType() && expectedExtension.equals(resource.getFileExtension())) {
 					result[0] = (IFile) resource;
@@ -121,6 +123,10 @@ public abstract class AbstractProjectCreator extends WorkspaceModifyOperation im
 
 	protected ProjectFactory configureProjectFactory(ProjectFactory factory) {
 		factory.setProjectName(getProjectInfo().getProjectName());
+		if (projectInfo instanceof IExtendedProjectInfo) {
+			IExtendedProjectInfo extendedProjectInfo = (IExtendedProjectInfo) projectInfo;
+			factory.setLocation(extendedProjectInfo.getLocationPath());
+		}
 		factory.addFolders(getAllFolders());
 		factory.addReferencedProjects(getReferencedProjects());
 		factory.addProjectNatures(getProjectNatures());
@@ -150,21 +156,16 @@ public abstract class AbstractProjectCreator extends WorkspaceModifyOperation im
         return Collections.emptyList();
     }
 
-    protected String[] getProjectNatures() {
-        return new String[] {
-        	JavaCore.NATURE_ID,
-			"org.eclipse.pde.PluginNature", //$NON-NLS-1$
+	protected String[] getProjectNatures() {
+		return new String[] {
 			XtextProjectHelper.NATURE_ID
 		};
-    }
-    
-    protected String[] getBuilders() {
-    	return new String[]{
-    		JavaCore.BUILDER_ID,
-			"org.eclipse.pde.ManifestBuilder",  //$NON-NLS-1$
-			"org.eclipse.pde.SchemaBuilder", //$NON-NLS-1$
+	}
+
+	protected String[] getBuilders() {
+		return new String[]{
 			XtextProjectHelper.BUILDER_ID
 		};
 	}
-    
+
 }

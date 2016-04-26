@@ -1,9 +1,11 @@
 @SuppressWarnings("all")
 public class Xbase04_Casts {
-  public static void main(final String[] args) {
-    try {
-        final CharSequence s = "foo";
-        ((String) s).length();
-    } catch (Throwable t) {}
+  public int myMethod() throws Throwable {
+    int _xblockexpression = (int) 0;
+    {
+      final CharSequence s = "foo";
+      _xblockexpression = ((String) s).length();
+    }
+    return _xblockexpression;
   }
 }

@@ -23,6 +23,7 @@ public class XtextNature implements IProjectNature {
 	
 	private IProject project;
 
+	@Override
 	public void configure() throws CoreException {
 		IProjectDescription desc = project.getDescription();
 		ICommand[] commands = desc.getBuildSpec();
@@ -34,14 +35,15 @@ public class XtextNature implements IProjectNature {
 		}
 
 		ICommand[] newCommands = new ICommand[commands.length + 1];
-		System.arraycopy(commands, 0, newCommands, 0, commands.length);
+		System.arraycopy(commands, 0, newCommands, 1, commands.length);
 		ICommand command = desc.newCommand();
 		command.setBuilderName(XtextBuilder.BUILDER_ID);
-		newCommands[newCommands.length - 1] = command;
+		newCommands[0] = command;
 		desc.setBuildSpec(newCommands);
 		project.setDescription(desc, null);
 	}
 
+	@Override
 	public void deconfigure() throws CoreException {
 		IProjectDescription description = getProject().getDescription();
 		ICommand[] commands = description.getBuildSpec();
@@ -59,10 +61,12 @@ public class XtextNature implements IProjectNature {
 		}
 	}
 
+	@Override
 	public IProject getProject() {
 		return project;
 	}
 
+	@Override
 	public void setProject(IProject project) {
 		this.project = project;
 	}

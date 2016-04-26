@@ -1,7 +1,7 @@
 package org.eclipse.xtext.xbase.ui.tests.refactoring;
 
+import com.google.inject.Inject;
 import com.google.inject.Provider;
-import javax.inject.Inject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -13,7 +13,8 @@ import org.eclipse.xtext.junit4.validation.ValidationTestHelper;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.xbase.XExpression;
 import org.eclipse.xtext.xbase.lib.Exceptions;
-import org.eclipse.xtext.xbase.tests.XbaseInjectorProvider;
+import org.eclipse.xtext.xbase.tests.AbstractXbaseTestCase;
+import org.eclipse.xtext.xbase.tests.XbaseInjectorProviderWithScopeTracking;
 import org.eclipse.xtext.xbase.ui.refactoring.ExpressionUtil;
 import org.eclipse.xtext.xbase.ui.refactoring.NewFeatureNameUtil;
 import org.junit.Assert;
@@ -23,10 +24,10 @@ import org.junit.runner.RunWith;
 /**
  * @author Jan Koehnlein
  */
-@RunWith(value = XtextRunner.class)
-@InjectWith(value = XbaseInjectorProvider.class)
+@InjectWith(XbaseInjectorProviderWithScopeTracking.class)
+@RunWith(XtextRunner.class)
 @SuppressWarnings("all")
-public class NewFeatureNameUtilTest {
+public class NewFeatureNameUtilTest extends AbstractXbaseTestCase {
   @Inject
   private ExpressionUtil util;
   
@@ -50,7 +51,6 @@ public class NewFeatureNameUtilTest {
   
   @Test
   public void testDefaultNameFeatureCall() {
-    this.assertDefaultName("{val CAMEL_CASE_NAME = 1 $CAMEL_CASE_NAME}", "camelCaseName");
     this.assertDefaultName("{\"\".$getBytes}", "bytes");
     this.assertDefaultName("{\"\".$length}", "length");
   }
@@ -63,10 +63,10 @@ public class NewFeatureNameUtilTest {
   
   @Test
   public void testDefaultNameAlternate() {
-    this.assertDefaultName("{val i=1 2+$3}", "i1");
-    this.assertDefaultName("{val j=2+$3 val i=1}", "i1");
-    this.assertDefaultName("{val i=1 {val j=2+$3}}", "i1");
-    this.assertDefaultName("{val i=1 {val i1=1 val j=2+$3}}", "i2");
+    this.assertDefaultName("{val i=1 2+$3}", "j");
+    this.assertDefaultName("{val j=2+$3 val i=1}", "k");
+    this.assertDefaultName("{val i=1 {val j=2+$3}}", "k");
+    this.assertDefaultName("{val j=1 {val i=2+$3}}", "k");
     this.assertDefaultName("{{val j=2+$3} val i=1 }", "i");
   }
   
@@ -84,7 +84,7 @@ public class NewFeatureNameUtilTest {
   @Test
   public void testInvalidNameSyntax() {
     this.assertInvalidName("%", RefactoringStatus.FATAL, "character");
-    this.assertInvalidName("g\u00FCrkenbr\u00F6d", RefactoringStatus.FATAL, "character");
+    this.assertInvalidName("gürkenbröd", RefactoringStatus.FATAL, "character");
     this.assertInvalidName("&", RefactoringStatus.FATAL, "character");
   }
   
@@ -132,8 +132,7 @@ public class NewFeatureNameUtilTest {
   }
   
   protected void assertInvalidName(final String name, final int severity, final String messageFragment) {
-    RefactoringStatus _refactoringStatus = new RefactoringStatus();
-    final RefactoringStatus status = _refactoringStatus;
+    final RefactoringStatus status = new RefactoringStatus();
     final NewFeatureNameUtil nameUtil = this.nameUtilProvider.get();
     nameUtil.checkNewFeatureName(name, false, status);
     int _severity = status.getSeverity();
@@ -150,10 +149,10 @@ public class NewFeatureNameUtilTest {
       {
         final XExpression expression = this.parseHelper.parse(string);
         this.validationHelper.assertNoErrors(expression);
-        _xblockexpression = (expression);
+        _xblockexpression = expression;
       }
       return _xblockexpression;
-    } catch (Exception _e) {
+    } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
   }

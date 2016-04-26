@@ -44,8 +44,6 @@ import org.eclipse.xtext.parsetree.reconstr.XtextSerializationException;
 import org.eclipse.xtext.util.EmfFormatter;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.Pair;
-import org.eclipse.xtext.util.TextRegion;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -541,7 +539,7 @@ public abstract class AbstractParseTreeConstructor implements IParseTreeConstruc
 				ICompositeNode parentNode = containedNode.getParent();
 				while (parentNode != null && assignTokenDirect(parentNode, eObject2Token))
 					parentNode = parentNode.getParent();
-				if (containedNode.getOffset() > rootNode.getOffset() + rootNode.getLength()) {
+				if (containedNode.getOffset() > rootNode.getEndOffset()) {
 					break;
 				}
 			}
@@ -711,6 +709,7 @@ public abstract class AbstractParseTreeConstructor implements IParseTreeConstruc
 		return root;
 	}
 
+	@Override
 	public TreeConstructionReport serializeSubtree(EObject object, ITokenStream out) throws IOException {
 		TreeConstructionReportImpl report = createReport(object);
 		AbstractToken root = serialize(object, report);
@@ -759,7 +758,7 @@ public abstract class AbstractParseTreeConstructor implements IParseTreeConstruc
 		ITextRegion currentLocation = location;
 		INode node = token.getNode();
 		if (node != null) {
-			currentLocation = currentLocation.merge(new TextRegion(node.getOffset(), node.getLength()));
+			currentLocation = currentLocation.merge(node.getTextRegion());
 		}
 		if (!token.getTokensForSemanticChildren().isEmpty()) {
 			for (AbstractToken t : token.getTokensForSemanticChildren())

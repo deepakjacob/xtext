@@ -1,8 +1,4 @@
 /**
- * <copyright>
- * </copyright>
- *
- * $Id: TerminalRule.java,v 1.1 2010/04/06 14:10:12 sefftinge Exp $
  */
 package org.eclipse.xtext;
 
@@ -14,17 +10,16 @@ package org.eclipse.xtext;
  *
  * <p>
  * The following features are supported:
+ * </p>
  * <ul>
  *   <li>{@link org.eclipse.xtext.TerminalRule#isFragment <em>Fragment</em>}</li>
  * </ul>
- * </p>
  *
  * @see org.eclipse.xtext.XtextPackage#getTerminalRule()
  * @model
  * @generated
  */
 public interface TerminalRule extends AbstractRule {
-
 	/**
 	 * Returns the value of the '<em><b>Fragment</b></em>' attribute.
 	 * <!-- begin-user-doc -->
@@ -50,4 +45,5 @@ public interface TerminalRule extends AbstractRule {
 	 * @generated
 	 */
 	void setFragment(boolean value);
+
 } // TerminalRule
